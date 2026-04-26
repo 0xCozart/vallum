@@ -13,6 +13,7 @@
     "build": "npm run build -w @iota-gaskit/shared-types && npm run build -w @iota-gaskit/policy-gateway && npm run build -w @iota-gaskit/sdk && npm run build -w @iota-gaskit/policy-gateway-service",
     "test": "npm run build && node --import tsx --test packages/*/src/*.test.ts apps/*/src/*.test.ts",
     "typecheck": "npm run build && tsc --noEmit",
+    "smoke:local": "tsx scripts/smoke-local-gateway.ts",
     "pack:check": "npm run build && npm pack --dry-run -w @iota-gaskit/shared-types -w @iota-gaskit/policy-gateway -w @iota-gaskit/sdk",
     "grant:check": "npm test && npm run typecheck && npm run pack:check"
   },

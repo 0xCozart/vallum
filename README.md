@@ -180,6 +180,7 @@ Install dependencies and run the current scaffold checks:
 npm install
 npm test
 npm run typecheck
+npm run smoke:local
 ```
 
 The complete 30-minute local Gas Station quickstart is a Milestone 1 deliverable and is tracked in `docs/quickstart.md`.

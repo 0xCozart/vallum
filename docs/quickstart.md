@@ -89,9 +89,25 @@ curl -i \
 
 Expected result: HTTP 400 with reason code `PACKAGE_NOT_ALLOWED`.
 
-### 6. Proxy an allowed reserve request
+### 6. Run the one-command local smoke
 
-Start a local IOTA Gas Station upstream at `GAS_STATION_URL`, then call:
+The smoke command starts an in-process mock Gas Station upstream plus the policy gateway on loopback-only dynamic ports. It exercises the public SDK path without Docker, testnet funds, sponsor keys, or real network calls:
+
+```bash
+npm run smoke:local
+```
+
+Expected output ends with:
+
+```text
+IOTA GasKit local gateway smoke passed
+```
+
+The smoke covers health, missing auth, invalid auth, package allowlist rejection, allowed reserve proxying, and execute proxying.
+
+### 7. Proxy an allowed reserve request manually
+
+If you are running a local IOTA Gas Station upstream at `GAS_STATION_URL`, call:
 
 ```bash
 curl -i \
@@ -103,7 +119,7 @@ curl -i \
 
 Expected result: the request is proxied to `GAS_STATION_URL/v1/reserve_gas`; the response includes the upstream `result.reservation_id` plus a gateway-local `_saas_tx_id` / `gasKitTransactionId` used later by `/v1/execute_tx`.
 
-If no upstream Gas Station is running, the gateway returns `GAS_STATION_UNAVAILABLE`.
+If no upstream Gas Station is running, the gateway returns `GAS_STATION_UNAVAILABLE`. The current gateway keeps reservations in memory for local smoke use only; restart the service to clear local reservation state.
 
 ## Milestone 1 target flow
 
