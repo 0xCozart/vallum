@@ -5,7 +5,8 @@
   "type": "module",
   "license": "Apache-2.0",
   "scripts": {
-    "dev": "echo 'Demo dApp implementation lands in Milestone 1'"
+    "dev": "tsx src/local-demo.ts",
+    "smoke:local": "tsx src/local-demo.ts"
   },
   "dependencies": {
     "@iota-gaskit/sdk": "file:../../packages/sdk"

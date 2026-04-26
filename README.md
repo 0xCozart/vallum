@@ -44,7 +44,7 @@ The clean grant repo itself now includes:
 - policy reason-code/shared type scaffold;
 - policy gateway decision engine scaffold with tests;
 - TypeScript SDK scaffold with tests;
-- demo app and backend example scaffolds;
+- demo app local integration scaffold and backend example scaffolds;
 - safe Gas Station config template;
 - policy YAML example;
 - architecture diagram and architecture docs;
@@ -65,6 +65,7 @@ Latest local verification:
 - `npm test`: policy gateway and SDK tests passed locally.
 - `npm run typecheck`: passed locally.
 - `npm run smoke:local`: deterministic local gateway smoke passed locally.
+- `npm run smoke:demo-dapp`: deterministic local demo dApp smoke passed locally.
 - `npm run pack:check`: workspace package dry-runs completed locally.
 - secret-oriented scan over non-ignored project files: 0 obvious private-key/API-token matches.
 - public repo scaffold committed and pushed.

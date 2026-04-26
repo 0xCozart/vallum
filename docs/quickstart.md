@@ -1,6 +1,6 @@
 # 30-Minute Quickstart
 
-Status: Milestone 1 in progress. The current repo now includes a runnable local policy gateway smoke path. The full sponsored testnet transaction demo still requires a local or testnet IOTA Gas Station upstream.
+Status: Milestone 1 in progress. The current repo now includes runnable local policy gateway and demo dApp smoke paths. The full sponsored testnet transaction demo still requires a local or testnet IOTA Gas Station upstream.
 
 Goal: a developer can clone the repo, start a local GasKit stack, open the demo dApp, and execute one sponsored testnet transaction within 30 minutes.
 
@@ -11,6 +11,7 @@ npm install
 npm test
 npm run typecheck
 npm run smoke:local
+npm run smoke:demo-dapp
 ```
 
 ## Local policy gateway smoke path
@@ -116,7 +117,31 @@ IOTA GasKit local gateway smoke passed
 
 The smoke covers health, missing auth, invalid auth, package/function allowlist rejection, allowed reserve proxying, and execute proxying.
 
-### 7. Proxy an allowed reserve request manually
+### 7. Run the demo dApp against the local gateway path
+
+The demo dApp has a local-only CLI flow that uses the public SDK against the policy gateway. The root smoke command starts a mock upstream plus gateway, then runs the demo flow end to end:
+
+```bash
+npm run smoke:demo-dapp
+```
+
+Expected output ends with:
+
+```text
+IOTA GasKit demo dApp local flow passed
+```
+
+If you already have a local gateway running, you can point the demo dApp at it:
+
+```bash
+GASKIT_GATEWAY_URL=http://127.0.0.1:8787 \
+GASKIT_DEMO_APP_KEY=local-dev-demo-key \
+npm run dev -w @iota-gaskit/demo-dapp
+```
+
+The demo dApp smoke uses placeholder transaction bytes/signatures and does not require Docker, sponsor keys, testnet funds, or real network calls.
+
+### 8. Proxy an allowed reserve request manually
 
 If you are running a local IOTA Gas Station upstream at `GAS_STATION_URL`, call:
 
