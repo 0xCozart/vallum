@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { randomUUID, timingSafeEqual } from "node:crypto";
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 
 import { evaluateSponsorshipPolicy } from "@iota-gaskit/policy-gateway";
@@ -60,7 +60,12 @@ function writeJson(response: ServerResponse, status: number, body: unknown): voi
 }
 
 function asRecord(value: unknown): JsonRecord {
-  return typeof value === "object" && value !== null ? (value as JsonRecord) : {};
+  return typeof value === "object" && value !== null && !Array.isArray(value) ? (value as JsonRecord) : {};
+}
+
+function requestRecord(value: unknown): JsonRecord {
+  if (typeof value === "object" && value !== null && !Array.isArray(value)) return value as JsonRecord;
+  throw new HttpRequestError(400, { error: "BadRequest", message: "Request body must be a JSON object." });
 }
 
 async function readJson(request: IncomingMessage, maxBytes = 1_048_576): Promise<unknown> {
@@ -99,10 +104,30 @@ function parseBearer(value: string | string[] | undefined): string | undefined {
   return match?.[1];
 }
 
+function apiKeysEqual(left: string, right: string): boolean {
+  const leftBuffer = Buffer.from(left);
+  const rightBuffer = Buffer.from(right);
+  return leftBuffer.length === rightBuffer.length && timingSafeEqual(leftBuffer, rightBuffer);
+}
+
+function validateGatewayConfig(config: GatewayConfig): void {
+  const seenKeys = new Map<string, string>();
+  for (const [appId, app] of Object.entries(config.apps)) {
+    if (!app.apiKey.trim()) {
+      throw new Error(`Gateway app ${appId} must define a non-empty app API key.`);
+    }
+    const existingAppId = seenKeys.get(app.apiKey);
+    if (existingAppId) {
+      throw new Error(`Gateway config has duplicate app API key for ${existingAppId} and ${appId}.`);
+    }
+    seenKeys.set(app.apiKey, appId);
+  }
+}
+
 function findAppByApiKey(config: GatewayConfig, apiKey: string | undefined): { appId: string; app: GatewayAppConfig } | undefined {
   if (!apiKey) return undefined;
   for (const [appId, app] of Object.entries(config.apps)) {
-    if (app.apiKey === apiKey) return { appId, app };
+    if (apiKeysEqual(app.apiKey, apiKey)) return { appId, app };
   }
   return undefined;
 }
@@ -155,6 +180,35 @@ function unavailableDecision(message = "The configured IOTA Gas Station upstream
   return { allowed: false, reasonCode: "GAS_STATION_UNAVAILABLE", message };
 }
 
+function normalizeUpstreamFailure(operation: "reserve" | "execute", status: number): { status: number; json: JsonRecord } {
+  const label = operation === "reserve" ? "reserve gas" : "execute transaction";
+  return {
+    status: 502,
+    json: rejectionBody("GAS_STATION_UNAVAILABLE", `Gas Station ${label} request failed with HTTP ${status}.`),
+  };
+}
+
+function isRetryableUpstreamFailure(status: number): boolean {
+  return status === 408 || status === 429 || status >= 500;
+}
+
+function applyUsageCounters(counters: UsageCounters, appId: string, walletAddress: string | undefined, gasBudget: number | undefined): () => void {
+  const wallet = walletKey(appId, walletAddress);
+  counters.appRequests.set(appId, (counters.appRequests.get(appId) ?? 0) + 1);
+  counters.walletRequests.set(wallet, (counters.walletRequests.get(wallet) ?? 0) + 1);
+  if (typeof gasBudget === "number") {
+    counters.appGasReserved.set(appId, (counters.appGasReserved.get(appId) ?? 0) + gasBudget);
+  }
+
+  return () => {
+    counters.appRequests.set(appId, Math.max(0, (counters.appRequests.get(appId) ?? 0) - 1));
+    counters.walletRequests.set(wallet, Math.max(0, (counters.walletRequests.get(wallet) ?? 0) - 1));
+    if (typeof gasBudget === "number") {
+      counters.appGasReserved.set(appId, Math.max(0, (counters.appGasReserved.get(appId) ?? 0) - gasBudget));
+    }
+  };
+}
+
 async function proxyJson(
   config: GatewayConfig,
   path: string,
@@ -185,6 +239,7 @@ async function proxyJson(
 }
 
 export function createGatewayServer(config: GatewayConfig): Server {
+  validateGatewayConfig(config);
   const counters = emptyCounters();
   const reservations = new Map<string, ReservationRecord>();
 
@@ -202,7 +257,7 @@ export function createGatewayServer(config: GatewayConfig): Server {
     const appMatch = findAppByApiKey(config, apiKey);
     if (!appMatch) return rejectDecision(response, invalidAuthDecision());
 
-    const body = asRecord(await readJson(request));
+    const body = requestRecord(await readJson(request));
     const gasBudget = numberField(body, "gas_budget");
     const walletAddress = stringField(body, "wallet_address");
     const packageId = stringField(body, "package_id");
@@ -224,15 +279,19 @@ export function createGatewayServer(config: GatewayConfig): Server {
     const decision = evaluateSponsorshipPolicy(appMatch.app.policy, requestContext);
     if (decision.allowed === false) return rejectDecision(response, decision);
 
+    const rollbackUsageCounters = applyUsageCounters(counters, appId, walletAddress, gasBudget);
     const upstream = await proxyJson(config, "/v1/reserve_gas", body);
     if (upstream.status < 200 || upstream.status >= 300) {
-      return writeJson(response, upstream.status, upstream.json);
+      rollbackUsageCounters();
+      const normalized = normalizeUpstreamFailure("reserve", upstream.status);
+      return writeJson(response, normalized.status, normalized.json);
     }
 
     const upstreamBody = asRecord(upstream.json);
     const result = asRecord(upstreamBody.result);
     const upstreamReservationId = stringField(result, "reservation_id");
     if (!upstreamReservationId) {
+      rollbackUsageCounters();
       return rejectDecision(response, unavailableDecision("Gas Station response did not include result.reservation_id."));
     }
 
@@ -247,11 +306,6 @@ export function createGatewayServer(config: GatewayConfig): Server {
       gasBudget,
       status: "reserved",
     });
-    counters.appRequests.set(appId, (counters.appRequests.get(appId) ?? 0) + 1);
-    counters.walletRequests.set(walletKey(appId, walletAddress), (counters.walletRequests.get(walletKey(appId, walletAddress)) ?? 0) + 1);
-    if (typeof gasBudget === "number") {
-      counters.appGasReserved.set(appId, (counters.appGasReserved.get(appId) ?? 0) + gasBudget);
-    }
 
     writeJson(response, 200, { ...upstreamBody, _saas_tx_id: gasKitTransactionId, gasKitTransactionId });
   }
@@ -262,8 +316,14 @@ export function createGatewayServer(config: GatewayConfig): Server {
     const appMatch = findAppByApiKey(config, apiKey);
     if (!appMatch) return rejectDecision(response, invalidAuthDecision());
 
-    const body = asRecord(await readJson(request));
-    const gasKitTransactionId = stringField(body, "_saas_tx_id") ?? stringField(body, "gasKitTransactionId");
+    const body = requestRecord(await readJson(request));
+    const legacyGasKitTransactionId = stringField(body, "_saas_tx_id");
+    const publicGasKitTransactionId = stringField(body, "gasKitTransactionId");
+    if (legacyGasKitTransactionId && publicGasKitTransactionId && legacyGasKitTransactionId !== publicGasKitTransactionId) {
+      writeJson(response, 409, rejectionBody("EXECUTION_FAILED", "Conflicting GasKit transaction id aliases."));
+      return;
+    }
+    const gasKitTransactionId = legacyGasKitTransactionId ?? publicGasKitTransactionId;
     const reservationId = stringField(body, "reservation_id");
     const reservation = gasKitTransactionId ? reservations.get(gasKitTransactionId) : undefined;
 
@@ -296,10 +356,15 @@ export function createGatewayServer(config: GatewayConfig): Server {
     const upstream = await proxyJson(config, "/v1/execute_tx", upstreamBody);
     if (upstream.status >= 200 && upstream.status < 300) {
       reservation.status = "executed";
-    } else {
+      writeJson(response, upstream.status, upstream.json);
+      return;
+    }
+
+    if (!isRetryableUpstreamFailure(upstream.status)) {
       reservation.status = "failed";
     }
-    writeJson(response, upstream.status, upstream.json);
+    const normalized = normalizeUpstreamFailure("execute", upstream.status);
+    writeJson(response, normalized.status, normalized.json);
   }
 
   return createServer((request, response) => {

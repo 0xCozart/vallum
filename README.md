@@ -64,6 +64,7 @@ Latest local verification:
 
 - `npm test`: policy gateway and SDK tests passed locally.
 - `npm run typecheck`: passed locally.
+- `npm run smoke:local`: deterministic local gateway smoke passed locally.
 - `npm run pack:check`: workspace package dry-runs completed locally.
 - secret-oriented scan over non-ignored project files: 0 obvious private-key/API-token matches.
 - public repo scaffold committed and pushed.

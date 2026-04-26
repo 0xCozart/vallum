@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { after, before, test } from "node:test";
 
-import { createGasKitClient, GasKitAuthError, GasKitPolicyError } from "@iota-gaskit/sdk";
+import { createGasKitClient, GasKitAuthError, GasKitError, GasKitPolicyError } from "@iota-gaskit/sdk";
 import { createGatewayServer, type GatewayConfig } from "./server.js";
 
 const demoPolicy = {
@@ -291,4 +291,220 @@ test("malformed JSON returns BadRequest instead of an internal error", async () 
   assert.equal(response.status, 400);
   assert.equal(body.error, "BadRequest");
   assert.equal(fixture.upstream.requests.length, 0);
+});
+
+test("JSON array request bodies return BadRequest instead of proxying malformed shapes", async () => {
+  const fixture = await startGateway({
+    apps: {
+      "demo-dapp": {
+        apiKey: "local-dev-demo-key",
+        policy: { ...demoPolicy, allowedPackages: [], allowedFunctions: undefined },
+      },
+    },
+  });
+  after(() => fixture.close());
+
+  const response = await fetch(`${fixture.gatewayBaseUrl}/v1/reserve_gas`, {
+    method: "POST",
+    headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
+    body: JSON.stringify([]),
+  });
+  const body = await response.json();
+
+  assert.equal(response.status, 400);
+  assert.equal(body.error, "BadRequest");
+  assert.equal(fixture.upstream.requests.length, 0);
+});
+
+test("reserveGas enforces one-use request limits under concurrent upstream latency", async () => {
+  const oneUsePolicy = { ...demoPolicy, dailyRequestLimit: 1 };
+  let releaseUpstream: (() => void) | undefined;
+  const upstreamGate = new Promise<void>((resolve) => {
+    releaseUpstream = resolve;
+  });
+  let upstreamCalls = 0;
+  const fixture = await startGateway({
+    apps: {
+      "demo-dapp": {
+        apiKey: "local-dev-demo-key",
+        policy: oneUsePolicy,
+      },
+    },
+    upstreamBaseUrl: "http://local-upstream.test",
+    fetchImpl: async () => {
+      upstreamCalls += 1;
+      await upstreamGate;
+      return new Response(
+        JSON.stringify({
+          result: {
+            reservation_id: `reservation-${upstreamCalls}`,
+            sponsor_address: "0xSPONSOR",
+          },
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      );
+    },
+  });
+  after(() => fixture.close());
+
+  const requestBody = { gas_budget: 1, package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" };
+  const first = fetch(`${fixture.gatewayBaseUrl}/v1/reserve_gas`, {
+    method: "POST",
+    headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
+    body: JSON.stringify(requestBody),
+  });
+  const second = fetch(`${fixture.gatewayBaseUrl}/v1/reserve_gas`, {
+    method: "POST",
+    headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
+    body: JSON.stringify(requestBody),
+  });
+
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  releaseUpstream?.();
+  const responses = await Promise.all([first, second]);
+  const statuses = responses.map((response) => response.status).sort((a, b) => a - b);
+  const bodies = await Promise.all(responses.map((response) => response.json()));
+
+  assert.deepEqual(statuses, [200, 429]);
+  assert.equal(bodies.some((body) => body.reasonCode === "APP_DAILY_REQUEST_LIMIT_EXCEEDED"), true);
+  assert.equal(upstreamCalls, 1);
+});
+
+test("reserveGas normalizes upstream non-JSON failures without consuming quota", async () => {
+  let upstreamCalls = 0;
+  const fixture = await startGateway({
+    apps: {
+      "demo-dapp": {
+        apiKey: "local-dev-demo-key",
+        policy: { ...demoPolicy, dailyRequestLimit: 1 },
+      },
+    },
+    upstreamBaseUrl: "http://local-upstream.test",
+    fetchImpl: async () => {
+      upstreamCalls += 1;
+      if (upstreamCalls === 1) {
+        return new Response("upstream exploded", { status: 500, headers: { "content-type": "text/plain" } });
+      }
+      return new Response(
+        JSON.stringify({ result: { reservation_id: "reservation-after-retry", sponsor_address: "0xSPONSOR" } }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      );
+    },
+  });
+  after(() => fixture.close());
+
+  const requestBody = { gas_budget: 1, package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" };
+  const failed = await fetch(`${fixture.gatewayBaseUrl}/v1/reserve_gas`, {
+    method: "POST",
+    headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
+    body: JSON.stringify(requestBody),
+  });
+  const failedBody = await failed.json();
+
+  assert.equal(failed.status, 502);
+  assert.equal(failedBody.reasonCode, "GAS_STATION_UNAVAILABLE");
+
+  const retried = await fetch(`${fixture.gatewayBaseUrl}/v1/reserve_gas`, {
+    method: "POST",
+    headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
+    body: JSON.stringify(requestBody),
+  });
+  const retriedBody = await retried.json();
+
+  assert.equal(retried.status, 200);
+  assert.equal(retriedBody.result.reservation_id, "reservation-after-retry");
+  assert.equal(upstreamCalls, 2);
+});
+
+test("execute rejects conflicting GasKit transaction id aliases without touching upstream", async () => {
+  const fixture = await startGateway();
+  after(() => fixture.close());
+
+  const reserveResponse = await fetch(`${fixture.gatewayBaseUrl}/v1/reserve_gas`, {
+    method: "POST",
+    headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
+    body: JSON.stringify({ gas_budget: 1, package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" }),
+  });
+  const reserveBody = await reserveResponse.json();
+
+  const executeResponse = await fetch(`${fixture.gatewayBaseUrl}/v1/execute_tx`, {
+    method: "POST",
+    headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
+    body: JSON.stringify({
+      _saas_tx_id: reserveBody._saas_tx_id,
+      gasKitTransactionId: "gaskit_conflicting_id",
+      reservation_id: reserveBody.result.reservation_id,
+      tx_bytes: "AAE=",
+      user_sig: "sig",
+    }),
+  });
+  const executeBody = await executeResponse.json();
+
+  assert.equal(executeResponse.status, 409);
+  assert.equal(executeBody.reasonCode, "EXECUTION_FAILED");
+  assert.equal(fixture.upstream.requests.length, 1);
+});
+
+test("execute keeps a reservation retryable after a transient upstream failure", async () => {
+  let executeCalls = 0;
+  const fixture = await startGateway({
+    upstreamBaseUrl: "http://local-upstream.test",
+    fetchImpl: async (_url, init) => {
+      const body = JSON.parse(init?.body?.toString() ?? "{}");
+      if (body.tx_bytes) {
+        executeCalls += 1;
+        if (executeCalls === 1) {
+          return new Response(JSON.stringify({ error: "temporary outage" }), {
+            status: 502,
+            headers: { "content-type": "application/json" },
+          });
+        }
+        return new Response(JSON.stringify({ effects: { transactionDigest: "digest-after-retry" } }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify({ result: { reservation_id: "reservation-retry", sponsor_address: "0xSPONSOR" } }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    },
+  });
+  after(() => fixture.close());
+  const client = createGasKitClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+
+  const reserve = await client.reserveGas({ gasBudget: 1, packageId: "0xDEMO_PACKAGE", functionName: "mint_badge" });
+  await assert.rejects(
+    () =>
+      client.executeSponsoredTransaction({
+        reservationId: reserve.reservationId,
+        gasKitTransactionId: reserve.gasKitTransactionId,
+        transactionBytes: "AAE=",
+        userSignature: "sig",
+      }),
+    (error) => error instanceof GasKitError && error.status === 502,
+  );
+
+  const retried = await client.executeSponsoredTransaction({
+    reservationId: reserve.reservationId,
+    gasKitTransactionId: reserve.gasKitTransactionId,
+    transactionBytes: "AAE=",
+    userSignature: "sig",
+  });
+
+  assert.equal(retried.digest, "digest-after-retry");
+  assert.equal(executeCalls, 2);
+});
+
+test("createGatewayServer rejects duplicate app API keys", () => {
+  assert.throws(
+    () =>
+      createGatewayServer({
+        apps: {
+          first: { apiKey: "duplicate-key", policy: { ...demoPolicy, appId: "first" } },
+          second: { apiKey: "duplicate-key", policy: { ...demoPolicy, appId: "second" } },
+        },
+      }),
+    /duplicate app API key/i,
+  );
 });

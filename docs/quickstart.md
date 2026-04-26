@@ -10,11 +10,12 @@ Goal: a developer can clone the repo, start a local GasKit stack, open the demo 
 npm install
 npm test
 npm run typecheck
+npm run smoke:local
 ```
 
 ## Local policy gateway smoke path
 
-This smoke path verifies the GasKit gateway API shape, app-key auth, policy allowlist rejection, SDK-compatible reserve responses, and execute proxy behavior. It can run against a local/mock upstream before a real IOTA Gas Station is configured.
+This smoke path verifies the GasKit gateway API shape, app-key auth, package/function allowlist rejection, SDK-compatible reserve responses, and execute proxy behavior. It can run against a local/mock upstream before a real IOTA Gas Station is configured.
 
 ### 1. Configure local environment
 
@@ -24,7 +25,7 @@ Copy the example file and keep secrets local:
 cp .env.example .env
 ```
 
-The policy gateway reads these variables:
+The policy gateway reads these variables from the process environment. Node does not automatically load `.env` in this package, so source the file before starting the service or pass variables inline:
 
 ```bash
 GASKIT_GATEWAY_PORT=8787
@@ -41,10 +42,20 @@ GAS_STATION_BEARER_TOKEN=replace-with-local-gas-station-token
 
 ```bash
 npm run build -w @iota-gaskit/policy-gateway-service
+set -a
+. ./.env
+set +a
+npm run start -w @iota-gaskit/policy-gateway-service
+```
+
+Equivalent inline start command:
+
+```bash
 GASKIT_DEMO_APP_KEY=local-dev-demo-key \
 GASKIT_GATEWAY_HOST=127.0.0.1 \
 GASKIT_POLICY_PATH=examples/policies/demo-dapp.yaml \
 GAS_STATION_URL=http://127.0.0.1:9527 \
+GAS_STATION_BEARER_TOKEN=replace-with-local-token \
 npm run start -w @iota-gaskit/policy-gateway-service
 ```
 
@@ -103,7 +114,7 @@ Expected output ends with:
 IOTA GasKit local gateway smoke passed
 ```
 
-The smoke covers health, missing auth, invalid auth, package allowlist rejection, allowed reserve proxying, and execute proxying.
+The smoke covers health, missing auth, invalid auth, package/function allowlist rejection, allowed reserve proxying, and execute proxying.
 
 ### 7. Proxy an allowed reserve request manually
 

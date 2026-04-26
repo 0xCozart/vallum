@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "app": "iota-gaskit",
+  "issue": "none",
+  "mode": "route-local",
+  "surface": "local policy gateway edge-case hardening",
+  "contracts": [
+    "AGENTS.md",
+    "apex.workflow.json",
+    "docs/quickstart.md",
+    "apps/policy-gateway-service/src/server.ts",
+    "apps/policy-gateway-service/src/server.test.ts",
+    "scripts/smoke-local-gateway.ts",
+    "packages/sdk/src/client.ts",
+    "packages/policy-gateway/src/policy.ts"
+  ],
+  "ownedFiles": [
+    "apps/policy-gateway-service/src/server.ts",
+    "apps/policy-gateway-service/src/server.test.ts",
+    "scripts/smoke-local-gateway.ts",
+    "docs/quickstart.md",
+    "README.md",
+    "package.json",
+    ".env.example"
+  ],
+  "noTouch": [
+    "/mnt/d/CURSOR/gas_station private/prototype files",
+    "real IOTA network/testnet sponsor keys",
+    "deployments or Docker services",
+    "dashboard/demo-dapp UI surfaces"
+  ],
+  "codeIntelligence": {
+    "provider": "focused-search",
+    "impacts": [
+      "apps/policy-gateway-service/src/server.ts",
+      "apps/policy-gateway-service/src/server.test.ts",
+      "scripts/smoke-local-gateway.ts",
+      "docs/quickstart.md"
+    ],
+    "detect": null
+  },
+  "checks": {
+    "required": [
+      "npm test",
+      "npm run smoke:local",
+      "npm run typecheck",
+      "git diff --check"
+    ],
+    "optional": [
+      "node /mnt/d/CURSOR/apex-workflow/scripts/apex-manifest.mjs detect --config=apex.workflow.json --file=tmp/apex-workflow/m1-gateway-edge-case-hardening.json"
+    ],
+    "browser": "skip: local CLI/API gateway hardening; browser UI not in scope",
+    "typecheck": "required: npm run typecheck"
+  },
+  "tracker": {
+    "provider": "none",
+    "disposition": "none",
+    "id": null
+  },
+  "downshiftProof": "route-local because the patch is limited to local gateway edge-case hardening, regression tests, smoke assertions, and docs/package wiring; it avoids real network, deployments, sponsor keys, and private prototype files",
+  "knownFailures": [],
+  "notes": "Audit follow-up for local gateway/smoke slice: malformed JSON shape rejection, concurrent quota guard, upstream failure normalization, retryable transient execute failures, alias conflict rejection, duplicate app-key validation, stronger smoke assertions, and docs consistency."
+}

@@ -56,7 +56,20 @@ async function listen(server: Server): Promise<string> {
 
 async function close(server: Server): Promise<void> {
   if (!server.listening) return;
-  await new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
+  let timeout: NodeJS.Timeout | undefined;
+  const closePromise = new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
+  const timeoutPromise = new Promise<void>((_, reject) => {
+    timeout = setTimeout(() => {
+      server.closeIdleConnections?.();
+      server.closeAllConnections?.();
+      reject(new Error("Timed out closing local smoke server."));
+    }, 2_000);
+  });
+  try {
+    await Promise.race([closePromise, timeoutPromise]);
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
 }
 
 async function main(): Promise<void> {
@@ -106,6 +119,13 @@ async function main(): Promise<void> {
     assert.equal(upstream.requests.length, 0);
     console.log("ok: policy rejection does not call upstream");
 
+    await assert.rejects(
+      () => client.reserveGas({ gasBudget: 1, packageId: "0xYOUR_DEMO_PACKAGE_ID", functionName: "burn_badge" }),
+      (error) => error instanceof GasKitPolicyError && error.reasonCode === "FUNCTION_NOT_ALLOWED",
+    );
+    assert.equal(upstream.requests.length, 0);
+    console.log("ok: function policy rejection does not call upstream");
+
     const reservation = await client.reserveGas({
       gasBudget: 1,
       walletAddress: "0xSMOKE_WALLET",
@@ -116,8 +136,15 @@ async function main(): Promise<void> {
     assert.match(reservation.gasKitTransactionId, /^gaskit_/);
     assert.equal(reservation.sponsorAddress, "0xSMOKE_SPONSOR");
     assert.equal(upstream.requests.length, 1);
+    assert.equal(upstream.requests[0]?.method, "POST");
     assert.equal(upstream.requests[0]?.url, "/v1/reserve_gas");
     assert.equal(upstream.requests[0]?.authorization, "Bearer local-smoke-token");
+    assert.deepEqual(upstream.requests[0]?.body, {
+      gas_budget: 1,
+      wallet_address: "0xSMOKE_WALLET",
+      package_id: "0xYOUR_DEMO_PACKAGE_ID",
+      function_name: "mint_badge",
+    });
     console.log("ok: allowed reserve proxies through SDK");
 
     const executed = await client.executeSponsoredTransaction({
@@ -128,7 +155,14 @@ async function main(): Promise<void> {
     });
     assert.equal(executed.digest, "smoke-digest-1");
     assert.equal(upstream.requests.length, 2);
+    assert.equal(upstream.requests[1]?.method, "POST");
     assert.equal(upstream.requests[1]?.url, "/v1/execute_tx");
+    assert.equal(upstream.requests[1]?.authorization, "Bearer local-smoke-token");
+    assert.deepEqual(upstream.requests[1]?.body, {
+      reservation_id: "smoke-reservation-1",
+      tx_bytes: "AAE=",
+      user_sig: "smoke-signature",
+    });
     console.log("ok: execute proxies through SDK");
 
     console.log("IOTA GasKit local gateway smoke passed");
