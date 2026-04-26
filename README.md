@@ -91,6 +91,7 @@ flowchart LR
 ```txt
 apps/
   demo-dapp/              # Minimal grant-demo dApp scaffold
+  policy-gateway-service/ # Runnable local policy gateway smoke service
 packages/
   sdk/                    # TypeScript SDK scaffold
   policy-gateway/         # Policy decision engine scaffold

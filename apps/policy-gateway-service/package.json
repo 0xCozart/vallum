@@ -1,0 +1,25 @@
+{
+  "name": "@iota-gaskit/policy-gateway-service",
+  "version": "0.0.0-prerelease",
+  "type": "module",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/index.js",
+    "test": "node --import tsx --test src/*.test.ts"
+  },
+  "dependencies": {
+    "@iota-gaskit/policy-gateway": "0.0.0-prerelease",
+    "@iota-gaskit/sdk": "0.0.0-prerelease",
+    "@iota-gaskit/shared-types": "0.0.0-prerelease"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.0",
+    "typescript": "^5.8.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
