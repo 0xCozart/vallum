@@ -192,27 +192,46 @@ function rejectDecision(response: ServerResponse, decision: Exclude<PolicyDecisi
 const EVENT_STRING_MAX_LENGTH = 256;
 
 function sanitizeEventString(value: string): string {
-  const withoutControlCharacters = value.replace(/[\u0000-\u001f\u007f]/g, "�");
+  const withoutControlCharacters = value.replace(/[\u0000-\u001f\u007f-\u009f]/g, "�");
   return withoutControlCharacters.length > EVENT_STRING_MAX_LENGTH ? withoutControlCharacters.slice(0, EVENT_STRING_MAX_LENGTH) : withoutControlCharacters;
+}
+
+function setEventString(event: GatewayEvent, key: keyof GatewayEvent, value: string | undefined): void {
+  if (value !== undefined) {
+    (event as unknown as Record<string, unknown>)[key] = sanitizeEventString(value);
+  }
+}
+
+function setEventNumber(event: GatewayEvent, key: keyof GatewayEvent, value: number | undefined): void {
+  if (value !== undefined) {
+    (event as unknown as Record<string, unknown>)[key] = value;
+  }
 }
 
 function hasThen(value: unknown): value is PromiseLike<unknown> {
   return typeof value === "object" && value !== null && typeof (value as { then?: unknown }).then === "function";
 }
 
-function removeUndefined<T extends Record<string, unknown>>(record: T): T {
-  return Object.fromEntries(Object.entries(record).filter(([, value]) => value !== undefined)) as T;
-}
-
 function sanitizeGatewayEvent(event: Omit<GatewayEvent, "id" | "timestamp">): GatewayEvent {
-  const raw = removeUndefined({
+  const sanitized: GatewayEvent = {
     id: randomUUID(),
     timestamp: new Date().toISOString(),
-    ...event,
-  });
-  return Object.fromEntries(
-    Object.entries(raw).map(([key, value]) => [key, typeof value === "string" ? sanitizeEventString(value) : value]),
-  ) as unknown as GatewayEvent;
+    operation: event.operation,
+    outcome: event.outcome,
+    httpStatus: event.httpStatus,
+  };
+
+  setEventString(sanitized, "appId", event.appId);
+  setEventString(sanitized, "walletAddress", event.walletAddress);
+  setEventString(sanitized, "packageId", event.packageId);
+  setEventString(sanitized, "functionName", event.functionName);
+  setEventNumber(sanitized, "gasBudget", event.gasBudget);
+  setEventString(sanitized, "gasKitTransactionId", event.gasKitTransactionId);
+  setEventString(sanitized, "upstreamReservationId", event.upstreamReservationId);
+  setEventString(sanitized, "reasonCode", event.reasonCode);
+  setEventNumber(sanitized, "upstreamStatus", event.upstreamStatus);
+
+  return sanitized;
 }
 
 function emitGatewayEvent(config: GatewayConfig, event: Omit<GatewayEvent, "id" | "timestamp">): void {

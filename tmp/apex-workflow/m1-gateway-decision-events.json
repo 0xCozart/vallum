@@ -62,5 +62,5 @@
   },
   "downshiftProof": "route-local because the slice is limited to the local policy gateway event contract, its smoke path, and docs; it does not touch live network calls, deployments, sponsor keys, private prototype files, or dashboard UI",
   "knownFailures": [],
-  "notes": "Adds sanitized structured decision events for reserve/execute allowed, rejected, and upstream-failed paths. Events intentionally omit API keys, bearer tokens, raw request bodies, transaction bytes, signatures, raw upstream error bodies, and unverified execute correlation IDs. String fields are bounded and control-character sanitized; undefined optional fields are omitted. Event sink synchronous throws and async rejections are isolated from request handling."
+  "notes": "Adds sanitized structured decision events for reserve/execute allowed, rejected, and upstream-failed paths. Events intentionally omit API keys, bearer tokens, raw request bodies, transaction bytes, signatures, raw upstream error bodies, and unverified execute correlation IDs. Event fields are runtime allowlisted; string fields are bounded and ASCII/C1 control-character sanitized; undefined optional fields are omitted. The string sanitizer is not a secret redactor for allowed metadata fields. Event sink synchronous throws and async rejections are isolated from request handling."
 }

@@ -1,6 +1,6 @@
 # Observability
 
-GasKit observability starts at the policy gateway boundary, where every sponsorship decision should be visible without exposing sponsor-wallet secrets, app API keys, bearer tokens, transaction bytes, or user signatures.
+GasKit observability starts at the policy gateway boundary, where sponsorship decisions should be visible through a minimal event schema that omits known secret-bearing fields such as app API keys, bearer tokens, transaction bytes, and user signatures.
 
 ## Local gateway decision events
 
@@ -14,11 +14,13 @@ const server = createGatewayServer({
   apps,
   upstreamBaseUrl,
   upstreamBearerToken,
-  eventSink: (event) => events.push(event),
+  eventSink: (event) => {
+    events.push(event);
+  },
 });
 ```
 
-The callback receives field-allowlisted structured events for reserve and execute paths. String fields are bounded and control-character sanitized before delivery.
+The callback receives field-allowlisted structured events for reserve and execute paths. String fields are bounded to 256 characters and ASCII/C1 control-character sanitized before delivery. This sanitizer is not a secret scanner or redactor: app IDs, wallet addresses, package IDs, function names, and verified correlation IDs remain sensitive operational metadata and should not be populated with secrets.
 
 Event fields include:
 
@@ -51,6 +53,8 @@ The event payload intentionally does not include:
 - raw upstream error bodies
 
 If the event sink throws or rejects, the gateway ignores that failure and continues request handling. Observability must not become a new sponsorship availability dependency in the local gateway path.
+
+Malformed JSON, non-object JSON bodies, and oversized payloads are rejected before sponsorship policy evaluation. Those gateway-level parse failures are intentionally outside the decision-event contract in this local slice; a future abuse-monitoring slice can add separate request-error telemetry without including raw bodies.
 
 ## Current verification
 

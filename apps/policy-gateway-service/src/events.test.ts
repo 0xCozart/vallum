@@ -309,6 +309,21 @@ test("gateway omits unverified execute ids from rejection events", async () => {
   assert.equal(serialized.includes("SENSITIVE_RESERVATION_ID"), false);
 });
 
+test("gateway sanitizes control characters, C1 controls, and long event metadata strings", async () => {
+  const fixture = await startGateway();
+  after(() => fixture.close());
+  const client = createGasKitClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+  const walletAddress = `0xWALLET\u0000\u001f\u007f\u0085${"x".repeat(300)}`;
+
+  await client.reserveGas({ gasBudget: 1, walletAddress, packageId: "0xDEMO_PACKAGE", functionName: "mint_badge" });
+
+  assert.equal(fixture.events[0]?.walletAddress?.length, 256);
+  assert.equal(fixture.events[0]?.walletAddress?.includes("\u0000"), false);
+  assert.equal(fixture.events[0]?.walletAddress?.includes("\u001f"), false);
+  assert.equal(fixture.events[0]?.walletAddress?.includes("\u007f"), false);
+  assert.equal(fixture.events[0]?.walletAddress?.includes("\u0085"), false);
+});
+
 test("gateway omits undefined optional event fields", async () => {
   const fixture = await startGateway();
   after(() => fixture.close());
