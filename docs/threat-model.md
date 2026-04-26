@@ -46,7 +46,7 @@ Mitigations:
 
 - validate metadata against transaction contents where feasible;
 - require backend integration for trusted app metadata;
-- log all decisions;
+- log all decisions with sanitized structured events;
 - fail closed when policy state is unavailable.
 
 ### Redis exposure

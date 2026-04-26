@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "app": "iota-gaskit",
+  "issue": "none",
+  "mode": "route-local",
+  "surface": "policy gateway decision events",
+  "contracts": [
+    "AGENTS.md",
+    "apex.workflow.json",
+    "docs/architecture.md",
+    "docs/product-requirements.md",
+    "docs/continuation-brief-2026-04-26.md",
+    "apps/policy-gateway-service/src/server.ts",
+    "scripts/smoke-local-gateway.ts"
+  ],
+  "ownedFiles": [
+    "apps/policy-gateway-service/src/server.ts",
+    "apps/policy-gateway-service/src/events.test.ts",
+    "scripts/smoke-local-gateway.ts",
+    "docs/observability.md",
+    "docs/architecture.md",
+    "docs/threat-model.md",
+    "docs/production-hardening.md",
+    "README.md"
+  ],
+  "noTouch": [
+    "/mnt/d/CURSOR/gas_station private/prototype files",
+    "real IOTA network/testnet sponsor keys",
+    "deployments or Docker services",
+    "dashboard UI implementation",
+    ".env files and secrets",
+    "billing or Stripe surfaces"
+  ],
+  "codeIntelligence": {
+    "provider": "focused-search",
+    "impacts": [
+      "policy gateway HTTP service",
+      "local gateway smoke command",
+      "observability docs"
+    ],
+    "detect": null
+  },
+  "checks": {
+    "required": [
+      "node --import tsx --test apps/policy-gateway-service/src/events.test.ts",
+      "npm run smoke:local",
+      "npm test",
+      "npm run typecheck",
+      "npm run grant:check",
+      "git diff --check"
+    ],
+    "optional": [
+      "node /mnt/d/CURSOR/apex-workflow/scripts/apex-manifest.mjs detect --config=apex.workflow.json --file=tmp/apex-workflow/m1-gateway-decision-events.json"
+    ],
+    "browser": "skip: local gateway observability slice; no browser UI behavior changed",
+    "typecheck": "required: npm run typecheck"
+  },
+  "tracker": {
+    "provider": "none",
+    "disposition": "none",
+    "id": null
+  },
+  "downshiftProof": "route-local because the slice is limited to the local policy gateway event contract, its smoke path, and docs; it does not touch live network calls, deployments, sponsor keys, private prototype files, or dashboard UI",
+  "knownFailures": [],
+  "notes": "Adds sanitized structured decision events for reserve/execute allowed, rejected, and upstream-failed paths. Events intentionally omit API keys, bearer tokens, raw request bodies, transaction bytes, signatures, raw upstream error bodies, and unverified execute correlation IDs. String fields are bounded and control-character sanitized; undefined optional fields are omitted. Event sink synchronous throws and async rejections are isolated from request handling."
+}

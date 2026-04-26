@@ -23,7 +23,7 @@ Production teams still need the surrounding operator and developer layer:
 - package/function allowlists;
 - wallet request limits and denylists;
 - structured policy rejection reasons;
-- request, execution, and spend visibility;
+- request, execution, and spend visibility through sanitized gateway decision events;
 - SDK helpers and backend integration examples;
 - dashboard views for app keys, usage, health, and errors;
 - sponsor-wallet, Redis, reverse-proxy, and KMS hardening guidance;
@@ -45,6 +45,7 @@ The clean grant repo itself now includes:
 - policy gateway decision engine scaffold with tests;
 - TypeScript SDK scaffold with tests;
 - demo app local integration scaffold and backend example scaffolds;
+- sanitized policy gateway decision events for local observability;
 - safe Gas Station config template;
 - policy YAML example;
 - architecture diagram and architecture docs;
@@ -114,6 +115,7 @@ docs/
   grant-scope.md
   milestone-0-proof.md
   reviewer-walkthrough.md
+  observability.md
   policy.md
   production-hardening.md
   quickstart.md
@@ -209,6 +211,7 @@ See:
 - `SECURITY.md`
 - `docs/threat-model.md`
 - `docs/production-hardening.md`
+- `docs/observability.md`
 - `docs/security/sponsor-wallet.md`
 - `docs/security/secrets.md`
 - `docs/testnet-readiness.md`

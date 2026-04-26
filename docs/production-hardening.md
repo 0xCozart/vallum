@@ -24,6 +24,8 @@
 
 ## Monitoring
 
+The local policy gateway exposes an optional sanitized decision-event sink for reserve/execute approvals, policy/auth rejections, and upstream failures. Route these events to your chosen log/metrics/usage store without adding app API keys, bearer tokens, sponsor keys, transaction bytes, user signatures, or raw request bodies.
+
 Alert on:
 
 - high failed execution rate;

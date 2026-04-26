@@ -9,11 +9,32 @@ export interface GatewayAppConfig {
   policy: SponsorshipPolicy;
 }
 
+export type GatewayOperation = "reserve" | "execute";
+export type GatewayEventOutcome = "allowed" | "rejected" | "upstream_failed";
+
+export interface GatewayEvent {
+  id: string;
+  timestamp: string;
+  operation: GatewayOperation;
+  outcome: GatewayEventOutcome;
+  httpStatus: number;
+  appId?: string;
+  walletAddress?: string;
+  packageId?: string;
+  functionName?: string;
+  gasBudget?: number;
+  gasKitTransactionId?: string;
+  upstreamReservationId?: string;
+  reasonCode?: PolicyReasonCode;
+  upstreamStatus?: number;
+}
+
 export interface GatewayConfig {
   apps: Record<string, GatewayAppConfig>;
   upstreamBaseUrl?: string;
   upstreamBearerToken?: string;
   fetchImpl?: typeof fetch;
+  eventSink?: (event: GatewayEvent) => void | Promise<void>;
 }
 
 type JsonRecord = Record<string, unknown>;
@@ -168,6 +189,59 @@ function rejectDecision(response: ServerResponse, decision: Exclude<PolicyDecisi
   writeJson(response, httpStatusForDecision(decision), rejectionBody(decision.reasonCode, decision.message));
 }
 
+const EVENT_STRING_MAX_LENGTH = 256;
+
+function sanitizeEventString(value: string): string {
+  const withoutControlCharacters = value.replace(/[\u0000-\u001f\u007f]/g, "�");
+  return withoutControlCharacters.length > EVENT_STRING_MAX_LENGTH ? withoutControlCharacters.slice(0, EVENT_STRING_MAX_LENGTH) : withoutControlCharacters;
+}
+
+function hasThen(value: unknown): value is PromiseLike<unknown> {
+  return typeof value === "object" && value !== null && typeof (value as { then?: unknown }).then === "function";
+}
+
+function removeUndefined<T extends Record<string, unknown>>(record: T): T {
+  return Object.fromEntries(Object.entries(record).filter(([, value]) => value !== undefined)) as T;
+}
+
+function sanitizeGatewayEvent(event: Omit<GatewayEvent, "id" | "timestamp">): GatewayEvent {
+  const raw = removeUndefined({
+    id: randomUUID(),
+    timestamp: new Date().toISOString(),
+    ...event,
+  });
+  return Object.fromEntries(
+    Object.entries(raw).map(([key, value]) => [key, typeof value === "string" ? sanitizeEventString(value) : value]),
+  ) as unknown as GatewayEvent;
+}
+
+function emitGatewayEvent(config: GatewayConfig, event: Omit<GatewayEvent, "id" | "timestamp">): void {
+  if (!config.eventSink) return;
+  try {
+    const maybePromise = config.eventSink(sanitizeGatewayEvent(event));
+    if (hasThen(maybePromise)) {
+      maybePromise.then(undefined, () => undefined);
+    }
+  } catch {
+    // Event sinks are observational only; never fail sponsorship request handling.
+  }
+}
+
+function emitDecisionRejection(
+  config: GatewayConfig,
+  operation: GatewayOperation,
+  decision: Exclude<PolicyDecision, { allowed: true }>,
+  context: Partial<GatewayEvent> = {},
+): void {
+  emitGatewayEvent(config, {
+    operation,
+    outcome: "rejected",
+    httpStatus: httpStatusForDecision(decision),
+    reasonCode: decision.reasonCode,
+    ...context,
+  });
+}
+
 function missingAuthDecision(): Exclude<PolicyDecision, { allowed: true }> {
   return { allowed: false, reasonCode: "AUTH_MISSING", message: "A valid app API key is required." };
 }
@@ -253,9 +327,17 @@ export function createGatewayServer(config: GatewayConfig): Server {
 
   async function handleReserve(request: IncomingMessage, response: ServerResponse): Promise<void> {
     const apiKey = parseBearer(request.headers.authorization);
-    if (!apiKey) return rejectDecision(response, missingAuthDecision());
+    if (!apiKey) {
+      const decision = missingAuthDecision();
+      emitDecisionRejection(config, "reserve", decision);
+      return rejectDecision(response, decision);
+    }
     const appMatch = findAppByApiKey(config, apiKey);
-    if (!appMatch) return rejectDecision(response, invalidAuthDecision());
+    if (!appMatch) {
+      const decision = invalidAuthDecision();
+      emitDecisionRejection(config, "reserve", decision);
+      return rejectDecision(response, decision);
+    }
 
     const body = requestRecord(await readJson(request));
     const gasBudget = numberField(body, "gas_budget");
@@ -277,13 +359,25 @@ export function createGatewayServer(config: GatewayConfig): Server {
     };
 
     const decision = evaluateSponsorshipPolicy(appMatch.app.policy, requestContext);
-    if (decision.allowed === false) return rejectDecision(response, decision);
+    const eventContext = { appId, walletAddress, packageId, functionName, gasBudget };
+    if (decision.allowed === false) {
+      emitDecisionRejection(config, "reserve", decision, eventContext);
+      return rejectDecision(response, decision);
+    }
 
     const rollbackUsageCounters = applyUsageCounters(counters, appId, walletAddress, gasBudget);
     const upstream = await proxyJson(config, "/v1/reserve_gas", body);
     if (upstream.status < 200 || upstream.status >= 300) {
       rollbackUsageCounters();
       const normalized = normalizeUpstreamFailure("reserve", upstream.status);
+      emitGatewayEvent(config, {
+        operation: "reserve",
+        outcome: "upstream_failed",
+        httpStatus: normalized.status,
+        upstreamStatus: upstream.status,
+        reasonCode: "GAS_STATION_UNAVAILABLE",
+        ...eventContext,
+      });
       return writeJson(response, normalized.status, normalized.json);
     }
 
@@ -292,7 +386,16 @@ export function createGatewayServer(config: GatewayConfig): Server {
     const upstreamReservationId = stringField(result, "reservation_id");
     if (!upstreamReservationId) {
       rollbackUsageCounters();
-      return rejectDecision(response, unavailableDecision("Gas Station response did not include result.reservation_id."));
+      const decision = unavailableDecision("Gas Station response did not include result.reservation_id.");
+      emitGatewayEvent(config, {
+        operation: "reserve",
+        outcome: "upstream_failed",
+        httpStatus: httpStatusForDecision(decision),
+        upstreamStatus: upstream.status,
+        reasonCode: decision.reasonCode,
+        ...eventContext,
+      });
+      return rejectDecision(response, decision);
     }
 
     const gasKitTransactionId = `gaskit_${randomUUID()}`;
@@ -307,19 +410,43 @@ export function createGatewayServer(config: GatewayConfig): Server {
       status: "reserved",
     });
 
+    emitGatewayEvent(config, {
+      operation: "reserve",
+      outcome: "allowed",
+      httpStatus: 200,
+      gasKitTransactionId,
+      upstreamReservationId,
+      ...eventContext,
+    });
+
     writeJson(response, 200, { ...upstreamBody, _saas_tx_id: gasKitTransactionId, gasKitTransactionId });
   }
 
   async function handleExecute(request: IncomingMessage, response: ServerResponse): Promise<void> {
     const apiKey = parseBearer(request.headers.authorization);
-    if (!apiKey) return rejectDecision(response, missingAuthDecision());
+    if (!apiKey) {
+      const decision = missingAuthDecision();
+      emitDecisionRejection(config, "execute", decision);
+      return rejectDecision(response, decision);
+    }
     const appMatch = findAppByApiKey(config, apiKey);
-    if (!appMatch) return rejectDecision(response, invalidAuthDecision());
+    if (!appMatch) {
+      const decision = invalidAuthDecision();
+      emitDecisionRejection(config, "execute", decision);
+      return rejectDecision(response, decision);
+    }
 
     const body = requestRecord(await readJson(request));
     const legacyGasKitTransactionId = stringField(body, "_saas_tx_id");
     const publicGasKitTransactionId = stringField(body, "gasKitTransactionId");
     if (legacyGasKitTransactionId && publicGasKitTransactionId && legacyGasKitTransactionId !== publicGasKitTransactionId) {
+      emitGatewayEvent(config, {
+        operation: "execute",
+        outcome: "rejected",
+        httpStatus: 409,
+        appId: appMatch.appId,
+        reasonCode: "EXECUTION_FAILED",
+      });
       writeJson(response, 409, rejectionBody("EXECUTION_FAILED", "Conflicting GasKit transaction id aliases."));
       return;
     }
@@ -328,11 +455,35 @@ export function createGatewayServer(config: GatewayConfig): Server {
     const reservation = gasKitTransactionId ? reservations.get(gasKitTransactionId) : undefined;
 
     if (!reservation || reservation.appId !== appMatch.appId || reservation.upstreamReservationId !== reservationId) {
+      emitGatewayEvent(config, {
+        operation: "execute",
+        outcome: "rejected",
+        httpStatus: 409,
+        appId: appMatch.appId,
+        reasonCode: "EXECUTION_FAILED",
+      });
       writeJson(response, 409, rejectionBody("EXECUTION_FAILED", "Unknown or mismatched GasKit reservation."));
       return;
     }
 
+    const eventContext = {
+      appId: reservation.appId,
+      walletAddress: reservation.walletAddress,
+      packageId: reservation.packageId,
+      functionName: reservation.functionName,
+      gasBudget: reservation.gasBudget,
+      gasKitTransactionId,
+      upstreamReservationId: reservation.upstreamReservationId,
+    };
+
     if (reservation.status !== "reserved") {
+      emitGatewayEvent(config, {
+        operation: "execute",
+        outcome: "rejected",
+        httpStatus: 409,
+        reasonCode: "EXECUTION_FAILED",
+        ...eventContext,
+      });
       writeJson(response, 409, rejectionBody("EXECUTION_FAILED", "This GasKit reservation is not executable."));
       return;
     }
@@ -348,7 +499,10 @@ export function createGatewayServer(config: GatewayConfig): Server {
       walletRequestsToday: 0,
       appGasReservedToday: 0,
     });
-    if (decision.allowed === false) return rejectDecision(response, decision);
+    if (decision.allowed === false) {
+      emitDecisionRejection(config, "execute", decision, eventContext);
+      return rejectDecision(response, decision);
+    }
 
     const upstreamBody = { ...body };
     delete upstreamBody._saas_tx_id;
@@ -356,6 +510,12 @@ export function createGatewayServer(config: GatewayConfig): Server {
     const upstream = await proxyJson(config, "/v1/execute_tx", upstreamBody);
     if (upstream.status >= 200 && upstream.status < 300) {
       reservation.status = "executed";
+      emitGatewayEvent(config, {
+        operation: "execute",
+        outcome: "allowed",
+        httpStatus: upstream.status,
+        ...eventContext,
+      });
       writeJson(response, upstream.status, upstream.json);
       return;
     }
@@ -364,6 +524,14 @@ export function createGatewayServer(config: GatewayConfig): Server {
       reservation.status = "failed";
     }
     const normalized = normalizeUpstreamFailure("execute", upstream.status);
+    emitGatewayEvent(config, {
+      operation: "execute",
+      outcome: "upstream_failed",
+      httpStatus: normalized.status,
+      upstreamStatus: upstream.status,
+      reasonCode: "GAS_STATION_UNAVAILABLE",
+      ...eventContext,
+    });
     writeJson(response, normalized.status, normalized.json);
   }
 

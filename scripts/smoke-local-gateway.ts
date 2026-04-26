@@ -3,7 +3,7 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 
 import { createGasKitClient, GasKitAuthError, GasKitPolicyError } from "../packages/sdk/src/index.js";
 import { loadGatewayConfigFromEnv } from "../apps/policy-gateway-service/src/config.js";
-import { createGatewayServer } from "../apps/policy-gateway-service/src/server.js";
+import { createGatewayServer, type GatewayEvent } from "../apps/policy-gateway-service/src/server.js";
 
 interface ObservedRequest {
   method?: string;
@@ -78,6 +78,7 @@ async function main(): Promise<void> {
 
   try {
     const upstreamBaseUrl = await listen(upstream.server);
+    const events: GatewayEvent[] = [];
     const config = await loadGatewayConfigFromEnv({
       GASKIT_POLICY_PATH: "examples/policies/demo-dapp.yaml",
       GASKIT_DEMO_APP_KEY: "local-dev-demo-key",
@@ -85,7 +86,12 @@ async function main(): Promise<void> {
       GAS_STATION_BEARER_TOKEN: "local-smoke-token",
     });
 
-    gateway = createGatewayServer(config);
+    gateway = createGatewayServer({
+      ...config,
+      eventSink: (event) => {
+        events.push(event);
+      },
+    });
     const gatewayBaseUrl = await listen(gateway);
     const client = createGasKitClient({ baseUrl: gatewayBaseUrl, apiKey: "local-dev-demo-key" });
 
@@ -164,6 +170,23 @@ async function main(): Promise<void> {
       user_sig: "smoke-signature",
     });
     console.log("ok: execute proxies through SDK");
+
+    assert.deepEqual(
+      events.map((event) => [event.operation, event.outcome, event.httpStatus, event.reasonCode]),
+      [
+        ["reserve", "rejected", 401, "AUTH_MISSING"],
+        ["reserve", "rejected", 403, "AUTH_INVALID"],
+        ["reserve", "rejected", 400, "PACKAGE_NOT_ALLOWED"],
+        ["reserve", "rejected", 400, "FUNCTION_NOT_ALLOWED"],
+        ["reserve", "allowed", 200, undefined],
+        ["execute", "allowed", 200, undefined],
+      ],
+    );
+    const eventOutput = JSON.stringify(events);
+    assert.equal(eventOutput.includes("local-dev-demo-key"), false);
+    assert.equal(eventOutput.includes("local-smoke-token"), false);
+    assert.equal(eventOutput.includes("smoke-signature"), false);
+    console.log("ok: structured gateway events are sanitized");
 
     console.log("IOTA GasKit local gateway smoke passed");
   } finally {
