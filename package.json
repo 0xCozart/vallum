@@ -14,9 +14,10 @@
     "test": "npm run build && node --import tsx --test packages/*/src/*.test.ts apps/*/src/*.test.ts",
     "typecheck": "npm run build && tsc --noEmit",
     "smoke:local": "tsx scripts/smoke-local-gateway.ts",
-    "smoke:demo-dapp": "tsx scripts/smoke-demo-dapp-local.ts",
+    "smoke:demo-dapp": "npm run build && tsx scripts/smoke-demo-dapp-local.ts",
+    "smoke:demo-browser": "npm run build && tsx scripts/smoke-demo-dapp-browser.ts",
     "pack:check": "npm run build && npm pack --dry-run -w @iota-gaskit/shared-types -w @iota-gaskit/policy-gateway -w @iota-gaskit/sdk",
-    "grant:check": "npm test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp && npm run pack:check"
+    "grant:check": "npm test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp && npm run smoke:demo-browser && npm run pack:check"
   },
   "devDependencies": {
     "@types/node": "^20.17.0",

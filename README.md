@@ -66,6 +66,7 @@ Latest local verification:
 - `npm run typecheck`: passed locally.
 - `npm run smoke:local`: deterministic local gateway smoke passed locally.
 - `npm run smoke:demo-dapp`: deterministic local demo dApp smoke passed locally.
+- `npm run smoke:demo-browser`: deterministic local browser-wrapper smoke passed locally.
 - `npm run pack:check`: workspace package dry-runs completed locally.
 - secret-oriented scan over non-ignored project files: 0 obvious private-key/API-token matches.
 - public repo scaffold committed and pushed.
@@ -92,7 +93,7 @@ flowchart LR
 
 ```txt
 apps/
-  demo-dapp/              # Minimal grant-demo dApp scaffold
+  demo-dapp/              # Minimal grant-demo dApp local CLI/browser wrapper
   policy-gateway-service/ # Runnable local policy gateway smoke service
 packages/
   sdk/                    # TypeScript SDK scaffold

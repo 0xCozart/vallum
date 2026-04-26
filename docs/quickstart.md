@@ -12,6 +12,7 @@ npm test
 npm run typecheck
 npm run smoke:local
 npm run smoke:demo-dapp
+npm run smoke:demo-browser
 ```
 
 ## Local policy gateway smoke path
@@ -119,19 +120,21 @@ The smoke covers health, missing auth, invalid auth, package/function allowlist 
 
 ### 7. Run the demo dApp against the local gateway path
 
-The demo dApp has a local-only CLI flow that uses the public SDK against the policy gateway. The root smoke command starts a mock upstream plus gateway, then runs the demo flow end to end:
+The demo dApp has a local-only CLI flow and a minimal browser-wrapper flow that use the public SDK against the policy gateway. The root smoke commands start a mock upstream plus gateway, then run the demo flow end to end:
 
 ```bash
 npm run smoke:demo-dapp
+npm run smoke:demo-browser
 ```
 
-Expected output ends with:
+Expected output ends with one of:
 
 ```text
 IOTA GasKit demo dApp local flow passed
+IOTA GasKit demo dApp browser smoke passed
 ```
 
-If you already have a local gateway running, you can point the demo dApp at it:
+If you already have a local gateway running, you can point the CLI demo dApp at it:
 
 ```bash
 GASKIT_GATEWAY_URL=http://127.0.0.1:8787 \
@@ -139,7 +142,17 @@ GASKIT_DEMO_APP_KEY=local-dev-demo-key \
 npm run dev -w @iota-gaskit/demo-dapp
 ```
 
-The demo dApp smoke uses placeholder transaction bytes/signatures and does not require Docker, sponsor keys, testnet funds, or real network calls.
+Or start the browser wrapper locally:
+
+```bash
+GASKIT_GATEWAY_URL=http://127.0.0.1:8787 \
+GASKIT_DEMO_APP_KEY=local-dev-demo-key \
+npm run browser -w @iota-gaskit/demo-dapp
+```
+
+Then open `http://127.0.0.1:8788`. The browser wrapper binds to loopback hosts only and calls a same-origin local backend endpoint so the app key stays server-side; it is not embedded into browser HTML or JavaScript.
+
+The demo dApp smoke paths use placeholder transaction bytes/signatures and do not require Docker, sponsor keys, testnet funds, or real network calls.
 
 ### 8. Proxy an allowed reserve request manually
 

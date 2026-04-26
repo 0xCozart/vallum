@@ -26,9 +26,25 @@ Expected output ends with:
 IOTA GasKit demo dApp local flow passed
 ```
 
+## Minimal browser wrapper
+
+The browser wrapper is a small loopback-only HTTP server that serves a page plus a same-origin `/api/run-demo` endpoint. The browser never receives the app key; the local server keeps `GASKIT_DEMO_APP_KEY` server-side and returns sanitized success/error JSON. Cross-origin POST attempts and non-empty request bodies are rejected before any gateway call.
+
+Run the browser-wrapper smoke from the repo root:
+
+```bash
+npm run smoke:demo-browser
+```
+
+Expected output ends with:
+
+```text
+IOTA GasKit demo dApp browser smoke passed
+```
+
 ## Running against an already-started local gateway
 
-If you have started the policy gateway yourself, run:
+If you have started the policy gateway yourself, run the CLI flow:
 
 ```bash
 GASKIT_GATEWAY_URL=http://127.0.0.1:8787 \
@@ -36,8 +52,18 @@ GASKIT_DEMO_APP_KEY=local-dev-demo-key \
 npm run dev -w @iota-gaskit/demo-dapp
 ```
 
+Or start the browser wrapper:
+
+```bash
+GASKIT_GATEWAY_URL=http://127.0.0.1:8787 \
+GASKIT_DEMO_APP_KEY=local-dev-demo-key \
+npm run browser -w @iota-gaskit/demo-dapp
+```
+
+Then open `http://127.0.0.1:8788`.
+
 The default values are for local development only. Do not commit real API keys, bearer tokens, sponsor keys, transaction signatures, or `.env` files.
 
 ## Scope boundary
 
-This is not yet a browser UI and does not submit a real testnet transaction. It is the safe local integration bridge between the SDK, policy gateway, and demo dApp before the later real IOTA transaction slice.
+This is not yet a production browser dApp and does not submit a real testnet transaction. It is the safe local integration bridge between the SDK, policy gateway, browser wrapper, and demo dApp before the later real IOTA transaction slice.

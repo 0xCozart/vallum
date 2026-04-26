@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "app": "iota-gaskit",
+  "issue": "none",
+  "mode": "route-local",
+  "surface": "demo dApp browser wrapper",
+  "contracts": [
+    "AGENTS.md",
+    "apex.workflow.json",
+    "docs/quickstart.md",
+    "apps/demo-dapp/README.md",
+    "apps/demo-dapp/package.json",
+    "apps/demo-dapp/src/local-flow.ts",
+    "packages/sdk/src/client.ts",
+    "apps/policy-gateway-service/src/server.ts",
+    "examples/policies/demo-dapp.yaml"
+  ],
+  "ownedFiles": [
+    "apps/demo-dapp/package.json",
+    "apps/demo-dapp/README.md",
+    "apps/demo-dapp/src/browser.ts",
+    "apps/demo-dapp/src/browser.test.ts",
+    "scripts/smoke-demo-dapp-browser.ts",
+    "package.json",
+    "tsconfig.json",
+    "docs/quickstart.md",
+    "README.md"
+  ],
+  "noTouch": [
+    "/mnt/d/CURSOR/gas_station private/prototype files",
+    "real IOTA network/testnet sponsor keys",
+    "deployments or Docker services",
+    "dashboard production UI surfaces",
+    ".env files and secrets"
+  ],
+  "codeIntelligence": {
+    "provider": "focused-search",
+    "impacts": [
+      "apps/demo-dapp",
+      "scripts/smoke-demo-dapp-browser.ts",
+      "packages/sdk",
+      "apps/policy-gateway-service"
+    ],
+    "detect": null
+  },
+  "checks": {
+    "required": [
+      "node --import tsx --test apps/demo-dapp/src/browser.test.ts",
+      "npm run smoke:demo-browser",
+      "npm run smoke:demo-dapp",
+      "npm test",
+      "npm run typecheck",
+      "npm run grant:check",
+      "git diff --check"
+    ],
+    "optional": [
+      "node /mnt/d/CURSOR/apex-workflow/scripts/apex-manifest.mjs detect --config=apex.workflow.json --file=tmp/apex-workflow/m1-demo-dapp-browser-wrapper.json"
+    ],
+    "browser": "functional-only via local HTTP page/API smoke; visual signoff is human per profile",
+    "typecheck": "required: npm run typecheck"
+  },
+  "tracker": {
+    "provider": "none",
+    "disposition": "none",
+    "id": null
+  },
+  "downshiftProof": "route-local because the slice stays within demo-dapp local wrapper files plus docs/package smoke wiring and reuses the existing SDK/gateway contracts; no real network, deployments, sponsor keys, Docker, or private prototype code are touched",
+  "knownFailures": [],
+  "notes": "Adds the minimal browser wrapper around the local demo flow. The browser page calls same-origin /api/run-demo; the app key and bearer token stay server-side and smoke tests assert they are not emitted in HTML or API JSON. Cross-origin POSTs and non-empty request bodies are rejected before gateway calls. Also fixes direct demo smoke commands to build required workspaces first when dist artifacts are absent, and includes scripts in root typecheck coverage."
+}

@@ -5,8 +5,9 @@
   "type": "module",
   "license": "Apache-2.0",
   "scripts": {
-    "dev": "tsx src/local-demo.ts",
-    "smoke:local": "tsx src/local-demo.ts"
+    "dev": "npm run build -w @iota-gaskit/sdk && tsx src/local-demo.ts",
+    "browser": "npm run build -w @iota-gaskit/sdk && tsx src/browser.ts",
+    "smoke:local": "npm run build -w @iota-gaskit/sdk && tsx src/local-demo.ts"
   },
   "dependencies": {
     "@iota-gaskit/sdk": "file:../../packages/sdk"
