@@ -135,6 +135,26 @@ async function main(): Promise<void> {
     assert.equal(upstream.requests.length, 0);
     console.log("ok: function policy rejection does not call upstream");
 
+    const simulatedAllowed = await fetch(`${gatewayBaseUrl}/v1/policy/simulate`, {
+      method: "POST",
+      headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
+      body: JSON.stringify({ gas_budget: 1, wallet_address: "0xSMOKE_WALLET", package_id: "0xYOUR_DEMO_PACKAGE_ID", function_name: "mint_badge" }),
+    });
+    assert.equal(simulatedAllowed.status, 200);
+    assert.deepEqual(await simulatedAllowed.json(), { allowed: true });
+    const simulatedRejected = await fetch(`${gatewayBaseUrl}/v1/policy/simulate`, {
+      method: "POST",
+      headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
+      body: JSON.stringify({ gas_budget: 1, wallet_address: "0xSMOKE_WALLET", package_id: "0xNOT_ALLOWED", function_name: "mint_badge" }),
+    });
+    const simulatedRejectedBody = await simulatedRejected.json();
+    assert.equal(simulatedRejected.status, 200);
+    assert.equal(simulatedRejectedBody.allowed, false);
+    assert.equal(simulatedRejectedBody.reasonCode, "PACKAGE_NOT_ALLOWED");
+    assert.equal(upstream.requests.length, 0);
+    assert.equal(events.length, 4);
+    console.log("ok: policy simulation evaluates locally without upstream calls");
+
     const reservation = await client.reserveGas({
       gasBudget: 1,
       walletAddress: "0xSMOKE_WALLET",

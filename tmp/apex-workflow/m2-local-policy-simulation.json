@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "app": "iota-gaskit",
+  "issue": "none",
+  "mode": "route-local",
+  "surface": "M2 local policy simulation endpoint",
+  "contracts": [
+    "AGENTS.md",
+    "apex.workflow.json",
+    "docs/product-requirements.md",
+    "docs/continuation-brief-2026-04-26.md",
+    "docs/policy.md",
+    "docs/quickstart.md",
+    "apps/policy-gateway-service/src/server.ts"
+  ],
+  "ownedFiles": [
+    "apps/policy-gateway-service/src/server.ts",
+    "apps/policy-gateway-service/src/server.test.ts",
+    "scripts/smoke-local-gateway.ts",
+    "docs/policy.md",
+    "docs/quickstart.md",
+    "docs/testnet-readiness.md",
+    "README.md",
+    "tmp/apex-workflow/m2-local-policy-simulation.json"
+  ],
+  "noTouch": [
+    "/mnt/d/CURSOR/gas_station private/prototype files",
+    "real IOTA network/testnet sponsor keys",
+    "deployments or Docker services",
+    "durable production storage",
+    "dashboard UI or operator HTTP usage endpoint",
+    "SDK public API changes"
+  ],
+  "codeIntelligence": {
+    "provider": "focused-search",
+    "impacts": [
+      "apps/policy-gateway-service/src/server.ts",
+      "apps/policy-gateway-service/src/server.test.ts",
+      "scripts/smoke-local-gateway.ts",
+      "docs/policy.md",
+      "docs/quickstart.md"
+    ],
+    "detect": null
+  },
+  "checks": {
+    "required": [
+      "node --import tsx --test apps/policy-gateway-service/src/server.test.ts",
+      "npm run smoke:local",
+      "npm test",
+      "npm run typecheck",
+      "npm run grant:check",
+      "git diff --check"
+    ],
+    "optional": [
+      "node /mnt/d/CURSOR/apex-workflow/scripts/apex-manifest.mjs detect --config=apex.workflow.json --file=tmp/apex-workflow/m2-local-policy-simulation.json"
+    ],
+    "browser": "skip: local policy gateway API endpoint only; no browser UI changes in scope",
+    "typecheck": "required: npm run typecheck"
+  },
+  "tracker": {
+    "provider": "none",
+    "disposition": "none",
+    "id": null
+  },
+  "downshiftProof": "route-local because the slice adds one local policy gateway endpoint plus focused tests/docs/smoke assertions; it does not add real network calls, Docker, sponsor keys, durable storage, dashboard UI, or SDK public API changes",
+  "knownFailures": [
+    "Policy simulation tests first failed with 404 NotFound before the endpoint was implemented; expected TDD red state."
+  ],
+  "notes": "Adds POST /v1/policy/simulate as an authenticated local-only preflight that evaluates the existing policy engine against current in-memory counters without proxying to IOTA Gas Station, creating reservations, mutating quota counters, or emitting reserve/execute decision events."
+}

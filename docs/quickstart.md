@@ -103,7 +103,21 @@ curl -i \
 
 Expected result: HTTP 400 with reason code `PACKAGE_NOT_ALLOWED`.
 
-### 6. Run the one-command local smoke
+### 6. Simulate policy locally before reserve
+
+Use the simulation endpoint to preflight policy decisions without touching IOTA Gas Station, creating reservations, mutating quota counters, or emitting reserve/execute events:
+
+```bash
+curl -i \
+  -X POST http://127.0.0.1:8787/v1/policy/simulate \
+  -H 'authorization: Bearer local-...key' \
+  -H 'content-type: application/json' \
+  -d '{"gas_budget":1,"wallet_address":"0xWALLET","package_id":"0xYOUR_DEMO_PACKAGE_ID","function_name":"mint_badge"}'
+```
+
+Expected allowed result: HTTP 200 with `{ "allowed": true }`. Policy rejections also return HTTP 200 as decision data, for example `{"allowed":false,"reasonCode":"PACKAGE_NOT_ALLOWED",...}`. Missing or invalid app credentials still return auth failures.
+
+### 7. Run the one-command local smoke
 
 The smoke command starts an in-process mock Gas Station upstream plus the policy gateway on loopback-only dynamic ports. It exercises the public SDK path without Docker, testnet funds, sponsor keys, or real network calls:
 
@@ -117,9 +131,9 @@ Expected output ends with:
 IOTA GasKit local gateway smoke passed
 ```
 
-The smoke covers health, missing auth, invalid auth, package/function allowlist rejection, allowed reserve proxying, and execute proxying.
+The smoke covers health, missing auth, invalid auth, local policy simulation, package/function allowlist rejection, allowed reserve proxying, and execute proxying.
 
-### 7. Run the demo dApp against the local gateway path
+### 8. Run the demo dApp against the local gateway path
 
 The demo dApp has a local-only CLI flow and a minimal browser-wrapper flow that use the public SDK against the policy gateway. The root smoke commands start a mock upstream plus gateway, then run the demo flow end to end:
 
@@ -155,7 +169,7 @@ Then open `http://127.0.0.1:8788`. The browser wrapper binds to loopback hosts o
 
 The demo dApp smoke paths use placeholder transaction bytes/signatures and do not require Docker, sponsor keys, testnet funds, or real network calls.
 
-### 8. Run the local testnet-readiness preflight
+### 9. Run the local testnet-readiness preflight
 
 Before replacing the local/mock upstream with real testnet sponsor credentials, run the local-only readiness checks:
 
@@ -173,7 +187,7 @@ npm run readiness:testnet
 
 The preflight does not contact IOTA RPC, a Gas Station upstream, Docker, Redis, or any hosted service. It only validates local config shape, fails closed on placeholders/local demo defaults, loads the policy config, checks a non-empty package allowlist, and keeps secret values out of output. See `docs/testnet-readiness.md`.
 
-### 9. Proxy an allowed reserve request manually
+### 10. Proxy an allowed reserve request manually
 
 If you are running a local IOTA Gas Station upstream at `GAS_STATION_URL`, call:
 

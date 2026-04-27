@@ -496,6 +496,117 @@ test("execute keeps a reservation retryable after a transient upstream failure",
   assert.equal(executeCalls, 2);
 });
 
+test("policy simulation evaluates policy without proxying upstream or emitting gateway events", async () => {
+  const events: unknown[] = [];
+  const fixture = await startGateway({
+    eventSink: (event) => {
+      events.push(event);
+    },
+  });
+  after(() => fixture.close());
+
+  const response = await fetch(`${fixture.gatewayBaseUrl}/v1/policy/simulate`, {
+    method: "POST",
+    headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
+    body: JSON.stringify({ gas_budget: 1, wallet_address: "0xWALLET", package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" }),
+  });
+  const body = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(body, { allowed: true });
+  assert.equal(fixture.upstream.requests.length, 0);
+  assert.deepEqual(events, []);
+});
+
+test("policy simulation returns rejection decisions as safe response data", async () => {
+  const fixture = await startGateway();
+  after(() => fixture.close());
+
+  const response = await fetch(`${fixture.gatewayBaseUrl}/v1/policy/simulate`, {
+    method: "POST",
+    headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
+    body: JSON.stringify({ gas_budget: 1, wallet_address: "0xWALLET", package_id: "0xNOT_ALLOWED", function_name: "mint_badge" }),
+  });
+  const body = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(body.allowed, false);
+  assert.equal(body.reasonCode, "PACKAGE_NOT_ALLOWED");
+  assert.equal(typeof body.message, "string");
+  assert.equal(fixture.upstream.requests.length, 0);
+});
+
+test("policy simulation requires valid app credentials and JSON object bodies", async () => {
+  const fixture = await startGateway();
+  after(() => fixture.close());
+
+  const missingAuth = await fetch(`${fixture.gatewayBaseUrl}/v1/policy/simulate`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ gas_budget: 1, package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" }),
+  });
+  const missingAuthBody = await missingAuth.json();
+  assert.equal(missingAuth.status, 401);
+  assert.equal(missingAuthBody.reasonCode, "AUTH_MISSING");
+
+  const invalidAuth = await fetch(`${fixture.gatewayBaseUrl}/v1/policy/simulate`, {
+    method: "POST",
+    headers: { authorization: "Bearer wrong-key", "content-type": "application/json" },
+    body: JSON.stringify({ gas_budget: 1, package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" }),
+  });
+  const invalidAuthBody = await invalidAuth.json();
+  assert.equal(invalidAuth.status, 403);
+  assert.equal(invalidAuthBody.reasonCode, "AUTH_INVALID");
+
+  const arrayBody = await fetch(`${fixture.gatewayBaseUrl}/v1/policy/simulate`, {
+    method: "POST",
+    headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
+    body: JSON.stringify([]),
+  });
+  const arrayBodyJson = await arrayBody.json();
+  assert.equal(arrayBody.status, 400);
+  assert.equal(arrayBodyJson.error, "BadRequest");
+  assert.equal(fixture.upstream.requests.length, 0);
+});
+
+test("policy simulation reads current quota counters without mutating them", async () => {
+  const oneUsePolicy = { ...demoPolicy, dailyRequestLimit: 1 };
+  const fixture = await startGateway({
+    apps: {
+      "demo-dapp": {
+        apiKey: "local-dev-demo-key",
+        policy: oneUsePolicy,
+      },
+    },
+  });
+  after(() => fixture.close());
+
+  const simulateBeforeReserve = await fetch(`${fixture.gatewayBaseUrl}/v1/policy/simulate`, {
+    method: "POST",
+    headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
+    body: JSON.stringify({ gas_budget: 1, wallet_address: "0xWALLET", package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" }),
+  });
+  assert.deepEqual(await simulateBeforeReserve.json(), { allowed: true });
+
+  const reserve = await fetch(`${fixture.gatewayBaseUrl}/v1/reserve_gas`, {
+    method: "POST",
+    headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
+    body: JSON.stringify({ gas_budget: 1, wallet_address: "0xWALLET", package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" }),
+  });
+  assert.equal(reserve.status, 200);
+
+  const simulateAfterReserve = await fetch(`${fixture.gatewayBaseUrl}/v1/policy/simulate`, {
+    method: "POST",
+    headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
+    body: JSON.stringify({ gas_budget: 1, wallet_address: "0xWALLET", package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" }),
+  });
+  const simulateAfterReserveBody = await simulateAfterReserve.json();
+  assert.equal(simulateAfterReserve.status, 200);
+  assert.equal(simulateAfterReserveBody.allowed, false);
+  assert.equal(simulateAfterReserveBody.reasonCode, "APP_DAILY_REQUEST_LIMIT_EXCEEDED");
+  assert.equal(fixture.upstream.requests.length, 1);
+});
+
 test("createGatewayServer rejects duplicate app API keys", () => {
   assert.throws(
     () =>

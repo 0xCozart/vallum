@@ -302,6 +302,25 @@ function applyUsageCounters(counters: UsageCounters, appId: string, walletAddres
   };
 }
 
+function policyContextFromBody(appId: string, counters: UsageCounters, body: JsonRecord): SponsorshipRequestContext {
+  const gasBudget = numberField(body, "gas_budget");
+  const walletAddress = stringField(body, "wallet_address");
+  const packageId = stringField(body, "package_id");
+  const functionName = stringField(body, "function_name");
+
+  return {
+    appId,
+    authenticated: true,
+    walletAddress,
+    packageId,
+    functionName,
+    gasBudget,
+    appRequestsToday: counters.appRequests.get(appId) ?? 0,
+    walletRequestsToday: counters.walletRequests.get(walletKey(appId, walletAddress)) ?? 0,
+    appGasReservedToday: counters.appGasReserved.get(appId) ?? 0,
+  };
+}
+
 async function proxyJson(
   config: GatewayConfig,
   path: string,
@@ -344,6 +363,21 @@ export function createGatewayServer(config: GatewayConfig): Server {
     });
   }
 
+  async function handlePolicySimulate(request: IncomingMessage, response: ServerResponse): Promise<void> {
+    const apiKey = parseBearer(request.headers.authorization);
+    if (!apiKey) {
+      return rejectDecision(response, missingAuthDecision());
+    }
+    const appMatch = findAppByApiKey(config, apiKey);
+    if (!appMatch) {
+      return rejectDecision(response, invalidAuthDecision());
+    }
+
+    const body = requestRecord(await readJson(request));
+    const decision = evaluateSponsorshipPolicy(appMatch.app.policy, policyContextFromBody(appMatch.appId, counters, body));
+    writeJson(response, 200, decision);
+  }
+
   async function handleReserve(request: IncomingMessage, response: ServerResponse): Promise<void> {
     const apiKey = parseBearer(request.headers.authorization);
     if (!apiKey) {
@@ -359,23 +393,9 @@ export function createGatewayServer(config: GatewayConfig): Server {
     }
 
     const body = requestRecord(await readJson(request));
-    const gasBudget = numberField(body, "gas_budget");
-    const walletAddress = stringField(body, "wallet_address");
-    const packageId = stringField(body, "package_id");
-    const functionName = stringField(body, "function_name");
     const appId = appMatch.appId;
-
-    const requestContext: SponsorshipRequestContext = {
-      appId,
-      authenticated: true,
-      walletAddress,
-      packageId,
-      functionName,
-      gasBudget,
-      appRequestsToday: counters.appRequests.get(appId) ?? 0,
-      walletRequestsToday: counters.walletRequests.get(walletKey(appId, walletAddress)) ?? 0,
-      appGasReservedToday: counters.appGasReserved.get(appId) ?? 0,
-    };
+    const requestContext = policyContextFromBody(appId, counters, body);
+    const { gasBudget, walletAddress, packageId, functionName } = requestContext;
 
     const decision = evaluateSponsorshipPolicy(appMatch.app.policy, requestContext);
     const eventContext = { appId, walletAddress, packageId, functionName, gasBudget };
@@ -558,6 +578,7 @@ export function createGatewayServer(config: GatewayConfig): Server {
     void (async () => {
       try {
         if (request.method === "GET" && request.url === "/health") return await handleHealth(response);
+        if (request.method === "POST" && request.url === "/v1/policy/simulate") return await handlePolicySimulate(request, response);
         if (request.method === "POST" && request.url === "/v1/reserve_gas") return await handleReserve(request, response);
         if (request.method === "POST" && request.url === "/v1/execute_tx") return await handleExecute(request, response);
         writeJson(response, 404, { error: "NotFound", message: "Route not found." });

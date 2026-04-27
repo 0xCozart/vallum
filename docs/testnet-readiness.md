@@ -80,4 +80,4 @@ This preflight is intentionally local-only. Passing it does not prove:
 - a package/function can execute on-chain;
 - production deployment hardening is complete.
 
-Those checks belong to later live/testnet slices with explicit operator approval and secret handling.
+Those checks belong to later live/testnet slices with explicit operator approval and secret handling. After the offline env preflight passes, use `POST /v1/policy/simulate` against the local gateway as a no-upstream policy preflight before attempting a real reserve/execute path.

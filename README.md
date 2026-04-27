@@ -42,7 +42,7 @@ The clean grant repo itself now includes:
 - issue and pull request templates;
 - grant scope and managed-service separation docs;
 - policy reason-code/shared type scaffold;
-- policy gateway decision engine scaffold with tests;
+- policy gateway decision engine scaffold with tests and a local policy simulation endpoint;
 - TypeScript SDK scaffold with tests;
 - demo app local integration scaffold and backend example scaffolds;
 - sanitized policy gateway decision events and an in-memory local usage read model for observability;
@@ -65,7 +65,7 @@ Latest local verification:
 
 - `npm test`: policy gateway and SDK tests passed locally.
 - `npm run typecheck`: passed locally.
-- `npm run smoke:local`: deterministic local gateway smoke passed locally, including sanitized event and local usage read-model checks.
+- `npm run smoke:local`: deterministic local gateway smoke passed locally, including policy simulation, sanitized event, and local usage read-model checks.
 - `npm run smoke:demo-dapp`: deterministic local demo dApp smoke passed locally.
 - `npm run smoke:demo-browser`: deterministic local browser-wrapper smoke passed locally.
 - `npm run readiness:testnet:example`: deterministic example testnet-readiness preflight passed locally.
