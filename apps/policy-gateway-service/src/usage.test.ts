@@ -72,6 +72,7 @@ test("usage read model aggregates gateway events by operation, outcome, app, wal
   assert.deepEqual(snapshot.totals.byReasonCode, {
     GAS_STATION_UNAVAILABLE: 1,
     PACKAGE_NOT_ALLOWED: 1,
+    unknown: 2,
   });
   assert.equal(snapshot.totals.events, 4);
   assert.equal(snapshot.totals.gasBudgetReserved, 50_000_000);
@@ -126,4 +127,51 @@ test("usage read model stores only allowlisted event fields", () => {
   assert.equal(snapshotOutput.includes("AAE="), false);
   assert.equal(snapshotOutput.includes("smoke-signature"), false);
   assert.equal(snapshotOutput.includes("raw-upstream-body"), false);
+});
+
+test("usage read model counts missing reasons under unknown", () => {
+  const usage = createGatewayUsageReadModel();
+
+  usage.record(event({ id: "allowed-reserve", operation: "reserve", outcome: "allowed" }));
+  usage.record(event({ id: "allowed-execute", operation: "execute", outcome: "allowed" }));
+  usage.record(event({ id: "rejected", operation: "reserve", outcome: "rejected", reasonCode: "AUTH_MISSING" }));
+
+  assert.deepEqual(usage.snapshot().totals.byReasonCode, {
+    AUTH_MISSING: 1,
+    unknown: 2,
+  });
+});
+
+test("usage read model allows disabling recent event retention", () => {
+  const usage = createGatewayUsageReadModel({ maxRecentEvents: 0 });
+
+  usage.record(event({ id: "one", operation: "reserve", outcome: "allowed", gasBudget: 1 }));
+  usage.record(event({ id: "two", operation: "execute", outcome: "allowed" }));
+
+  const snapshot = usage.snapshot();
+  assert.equal(snapshot.totals.events, 2);
+  assert.equal(snapshot.totals.gasBudgetReserved, 1);
+  assert.deepEqual(snapshot.recentEvents, []);
+});
+
+test("usage read model keeps literal unknown metadata separate from missing metadata", () => {
+  const usage = createGatewayUsageReadModel();
+
+  usage.record(event({ id: "missing-metadata" }));
+  usage.record(event({ id: "literal-unknown-metadata", appId: "unknown", walletAddress: "unknown" }));
+
+  const snapshot = usage.snapshot();
+  assert.equal(snapshot.byAppId.unknown?.events, 1);
+  assert.equal(snapshot.byAppId["literal:unknown"]?.events, 1);
+  assert.equal(snapshot.byWalletAddress.unknown?.events, 1);
+  assert.equal(snapshot.byWalletAddress["literal:unknown"]?.events, 1);
+});
+
+test("usage read model safely counts prototype-like reason codes", () => {
+  const usage = createGatewayUsageReadModel();
+
+  usage.record(event({ id: "prototype-reason", reasonCode: "__proto__" as GatewayEvent["reasonCode"] }));
+
+  assert.equal(usage.snapshot().totals.byReasonCode.__proto__, 1);
+  assert.equal(JSON.stringify(usage.snapshot()).includes("__proto__"), true);
 });

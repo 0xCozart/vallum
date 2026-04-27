@@ -76,9 +76,9 @@ const server = createGatewayServer({
 const snapshot = usage.snapshot();
 ```
 
-The snapshot includes total event counts by operation, outcome, reason code, app ID, and wallet address, plus a bounded `recentEvents` list. Missing app or wallet metadata is grouped under `unknown`. The read model also sums gas budget for allowed reserve events as a local usage signal.
+The snapshot includes total event counts by operation, outcome, reason code, app ID, and wallet address, plus a bounded `recentEvents` list. Missing app, wallet, or reason metadata is grouped under `unknown`; a literal app ID or wallet address of `unknown` is escaped to `literal:unknown` so real metadata does not collide with the missing-metadata bucket. Set `maxRecentEvents: 0` to keep aggregate counters while retaining no recent event payloads. The read model also sums gas budget for allowed reserve events as a local usage signal.
 
-The read model is intentionally not durable storage, an operator HTTP endpoint, or dashboard authentication. It is a pure local foundation for later usage-store, metrics, dashboard, or CSV-export slices. It copies only the allowlisted event fields and does not store extra fields if a caller passes a wider object.
+The read model is intentionally not durable storage, an operator HTTP endpoint, or dashboard authentication. It is a pure local foundation for later usage-store, metrics, dashboard, or CSV-export slices. It copies only the allowlisted event fields, does not store extra fields if a caller passes a wider object, and uses safe dynamic counters for reason-code-like strings.
 
 ## Current verification
 

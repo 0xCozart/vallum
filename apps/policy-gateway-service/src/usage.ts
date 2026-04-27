@@ -1,6 +1,7 @@
 import type { GatewayEvent, GatewayEventOutcome, GatewayOperation } from "./server.js";
 
 const UNKNOWN_GROUP = "unknown";
+const LITERAL_UNKNOWN_GROUP = "literal:unknown";
 const DEFAULT_MAX_RECENT_EVENTS = 100;
 const OPERATIONS: GatewayOperation[] = ["reserve", "execute"];
 const OUTCOMES: GatewayEventOutcome[] = ["allowed", "rejected", "upstream_failed"];
@@ -47,12 +48,12 @@ function createGroup(): GatewayUsageGroupSnapshot {
     gasBudgetReserved: 0,
     byOperation: zeroOperationCounts(),
     byOutcome: zeroOutcomeCounts(),
-    byReasonCode: {},
+    byReasonCode: Object.create(null) as Record<string, number>,
   };
 }
 
 function normalizeMaxRecentEvents(value: number | undefined): number {
-  return typeof value === "number" && Number.isSafeInteger(value) && value > 0 ? value : DEFAULT_MAX_RECENT_EVENTS;
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0 ? value : DEFAULT_MAX_RECENT_EVENTS;
 }
 
 function cloneGroup(group: GatewayUsageGroupSnapshot): GatewayUsageGroupSnapshot {
@@ -78,9 +79,8 @@ function snapshotGroups(groups: Map<string, GatewayUsageGroupSnapshot>): Record<
 }
 
 function incrementReason(group: GatewayUsageGroupSnapshot, reasonCode: string | undefined): void {
-  if (reasonCode !== undefined) {
-    group.byReasonCode[reasonCode] = (group.byReasonCode[reasonCode] ?? 0) + 1;
-  }
+  const safeReasonCode = reasonCode ?? UNKNOWN_GROUP;
+  group.byReasonCode[safeReasonCode] = (group.byReasonCode[safeReasonCode] ?? 0) + 1;
 }
 
 function gasBudgetReserved(event: GatewayEvent): number {
@@ -101,8 +101,15 @@ function incrementGroup(group: GatewayUsageGroupSnapshot, event: GatewayEvent): 
   incrementReason(group, event.reasonCode);
 }
 
+function groupKey(key: string | undefined): string {
+  if (key === undefined) {
+    return UNKNOWN_GROUP;
+  }
+  return key === UNKNOWN_GROUP ? LITERAL_UNKNOWN_GROUP : key;
+}
+
 function groupFor(groups: Map<string, GatewayUsageGroupSnapshot>, key: string | undefined): GatewayUsageGroupSnapshot {
-  const safeKey = key ?? UNKNOWN_GROUP;
+  const safeKey = groupKey(key);
   const existing = groups.get(safeKey);
   if (existing) {
     return existing;

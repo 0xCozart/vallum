@@ -199,6 +199,7 @@ async function main(): Promise<void> {
       AUTH_MISSING: 1,
       FUNCTION_NOT_ALLOWED: 1,
       PACKAGE_NOT_ALLOWED: 1,
+      unknown: 2,
     });
     assert.equal(usageSnapshot.byAppId["demo-dapp"]?.events, 4);
     assert.equal(usageSnapshot.byAppId.unknown?.events, 2);

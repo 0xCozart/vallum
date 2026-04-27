@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "app": "iota-gaskit",
+  "issue": "none",
+  "mode": "route-local",
+  "surface": "M4 local usage read model hardening",
+  "contracts": [
+    "AGENTS.md",
+    "apex.workflow.json",
+    "README.md",
+    "docs/observability.md",
+    "docs/architecture.md",
+    "apps/policy-gateway-service/src/server.ts",
+    "apps/policy-gateway-service/src/usage.ts"
+  ],
+  "ownedFiles": [
+    "apps/policy-gateway-service/src/usage.ts",
+    "apps/policy-gateway-service/src/usage.test.ts",
+    "scripts/smoke-local-gateway.ts",
+    "docs/observability.md",
+    "docs/architecture.md",
+    "tmp/apex-workflow/m4-usage-read-model-hardening.json"
+  ],
+  "noTouch": [
+    "/mnt/d/CURSOR/gas_station private/prototype files",
+    "real IOTA network/testnet sponsor keys",
+    "deployments or Docker services",
+    "durable production storage",
+    "operator dashboard UI",
+    "public operator HTTP endpoint without auth"
+  ],
+  "codeIntelligence": {
+    "provider": "focused-search",
+    "impacts": [
+      "apps/policy-gateway-service/src/usage.ts",
+      "scripts/smoke-local-gateway.ts",
+      "docs/observability.md",
+      "docs/architecture.md"
+    ],
+    "detect": null
+  },
+  "checks": {
+    "required": [
+      "node --import tsx --test apps/policy-gateway-service/src/usage.test.ts",
+      "npm run smoke:local",
+      "npm test",
+      "npm run typecheck",
+      "npm run grant:check",
+      "git diff --check"
+    ],
+    "optional": [
+      "node /mnt/d/CURSOR/apex-workflow/scripts/apex-manifest.mjs detect --config=apex.workflow.json --file=tmp/apex-workflow/m4-usage-read-model-hardening.json"
+    ],
+    "browser": "skip: pure local usage read-model hardening and existing local smoke path only; no dashboard UI in scope",
+    "typecheck": "required: npm run typecheck"
+  },
+  "tracker": {
+    "provider": "none",
+    "disposition": "none",
+    "id": null
+  },
+  "downshiftProof": "route-local because the slice hardens a pure in-memory read model and deterministic smoke assertions without adding durable storage, operator endpoints, dashboard UI, real IOTA network calls, Docker, sponsor keys, or secrets",
+  "knownFailures": [
+    "Regression tests first failed because missing reason codes were not counted under unknown, maxRecentEvents: 0 retained events, literal unknown metadata collided with missing metadata, and prototype-like reason codes were not represented safely."
+  ],
+  "notes": "Hardens the local usage read model for retention and grouping edge cases: maxRecentEvents: 0 disables recent event payload retention; missing reasons count under unknown; literal unknown app/wallet metadata is escaped to literal:unknown; dynamic reason-code counters safely handle prototype-like strings."
+}
