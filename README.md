@@ -160,6 +160,7 @@ TypeScript client scaffold for dApp backends.
 
 Current SDK supports request construction for:
 
+- `simulatePolicy()`
 - `reserveGas()`
 - `executeSponsoredTransaction()`
 

@@ -1,3 +1,5 @@
+import type { PolicyDecision } from "@iota-gaskit/shared-types";
+
 export interface GasKitClientOptions {
   baseUrl: string;
   apiKey: string;
@@ -11,6 +13,15 @@ export interface ReserveGasRequest {
   packageId?: string;
   functionName?: string;
 }
+
+export interface PolicySimulationRequest {
+  gasBudget?: number;
+  walletAddress?: string;
+  packageId?: string;
+  functionName?: string;
+}
+
+export type PolicySimulationResponse = PolicyDecision;
 
 export interface ReserveGasResponse {
   reservationId: string;

@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "app": "iota-gaskit",
+  "issue": "none",
+  "mode": "route-local",
+  "surface": "M3 SDK policy simulation client helper",
+  "contracts": [
+    "AGENTS.md",
+    "apex.workflow.json",
+    "docs/product-requirements.md",
+    "docs/continuation-brief-2026-04-26.md",
+    "docs/sdk.md",
+    "docs/policy.md",
+    "packages/sdk/src/client.ts",
+    "packages/sdk/src/types.ts"
+  ],
+  "ownedFiles": [
+    "packages/sdk/src/client.ts",
+    "packages/sdk/src/types.ts",
+    "packages/sdk/src/client.test.ts",
+    "scripts/smoke-local-gateway.ts",
+    "docs/sdk.md",
+    "docs/policy.md",
+    "README.md",
+    "tmp/apex-workflow/m3-sdk-policy-simulation-client.json"
+  ],
+  "noTouch": [
+    "/mnt/d/CURSOR/gas_station private/prototype files",
+    "real IOTA network/testnet sponsor keys",
+    "deployments or Docker services",
+    "durable production storage",
+    "dashboard UI or operator HTTP usage endpoint",
+    "browser-side app credentials"
+  ],
+  "codeIntelligence": {
+    "provider": "focused-search",
+    "impacts": [
+      "packages/sdk/src/client.ts",
+      "packages/sdk/src/types.ts",
+      "packages/sdk/src/client.test.ts",
+      "scripts/smoke-local-gateway.ts",
+      "docs/sdk.md",
+      "docs/policy.md",
+      "README.md"
+    ],
+    "detect": null
+  },
+  "checks": {
+    "required": [
+      "node --import tsx --test packages/sdk/src/client.test.ts",
+      "npm run smoke:local",
+      "npm test",
+      "npm run typecheck",
+      "npm run grant:check",
+      "git diff --check"
+    ],
+    "optional": [
+      "node /mnt/d/CURSOR/apex-workflow/scripts/apex-manifest.mjs detect --config=apex.workflow.json --file=tmp/apex-workflow/m3-sdk-policy-simulation-client.json"
+    ],
+    "browser": "skip: SDK/server-side docs and local smoke path only; no browser UI changes in scope",
+    "typecheck": "required: npm run typecheck"
+  },
+  "tracker": {
+    "provider": "none",
+    "disposition": "none",
+    "id": null
+  },
+  "downshiftProof": "route-local because this adds one SDK method over an existing local gateway endpoint plus focused tests/docs/smoke assertions; it does not add live network calls, Docker, sponsor keys, durable storage, dashboard UI, or browser credential exposure",
+  "knownFailures": [
+    "New SDK simulatePolicy tests first failed because createGasKitClient did not expose simulatePolicy."
+  ],
+  "notes": "Adds client.simulatePolicy() as a server-side typed helper for POST /v1/policy/simulate. Policy rejections return as decision data, while auth and malformed transport responses continue to throw SDK errors. Smoke now exercises simulation through the SDK without upstream calls or event emissions."
+}

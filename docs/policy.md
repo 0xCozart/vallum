@@ -16,7 +16,7 @@ The policy gateway decides whether a sponsorship request is allowed before it re
 
 ## Policy simulation
 
-The local gateway exposes `POST /v1/policy/simulate` as a deterministic preflight for app teams and operators. It uses the same Bearer app API key authentication and the same policy engine as the reserve path, but it does not proxy to IOTA Gas Station, create reservations, mutate quota counters, or emit reserve/execute decision events.
+The local gateway exposes `POST /v1/policy/simulate` as a deterministic preflight for app teams and operators. It uses the same Bearer app API key authentication and the same policy engine as the reserve path, but it does not proxy to IOTA Gas Station, create reservations, mutate quota counters, or emit reserve/execute decision events. Backend SDK users can call this endpoint with `client.simulatePolicy(...)`; keep that call server-side because it uses the app API key.
 
 Request body fields mirror the local reserve metadata used by the policy engine:
 

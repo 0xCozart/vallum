@@ -12,6 +12,18 @@ const client = createGasKitClient({
   apiKey: process.env.GASKIT_API_KEY!,
 });
 
+const simulation = await client.simulatePolicy({
+  gasBudget: 50_000_000,
+  walletAddress: userAddress,
+  packageId: "0x...",
+  functionName: "mint_badge",
+});
+
+if (!simulation.allowed) {
+  // Show or log simulation.reasonCode/message without creating a reservation.
+  return;
+}
+
 const reservation = await client.reserveGas({
   gasBudget: 50_000_000,
   walletAddress: userAddress,
@@ -27,4 +39,4 @@ const result = await client.executeSponsoredTransaction({
 });
 ```
 
-The API key belongs on the backend, not in browser code.
+The API key belongs on the backend, not in browser code. `simulatePolicy()` uses the same authenticated gateway boundary as `reserveGas()`, but a rejected simulation is returned as `{ allowed: false, reasonCode, message }` decision data rather than thrown as `GasKitPolicyError`; auth and malformed transport responses still throw SDK errors.

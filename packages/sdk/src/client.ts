@@ -1,8 +1,13 @@
+import { POLICY_REASON_CODES } from "@iota-gaskit/shared-types";
+import type { PolicyReasonCode } from "@iota-gaskit/shared-types";
+
 import { GasKitAuthError, GasKitError, GasKitPolicyError } from "./errors.js";
 import type {
   ExecuteSponsoredTransactionRequest,
   ExecuteSponsoredTransactionResponse,
   GasKitClientOptions,
+  PolicySimulationRequest,
+  PolicySimulationResponse,
   ReserveGasRequest,
   ReserveGasResponse,
 } from "./types.js";
@@ -24,6 +29,23 @@ function asRecord(value: unknown): JsonRecord {
 function requireString(value: unknown, fieldPath: string, raw: unknown): string {
   if (typeof value === "string" && value.length > 0) return value;
   throw new GasKitError(`Malformed GasKit response: missing ${fieldPath}.`, undefined, raw);
+}
+
+function isPolicyReasonCode(value: unknown): value is PolicyReasonCode {
+  return typeof value === "string" && (POLICY_REASON_CODES as readonly string[]).includes(value);
+}
+
+function parsePolicySimulationDecision(value: unknown): PolicySimulationResponse {
+  const record = asRecord(value);
+  if (record["allowed"] === true) return { allowed: true };
+  if (record["allowed"] === false && isPolicyReasonCode(record["reasonCode"]) && typeof record["message"] === "string") {
+    return {
+      allowed: false,
+      reasonCode: record["reasonCode"],
+      message: record["message"],
+    };
+  }
+  throw new GasKitError("Malformed GasKit response: missing policy simulation decision.", undefined, value);
 }
 
 function buildError(status: number, body: unknown): GasKitError {
@@ -63,6 +85,17 @@ export function createGasKitClient(options: GasKitClientOptions) {
   }
 
   return {
+    async simulatePolicy(request: PolicySimulationRequest): Promise<PolicySimulationResponse> {
+      const json = await post<unknown>("/v1/policy/simulate", {
+        gas_budget: request.gasBudget,
+        wallet_address: request.walletAddress,
+        package_id: request.packageId,
+        function_name: request.functionName,
+      });
+
+      return parsePolicySimulationDecision(json);
+    },
+
     async reserveGas(request: ReserveGasRequest): Promise<ReserveGasResponse> {
       const json = await post<JsonRecord>("/v1/reserve_gas", {
         gas_budget: request.gasBudget,
