@@ -12,109 +12,125 @@ The pasted PRD belongs to the clean public-ready repo:
 - Widget planning folder: `/mnt/d/CURSOR/gaas-embeddable-widget-plan`
 - Related observability/status product: `/mnt/d/CURSOR/iotato`
 
-The canonical PRD has now been captured in:
+The canonical PRD has been captured in:
 
 - `docs/product-requirements.md`
 
-## Current state of `/mnt/d/CURSOR/iota-gaskit`
+## Status update after local readiness slices
 
-The clean `iota-gaskit` repo is in Milestone 0 / grant-readiness state.
+The clean `iota-gaskit` repo has moved beyond the initial scaffold. It now has a deterministic local gateway/SDK/demo proof that remains intentionally separate from live/testnet execution.
 
-Confirmed current assets:
+Current local proof includes:
 
-- Apache-2.0 open-source framing.
-- README, grant scope, managed-service separation, milestone docs, reviewer walkthrough/checklist.
-- `@iota-gaskit/shared-types` package.
-- `@iota-gaskit/policy-gateway` package with pure policy decision tests.
-- `@iota-gaskit/sdk` package with typed reserve/execute client scaffold and tests.
-- Demo app and example folders as scaffolds/placeholders.
-- Safe Gas Station config template.
-- Architecture diagram and docs.
-- Threat model and production hardening docs.
-- Milestone 0 proof doc.
+- Apache-2.0 open-source framing, contribution/security docs, grant scope, milestone docs, reviewer walkthrough/checklist, and Milestone 0 proof evidence.
+- `@iota-gaskit/shared-types`, `@iota-gaskit/policy-gateway`, and `@iota-gaskit/sdk` packages.
+- A runnable local policy gateway service under `apps/policy-gateway-service` with `GET /health`, reserve, execute, and authenticated local policy simulation routes.
+- Deterministic local smoke coverage with a mock upstream, loopback gateway, public SDK calls, local demo dApp flow, browser wrapper flow, offline testnet-readiness example check, and package dry-run checks.
+- The policy simulation endpoint is implemented as an authenticated gateway-local/offline preflight that evaluates existing policy/quota state without upstream Gas Station calls, reservation creation, quota mutation, or reserve/execute event emission.
+- SDK is proven against deterministic local gateway and demo smoke paths, including `simulatePolicy()`, `reserveGas()`, and `executeSponsoredTransaction()`.
+- sanitized gateway decision events and in-memory local usage read model are implemented, tested, and documented as a local foundation for durable usage/dashboard work.
+- Node backend and Next.js API route examples are tested with server-side credential boundaries and safe frontend response projections.
 
-Current known verification evidence in docs:
+Latest local proof documents are:
 
-- `npm test`: 16 tests passed.
-- `npm run typecheck`: passed.
-- `npm run grant:check`: passed during the recorded grant-readiness sprint.
-- Secret-oriented tracked-file scan: 0 obvious private-key/API-token matches.
+- `docs/milestone-0-proof.md`
+- `docs/reviewer-walkthrough.md`
+- `docs/reviewer-checklist.md`
+- `docs/testnet-readiness.md`
+- `docs/observability.md`
+- `docs/policy.md`
+- `docs/sdk.md`
+
+## Current verification evidence
+
+The latest documented full local command is:
+
+```bash
+npm run grant:check
+```
+
+`grant:check` expands to:
+
+```text
+npm test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp && npm run smoke:demo-browser && npm run readiness:testnet:example && npm run pack:check
+```
+
+The current reviewer/proof docs also include guard tests in `scripts/reviewer-docs.test.ts` so stale proof claims fail the root `npm test` command.
+
+Current local `npm test` evidence is documented in `docs/milestone-0-proof.md` and `README.md`.
 
 ## Current PRD coverage
 
-### Mostly covered now
+### Mostly covered for deterministic local grant proof
 
 - Open-source positioning and grant framing.
 - License/contribution/security hygiene.
-- Grant application narrative.
-- Milestone table and budget.
-- Initial policy reason-code/type scaffold.
-- Initial SDK wrapper scaffold.
-- Initial architecture/security/deployment docs.
+- Grant application narrative, milestone table, and budget framing.
+- Shared type package and policy reason-code contract.
+- SDK helper package with typed policy simulation, reserve, and execute flows.
+- Runnable local gateway/SDK smoke path against a mock upstream.
+- Demo dApp local CLI and loopback browser-wrapper smoke paths.
+- Offline testnet-readiness example check that validates env/config shape without contacting IOTA RPC or Gas Station.
+- Sanitized gateway decision events and local in-memory usage read-model foundation.
+- Backend and framework-route examples that keep app credentials server-side.
 
-### Partially covered now
+### Partially covered
 
-- Policy gateway: pure decision engine exists, but it is not yet wired into a runnable HTTP proxy/gateway path.
-- SDK: client wrappers exist, but they are not yet proven against a local runnable GasKit stack.
-- Deployment kit: safe config and Redis template exist, but full local Gas Station stack is not complete.
-- Examples/demo app: placeholder scaffolds exist, but no real sponsored testnet transaction demo yet.
-- Observability/security pack: initial docs exist, but no complete Prometheus/Grafana/alert pack in the clean repo.
+- Deployment kit: safe config template and docs exist, but a reviewer-grade Docker/local official Gas Station stack is not yet proven in this repo.
+- Usage tracking: in-memory local read model exists, but durable store, dashboard API/UI, CSV export, retention, and access control remain future work.
+- Observability/security pack: sanitized event docs and threat/hardening docs exist, but production metrics, alert rules, sponsor balance checks, and final demo proof remain future work.
+- SDK/package readiness: local package dry-run exists, but external publish/release hygiene still needs final review.
 
-### Not implemented yet
+### Not yet proven in this repo
 
-- Local one-command quickstart with official Gas Station wired through GasKit.
-- Real sponsored transaction demo.
-- App/project persistence and API key lifecycle.
-- Per-wallet daily limits in a live gateway path.
-- App-level daily gas budget in a live gateway path.
-- Package/function allowlists in a live proxy path.
-- Policy simulation endpoint.
-- Usage tracking store and dashboard.
-- Dashboard CSV export.
-- Final demo video assets.
+- Real sponsored testnet transaction using operator-provided secrets.
+- Sponsor wallet funding, sponsor private-key validity, or upstream official Gas Station liveness.
+- Durable app/project persistence and API-key lifecycle.
+- Durable/shared quota counters for multi-process production operation.
+- Authenticated operator dashboard, app/wallet usage views, rejection/error/quota views, and CSV export.
+- Production monitoring, alerts, reverse proxy/TLS deployment, and final reviewer demo assets.
 
 ## Related folders and how they should feed the project
 
 ### `/mnt/d/CURSOR/gas_station`
 
-This is the main source/incubator prototype. It includes a working/full-stack SaaS-shaped GaaS product with Express backend, Next.js frontend, API-key auth, quotas/reservations, billing, dashboard, Docker/NGINX/monitoring assets, and partial widget implementation.
+This is the private/incubator prototype. It includes SaaS-shaped GaaS product material such as Express backend patterns, API-key auth, quota/reservation ideas, billing/dashboard concepts, Docker/NGINX/monitoring assets, and partial widget implementation.
 
 Use it as source material only. Do not publish or copy wholesale without scrubbing.
 
 Reasons:
 
 - It is SaaS-shaped rather than grant-toolkit-shaped.
-- It contains local sensitive-looking sponsor/recovery/config material in working-tree files; values must stay redacted and should be rotated if ever real.
-- Git state is not a clean public repo state.
-- It contains build/runtime artifacts that should not be extracted into the clean repo.
+- It can contain local sensitive-looking sponsor/recovery/config material in working-tree files; values must stay redacted and should be rotated if ever real.
+- Git state may not be a clean public repo state.
+- It can contain build/runtime artifacts that should not be extracted into the clean repo.
 
 Best use:
 
-- Extract gateway/proxy concepts.
+- Extract gateway/proxy concepts only when they can be minimized, scrubbed, tested, and reframed as open-source toolkit functionality.
 - Extract quota/reservation patterns after correcting race/mainnet-safety issues.
-- Extract dashboard/monitoring ideas.
-- Extract Docker/NGINX/Grafana patterns after removing secrets and SaaS-only assumptions.
+- Extract dashboard/monitoring ideas after the public repo has a safe durable usage boundary.
+- Extract Docker/NGINX/Grafana patterns only after removing secrets and SaaS-only assumptions.
 
 ### `/mnt/d/CURSOR/gaas-embeddable-widget-plan`
 
-This is the widget planning/design folder. It is not the core GasKit PRD, but it is relevant to developer onboarding and future managed-service UX.
+This widget planning/design folder is relevant to future managed-service UX, but it is not the core GasKit grant proof path.
 
-Useful pieces:
+Useful pieces later:
 
 - hosted iframe widget plan;
 - partner/origin validation;
-- widget session token design;
-- Neo-Tokyo design tokens;
-- code-sample generation ideas;
+- widget session-token design;
+- design-token and code-sample generation ideas;
 - component inventory and execution sequence.
 
-Do not prioritize this before the runnable GasKit Milestone 1 slice unless the goal is demo polish.
+Do not prioritize this before durable usage/dashboard and live testnet proof unless the explicit goal is demo polish.
 
 ### `/mnt/d/CURSOR/iotato`
 
-This appears to be IOTA Sentinel, an IOTA infrastructure monitoring/status product. It is not GasKit, but it can inform observability.
+This appears to be IOTA infrastructure monitoring/status product material. It is not GasKit, but it can inform observability.
 
-Useful pieces:
+Useful pieces later:
 
 - IOTA RPC health checks;
 - endpoint/check/incident model;
@@ -122,51 +138,21 @@ Useful pieces:
 - alert routing abstractions;
 - public status page model.
 
-Do not merge wholesale. Adapt only observability/status patterns after the GasKit gateway and transaction flow are runnable.
+Do not merge wholesale. Adapt only observability/status patterns after GasKit has the durable usage and production monitoring boundaries needed to receive them safely.
 
-## Recommended next implementation slice
+## Recommended next deterministic local slices
 
-Build the smallest runnable Milestone 1 vertical slice in `/mnt/d/CURSOR/iota-gaskit`:
-
-**Local policy gateway + SDK smoke path.**
-
-Goal:
-
-Turn the repo from a credible grant scaffold into a runnable product slice without jumping straight to dashboard/widget work.
-
-Proposed scope:
-
-1. Add a runnable gateway service workspace, for example `apps/policy-gateway-service`.
-2. Implement:
-   - `GET /health`
-   - `POST /v1/reserve_gas`
-   - `POST /v1/execute_tx`
-3. Load one demo policy from `examples/policies/demo-dapp.yaml`.
-4. Authenticate one local demo app key from environment/config; never commit a real key.
-5. Call `evaluateSponsorshipPolicy()` before proxying reserve/execute paths.
-6. Forward allowed calls to an env-configured local IOTA Gas Station URL/token.
-7. Return structured PRD reason codes for rejects.
-8. Emit minimal structured decision logs for approved/rejected requests.
-9. Add tests for:
-   - health;
-   - missing app key;
-   - invalid app key;
-   - package/function rejection;
-   - allowed request reaching a mocked upstream.
-10. Update quickstart docs to show the local gateway smoke path.
-
-Why this slice first:
-
-- It directly unlocks Milestone 1 and Milestone 2 proof.
-- It reuses existing shared-types, policy-gateway, and SDK packages.
-- It avoids premature dashboard/widget polish.
-- It creates the integration surface that the demo app, dashboard, and observability pack will consume.
+1. Finish and commit the reviewer/proof docs refresh so grant-facing docs match the current local proof and do not overclaim live/testnet work.
+2. Add the smallest durable usage-store foundation behind tests, while keeping it local-only and private to operator/server code.
+3. Add a minimal authenticated operator usage API or dashboard foundation only after the durable usage boundary is safe.
+4. Review SDK/package publish readiness with dry-run checks only.
+5. Prepare live/testnet execution separately, requiring explicit operator approval and secrets handled interactively.
 
 ## Guardrails for the next pass
 
 - Work in `/mnt/d/CURSOR/iota-gaskit`, not `/mnt/d/CURSOR/gas_station`, unless explicitly extracting source material.
 - Treat `/mnt/d/CURSOR/gas_station` as private/incubator source only.
-- Do not copy secrets, `.env` values, sponsor keys, recovery material, or local config values.
-- Any extracted code should be scrubbed, minimized, tested, and reframed as open-source toolkit functionality.
+- Do not copy secrets, `.env` values, sponsor keys, recovery material, local config values, billing credentials, or private prototype code.
+- Keep all default slices deterministic and local-only: mock upstream, loopback services, no real IOTA/testnet network calls, no Docker requirement, and no sponsor keys.
 - Keep grant scope distinct from future managed SaaS features.
-- Do not prioritize embeddable widget work until the gateway/SDK/demo path is runnable.
+- After each completed slice, audit for mistakes, second-order effects, and edge cases; improve confirmed issues; then continue to the next smallest safe slice.

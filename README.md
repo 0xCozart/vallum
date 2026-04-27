@@ -35,6 +35,8 @@ GasKit packages those pieces into a reusable open-source toolkit so every IOTA b
 
 This repository is currently in **grant-readiness sprint** mode. It is a clean public scaffold informed by an external working GaaS proof-of-concept that demonstrated an Express gas sponsorship gateway, API-key auth, quota tracking, transaction logging, dashboard UI, Docker deployment shape, and monitoring assets.
 
+Those prototype items are external evidence only; this public repo does not claim completed Docker, dashboard, production monitoring, or live testnet execution.
+
 The clean grant repo itself now includes:
 
 - Apache-2.0 license;
@@ -63,7 +65,7 @@ npm run grant:check
 
 Latest local verification:
 
-- `npm test`: policy gateway and SDK tests passed locally.
+- `npm test`: 98 deterministic package/app/script/example/reviewer-doc tests passed locally.
 - `npm run typecheck`: passed locally.
 - `npm run smoke:local`: deterministic local gateway smoke passed locally, including policy simulation, sanitized event, and local usage read-model checks.
 - `npm run smoke:demo-dapp`: deterministic local demo dApp smoke passed locally.
@@ -71,7 +73,7 @@ Latest local verification:
 - `npm run readiness:testnet:example`: deterministic example testnet-readiness preflight passed locally.
 - `npm run pack:check`: workspace package dry-runs completed locally.
 - secret-oriented scan over non-ignored project files: 0 obvious private-key/API-token matches.
-- public repo scaffold committed and pushed.
+- local continuation commits may be ahead of the published remote until pushed or reviewed.
 
 See `docs/milestone-0-proof.md` for exact evidence.
 

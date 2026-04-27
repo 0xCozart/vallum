@@ -91,7 +91,7 @@ Every team that can quickly deploy safe gas sponsorship has one less reason to c
 
 ## Current proof of capability
 
-A clean public repository has been scaffolded from a working GaaS prototype:
+A clean public repository has been scaffolded from a working GaaS prototype and advanced with deterministic local readiness slices:
 
 - Repository: `https://github.com/0xCozart/iota-gaskit`
 - License: Apache-2.0
@@ -99,21 +99,25 @@ A clean public repository has been scaffolded from a working GaaS prototype:
   - `@iota-gaskit/shared-types`
   - `@iota-gaskit/policy-gateway`
   - `@iota-gaskit/sdk`
-- Current scaffolds:
-  - demo dApp;
-  - Next.js backend example;
-  - Node backend example;
-  - safe Gas Station config template;
-  - policy YAML example;
-  - threat model and production-hardening docs.
+- Current local proof surfaces:
+  - runnable local policy gateway smoke path with a mock upstream;
+  - authenticated local policy simulation preflight;
+  - SDK helpers for policy simulation, reserve, and execute flows;
+  - local demo dApp CLI and loopback browser-wrapper smokes;
+  - tested Next.js API route and Node backend examples;
+  - sanitized decision events and in-memory local usage read model;
+  - safe Gas Station config template and policy YAML example;
+  - threat model, production-hardening, observability, policy, SDK, and testnet-readiness docs.
 
 Local verification from the grant-readiness sprint:
 
-- `npm test`: 16 tests passed, 0 failed.
+- `npm test`: 98 deterministic tests passed, 0 failed.
 - `npm run typecheck`: passed.
+- `npm run smoke:local`: local gateway smoke passed.
+- `npm run grant:check`: passed locally across tests, typecheck, smokes, offline readiness example, and package dry-run checks.
 - secret-oriented scan over non-ignored project files: 0 obvious private-key/API-token matches.
 
-The original prototype already proved additional implementation capability: Express gateway, API-key authentication, quota tracking, transaction logging, dashboard UI, Docker deployment, and Prometheus/Grafana monitoring. The grant will turn those proven pieces into a clean open-source toolkit.
+The current public repo does not yet claim live sponsored testnet execution, completed Docker deployment, durable usage storage, operator dashboard, production monitoring, or final demo video assets. The original prototype proved additional implementation capability such as Express gateway, API-key authentication, quota tracking, transaction logging, dashboard UI, Docker deployment, and Prometheus/Grafana monitoring; grant work turns those proven pieces into a clean open-source toolkit.
 
 ## Milestones and budget
 

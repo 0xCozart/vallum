@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "app": "iota-gaskit",
+  "issue": "none",
+  "mode": "tiny",
+  "surface": "Reviewer and proof docs refresh",
+  "contracts": [
+    "AGENTS.md",
+    "apex.workflow.json",
+    "README.md",
+    "docs/milestone-0-proof.md",
+    "docs/reviewer-walkthrough.md",
+    "docs/reviewer-checklist.md",
+    "docs/continuation-brief-2026-04-26.md",
+    "docs/grant-application.md"
+  ],
+  "ownedFiles": [
+    "README.md",
+    "docs/milestone-0-proof.md",
+    "docs/reviewer-walkthrough.md",
+    "docs/reviewer-checklist.md",
+    "docs/continuation-brief-2026-04-26.md",
+    "docs/grant-application.md",
+    "scripts/reviewer-docs.test.ts",
+    "tmp/apex-workflow/reviewer-proof-docs-refresh.json"
+  ],
+  "noTouch": [
+    "/mnt/d/CURSOR/gas_station private/prototype files",
+    "real IOTA network/testnet sponsor keys",
+    "deployments or Docker services",
+    "durable production storage",
+    "dashboard UI or operator HTTP usage endpoint",
+    "browser-side app credentials"
+  ],
+  "codeIntelligence": {
+    "provider": "focused-search",
+    "impacts": [
+      "README.md",
+      "docs/milestone-0-proof.md",
+      "docs/reviewer-walkthrough.md",
+      "docs/reviewer-checklist.md",
+      "docs/continuation-brief-2026-04-26.md",
+      "docs/grant-application.md",
+      "scripts/reviewer-docs.test.ts"
+    ],
+    "detect": null
+  },
+  "checks": {
+    "required": [
+      "node --import tsx --test scripts/reviewer-docs.test.ts",
+      "npm test",
+      "npm run typecheck",
+      "npm run grant:check",
+      "git diff --check"
+    ],
+    "optional": [
+      "node /mnt/d/CURSOR/apex-workflow/scripts/apex-manifest.mjs detect --config=apex.workflow.json --file=tmp/apex-workflow/reviewer-proof-docs-refresh.json"
+    ],
+    "browser": "skip: documentation and reviewer-proof guard tests only; no browser UI changes in scope",
+    "typecheck": "required: npm run typecheck"
+  },
+  "tracker": {
+    "provider": "none",
+    "disposition": "none",
+    "id": null
+  },
+  "downshiftProof": "tiny because this slice refreshes grant-facing docs and adds script-level doc drift guard tests only; it does not touch gateway runtime behavior, SDK runtime behavior, live network calls, Docker, sponsor keys, durable storage, or UI surfaces",
+  "knownFailures": [
+    "New reviewer-docs test first failed because docs/milestone-0-proof.md still documented 94 tests instead of current reviewer-doc coverage.",
+    "Continuation brief guard first failed because docs/continuation-brief-2026-04-26.md still described the old scaffold state and listed policy simulation as not implemented.",
+    "Audit found docs/grant-application.md still documented 16 tests and scaffold-era proof; the guard test was expanded before updating that doc."
+  ],
+  "notes": "Refreshes reviewer/proof docs to match the current deterministic local proof surface while preserving explicit boundaries around live/testnet, Docker, durable dashboard/storage, and production monitoring work that remains incomplete."
+}
