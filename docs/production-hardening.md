@@ -35,6 +35,8 @@ Alert on:
 - Gas Station health failures;
 - unexpected request spikes.
 
+The local JSONL usage event store is suitable for deterministic development and reviewer proof only. Before production, replace or wrap it with storage that has explicit concurrency behavior, retention/compaction, backup/restore, encryption/access-control posture, schema migration strategy, and dashboard/API authentication.
+
 ## Backups
 
 Back up the usage store and policy config. Redis backup needs depend on Gas Station state requirements for the deployment mode.

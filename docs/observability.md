@@ -80,6 +80,30 @@ The snapshot includes total event counts by operation, outcome, reason code, app
 
 The read model is intentionally not durable storage, an operator HTTP endpoint, or dashboard authentication. It is a pure local foundation for later usage-store, metrics, dashboard, or CSV-export slices. It copies only the allowlisted event fields, does not store extra fields if a caller passes a wider object, and uses safe dynamic counters for reason-code-like strings.
 
+## Local file-backed usage event store
+
+`createFileGatewayUsageEventStore()` is a deterministic local JSONL event-store foundation for replaying sanitized gateway events across process boundaries:
+
+```ts
+import { createFileGatewayUsageEventStore } from "./usage-store.js";
+
+const store = createFileGatewayUsageEventStore({ filePath: "tmp/usage-events.jsonl" });
+const server = createGatewayServer({
+  apps,
+  upstreamBaseUrl,
+  upstreamBearerToken,
+  eventSink: (event) => {
+    void store.append(event);
+  },
+});
+
+const snapshot = await store.loadReadModel({ maxRecentEvents: 100 });
+```
+
+The store writes one JSON object per line and uses the same field allowlist as the local usage read model. Extra fields on wider event-like objects are discarded before append, required fields and present optional fields are validated before storage, string fields are bounded and control-character sanitized at the store boundary, missing files replay as an empty store, blank lines are ignored, and malformed JSON/event shapes fail replay with bounded error messages that include only the line number, not raw corrupt content. Replay validates the file before invoking the caller's record callback, so corrupt later lines do not partially mutate caller state.
+
+This is still a local foundation, not the final production usage database. It does not provide concurrency locks, retention/compaction, schema migrations, encryption at rest, access control, dashboard routes, or CSV export yet.
+
 ## Current verification
 
 `npm run smoke:local` asserts that the gateway emits sanitized events for:
@@ -91,7 +115,7 @@ The read model is intentionally not durable storage, an operator HTTP endpoint, 
 - allowed reserve;
 - allowed execute.
 
-`apps/policy-gateway-service/src/events.test.ts` also covers upstream failure events and event sink failure isolation. `apps/policy-gateway-service/src/usage.test.ts` covers event aggregation, missing metadata grouping, bounded recent events, and read-model field allowlisting. `npm run smoke:local` feeds the emitted local smoke events into the usage read model and asserts the deterministic snapshot does not contain app API keys, bearer tokens, or user signatures.
+`apps/policy-gateway-service/src/events.test.ts` also covers upstream failure events and event sink failure isolation. `apps/policy-gateway-service/src/usage.test.ts` covers event aggregation, missing metadata grouping, bounded recent events, and read-model field allowlisting. `apps/policy-gateway-service/src/usage-store.test.ts` covers append/replay snapshots, missing files, blank lines, corrupt JSON, invalid stored event shapes, and field allowlisting. `npm run smoke:local` feeds the emitted local smoke events into both the usage read model and file-backed usage event store, then asserts deterministic snapshots do not contain app API keys, bearer tokens, or user signatures.
 
 ## Production direction
 

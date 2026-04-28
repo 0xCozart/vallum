@@ -47,7 +47,7 @@ The clean grant repo itself now includes:
 - policy gateway decision engine scaffold with tests and a local policy simulation endpoint;
 - TypeScript SDK scaffold with tests;
 - demo app local integration scaffold and backend example scaffolds;
-- sanitized policy gateway decision events and an in-memory local usage read model for observability;
+- sanitized policy gateway decision events, an in-memory local usage read model, and a file-backed JSONL event-store foundation for observability;
 - safe Gas Station config template;
 - policy YAML example;
 - architecture diagram and architecture docs;
@@ -65,9 +65,9 @@ npm run grant:check
 
 Latest local verification:
 
-- `npm test`: 98 deterministic package/app/script/example/reviewer-doc tests passed locally.
+- `npm test`: 102 deterministic package/app/script/example/reviewer-doc/usage-store tests passed locally.
 - `npm run typecheck`: passed locally.
-- `npm run smoke:local`: deterministic local gateway smoke passed locally, including policy simulation, sanitized event, and local usage read-model checks.
+- `npm run smoke:local`: deterministic local gateway smoke passed locally, including policy simulation, sanitized event, local usage read-model, and file-backed usage event-store replay checks.
 - `npm run smoke:demo-dapp`: deterministic local demo dApp smoke passed locally.
 - `npm run smoke:demo-browser`: deterministic local browser-wrapper smoke passed locally.
 - `npm run readiness:testnet:example`: deterministic example testnet-readiness preflight passed locally.

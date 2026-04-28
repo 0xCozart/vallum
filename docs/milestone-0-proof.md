@@ -90,8 +90,8 @@ npm test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp 
 Latest local `npm test` result:
 
 ```text
-tests 98
-pass 98
+tests 102
+pass 102
 fail 0
 cancelled 0
 skipped 0
@@ -153,7 +153,8 @@ Observability and usage tests verify:
 - event payloads omit app API keys, bearer tokens, raw request bodies, transaction bytes, signatures, and raw upstream error bodies;
 - event string fields are bounded and control-character sanitized;
 - event sink failures do not break request handling;
-- the in-memory local usage read model consumes sanitized events, counts by operation/outcome/app/wallet/reason, bounds recent events, distinguishes missing metadata from literal `unknown`, and stores only allowlisted fields.
+- the in-memory local usage read model consumes sanitized events, counts by operation/outcome/app/wallet/reason, bounds recent events, distinguishes missing metadata from literal `unknown`, and stores only allowlisted fields;
+- the file-backed usage event store appends only sanitized allowlisted event fields, replays deterministic snapshots, treats missing files as empty, and fails corrupt JSON/stored event lines without exposing raw corrupt content.
 
 Readiness and package tests verify:
 
@@ -214,7 +215,7 @@ This proof does not claim that:
 - a real sponsored testnet transaction has executed from this repo;
 - sponsor wallet funding, sponsor key validity, or live IOTA RPC connectivity has been verified;
 - the full Docker Compose local stack has been proven end-to-end against official IOTA Gas Station;
-- usage tracking is durable across process restarts;
+- usage tracking is a complete production database with dashboard/operator API;
 - the operator dashboard has all PRD views yet;
 - production monitoring, alerting, KMS/external signer integration, reverse proxy/TLS, or final demo video assets are complete.
 

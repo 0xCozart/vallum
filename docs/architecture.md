@@ -24,6 +24,10 @@ flowchart LR
 
 The runnable local policy gateway can emit sanitized structured decision events through an optional `eventSink` callback. Events cover reserve/execute approvals, policy/auth rejections, and upstream failures. They include operational fields such as app ID, wallet address, package/function metadata, HTTP status, reason code, and GasKit transaction ID, but never include app API keys, upstream bearer tokens, raw request bodies, transaction bytes, user signatures, or raw upstream error bodies.
 
-`apps/policy-gateway-service/src/usage.ts` provides a local in-memory usage read model that consumes those sanitized events and returns aggregate counts by operation, outcome, app ID, wallet address, and reason code. Missing app, wallet, and reason metadata is counted under `unknown`, recent event retention is explicitly bounded, and `maxRecentEvents: 0` can disable recent payload retention while keeping counters. It is a deterministic foundation for later dashboard/storage work, not a durable production usage store yet.
+`apps/policy-gateway-service/src/usage.ts` provides a local in-memory usage read model that consumes those sanitized events and returns aggregate counts by operation, outcome, app ID, wallet address, and reason code. Missing app, wallet, and reason metadata is counted under `unknown`, recent event retention is explicitly bounded, and `maxRecentEvents: 0` can disable recent payload retention while keeping counters.
+
+`apps/policy-gateway-service/src/usage-store.ts` provides a local file-backed JSONL event-store foundation. It appends only the same allowlisted sanitized event fields used by the in-memory read model, validates required and present optional event fields before storage/replay, tolerates missing files as empty stores, rejects malformed/corrupt event lines during replay without exposing raw corrupt content, and can replay into the usage read model. This is suitable for deterministic local smoke/proof and as a stepping stone toward a production durable store.
+
+These local pieces are deterministic foundations for later dashboard/storage work, not a complete production usage database or authenticated operator dashboard yet.
 
 See `docs/observability.md` for the current event contract, local read-model contract, and future production usage-store direction.

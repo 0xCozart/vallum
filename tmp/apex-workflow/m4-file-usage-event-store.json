@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "app": "iota-gaskit",
+  "issue": "none",
+  "mode": "route-local",
+  "surface": "M4 local file-backed usage event-store foundation",
+  "contracts": [
+    "AGENTS.md",
+    "apex.workflow.json",
+    "README.md",
+    "docs/observability.md",
+    "docs/architecture.md",
+    "docs/production-hardening.md",
+    "docs/milestone-0-proof.md",
+    "docs/grant-application.md",
+    "apps/policy-gateway-service/src/server.ts",
+    "apps/policy-gateway-service/src/usage.ts"
+  ],
+  "ownedFiles": [
+    "apps/policy-gateway-service/src/usage.ts",
+    "apps/policy-gateway-service/src/usage-store.ts",
+    "apps/policy-gateway-service/src/usage-store.test.ts",
+    "scripts/smoke-local-gateway.ts",
+    "scripts/reviewer-docs.test.ts",
+    "README.md",
+    "docs/architecture.md",
+    "docs/grant-application.md",
+    "docs/milestone-0-proof.md",
+    "docs/observability.md",
+    "docs/production-hardening.md",
+    "tmp/apex-workflow/m4-file-usage-event-store.json"
+  ],
+  "noTouch": [
+    "/mnt/d/CURSOR/gas_station private/prototype files",
+    "real IOTA network/testnet sponsor keys",
+    "deployments or Docker services",
+    "production database service",
+    "operator dashboard UI",
+    "public operator HTTP endpoint without auth"
+  ],
+  "codeIntelligence": {
+    "provider": "focused-search",
+    "impacts": [
+      "apps/policy-gateway-service/src/server.ts",
+      "apps/policy-gateway-service/src/usage.ts",
+      "apps/policy-gateway-service/src/usage-store.ts",
+      "scripts/smoke-local-gateway.ts",
+      "docs/observability.md"
+    ],
+    "detect": null
+  },
+  "checks": {
+    "required": [
+      "node --import tsx --test apps/policy-gateway-service/src/usage-store.test.ts",
+      "node --import tsx --test scripts/reviewer-docs.test.ts",
+      "npm run smoke:local",
+      "npm test",
+      "npm run typecheck",
+      "npm run grant:check",
+      "git diff --check"
+    ],
+    "optional": [
+      "node /mnt/d/CURSOR/apex-workflow/scripts/apex-manifest.mjs detect --config=apex.workflow.json --file=tmp/apex-workflow/m4-file-usage-event-store.json"
+    ],
+    "browser": "skip: local usage event store and smoke assertion path only; no dashboard UI in scope",
+    "typecheck": "required: npm run typecheck"
+  },
+  "tracker": {
+    "provider": "none",
+    "disposition": "none",
+    "id": null
+  },
+  "downshiftProof": "route-local because the slice adds a local JSONL event-store foundation fed by already-sanitized gateway decision events plus focused replay/smoke/docs checks; it uses no real IOTA network, Docker, sponsor keys, production database, dashboard endpoint, or unauthenticated operator API",
+  "knownFailures": [
+    "Initial usage-store test failed before apps/policy-gateway-service/src/usage-store.ts existed; expected TDD red state.",
+    "Reviewer docs guard failed while docs still referenced the previous 98-test proof count; fixed by updating proof docs for the 102-test surface."
+  ],
+  "notes": "Adds a deterministic local file-backed JSONL usage event store that appends only allowlisted sanitized GatewayEvent fields, validates required and present optional fields before storage/replay, replays all-or-nothing into the local usage read model, treats missing files as empty, tolerates blank lines, bounds corrupt replay errors, and is asserted through smoke using a temporary file. It remains a local foundation, not a production database, dashboard, retention, migration, encryption, access-control, or concurrency solution."
+}

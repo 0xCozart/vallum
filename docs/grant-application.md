@@ -105,13 +105,13 @@ A clean public repository has been scaffolded from a working GaaS prototype and 
   - SDK helpers for policy simulation, reserve, and execute flows;
   - local demo dApp CLI and loopback browser-wrapper smokes;
   - tested Next.js API route and Node backend examples;
-  - sanitized decision events and in-memory local usage read model;
+  - sanitized decision events, an in-memory local usage read model, and a file-backed local JSONL usage event-store foundation;
   - safe Gas Station config template and policy YAML example;
   - threat model, production-hardening, observability, policy, SDK, and testnet-readiness docs.
 
 Local verification from the grant-readiness sprint:
 
-- `npm test`: 98 deterministic tests passed, 0 failed.
+- `npm test`: 102 deterministic tests passed, 0 failed.
 - `npm run typecheck`: passed.
 - `npm run smoke:local`: local gateway smoke passed.
 - `npm run grant:check`: passed locally across tests, typecheck, smokes, offline readiness example, and package dry-run checks.

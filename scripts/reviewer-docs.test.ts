@@ -17,14 +17,16 @@ function literalPattern(value: string): RegExp {
 test("milestone proof reflects the current verified local surface", async () => {
   const proof = await readDoc("docs/milestone-0-proof.md");
 
-  assert.match(proof, /tests 98\s+pass 98\s+fail 0/s);
+  assert.match(proof, /tests 102\s+pass 102\s+fail 0/s);
   assert.doesNotMatch(proof, /tests 16\s+pass 16/s);
   assert.doesNotMatch(proof, /tests 94\s+pass 94/s);
   assert.doesNotMatch(proof, /tests 97\s+pass 97/s);
+  assert.doesNotMatch(proof, /tests 98\s+pass 98/s);
   assert.match(proof, /npm test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp && npm run smoke:demo-browser && npm run readiness:testnet:example && npm run pack:check/);
   assert.match(proof, /local policy simulation endpoint/);
   assert.match(proof, /sanitized gateway decision events/);
   assert.match(proof, /in-memory local usage read model/);
+  assert.match(proof, /file-backed usage event store/);
   assert.match(proof, /Node backend and Next\.js API route examples/);
   assert.match(proof, /does not claim that:[\s\S]*real sponsored testnet transaction/s);
 });
@@ -91,11 +93,12 @@ test("continuation and grant docs do not contradict current local readiness prog
   assert.match(brief, /SDK is proven against deterministic local gateway and demo smoke paths/);
   assert.match(brief, /sanitized gateway decision events and in-memory local usage read model are implemented/);
 
-  assert.match(grantApplication, /`npm test`: 98 deterministic tests passed, 0 failed/);
+  assert.match(grantApplication, /`npm test`: 102 deterministic tests passed, 0 failed/);
   assert.match(grantApplication, /local gateway smoke/);
   assert.match(grantApplication, /policy simulation/);
   assert.match(grantApplication, /sanitized decision events/);
-  assert.match(grantApplication, /local usage read model/);
+  assert.match(grantApplication, /in-memory local usage read model/);
+  assert.match(grantApplication, /file-backed local JSONL usage event-store foundation/);
 
   for (const doc of [brief, grantApplication]) {
     assert.doesNotMatch(doc, /16 tests passed/);

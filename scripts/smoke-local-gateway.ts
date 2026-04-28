@@ -1,10 +1,14 @@
 import assert from "node:assert/strict";
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 import { createGasKitClient, GasKitAuthError, GasKitPolicyError } from "../packages/sdk/src/index.js";
 import { loadGatewayConfigFromEnv } from "../apps/policy-gateway-service/src/config.js";
 import { createGatewayServer, type GatewayEvent } from "../apps/policy-gateway-service/src/server.js";
 import { createGatewayUsageReadModel } from "../apps/policy-gateway-service/src/usage.js";
+import { createFileGatewayUsageEventStore } from "../apps/policy-gateway-service/src/usage-store.js";
 
 interface ObservedRequest {
   method?: string;
@@ -75,12 +79,15 @@ async function close(server: Server): Promise<void> {
 
 async function main(): Promise<void> {
   const upstream = createMockGasStation();
+  const usageStoreDir = await mkdtemp(join(tmpdir(), "gaskit-smoke-usage-store-"));
+  let usageStoreWrites = Promise.resolve();
   let gateway: Server | undefined;
 
   try {
     const upstreamBaseUrl = await listen(upstream.server);
     const events: GatewayEvent[] = [];
     const usage = createGatewayUsageReadModel({ maxRecentEvents: 10 });
+    const usageStore = createFileGatewayUsageEventStore({ filePath: join(usageStoreDir, "usage-events.jsonl") });
     const config = await loadGatewayConfigFromEnv({
       GASKIT_POLICY_PATH: "examples/policies/demo-dapp.yaml",
       GASKIT_DEMO_APP_KEY: "local-dev-demo-key",
@@ -93,6 +100,7 @@ async function main(): Promise<void> {
       eventSink: (event) => {
         events.push(event);
         usage.record(event);
+        usageStoreWrites = usageStoreWrites.then(() => usageStore.append(event));
       },
     });
     const gatewayBaseUrl = await listen(gateway);
@@ -252,9 +260,23 @@ async function main(): Promise<void> {
     assert.equal(usageOutput.includes("smoke-signature"), false);
     console.log("ok: local usage read model aggregates sanitized events");
 
+    await usageStoreWrites;
+    const durableUsageSnapshot = await usageStore.loadReadModel({ maxRecentEvents: 10 });
+    assert.deepEqual(durableUsageSnapshot.totals, usageSnapshot.totals);
+    assert.deepEqual(durableUsageSnapshot.byAppId, usageSnapshot.byAppId);
+    assert.deepEqual(durableUsageSnapshot.byWalletAddress, usageSnapshot.byWalletAddress);
+    assert.deepEqual(durableUsageSnapshot.recentEvents, usageSnapshot.recentEvents);
+    const durableUsageOutput = JSON.stringify(durableUsageSnapshot);
+    assert.equal(durableUsageOutput.includes("local-dev-demo-key"), false);
+    assert.equal(durableUsageOutput.includes("local-smoke-token"), false);
+    assert.equal(durableUsageOutput.includes("smoke-signature"), false);
+    console.log("ok: local usage event store replays sanitized events");
+
     console.log("IOTA GasKit local gateway smoke passed");
   } finally {
+    await usageStoreWrites.catch(() => undefined);
     await Promise.all([gateway ? close(gateway) : Promise.resolve(), close(upstream.server)]);
+    await rm(usageStoreDir, { recursive: true, force: true });
   }
 }
 

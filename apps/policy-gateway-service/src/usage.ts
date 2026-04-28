@@ -119,7 +119,7 @@ function groupFor(groups: Map<string, GatewayUsageGroupSnapshot>, key: string | 
   return created;
 }
 
-function copyAllowedEventFields(event: GatewayEvent): GatewayUsageEvent {
+export function copyAllowedEventFields(event: GatewayEvent): GatewayUsageEvent {
   return {
     id: event.id,
     timestamp: event.timestamp,
