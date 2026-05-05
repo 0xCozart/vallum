@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "app": "iota-gaskit",
+  "issue": "none",
+  "mode": "route-local",
+  "surface": "testnet attempt evidence log",
+  "contracts": [
+    "AGENTS.md",
+    "apex.workflow.json",
+    "docs/testnet-readiness.md",
+    "docs/reviewer-checklist.md"
+  ],
+  "ownedFiles": [
+    "docs/testnet-attempts.md",
+    "tmp/apex-workflow/testnet-attempt-log.json"
+  ],
+  "noTouch": [
+    "local .env values",
+    "sponsor wallet private keys or recovery material",
+    "Gas Station bearer tokens",
+    "app API keys",
+    "raw transaction bytes or user signatures",
+    "npm registry credentials or real npm publish"
+  ],
+  "codeIntelligence": {
+    "provider": "focused-evidence-log",
+    "impacts": [
+      "docs/testnet-attempts.md"
+    ],
+    "detect": null
+  },
+  "checks": {
+    "required": [
+      "node /mnt/d/CURSOR/apex-workflow/scripts/apex-manifest.mjs detect --config=apex.workflow.json --file=tmp/apex-workflow/testnet-attempt-log.json",
+      "npm run readiness:testnet",
+      "git diff --check"
+    ],
+    "optional": [
+      "npm run grant:check already passed before the live attempt"
+    ],
+    "browser": "not applicable: evidence-log docs only",
+    "typecheck": "not applicable: docs only"
+  },
+  "tracker": {
+    "provider": "none",
+    "disposition": "none",
+    "id": null
+  },
+  "downshiftProof": "route-local because this slice only documents a sanitized local-to-upstream testnet attempt and the observed 502 blocker. It does not commit secrets, rerun live execution, publish packages, or change runtime behavior.",
+  "knownFailures": [
+    "The live reserve attempt returned HTTP 502 from the configured Gas Station upstream via the gateway, mapped to GAS_STATION_UNAVAILABLE."
+  ],
+  "notes": "No transaction digest was produced. The next live slice should inspect upstream Gas Station health/logs, sponsor funding/key validity, IOTA RPC connectivity, and reserve request compatibility before retrying."
+}
