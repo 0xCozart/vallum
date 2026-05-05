@@ -9,7 +9,7 @@ The deterministic local flow is:
 1. A local mock Gas Station upstream is started by the smoke command.
 2. The policy gateway starts on a loopback dynamic port using `examples/policies/demo-dapp.yaml`.
 3. The demo dApp creates a `@iota-gaskit/sdk` client with the local app key.
-4. The demo reserves gas for `0xYOUR_DEMO_PACKAGE_ID::mint_badge`.
+4. The demo reserves gas for `0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0::mint_badge`.
 5. The demo submits placeholder transaction bytes and a placeholder user signature through the gateway.
 6. The mock upstream returns a transaction digest.
 7. The smoke command asserts that no credentials are printed and that upstream reserve/execute requests have the expected method, path, auth, and body shape.

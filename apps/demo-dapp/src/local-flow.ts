@@ -3,7 +3,7 @@ import type {
   ReserveGasResponse,
 } from "@iota-gaskit/sdk";
 
-export const DEMO_PACKAGE_ID = "0xYOUR_DEMO_PACKAGE_ID";
+export const DEMO_PACKAGE_ID = "0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0";
 export const DEMO_FUNCTION_NAME = "mint_badge";
 export const DEMO_WALLET_ADDRESS = "0xDEMO_WALLET";
 export const DEMO_TRANSACTION_BYTES = "AAE=";

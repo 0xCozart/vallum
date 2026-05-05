@@ -7,7 +7,7 @@ apps:
     max_requests_per_wallet_per_day: 25
     max_gas_budget_per_tx: 50000000
     allowed_packages:
-      - "0xYOUR_DEMO_PACKAGE_ID"
+      - "0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0"
     allowed_functions:
       - "mint_badge"
       - "free_trial"

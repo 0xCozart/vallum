@@ -118,7 +118,7 @@ async function main(): Promise<void> {
     const missingAuth = await fetch(`${gatewayBaseUrl}/v1/reserve_gas`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ gas_budget: 1, package_id: "0xYOUR_DEMO_PACKAGE_ID", function_name: "mint_badge" }),
+      body: JSON.stringify({ gas_budget: 1, package_id: "0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0", function_name: "mint_badge" }),
     });
     const missingAuthBody = await missingAuth.json();
     assert.equal(missingAuth.status, 401);
@@ -127,7 +127,7 @@ async function main(): Promise<void> {
 
     const wrongKeyClient = createGasKitClient({ baseUrl: gatewayBaseUrl, apiKey: "wrong-local-key" });
     await assert.rejects(
-      () => wrongKeyClient.reserveGas({ gasBudget: 1, packageId: "0xYOUR_DEMO_PACKAGE_ID", functionName: "mint_badge" }),
+      () => wrongKeyClient.reserveGas({ gasBudget: 1, packageId: "0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0", functionName: "mint_badge" }),
       (error) => error instanceof GasKitAuthError && error.status === 403,
     );
     console.log("ok: invalid auth fails closed");
@@ -140,7 +140,7 @@ async function main(): Promise<void> {
     console.log("ok: policy rejection does not call upstream");
 
     await assert.rejects(
-      () => client.reserveGas({ gasBudget: 1, packageId: "0xYOUR_DEMO_PACKAGE_ID", functionName: "burn_badge" }),
+      () => client.reserveGas({ gasBudget: 1, packageId: "0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0", functionName: "burn_badge" }),
       (error) => error instanceof GasKitPolicyError && error.reasonCode === "FUNCTION_NOT_ALLOWED",
     );
     assert.equal(upstream.requests.length, 0);
@@ -149,7 +149,7 @@ async function main(): Promise<void> {
     const simulatedAllowed = await client.simulatePolicy({
       gasBudget: 1,
       walletAddress: "0xSMOKE_WALLET",
-      packageId: "0xYOUR_DEMO_PACKAGE_ID",
+      packageId: "0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0",
       functionName: "mint_badge",
     });
     assert.deepEqual(simulatedAllowed, { allowed: true });
@@ -166,7 +166,7 @@ async function main(): Promise<void> {
         client.simulatePolicy({
           gasBudget: -1,
           walletAddress: "0xSMOKE_WALLET",
-          packageId: "0xYOUR_DEMO_PACKAGE_ID",
+          packageId: "0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0",
           functionName: "mint_badge",
         }),
       (error) => error instanceof GasKitPolicyError && error.status === 400,
@@ -178,7 +178,7 @@ async function main(): Promise<void> {
     const reservation = await client.reserveGas({
       gasBudget: 1,
       walletAddress: "0xSMOKE_WALLET",
-      packageId: "0xYOUR_DEMO_PACKAGE_ID",
+      packageId: "0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0",
       functionName: "mint_badge",
     });
     assert.equal(reservation.reservationId, "smoke-reservation-1");
@@ -191,7 +191,7 @@ async function main(): Promise<void> {
     assert.deepEqual(upstream.requests[0]?.body, {
       gas_budget: 1,
       wallet_address: "0xSMOKE_WALLET",
-      package_id: "0xYOUR_DEMO_PACKAGE_ID",
+      package_id: "0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0",
       function_name: "mint_badge",
     });
     console.log("ok: allowed reserve proxies through SDK");

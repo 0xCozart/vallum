@@ -17,7 +17,7 @@ const handlers = createGasKitBackendHandlers({
 
 const reservation = await handlers.reserve({
   walletAddress: "0xUSER",
-  packageId: "0xYOUR_DEMO_PACKAGE_ID",
+  packageId: "0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0",
   functionName: "mint_badge",
   gasBudget: 50_000_000,
   reserveDurationSecs: 30,

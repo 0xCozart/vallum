@@ -37,5 +37,10 @@ Thumbs.db
 .vscode/settings.json
 
 # Local tooling
+tmp/apex-workflow/detect/
+tmp/apex-workflow/logs/
+tmp/apex-workflow/testnet-env-readiness.json
+tmp/gaskit/
+tmp/agent-browser/
 .gitnexus/
 .hermes/

@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "app": "iota-gaskit",
+  "issue": "none",
+  "mode": "route-local",
+  "surface": "testnet demo package id and readiness docs alignment",
+  "contracts": [
+    "AGENTS.md",
+    "apex.workflow.json",
+    ".gitignore",
+    ".env.example",
+    "docs/quickstart.md",
+    "examples/policies/demo-dapp.yaml",
+    "apps/demo-dapp/src/local-flow.ts",
+    "apps/policy-gateway-service/src/readiness.ts"
+  ],
+  "ownedFiles": [
+    ".gitignore",
+    "apps/demo-dapp/README.md",
+    "apps/demo-dapp/src/local-flow.ts",
+    "apps/policy-gateway-service/src/readiness.ts",
+    "docs/quickstart.md",
+    "examples/node-backend/README.md",
+    "examples/policies/demo-dapp.yaml",
+    "scripts/smoke-demo-dapp-browser.ts",
+    "scripts/smoke-demo-dapp-local.ts",
+    "scripts/smoke-local-gateway.ts",
+    "tmp/apex-workflow/testnet-demo-package-readiness.json"
+  ],
+  "noTouch": [
+    "/mnt/d/CURSOR/gas_station private/prototype files",
+    "real IOTA network calls",
+    "sponsor wallet private keys or recovery material",
+    "npm registry credentials or real npm publish",
+    "production database service",
+    "dashboard UI",
+    "Docker deployment services"
+  ],
+  "codeIntelligence": {
+    "provider": "focused-search-and-diff-review",
+    "impacts": [
+      "examples/policies/demo-dapp.yaml",
+      "apps/demo-dapp/src/local-flow.ts",
+      "apps/policy-gateway-service/src/readiness.ts",
+      "scripts/smoke-local-gateway.ts",
+      "scripts/smoke-demo-dapp-local.ts",
+      "scripts/smoke-demo-dapp-browser.ts",
+      "docs/quickstart.md"
+    ],
+    "detect": null
+  },
+  "checks": {
+    "required": [
+      "npm run grant:check",
+      "npm run readiness:testnet",
+      "npm publish --dry-run --tag next --access public -w @iota-gaskit/shared-types -w @iota-gaskit/policy-gateway -w @iota-gaskit/sdk",
+      "node /mnt/d/CURSOR/apex-workflow/scripts/apex-manifest.mjs detect --config=apex.workflow.json --file=tmp/apex-workflow/testnet-demo-package-readiness.json",
+      "git diff --check"
+    ],
+    "optional": [
+      "secret-oriented scan over tracked project files excluding ignored outputs"
+    ],
+    "browser": "covered by npm run grant:check via smoke:demo-browser; no separate live browser automation in this local-only slice",
+    "typecheck": "covered by npm run grant:check"
+  },
+  "tracker": {
+    "provider": "none",
+    "disposition": "none",
+    "id": null
+  },
+  "downshiftProof": "route-local because this slice only replaces the local demo package placeholder with a concrete package id, aligns docs/smokes/readiness messaging, and narrows local-tooling ignores. It does not contact IOTA RPC or Gas Station, run Docker, publish packages, touch secrets, or build dashboard surfaces.",
+  "knownFailures": [
+    "Existing package publish-readiness manifest detect failed for this dirty slice because these package-id/readiness files were outside that slice's ownedFiles; this manifest owns the current changes."
+  ],
+  "notes": "The concrete demo package id is public chain/package metadata, not a credential. The example readiness check now accepts a concrete package allowlist in --expect-placeholders mode while real readiness still fails closed on placeholder package ids. .gitignore ignores generated Apex detect/log artifacts without ignoring tracked slice manifests."
+}

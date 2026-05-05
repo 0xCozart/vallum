@@ -148,7 +148,7 @@ async function main(): Promise<void> {
     assert.deepEqual(upstream.requests[0]?.body, {
       gas_budget: 1,
       wallet_address: "0xDEMO_WALLET",
-      package_id: "0xYOUR_DEMO_PACKAGE_ID",
+      package_id: "0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0",
       function_name: "mint_badge",
     });
     assert.equal(upstream.requests[1]?.method, "POST");

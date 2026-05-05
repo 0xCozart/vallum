@@ -229,11 +229,11 @@ async function validatePolicy(
     addCheck(
       checks,
       "policy.packageAllowlist.placeholders",
-      expectPlaceholders ? (hasPlaceholderPackage ? "pass" : "fail") : hasPlaceholderPackage ? "fail" : "pass",
+      expectPlaceholders || !hasPlaceholderPackage ? "pass" : "fail",
       expectPlaceholders
         ? hasPlaceholderPackage
           ? "Example policy contains an intentional package placeholder."
-          : "Example readiness mode expects a package placeholder."
+          : "Example policy uses a concrete package allowlist."
         : hasPlaceholderPackage
           ? "Policy package allowlist still contains a placeholder package id."
           : "Policy package allowlist does not contain placeholders.",

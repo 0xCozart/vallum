@@ -86,7 +86,7 @@ Expected shape:
 curl -i \
   -X POST http://127.0.0.1:8787/v1/reserve_gas \
   -H 'content-type: application/json' \
-  -d '{"gas_budget":1,"package_id":"0xYOUR_DEMO_PACKAGE_ID","function_name":"mint_badge"}'
+  -d '{"gas_budget":1,"package_id":"0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0","function_name":"mint_badge"}'
 ```
 
 Expected result: HTTP 401 with reason code `AUTH_MISSING`.
@@ -112,7 +112,7 @@ curl -i \
   -X POST http://127.0.0.1:8787/v1/policy/simulate \
   -H "authorization: Bearer ${GASKIT_DEMO_APP_KEY}" \
   -H 'content-type: application/json' \
-  -d '{"gas_budget":1,"wallet_address":"0xWALLET","package_id":"0xYOUR_DEMO_PACKAGE_ID","function_name":"mint_badge"}'
+  -d '{"gas_budget":1,"wallet_address":"0xWALLET","package_id":"0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0","function_name":"mint_badge"}'
 ```
 
 Expected allowed result: HTTP 200 with `{ "allowed": true }`. Policy rejections also return HTTP 200 as decision data, for example `{"allowed":false,"reasonCode":"PACKAGE_NOT_ALLOWED",...}`. Missing or invalid app credentials still return auth failures. Malformed JSON, non-object bodies, and malformed policy field shapes such as non-numeric or non-positive `gas_budget` values return `BadRequest` before policy evaluation.
@@ -196,7 +196,7 @@ curl -i \
   -X POST http://127.0.0.1:8787/v1/reserve_gas \
   -H "authorization: Bearer ${GASKIT_DEMO_APP_KEY}" \
   -H 'content-type: application/json' \
-  -d '{"gas_budget":1,"wallet_address":"0xWALLET","package_id":"0xYOUR_DEMO_PACKAGE_ID","function_name":"mint_badge"}'
+  -d '{"gas_budget":1,"wallet_address":"0xWALLET","package_id":"0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0","function_name":"mint_badge"}'
 ```
 
 Expected result: the request is proxied to `GAS_STATION_URL/v1/reserve_gas`; the response includes the upstream `result.reservation_id` plus a gateway-local `_saas_tx_id` / `gasKitTransactionId` used later by `/v1/execute_tx`.
