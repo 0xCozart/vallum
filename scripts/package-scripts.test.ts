@@ -11,6 +11,8 @@ const packageJson = JSON.parse(await readFile(resolve(repoRoot, "package.json"),
 const tsconfig = JSON.parse(await readFile(resolve(repoRoot, "tsconfig.json"), "utf8")) as {
   include?: string[];
 };
+const secretScanScript = await readFile(resolve(repoRoot, "scripts/scan-secrets.ts"), "utf8");
+const ciWorkflow = await readFile(resolve(repoRoot, ".github/workflows/ci.yml"), "utf8");
 
 test("local smoke script builds workspace packages before running gateway smoke", () => {
   const smokeLocal = packageJson.scripts?.["smoke:local"];
@@ -40,6 +42,30 @@ test("testnet demo execute script builds before submitting a live transaction", 
     "npm run build && tsx scripts/execute-testnet-sponsored-demo.ts",
     "npm run execute:testnet-demo must not depend on pre-existing ignored dist artifacts",
   );
+});
+
+test("root grant check includes deterministic secret scan after package checks", () => {
+  const grantCheck = packageJson.scripts?.["grant:check"] ?? "";
+
+  assert.match(grantCheck, /npm run pack:check && npm run secrets:scan/);
+  assert.equal(packageJson.scripts?.["secrets:scan"], "tsx scripts/scan-secrets.ts");
+});
+
+test("secret scan covers tracked, staged, and untracked text without broad source-test skips", () => {
+  assert.match(secretScanScript, /--cached/);
+  assert.match(secretScanScript, /--others/);
+  assert.doesNotMatch(secretScanScript, /endsWith\("\.test\.ts"\)\) return false/);
+  assert.doesNotMatch(secretScanScript, /startsWith\("scripts\/smoke-"\)\) return false/);
+});
+
+test("secret scan iterates all matches so fixture values cannot mask later secrets", () => {
+  assert.match(secretScanScript, /while \(\(match = pattern\.exec\(content\)\) !== null\)/);
+  assert.match(secretScanScript, /pattern\.lastIndex = 0/);
+});
+
+test("CI workflow runs grant check with read-only repository token permissions", () => {
+  assert.match(ciWorkflow, /permissions:\s+contents: read/s);
+  assert.match(ciWorkflow, /npm run grant:check/);
 });
 
 test("root npm test includes script, example, package, and app regression tests", () => {

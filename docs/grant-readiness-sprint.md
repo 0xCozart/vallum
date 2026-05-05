@@ -1,6 +1,6 @@
 # IOTA GasKit Grant Readiness Sprint
 
-Date: 2026-04-24
+Date: 2026-05-05
 
 ## Current status
 
@@ -26,7 +26,8 @@ A reviewer should be able to verify:
 - a realistic architecture and milestone budget;
 - fail-closed policy/SDK scaffolds with passing tests;
 - no obvious committed secrets in the clean scaffold;
-- a concise path into Milestone 1.
+- a concise path into the remaining production/dashboard/observability milestones;
+- documented real IOTA testnet sponsored execute evidence without leaking secrets.
 
 ## Completed pre-submission items
 
@@ -41,14 +42,13 @@ A reviewer should be able to verify:
 - SDK scaffold includes typed reservation/execution helpers and guarded malformed-response handling.
 - Demo app, backend examples, policy example, deployment template, architecture docs, threat model, and hardening docs created.
 - Local verification evidence is tracked in `docs/milestone-0-proof.md`.
+- Real testnet sponsored execute evidence is tracked in `docs/testnet-attempts.md`.
 
 ## Explicit non-goals for Milestone 0
 
 Milestone 0 does not claim that:
 
-- the complete local Gas Station stack is runnable from this repo yet;
-- the demo dApp executes a real sponsored testnet transaction yet;
-- the dashboard is implemented in this clean repo yet;
+- production dashboard UI is implemented in this clean repo yet;
 - production hardening is complete;
 - npm packages are released to the public registry.
 
@@ -58,5 +58,5 @@ Those are planned grant milestone deliverables.
 
 1. Use `docs/reviewer-walkthrough.md` for reviewer orientation.
 2. Submit the grant package with `docs/grant-application.md` and `docs/grant-milestones.md`.
-3. Start Milestone 1 with the local deployment kit and real sponsored transaction demo.
+3. Package the reviewer-operated local deployment/testnet path so a clean clone can reproduce the sponsored transaction with their own credentials.
 4. Continue extracting proven pieces from the external source prototype only after each piece is scrubbed, tested, and framed as open-source toolkit functionality.

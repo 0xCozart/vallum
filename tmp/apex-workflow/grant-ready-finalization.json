@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "app": "iota-gaskit",
+  "issue": "none",
+  "mode": "route-local",
+  "surface": "grant readiness finalization after live testnet sponsored execute",
+  "contracts": [
+    "AGENTS.md",
+    "apex.workflow.json",
+    "README.md",
+    "docs/grant-application.md",
+    "docs/milestone-0-proof.md",
+    "docs/reviewer-walkthrough.md",
+    "docs/reviewer-checklist.md",
+    "docs/testnet-attempts.md",
+    "package.json"
+  ],
+  "ownedFiles": [
+    ".github/workflows/",
+    ".github/workflows/ci.yml",
+    "CODE_OF_CONDUCT.md",
+    "README.md",
+    "docs/grant-application.md",
+    "docs/grant-readiness-sprint.md",
+    "docs/milestone-0-proof.md",
+    "docs/reviewer-checklist.md",
+    "docs/reviewer-walkthrough.md",
+    "package.json",
+    "scripts/package-scripts.test.ts",
+    "scripts/reviewer-docs.test.ts",
+    "scripts/scan-secrets.ts",
+    "tmp/apex-workflow/grant-ready-finalization.json",
+    "tmp/direct-gas-execute.mjs",
+    "tmp/inspect-iota.mjs",
+    "tmp/live-gas-station/",
+    "tmp/try-real-sponsored.mjs"
+  ],
+  "noTouch": [
+    "local .env values",
+    "sponsor wallet private keys or recovery material",
+    "Gas Station bearer tokens",
+    "npm registry credentials or real npm publish",
+    "destructive cleanup of tmp/live-gas-station",
+    "/mnt/d/CURSOR/gas_station private/prototype files"
+  ],
+  "codeIntelligence": {
+    "provider": "focused-search-and-diff-review",
+    "impacts": [
+      "grant-facing docs",
+      "root package scripts",
+      "reviewer guard tests",
+      "CI workflow",
+      "tracked-file secret scan"
+    ],
+    "detect": null
+  },
+  "checks": {
+    "required": [
+      "npm run grant:check",
+      "node /mnt/d/CURSOR/apex-workflow/scripts/apex-manifest.mjs detect --config=apex.workflow.json --file=tmp/apex-workflow/grant-ready-finalization.json",
+      "git diff --check"
+    ],
+    "optional": [
+      "npm run execute:testnet-demo when an operator intentionally provides live testnet credentials and funded Gas Station"
+    ],
+    "browser": "covered by npm run grant:check via smoke:demo-browser",
+    "typecheck": "covered by npm run grant:check"
+  },
+  "tracker": {
+    "provider": "none",
+    "disposition": "none",
+    "id": null
+  },
+  "downshiftProof": "route-local because this slice updates public grant/readiness evidence, CI, and deterministic secret-scan checks after the live execute was already completed; it does not run live network calls, publish packages, alter Docker services, touch secrets, or delete runtime temp files.",
+  "knownFailures": [],
+  "notes": "Docs may cite the public testnet digest and public package/address metadata only. Secrets remain redacted. The live execute command remains opt-in and is not part of CI/grant:check."
+}

@@ -1,8 +1,8 @@
 # Reviewer Walkthrough
 
-Date: 2026-04-26
+Date: 2026-05-05
 
-Purpose: give grant reviewers a short, reproducible path through the IOTA GasKit repo while clearly separating deterministic local proof from remaining live/testnet milestone work.
+Purpose: give grant reviewers a short, reproducible path through the IOTA GasKit repo while clearly separating deterministic local proof and documented live testnet evidence from remaining production milestone work.
 
 ## 1. Start with the thesis
 
@@ -54,7 +54,8 @@ What to verify:
 - The policy gateway sits between apps/SDKs and IOTA Gas Station.
 - Sponsor-wallet safety is treated as the primary security boundary.
 - Allowlists, quotas, denial rules, policy simulation, observability, and private Gas Station access are represented.
-- The current deterministic proof does not require sponsor keys, real IOTA RPC, Docker, or private prototype files.
+- The deterministic proof does not require sponsor keys, real IOTA RPC, Docker, or private prototype files.
+- The optional live proof is isolated in `npm run execute:testnet-demo` and requires operator-owned local credentials.
 
 ## 4. Verify the current local proof
 
@@ -75,6 +76,7 @@ npm run smoke:demo-dapp
 npm run smoke:demo-browser
 npm run readiness:testnet:example
 npm run pack:check
+npm run secrets:scan
 ```
 
 Expected current result:
@@ -85,7 +87,8 @@ Expected current result:
 - local policy gateway smoke passes against an in-process mock upstream;
 - local demo dApp CLI and browser-wrapper smokes pass using loopback-only calls without external network, live IOTA RPC, or official Gas Station calls;
 - example testnet-readiness preflight validates placeholders without reading real secrets;
-- package dry-runs complete for publishable workspace packages.
+- package dry-runs complete for publishable workspace packages;
+- tracked-file secret scan passes.
 
 Important source and test files:
 
@@ -133,7 +136,8 @@ What to verify:
 - app credentials stay server-side in SDK/backend/route examples;
 - the browser wrapper uses a same-origin local API so the browser does not receive the app key;
 - local/testnet-first defaults are documented;
-- live Gas Station, sponsor keys, testnet funds, Redis, dashboard, and Docker proof are still later milestone boundaries.
+- the optional live testnet execute command and public digest evidence are documented in `docs/testnet-attempts.md`;
+- dashboard UI, production persistence, production monitoring, and final demo assets remain later milestone boundaries.
 
 ## 6. Review grant plan and remaining work
 
@@ -150,9 +154,9 @@ Read:
 What to verify:
 
 - the recommended Tier 2 ask is tied to concrete deliverables;
-- current local proof is strong but does not claim real testnet execution;
-- remaining milestones are measurable: live/testnet deployment, durable usage store, dashboard, monitoring/alerts, and final demo assets.
+- current deterministic proof is strong and the real testnet execute evidence is documented;
+- remaining milestones are measurable: durable usage store, dashboard, monitoring/alerts, package release operations, and final demo assets.
 
 ## Reviewer-safe conclusion
 
-This repo currently proves a clean, licensed, tested, security-conscious open-source GasKit toolkit with deterministic local gateway, SDK, examples, policy simulation, observability, usage read-model, and demo dApp proof paths. It does not ask reviewers to treat the live IOTA Gas Station/testnet transaction, durable dashboard, production monitoring, or final video as complete. Those remain explicit grant milestone work.
+This repo currently proves a clean, licensed, tested, security-conscious open-source GasKit toolkit with deterministic local gateway, SDK, examples, policy simulation, observability, usage read-model, demo dApp proof paths, package dry-runs, tracked-file secret scan, and documented real IOTA testnet sponsored execute evidence. It does not ask reviewers to treat the durable dashboard, production persistence, production monitoring, package publication, or final video as complete. Those remain explicit grant milestone work.

@@ -1,8 +1,8 @@
 # Milestone 0 Proof Of Capability
 
-Date: 2026-04-26
+Date: 2026-05-05
 
-Purpose: document the current pre-grant proof that IOTA GasKit is more than a proposal. This repo is a clean open-source grant scaffold extracted from a working GaaS prototype and advanced with deterministic local gateway, SDK, demo, policy simulation, and observability slices.
+Purpose: document the current pre-grant proof that IOTA GasKit is more than a proposal. This repo is a clean open-source grant scaffold extracted from a working GaaS prototype and advanced with deterministic local gateway, SDK, demo, policy simulation, observability slices, and a real testnet sponsored execute path.
 
 ## Public repository
 
@@ -18,7 +18,7 @@ Initial scaffold commit:
 508453a chore: scaffold iota gaskit grant readiness repo
 ```
 
-Current local continuation note: the working branch can be ahead of the published remote while deterministic slices are being prepared. Treat this proof document as local verification evidence until the corresponding commits are pushed or reviewed.
+Current published proof commit: `24c6e0e Complete real testnet sponsored demo execute` on `main`.
 
 ## What exists now
 
@@ -66,6 +66,7 @@ Code/package surfaces:
 - `examples/node-backend`
 - `examples/policies/demo-dapp.yaml`
 - `deploy/gas-station/config.example.yaml`
+- `scripts/execute-testnet-sponsored-demo.ts`
 
 ## Current verification commands
 
@@ -84,21 +85,21 @@ npm run grant:check
 `grant:check` currently expands to:
 
 ```text
-npm test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp && npm run smoke:demo-browser && npm run readiness:testnet:example && npm run pack:check
+npm test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp && npm run smoke:demo-browser && npm run readiness:testnet:example && npm run pack:check && npm run secrets:scan
 ```
 
 Latest local `npm test` result:
 
 ```text
-tests 110
-pass 110
+tests 118
+pass 118
 fail 0
 cancelled 0
 skipped 0
 todo 0
 ```
 
-This includes the product/package/app/script/example tests plus reviewer-document guard tests that prevent proof docs from drifting behind the current local surface.
+This includes the product/package/app/script/example tests plus reviewer-document guard tests, package-script checks, and official Gas Station numeric reservation-id compatibility coverage that prevent proof docs from drifting behind the current surface.
 
 Latest local full verification result:
 
@@ -107,7 +108,7 @@ npm run grant:check
 exit code 0
 ```
 
-Additional focused slice checks have also run locally for policy simulation, SDK policy simulation, event sanitization, usage read-model hardening, route examples, and Apex manifest detect files under `tmp/apex-workflow/`.
+Additional focused slice checks have also run locally for policy simulation, SDK policy simulation, event sanitization, usage read-model hardening, route examples, real Gas Station diagnostics, real sponsored testnet execute, and Apex manifest detect files under `tmp/apex-workflow/`.
 
 ## Current test coverage
 
@@ -162,7 +163,8 @@ Readiness and package tests verify:
 - offline testnet readiness checks validate env/config shape without contacting IOTA RPC or Gas Station;
 - secret-like values are hidden in readiness output;
 - `.env.example` intentionally documents placeholders while real readiness fails on placeholders;
-- workspace package build and `npm pack --dry-run` succeed for publishable packages, with package READMEs and safe prerelease publish metadata present locally.
+- workspace package build and `npm pack --dry-run` succeed for publishable packages, with package READMEs and safe prerelease publish metadata present locally;
+- `npm run execute:testnet-demo` builds and submits a real sponsored testnet transaction when operator-owned live configuration is present.
 
 ## Secret-oriented scan
 
@@ -178,7 +180,7 @@ A local scan was run over non-ignored project files, excluding `node_modules`, `
 Latest documented local result:
 
 ```text
-findings_count 0
+Secret scan passed: checked tracked text files, findings 0.
 ```
 
 This is not a substitute for a full professional secret scan before every release, but it confirms the grant scaffold does not contain obvious copied sponsor keys or service credentials.
@@ -207,17 +209,16 @@ The current repo proves:
 3. The core policy, gateway, SDK, examples, smoke, readiness, and observability surfaces are scaffolded with passing deterministic local tests.
 4. The local policy gateway can enforce app-key auth, quotas, package/function allowlists, wallet denial, policy simulation, and safe reserve/execute proxy semantics against a mocked upstream.
 5. The demo dApp has deterministic CLI and browser-wrapper proof paths that do not expose app credentials to the browser.
-6. The project is ready to proceed into remaining milestone work where not already locally scaffolded: live/local Gas Station integration, package/SDK finalization, production usage storage, dashboard UI, monitoring, and real testnet demo.
+6. The real sponsored IOTA testnet execute path has been proven through the local policy gateway, local Gas Station, and IOTA testnet RPC.
+7. The project is ready to proceed into remaining milestone work where not already locally scaffolded: package/SDK finalization, production usage storage, dashboard UI, monitoring/alerts, and final demo assets.
 
 ## What this proof does not claim
 
 This proof does not claim that:
 
-- a real sponsored testnet transaction has executed from this repo;
-- sponsor wallet funding, sponsor key validity, or live IOTA RPC connectivity has been verified;
-- the full Docker Compose local stack has been proven end-to-end against official IOTA Gas Station;
+- production sponsor wallet operations, KMS signing, or mainnet execution have been verified;
 - usage tracking is a complete production database with dashboard UI;
 - the operator dashboard has all PRD views yet;
 - production monitoring, alerting, KMS/external signer integration, reverse proxy/TLS, or final demo video assets are complete.
 
-Those remain grant milestone deliverables.
+A real testnet sponsored transaction did execute from this repo with operator-owned local configuration: digest `2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H`. Remaining grant milestone deliverables are production persistence, dashboard UI, monitoring/alerts, hardening beyond the documented baseline, package release operations, and final demo assets.

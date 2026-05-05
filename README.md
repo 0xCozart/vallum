@@ -27,7 +27,8 @@ Production teams still need the surrounding operator and developer layer:
 - SDK helpers and backend integration examples;
 - dashboard views for app keys, usage, health, and errors;
 - sponsor-wallet, Redis, reverse-proxy, and KMS hardening guidance;
-- grant-reviewable demos and documentation.
+- grant-reviewable demos and documentation;
+- a real IOTA testnet sponsored execute script with documented public transaction digest evidence.
 
 GasKit packages those pieces into a reusable open-source toolkit so every IOTA builder does not have to recreate the same safety and operations layer.
 
@@ -35,7 +36,7 @@ GasKit packages those pieces into a reusable open-source toolkit so every IOTA b
 
 This repository is currently in **grant-readiness sprint** mode. It is a clean public scaffold informed by an external working GaaS proof-of-concept that demonstrated an Express gas sponsorship gateway, API-key auth, quota tracking, transaction logging, dashboard UI, Docker deployment shape, and monitoring assets.
 
-Those prototype items are external evidence only; this public repo does not claim completed Docker, dashboard, production monitoring, or live testnet execution.
+Those prototype items are external evidence only. This public repo now includes a real testnet sponsored-transaction demo path, while still treating dashboard UI, production monitoring, production persistence, package publication, and final video assets as remaining milestone work.
 
 The clean grant repo itself now includes:
 
@@ -65,15 +66,15 @@ npm run grant:check
 
 Latest local verification:
 
-- `npm test`: 110 deterministic package/app/script/example/reviewer-doc/usage-store/operator-usage/readiness/package-publish tests passed locally.
+- `npm test`: 118 deterministic package/app/script/example/reviewer-doc/usage-store/operator-usage/readiness/package-publish/live-execute compatibility tests passed locally before this final grant-readiness polish.
 - `npm run typecheck`: passed locally.
 - `npm run smoke:local`: deterministic local gateway smoke passed locally, including policy simulation, sanitized event, local usage read-model, file-backed usage event-store replay, and authenticated local operator usage API checks.
 - `npm run smoke:demo-dapp`: deterministic local demo dApp smoke passed locally.
 - `npm run smoke:demo-browser`: deterministic local browser-wrapper smoke passed locally.
 - `npm run readiness:testnet:example`: deterministic example testnet-readiness preflight passed locally.
 - `npm run pack:check`: workspace package dry-runs completed locally.
-- secret-oriented scan over non-ignored project files: 0 obvious private-key/API-token matches.
-- local continuation commits may be ahead of the published remote until pushed or reviewed.
+- `npm run execute:testnet-demo`: real sponsored IOTA testnet execute succeeded through the local policy gateway and Gas Station; public digest `2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H`.
+- secret-oriented scan over tracked project files is wired into `npm run secrets:scan` and `npm run grant:check`.
 
 See `docs/milestone-0-proof.md` for exact evidence.
 
@@ -202,7 +203,7 @@ npm run typecheck
 npm run smoke:local
 ```
 
-The complete 30-minute local Gas Station quickstart is a Milestone 1 deliverable and is tracked in `docs/quickstart.md`.
+For live proof, configure the local policy gateway and Gas Station with operator-owned testnet credentials, then run `npm run execute:testnet-demo`. The command is intentionally opt-in and excluded from CI because it contacts live services and consumes sponsored testnet gas.
 
 ## Security posture
 
@@ -249,4 +250,4 @@ Apache-2.0. See `LICENSE`.
 
 ## Contributing
 
-See `CONTRIBUTING.md`.
+See `CONTRIBUTING.md` and `CODE_OF_CONDUCT.md`.

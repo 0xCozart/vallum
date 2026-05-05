@@ -22,12 +22,14 @@ Use this checklist to distinguish what is complete for grant submission/local pr
 - [x] Node backend and Next.js route examples keep credentials server-side and return safe projections.
 - [x] Demo dApp CLI and browser-wrapper smokes run without real IOTA network, Docker, sponsor keys, or private prototype files.
 - [x] Offline testnet-readiness preflight validates `.env.example` placeholders without contacting live services.
+- [x] Real testnet sponsored transaction is executed with operator-provided secrets and documented with a public digest.
+- [x] Full local gateway-to-Gas-Station-to-testnet execute path has been proven in an approved live/testnet slice.
+- [x] Deterministic tracked-file secret scan is wired into `npm run grant:check`.
 
 ## Before grant completion / remaining milestone work
 
-- [ ] Full local quickstart works end-to-end against official IOTA Gas Station.
-- [ ] Real testnet sponsored transaction is executed with operator-provided secrets.
-- [ ] Sponsor wallet funding, sponsor key validity, and IOTA RPC connectivity are verified in an approved live/testnet slice.
+- [ ] Production-grade local quickstart is packaged for clean-clone reviewers without pre-existing operator services.
+- [ ] Sponsor wallet funding, sponsor key validity, and IOTA RPC connectivity are documented as a repeatable reviewer-operated checklist without exposing secrets.
 - [ ] Durable app/project persistence and API key lifecycle are complete.
 - [ ] Durable usage store and authenticated operator dashboard are complete.
 - [ ] Dashboard shows health, app usage, wallet usage, rejection logs, quota views, and CSV export.
