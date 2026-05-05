@@ -54,3 +54,29 @@ Before retrying the real execute path, bring the upstream Gas Station back onlin
 2. The upstream Gas Station logs do not show signer/key, Redis, RPC, or coin-inventory errors.
 3. The sponsor address derived from the configured keypair is funded on the same network as `IOTA_RPC_URL`.
 4. `POST /v1/reserve_gas` accepts the gateway body shape `{ "gas_budget": 50000000, "reserve_duration_secs": 120 }` with the configured bearer token.
+
+## 2026-05-05 live infra retry
+
+Followed the remaining finish-line checklist in this WSL session.
+
+Observed state:
+
+- Docker client is installed, but the Docker daemon is not running and cannot be started non-interactively from this user session because `sudo` requires a password.
+- `GAS_STATION_URL` is still configured to loopback `http://127.0.0.1:9527`.
+- No process is listening on port `9527`.
+- `npm run diagnose:gas-station` rebuilt the repo, then failed Gas Station root, `/v1/health`, and `reserve_gas` compatibility probes with fetch/connect failures.
+- `IOTA_RPC_URL=https://api.testnet.iota.cafe` remains reachable; the JSON-RPC checkpoint probe returned HTTP 200.
+
+Sanitized diagnostic result:
+
+```text
+gasStationUrl=http://127.0.0.1:9527
+iotaRpcUrl=https://api.testnet.iota.cafe
+bearerTokenConfigured=true
+fail: Gas Station root fetch failed
+fail: Gas Station /v1/health fetch failed
+ok: IOTA RPC iota_getLatestCheckpointSequenceNumber HTTP 200
+fail: Gas Station reserve_gas compatibility probe fetch failed
+```
+
+Outcome: the real testnet transaction was not retried because the configured upstream Gas Station is offline/unreachable. The next required operator action is to start Docker/Gas Station or point `GAS_STATION_URL` at a reachable upstream, then rerun `npm run diagnose:gas-station` before attempting execute.
