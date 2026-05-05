@@ -114,3 +114,38 @@ Gateway reserve through the local policy gateway now succeeds against the real G
 A follow-up execute attempt using placeholder transaction bytes/signature reached the official Gas Station but failed at upstream validation with HTTP 422, mapped by the gateway to `GAS_STATION_UNAVAILABLE`. This is expected for placeholder transaction data and confirms the flow is now past the previous reserve/connectivity blocker.
 
 Remaining live-completion requirement: generate a real IOTA testnet transaction for the allowlisted package/function, sign it with a real user key, then submit those real transaction bytes/signature through `executeSponsoredTransaction`. The infrastructure and reserve boundary are now passing.
+
+## 2026-05-05 real sponsored testnet execute
+
+Added and ran a reusable real execute command:
+
+```bash
+npm run execute:testnet-demo
+```
+
+The command builds one real sponsored testnet transaction for the allowlisted demo Move call:
+
+```text
+0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0::demo_badge::mint_badge
+```
+
+It generates an ephemeral user key locally, reserves Gas Station gas through the policy gateway, builds a transaction with the ephemeral user as sender and the reserved sponsor/gas coin as gas owner/payment, signs with the ephemeral user key, then submits via `executeSponsoredTransaction`. The script prints only public addresses/ids/digests, never private keys or bearer tokens.
+
+Additional compatibility issue discovered and fixed: the official Gas Station requires numeric `reservation_id` values on `execute_tx`, even though the SDK exposes reservation ids as strings for public API stability. The gateway now stores both the public string id and the original upstream id shape, validates public execute requests by string, and forwards the original numeric id back to the official upstream.
+
+Sanitized successful run:
+
+```text
+gatewayBaseUrl=http://127.0.0.1:8787
+iotaRpcUrl=https://api.testnet.iota.cafe
+demoTarget=0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0::demo_badge::mint_badge
+ephemeralUserAddress=0x80b3fadd46ab8aac6563a1e733deda1c63ca5e54c667662ab63cc8f4e3253b5b
+reservedGas=true
+reservationId=13
+gasKitTransactionId=gaskit_5dc3c921-8b51-4f2c-ad54-795e0503b726
+sponsorAddress=0xd046a4fb78f6ad84a08232db7f4f23164f6e406063ac021f8c86d0cf29b9b868
+executed=true
+transactionDigest=2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H
+```
+
+Outcome: the real IOTA testnet sponsored transaction path is complete end-to-end through local policy gateway, local Gas Station, and testnet RPC.

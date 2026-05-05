@@ -18,11 +18,13 @@
     "smoke:demo-browser": "npm run build && tsx scripts/smoke-demo-dapp-browser.ts",
     "readiness:testnet": "npm run build && tsx scripts/check-testnet-readiness.ts",
     "diagnose:gas-station": "npm run build && tsx scripts/diagnose-gas-station-upstream.ts",
+    "execute:testnet-demo": "npm run build && tsx scripts/execute-testnet-sponsored-demo.ts",
     "readiness:testnet:example": "npm run build && tsx scripts/check-testnet-readiness.ts --env-file .env.example --expect-placeholders",
     "pack:check": "npm run build && npm pack --dry-run -w @iota-gaskit/shared-types -w @iota-gaskit/policy-gateway -w @iota-gaskit/sdk",
     "grant:check": "npm test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp && npm run smoke:demo-browser && npm run readiness:testnet:example && npm run pack:check"
   },
   "devDependencies": {
+    "@iota/iota-sdk": "^1.13.0",
     "@types/node": "^20.17.0",
     "tsx": "^4.20.0",
     "typescript": "^5.8.0"

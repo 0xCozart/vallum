@@ -32,6 +32,16 @@ test("gas station diagnosis script builds before probing live upstream", () => {
   );
 });
 
+test("testnet demo execute script builds before submitting a live transaction", () => {
+  const executeDemo = packageJson.scripts?.["execute:testnet-demo"];
+
+  assert.equal(
+    executeDemo,
+    "npm run build && tsx scripts/execute-testnet-sponsored-demo.ts",
+    "npm run execute:testnet-demo must not depend on pre-existing ignored dist artifacts",
+  );
+});
+
 test("root npm test includes script, example, package, and app regression tests", () => {
   const npmTest = packageJson.scripts?.["test"] ?? "";
 

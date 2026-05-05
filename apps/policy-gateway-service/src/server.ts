@@ -62,6 +62,7 @@ type ReservationStatus = "reserved" | "executed" | "failed";
 interface ReservationRecord {
   id: string;
   upstreamReservationId: string;
+  upstreamReservationIdForProxy: string | number;
   appId: string;
   walletAddress?: string;
   packageId?: string;
@@ -502,6 +503,7 @@ export function createGatewayServer(config: GatewayConfig): Server {
 
     const upstreamBody = asRecord(upstream.json);
     const result = asRecord(upstreamBody.result);
+    const upstreamReservationIdRaw = result["reservation_id"];
     const upstreamReservationId = stringField(result, "reservation_id");
     if (!upstreamReservationId) {
       rollbackUsageCounters();
@@ -521,6 +523,7 @@ export function createGatewayServer(config: GatewayConfig): Server {
     reservations.set(gasKitTransactionId, {
       id: gasKitTransactionId,
       upstreamReservationId,
+      upstreamReservationIdForProxy: typeof upstreamReservationIdRaw === "number" ? upstreamReservationIdRaw : upstreamReservationId,
       appId,
       walletAddress,
       packageId,
@@ -623,7 +626,7 @@ export function createGatewayServer(config: GatewayConfig): Server {
       return rejectDecision(response, decision);
     }
 
-    const upstreamBody = { ...body };
+    const upstreamBody: JsonRecord = { ...body, reservation_id: reservation.upstreamReservationIdForProxy };
     delete upstreamBody._saas_tx_id;
     delete upstreamBody.gasKitTransactionId;
     const upstream = await proxyJson(config, "/v1/execute_tx", upstreamBody);

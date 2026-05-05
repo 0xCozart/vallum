@@ -300,6 +300,27 @@ test("reserveGas coerces numeric upstream reservation ids for official Gas Stati
   assert.match(result.gasKitTransactionId, /^gaskit_/);
 });
 
+test("executeSponsoredTransaction sends numeric official reservation ids back upstream as numbers", async () => {
+  const fixture = await startGateway({}, { reservationId: 2 });
+  after(() => fixture.close());
+  const client = createGasKitClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+
+  const reserve = await client.reserveGas({ gasBudget: 1, packageId: "0xDEMO_PACKAGE", functionName: "mint_badge" });
+  const execute = await client.executeSponsoredTransaction({
+    reservationId: reserve.reservationId,
+    gasKitTransactionId: reserve.gasKitTransactionId,
+    transactionBytes: "AAE=",
+    userSignature: "sig",
+  });
+
+  assert.equal(execute.digest, "digest-1");
+  assert.deepEqual(fixture.upstream.requests[1]?.body, {
+    reservation_id: 2,
+    tx_bytes: "AAE=",
+    user_sig: "sig",
+  });
+});
+
 test("executeSponsoredTransaction proxies only a known prior reservation", async () => {
   const fixture = await startGateway();
   after(() => fixture.close());
