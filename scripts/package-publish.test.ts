@@ -26,6 +26,8 @@ test("public package metadata pins safe prerelease publish settings", async () =
 
     const readme = await readFile(`${packageDir}/README.md`, "utf8");
     assert.match(readme, new RegExp(`# ${packageJson.name.replace("@", "\\@")}`));
+    assert.match(readme, /not claimed as published to npm yet/);
+    assert.match(readme, /After M3 publication/);
     assert.match(readme, /npm install/);
   }
 });

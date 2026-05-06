@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const repoRoot = resolve(new URL("..", import.meta.url).pathname);
@@ -77,7 +77,10 @@ function isAllowedFixtureSecret(name: string, content: string, index: number): b
 }
 
 for (const file of trackedFiles) {
-  const content = readFileSync(resolve(repoRoot, file), "utf8");
+  const absolutePath = resolve(repoRoot, file);
+  if (!existsSync(absolutePath)) continue;
+
+  const content = readFileSync(absolutePath, "utf8");
 
   if (allowlistedFiles.has(file)) continue;
 
