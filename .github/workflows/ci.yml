@@ -10,8 +10,8 @@ permissions:
   contents: read
 
 jobs:
-  grant-check:
-    name: Grant readiness check
+  verify-local:
+    name: Local verification
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -27,5 +27,5 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run deterministic grant checks
-        run: npm run grant:check
+      - name: Run deterministic local checks
+        run: npm run verify:local

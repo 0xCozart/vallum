@@ -18,6 +18,6 @@ What should GasKit do?
 
 What other approaches did you consider?
 
-## Grant milestone relevance
+## Roadmap relevance
 
 Does this relate to deployment, policy, SDK, dashboard, observability, or docs?
