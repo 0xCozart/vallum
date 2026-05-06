@@ -541,7 +541,7 @@ export function createGatewayServer(config: GatewayConfig): Server {
       ...eventContext,
     });
 
-    writeJson(response, 200, { ...upstreamBody, _saas_tx_id: gasKitTransactionId, gasKitTransactionId });
+    writeJson(response, 200, { ...upstreamBody, gasKitTransactionId });
   }
 
   async function handleExecute(request: IncomingMessage, response: ServerResponse): Promise<void> {
@@ -572,7 +572,7 @@ export function createGatewayServer(config: GatewayConfig): Server {
       writeJson(response, 409, rejectionBody("EXECUTION_FAILED", "Conflicting GasKit transaction id aliases."));
       return;
     }
-    const gasKitTransactionId = legacyGasKitTransactionId ?? publicGasKitTransactionId;
+    const gasKitTransactionId = publicGasKitTransactionId ?? legacyGasKitTransactionId;
     const reservationId = stringField(body, "reservation_id");
     const reservation = gasKitTransactionId ? reservations.get(gasKitTransactionId) : undefined;
 

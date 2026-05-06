@@ -283,6 +283,22 @@ test("reserveGas proxies allowed requests and returns SDK-compatible transaction
   assert.equal(fixture.upstream.requests[0]?.authorization, "Bearer upstream-local-token");
 });
 
+test("reserveGas response exposes only the public GasKit transaction id field", async () => {
+  const fixture = await startGateway();
+  after(() => fixture.close());
+
+  const response = await fetch(`${fixture.gatewayBaseUrl}/v1/reserve_gas`, {
+    method: "POST",
+    headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
+    body: JSON.stringify({ gas_budget: 1, package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" }),
+  });
+  const body = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.match(body.gasKitTransactionId, /^gaskit_/);
+  assert.equal(Object.hasOwn(body, "_saas_tx_id"), false);
+});
+
 test("reserveGas coerces numeric upstream reservation ids for official Gas Station compatibility", async () => {
   const fixture = await startGateway({}, { reservationId: 1 });
   after(() => fixture.close());
@@ -576,7 +592,7 @@ test("execute rejects conflicting GasKit transaction id aliases without touching
     method: "POST",
     headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
     body: JSON.stringify({
-      _saas_tx_id: reserveBody._saas_tx_id,
+      _saas_tx_id: reserveBody.gasKitTransactionId,
       gasKitTransactionId: "gaskit_conflicting_id",
       reservation_id: reserveBody.result.reservation_id,
       tx_bytes: "AAE=",

@@ -109,7 +109,7 @@ export function createGasKitClient(options: GasKitClientOptions) {
       const result = asRecord(json["result"]);
       return {
         reservationId: requireString(result["reservation_id"], "result.reservation_id", json),
-        gasKitTransactionId: requireString(json["_saas_tx_id"] ?? json["gasKitTransactionId"], "_saas_tx_id", json),
+        gasKitTransactionId: requireString(json["gasKitTransactionId"] ?? json["_saas_tx_id"], "gasKitTransactionId", json),
         sponsorAddress: typeof result["sponsor_address"] === "string" ? result["sponsor_address"] : undefined,
         gasCoins: Array.isArray(result["gas_coins"]) ? result["gas_coins"] : undefined,
         raw: json,
@@ -121,7 +121,7 @@ export function createGasKitClient(options: GasKitClientOptions) {
     ): Promise<ExecuteSponsoredTransactionResponse> {
       const json = await post<JsonRecord>("/v1/execute_tx", {
         reservation_id: request.reservationId,
-        _saas_tx_id: request.gasKitTransactionId,
+        gasKitTransactionId: request.gasKitTransactionId,
         tx_bytes: request.transactionBytes,
         user_sig: request.userSignature,
       });

@@ -15,7 +15,7 @@ test("reserveGas constructs the expected request", async () => {
           sponsor_address: "0xsponsor",
           gas_coins: [{ objectId: "0xcoin" }],
         },
-        _saas_tx_id: "tx-1",
+        gasKitTransactionId: "tx-1",
       }), { status: 200, headers: { "Content-Type": "application/json" } });
     },
   });
@@ -39,6 +39,21 @@ test("reserveGas constructs the expected request", async () => {
     package_id: "0xpackage",
     function_name: "mint_badge",
   });
+});
+
+test("reserveGas still accepts legacy transaction id responses for compatibility", async () => {
+  const client = createGasKitClient({
+    baseUrl: "https://api.example.test",
+    apiKey: "test-key",
+    fetchImpl: async () => new Response(JSON.stringify({
+      result: { reservation_id: "reservation-1" },
+      _saas_tx_id: "legacy-tx-1",
+    }), { status: 200, headers: { "Content-Type": "application/json" } }),
+  });
+
+  const response = await client.reserveGas({ gasBudget: 1 });
+
+  assert.equal(response.gasKitTransactionId, "legacy-tx-1");
 });
 
 test("reserveGas rejects malformed success responses", async () => {
@@ -136,12 +151,16 @@ test("simulatePolicy rejects malformed decision responses", async () => {
 });
 
 test("executeSponsoredTransaction returns transaction digest", async () => {
+  const calls: Array<{ url: string; init: RequestInit }> = [];
   const client = createGasKitClient({
     baseUrl: "https://api.example.test",
     apiKey: "test-key",
-    fetchImpl: async () => new Response(JSON.stringify({
-      effects: { transactionDigest: "digest-1" },
-    }), { status: 200, headers: { "Content-Type": "application/json" } }),
+    fetchImpl: async (url, init) => {
+      calls.push({ url: String(url), init: init ?? {} });
+      return new Response(JSON.stringify({
+        effects: { transactionDigest: "digest-1" },
+      }), { status: 200, headers: { "Content-Type": "application/json" } });
+    },
   });
 
   const response = await client.executeSponsoredTransaction({
@@ -152,6 +171,12 @@ test("executeSponsoredTransaction returns transaction digest", async () => {
   });
 
   assert.equal(response.digest, "digest-1");
+  assert.deepEqual(JSON.parse(String(calls[0].init.body)), {
+    reservation_id: "reservation-1",
+    gasKitTransactionId: "tx-1",
+    tx_bytes: "base64-tx",
+    user_sig: "base64-sig",
+  });
 });
 
 test("auth rejection throws GasKitAuthError", async () => {
