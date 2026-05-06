@@ -1,0 +1,7 @@
+interface:
+  display_name: "IOTA GasKit"
+  short_description: "Navigate, develop, verify, and safely integrate GasKit."
+  default_prompt: "Use $iota-gaskit to work in this GasKit repo or integrate GasKit safely with the right docs, source paths, checks, and sponsor-gas boundaries."
+
+policy:
+  allow_implicit_invocation: true
