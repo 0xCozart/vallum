@@ -39,6 +39,7 @@ Thumbs.db
 # Local tooling
 tmp/apex-workflow/
 tmp/gaskit/
+tmp/live-gas-station/
 tmp/agent-browser/
 docs/plans/
 docs/audits/
