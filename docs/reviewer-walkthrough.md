@@ -25,6 +25,8 @@ Expected result: with operator-owned local credentials and a reachable IOTA Gas 
 
 Documented public IOTA testnet evidence already in the repo: digest `2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H` in `docs/milestone-0-proof.md` and `docs/testnet-attempts.md`.
 
+External showcase evidence: [Gasless ProofDrop](https://proofdrop.xyz) is the separate M1 showcase dApp for the GasKit integration pattern. It has a hosted live testnet badge-claim proof for `0xd35b2cda222b21fcc7b6c46b00a5a172023d3de1f20c94a5ac553e290cf5f032::proofdrop_badge::claim_proof_badge` with public digest [`GRVtucGZkKZXsXG8HssCPGmRkWbiBom9NGWzJDcVspnF`](https://explorer.iota.org/txblock/GRVtucGZkKZXsXG8HssCPGmRkWbiBom9NGWzJDcVspnF?network=testnet). ProofDrop remains outside this repository.
+
 ## 1. Start with the thesis
 
 Read:
@@ -33,12 +35,14 @@ Read:
 - `docs/grant-scope.md`
 - `docs/managed-service-roadmap.md`
 - `docs/team.md`
+- External showcase: [proofdrop.xyz](https://proofdrop.xyz) and [github.com/0xCozart/ProofDrop](https://github.com/0xCozart/ProofDrop)
 
 What to verify:
 
 - GasKit is framed as an open-source toolkit around IOTA Gas Station.
 - The grant-funded core remains self-hostable and inspectable.
 - Future managed hosting/support is separated from the grant MVP.
+- ProofDrop is linked as an external showcase, not copied into GasKit core.
 
 ## 2. Check repository hygiene
 

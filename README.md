@@ -2,6 +2,10 @@
 
 **Open-source infrastructure toolkit for gas-sponsored IOTA transactions.**
 
+[![Toolkit](https://img.shields.io/badge/IOTA-GasKit-5eead4?style=for-the-badge)](#iota-gaskit)
+[![External showcase](https://img.shields.io/badge/showcase-ProofDrop-6366f1?style=for-the-badge)](https://proofdrop.xyz)
+[![License](https://img.shields.io/badge/license-Apache--2.0-f8fafc?style=for-the-badge)](LICENSE)
+
 IOTA GasKit helps IOTA builders deploy, secure, monitor, and integrate sponsored-transaction infrastructure around the official IOTA Gas Station component.
 
 It is designed for teams building IOTA dApps, enterprise workflows, identity products, notarization systems, RWA/product-passport apps, supply-chain tools, games, wallets, and hackathon demos where users should not need to acquire IOTA tokens before experiencing product value.
@@ -81,9 +85,16 @@ See `docs/testnet-attempts.md` and `docs/reviewer-walkthrough.md` for exact evid
 
 ### Gasless ProofDrop
 
-[Gasless ProofDrop](https://github.com/0xCozart/ProofDrop) is a standalone public showcase dApp for GasKit. It demonstrates a backend-owned sponsorship flow where a visitor claims a "GasKit Launch Proof" badge without holding IOTA tokens. ProofDrop runs in safe mock mode by default and is kept in a separate repository so the GasKit core remains focused on the self-hostable toolkit.
+[Gasless ProofDrop](https://proofdrop.xyz) is the standalone public M1 showcase dApp for GasKit. It demonstrates a backend-owned sponsorship flow where a visitor claims a "GasKit Launch Proof" badge without holding IOTA tokens. ProofDrop is kept in a [separate repository](https://github.com/0xCozart/ProofDrop) so the GasKit core remains focused on the self-hostable toolkit.
 
-Current role: external M1 showcase app for the GasKit integration pattern. ProofDrop has a recorded live testnet execution for its deployed badge-claim target, while live operation remains opt-in and requires a configured GasKit gateway, package/function allowlist, and operator-owned testnet credentials.
+Current role: external M1 showcase app for the GasKit integration pattern. The hosted app runs at [proofdrop.xyz](https://proofdrop.xyz), safe mock verification remains available from a clean clone, and live execution has been proven through a configured GasKit gateway plus self-hosted IOTA Gas Station.
+
+ProofDrop live evidence:
+
+- Source: [github.com/0xCozart/ProofDrop](https://github.com/0xCozart/ProofDrop)
+- Target: `0xd35b2cda222b21fcc7b6c46b00a5a172023d3de1f20c94a5ac553e290cf5f032::proofdrop_badge::claim_proof_badge`
+- Latest hosted digest: [`GRVtucGZkKZXsXG8HssCPGmRkWbiBom9NGWzJDcVspnF`](https://explorer.iota.org/txblock/GRVtucGZkKZXsXG8HssCPGmRkWbiBom9NGWzJDcVspnF?network=testnet)
+- Remaining work: real browser wallet connection and user-owned signing. The current live flow uses a constrained server-side ephemeral demo signer.
 
 ## Target architecture
 
