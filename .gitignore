@@ -45,3 +45,10 @@ docs/plans/
 docs/audits/
 .gitnexus/
 .hermes/
+
+# apex-workflow:start
+# Apex Workflow local artifacts
+apex.workflow.json
+tmp/apex-workflow/
+tmp/agent-browser/
+# apex-workflow:end
