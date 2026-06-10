@@ -17,7 +17,7 @@ Execution entry:
 
 Immediate product slice:
 
-- Slice 4.4: A2A well-known serving proof completion and handoff
+- Slice 3.4: Service Bounty Workflow completion and handoff
 
 ## Intent Read
 
@@ -63,8 +63,9 @@ SDK/MCP routing, receipts, escrow/receipt Move state contracts, and the local
 agent-to-agent escrow demo. The current slices add local Agent Profile schema
 validation, local fixture resolution, SDK resolver access, capability policy
 checks, mock-tested IOTA Names/Identity adapter interfaces, a local
-contract-template metadata registry, a local pay-per-call tool workflow, and a
-local/mock data-license workflow. The current slices also add a local x402 v2
+contract-template metadata registry, a local pay-per-call tool workflow, a
+local/mock data-license workflow, and a local/mock service-bounty workflow. The
+current slices also add a local x402 v2
 standards bridge for mapping payment requirements to manifests and receipts
 without operating a production facilitator, plus a local AP2 closed checkout/
 payment mandate bridge for mapping mandates to manifests and dispute-linked
@@ -76,9 +77,9 @@ marketplace readiness gate that permits marketplace requirements/design work
 only inside local/mock proof and keeps production marketplace implementation
 blocked. The next gaps are A2A task/message protocol operations, signed public
 Agent Cards, live A2A discovery proof, expanded contract workflows beyond
-pay-per-call and data-license, access-control/dispute evidence for any
-marketplace-facing surface, live IOTA Names/Identity proof, and live deployment
-proof when explicitly in scope.
+pay-per-call, data-license, and service-bounty, access-control/dispute evidence
+for any marketplace-facing surface, live IOTA Names/Identity proof, and live
+deployment proof when explicitly in scope.
 
 Desired outcome:
 Codex repeatedly implements one vertical slice, proves it with focused and
@@ -203,26 +204,27 @@ Run this loop for every slice.
 
 ## Current Slice Acceptance
 
-Slice 4.4 is complete only when:
+Slice 3.4 is complete only when:
 
-- A local registry helper serves the current A2A Agent Card at
-  `/.well-known/agent-card.json`.
-- The response uses `application/a2a+json` and the canonical discovery path.
-- Non-GET methods, legacy discovery paths, revoked profiles, and expired
-  profiles fail closed without advertising active skills.
-- Response JSON omits signer refs, wallet internals, credential refs,
-  revocation refs, payment addresses, private metadata, raw transaction bytes,
-  signatures, and secret material.
-- The standards package re-exports the well-known serving helper.
+- Local `service_bounty_v1` Move tests cover post, provider completion,
+  requester release, unauthorized completion/release, cancellation, and invalid
+  transitions.
+- Service-bounty receipt state records attempted, approved, sponsored,
+  submitted, completed, released, denied, and failed paths.
+- SDK helper routes through `requestSponsoredAction` and withholds release on
+  policy denial or missing/malformed completion proof.
+- Contract metadata registers `service_bounty_v1` by template id/version and
+  fails closed for mismatched package/module/function metadata.
 - A local smoke script is wired into `npm run verify:local`.
 - Existing GasKit tests and safety checks still pass, or any failure is
   explained as a pre-existing/blocking condition with exact evidence.
 
-Current Slice 4.4 artifacts:
+Current Slice 3.4 artifacts:
 
-- `packages/registry/src/a2aWellKnown.ts`
-- `examples/a2a-well-known/`
-- `scripts/smoke-a2a-well-known.ts`
+- `contracts/service_bounty_v1/`
+- `packages/sdk/src/contracts/serviceBounty.ts`
+- `examples/service-bounty/`
+- `scripts/smoke-service-bounty.ts`
 
 ## Completion Standard
 

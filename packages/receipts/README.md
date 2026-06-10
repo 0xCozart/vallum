@@ -1,7 +1,8 @@
 # @iota-gaskit/receipts
 
-Receipt and escrow state machine for Agentic GasKit.
+Receipt and contract workflow state machines for Agentic GasKit.
 
-This package models local receipt state transitions for sponsored agent actions.
-It does not settle payments, make policy decisions, custody funds, or submit
-transactions.
+This package models local receipt state transitions for sponsored agent actions,
+including escrow, pay-per-call, data-license, and service-bounty workflows. It
+does not settle payments, make policy decisions, custody funds, verify
+providers, or submit transactions.

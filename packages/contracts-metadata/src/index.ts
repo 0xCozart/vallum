@@ -95,11 +95,25 @@ export const dataLicenseContractTemplateV1: ContractTemplateMetadata = {
   refundDisputeBehavior: "Provider grants scoped access after policy approval or revokes access with receipt evidence.",
 };
 
+export const serviceBountyContractTemplateV1: ContractTemplateMetadata = {
+  templateId: "service_bounty_v1",
+  version: "1.0.0",
+  packageId: "0x7777777777777777777777777777777777777777777777777777777777777777",
+  module: "service_bounty",
+  entryFunctions: ["post_bounty", "complete_bounty", "release_bounty", "cancel_bounty"],
+  allowedActions: ["post_bounty", "complete_bounty", "release_bounty", "cancel_bounty"],
+  riskCategory: "medium",
+  receiptEvents: ["service_bounty_created", "submitted", "completed", "released", "failed"],
+  requiredManifestFields: ["agent", "owner", "spend", "action", "counterparty", "receipt"],
+  refundDisputeBehavior: "Provider completion proof followed by requester release, or cancellation/failure evidence.",
+};
+
 export const defaultContractTemplates = [
   escrowContractTemplateV1,
   receiptContractTemplateV1,
   payPerCallContractTemplateV1,
   dataLicenseContractTemplateV1,
+  serviceBountyContractTemplateV1,
 ] as const;
 
 export const defaultContractTemplateRegistry = createContractTemplateRegistry(defaultContractTemplates);

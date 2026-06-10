@@ -637,6 +637,53 @@ Escalation triggers:
   enforcement, live settlement, provider verification, or production data
   delivery.
 
+## Slice 3.4: Service Bounty Workflow
+
+User-visible outcome:
+A requester can post a local/mock service bounty through policy-gated
+sponsorship and receive receipt evidence for provider completion, release,
+denial, and failed completion states.
+
+Likely files:
+
+- `contracts/service_bounty_v1/`
+- `packages/receipts/src/index.ts`
+- `packages/sdk/src/contracts/serviceBounty.ts`
+- `packages/contracts-metadata/src/index.ts`
+- `examples/service-bounty/`
+
+Acceptance criteria:
+
+- Service-bounty Move tests pass.
+- Contract metadata gates policy allow-list by `service_bounty_v1` template and
+  version.
+- SDK helper routes through `requestSponsoredAction` and does not release a
+  bounty on policy denial or missing completion proof.
+- Receipt state records bounty id, deliverable hash, completion proof, release
+  proof, failure, sponsorship, and transaction digest without private provider
+  payloads.
+- Local example proves approved, policy-denied, and completion-proof-failed
+  paths.
+
+Verification:
+
+- Move tests.
+- Receipt and SDK unit/integration tests.
+- Local service-bounty smoke.
+
+Dependencies:
+Slice 3.1.
+
+Risk:
+High. Service bounty flows can become marketplace, provider-verification,
+dispute, or real settlement surfaces if the mock proof is overextended.
+
+Escalation triggers:
+
+- Production marketplace listing, real provider credentials, legal service
+  enforcement, live settlement, provider verification, staking/bonding, or
+  public dispute moderation.
+
 ## Slice 4.1: x402 Mapping
 
 User-visible outcome:

@@ -6,12 +6,14 @@ import {
   evaluateContractTemplateAction,
   escrowContractTemplateV1,
   payPerCallContractTemplateV1,
+  serviceBountyContractTemplateV1,
 } from "./index.js";
 
 const registry = createContractTemplateRegistry([
   escrowContractTemplateV1,
   payPerCallContractTemplateV1,
   dataLicenseContractTemplateV1,
+  serviceBountyContractTemplateV1,
 ]);
 
 test("approved template and version metadata is accepted", () => {
@@ -102,5 +104,21 @@ test("data-license template metadata is accepted", () => {
   if (decision.allowed) {
     assert.equal(decision.template.templateId, "data_license_v1");
     assert.deepEqual(decision.template.allowedActions, ["request_license", "grant_access", "revoke_access"]);
+  }
+});
+
+test("service-bounty template metadata is accepted", () => {
+  const decision = evaluateContractTemplateAction(registry, {
+    templateId: "service_bounty_v1",
+    templateVersion: "1.0.0",
+    packageId: "0x7777777777777777777777777777777777777777777777777777777777777777",
+    module: "service_bounty",
+    functionName: "post_bounty",
+  });
+
+  assert.equal(decision.allowed, true);
+  if (decision.allowed) {
+    assert.equal(decision.template.templateId, "service_bounty_v1");
+    assert.deepEqual(decision.template.allowedActions, ["post_bounty", "complete_bounty", "release_bounty", "cancel_bounty"]);
   }
 });

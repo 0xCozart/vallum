@@ -39,3 +39,9 @@ try {
 ```
 
 The client calls a configured policy gateway over HTTP. It does not embed sponsor credentials and does not itself prove live/testnet transaction execution.
+
+Local Agentic GasKit helpers such as `requestSponsoredAction`, `openEscrow`,
+`callPaidTool`, `requestDataLicense`, and `fulfillServiceBounty` route
+sponsored/value-bearing flows through the policy gateway. They do not prove
+live settlement, custody, marketplace provider verification, or testnet
+deployment by themselves.

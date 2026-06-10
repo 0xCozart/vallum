@@ -1,0 +1,9 @@
+[package]
+name = "service_bounty_v1"
+version = "0.0.1"
+edition = "2024"
+
+[dependencies]
+
+[addresses]
+service_bounty_v1 = "0x0"

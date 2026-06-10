@@ -31,6 +31,7 @@ It also includes the first Agentic GasKit implementation slices:
 - deterministic local agent-to-agent escrow demo
 - local Move pay-per-call state contract and paid MCP-style tool demo
 - local Move data-license state contract and data-license demo
+- local Move service-bounty state contract and service-bounty demo
 - agent profile schema package with local fixture resolver
 - mock-tested IOTA Names/Identity adapter interfaces
 - local A2A Agent Card mapping from Agent Profiles
@@ -40,9 +41,9 @@ It also includes the first Agentic GasKit implementation slices:
 
 The remaining Agentic GasKit direction is documented under
 `docs/agentic-gaskit/`. Live IOTA Names/Identity proof, A2A protocol task
-operations, signed/public A2A discovery, expanded contract workflows,
-production custody, and live deployment proof remain roadmap unless later
-slices implement and verify them.
+operations, signed/public A2A discovery, expanded contract workflows beyond the
+current local templates, production custody, and live deployment proof remain
+roadmap unless later slices implement and verify them.
 
 ## Start Here
 
@@ -73,6 +74,7 @@ slices implement and verify them.
 - Move receipt contract: `contracts/receipt_v1/`
 - Move pay-per-call contract: `contracts/pay_per_call_v1/`
 - Move data-license contract: `contracts/data_license_v1/`
+- Move service-bounty contract: `contracts/service_bounty_v1/`
 - Policy gateway service: `apps/policy-gateway-service/src/`
 - Demo dApp: `apps/demo-dapp/`
 - Agent escrow demo: `examples/agent-escrow/`, `docs/demo-agent-escrow.md`,
@@ -81,6 +83,8 @@ slices implement and verify them.
   `scripts/smoke-paid-mcp-tool.ts`
 - Data-license demo: `examples/data-license/`,
   `scripts/smoke-data-license.ts`
+- Service-bounty demo: `examples/service-bounty/`,
+  `scripts/smoke-service-bounty.ts`
 - A2A well-known demo: `examples/a2a-well-known/`,
   `scripts/smoke-a2a-well-known.ts`
 - Docs site: `apps/docs-site/`
@@ -109,8 +113,9 @@ Do not create all of these at once. Add them through vertical slices:
 - registry live adapters
 - A2A protocol tools, signed public Agent Cards, and live standards-compatible
   discovery
-- expanded contract packages beyond pay-per-call and data-license, including
-  service bounty, subscription, reputation receipt, and device access workflows
+- expanded contract packages beyond pay-per-call, data-license, and
+  service-bounty, including subscription, reputation receipt, and device access
+  workflows
 
 ## Verification Guidance
 
@@ -124,6 +129,7 @@ Safe local checks:
 - `npm run smoke:local`
 - `npm run smoke:agent-escrow`
 - `npm run smoke:data-license`
+- `npm run smoke:service-bounty`
 - `npm run smoke:a2a-well-known`
 - `npm run secrets:scan`
 

@@ -8,8 +8,8 @@ Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 3.1, 3.2,
-3.3, 4.1, 4.2, 4.3, 4.4, and 5.1 are implemented or reviewed and locally
-verified.
+3.3, 3.4, 4.1, 4.2, 4.3, 4.4, and 5.1 are implemented or reviewed and
+locally verified.
 Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
 `docs/marketplace-readiness.md` before choosing the next slice. Do not start
 production marketplace implementation unless the user explicitly approves the
@@ -148,6 +148,15 @@ Recent commits to know:
   access proof, and malformed access proof withhold access; receipt state
   records grant/revoke/failure events; and Move tests cover provider-only grant
   and revoke controls plus invalid transitions.
+- Slice 3.4 Service Bounty Workflow is implemented with local
+  `contracts/service_bounty_v1`, SDK `fulfillServiceBounty`, service-bounty
+  receipt state, template metadata, and `examples/service-bounty`.
+- Slice 3.4 tests prove bounty release happens only after policy-gateway
+  approval and completion proof evidence; policy denial, failed completion
+  proof, thrown completion proof, and malformed proof withhold release; receipt
+  state records completion/release/failure events; and Move tests cover
+  provider-only completion, requester-only release, cancellation, and invalid
+  transitions.
 - Slice 4.1 x402 Mapping is implemented in `packages/manifest`,
   `packages/receipts`, and `packages/standards` as `@iota-gaskit/standards`.
 - Slice 4.1 tests prove x402 v2 payment requirements map to Agentic GasKit
@@ -192,7 +201,8 @@ Recent commits to know:
   contract tests, and secret scan include the accounts, manifest, MCP,
   registry, contracts metadata, receipts, escrow/receipt/pay-per-call contract
   surfaces, x402/AP2/A2A standards bridges, agent escrow demo smoke, paid
-  MCP-style tool smoke, data-license smoke, and A2A well-known smoke.
+  MCP-style tool smoke, data-license smoke, service-bounty smoke, and A2A
+  well-known smoke.
 
 ## What Is Not Complete
 
@@ -200,7 +210,8 @@ Recent commits to know:
   discovery proof are not implemented.
 - Live IOTA Names/Identity proof, full verifiable credential validation, live
   standards-bridge proof, and expanded contract workflows beyond local
-  escrow/receipt/pay-per-call/data-license metadata are not implemented.
+  escrow/receipt/pay-per-call/data-license/service-bounty metadata are not
+  implemented.
 - Slice 2.3 is locally verified only. Localnet/testnet deployment smoke has not
   run, and the demo/escrow contract does not custody real funds.
 - Package namespace strategy is still open.
@@ -1821,6 +1832,95 @@ Next recommended slice:
   dispute-evidence proof, live IOTA Names/Identity proof, signed/live A2A
   discovery proof, or another expanded contract workflow such as service bounty
   or subscription.
+
+## Completed Slice 3.4
+
+Implemented local/mock Service Bounty Workflow.
+
+Slice and PRD coverage:
+
+- `docs/agentic-gaskit/execution-slices.md` Slice 3.4 Service Bounty Workflow.
+- `docs/agentic-gaskit/prds/phase-3-contract-block-library.md`.
+- `docs/agentic-gaskit/verification-hardening.md` Phase 3 contract and receipt
+  gates.
+- `docs/marketplace-readiness.md` production marketplace/provider-verification
+  gates.
+
+Changed files:
+
+- `contracts/service_bounty_v1/`
+- `examples/service-bounty/`
+- `packages/receipts/src/index.ts`
+- `packages/receipts/src/receipts.test.ts`
+- `packages/sdk/src/contracts/serviceBounty.ts`
+- `packages/sdk/src/contracts/serviceBounty.test.ts`
+- `packages/sdk/src/index.ts`
+- `packages/contracts-metadata/src/index.ts`
+- `packages/contracts-metadata/src/registry.test.ts`
+- `scripts/smoke-service-bounty.ts`
+- `scripts/run-move-tests.ts`
+- `scripts/package-scripts.test.ts`
+- `package.json`
+- continuation docs and package READMEs
+
+Commands run:
+
+```bash
+git status --short --branch
+npm run docs:check
+npm run secrets:scan
+npm test
+npm run typecheck
+npm run build && node --import tsx --test packages/receipts/src/receipts.test.ts packages/contracts-metadata/src/registry.test.ts packages/sdk/src/contracts/serviceBounty.test.ts examples/service-bounty/service-bounty-demo.test.ts scripts/package-scripts.test.ts
+tsx scripts/run-move-tests.ts
+npm run contracts:test
+npm run smoke:service-bounty
+npm run docs:check
+npm run typecheck
+npm run verify:local
+```
+
+Evidence:
+
+- Baseline `npm run docs:check`, `npm run secrets:scan`, `npm test`, and
+  `npm run typecheck` passed before implementation.
+- Red tests failed for missing service-bounty exports/files and missing smoke
+  wiring before implementation.
+- Focused TypeScript tests passed for receipt lifecycle, contract metadata, SDK
+  service-bounty flow, example demo, and package script wiring.
+- Direct `tsx scripts/run-move-tests.ts` failed because `tsx` is not available
+  as a bare shell command in this environment; rerunning through the repo script
+  `npm run contracts:test` passed.
+- `npm run contracts:test` passed with 23 Move tests across escrow, receipt,
+  pay-per-call, data-license, and service-bounty contracts. Service-bounty Move
+  tests cover post, provider-only completion, requester-only release,
+  cancellation, unauthorized completion/release, and invalid transitions.
+- `npm run smoke:service-bounty` passed with approved, denied, and
+  failed-completion paths.
+- Final `npm run verify:local` passed with 269 TypeScript tests, 23 Move tests,
+  local gateway smoke, demo dApp smoke, browser wrapper smoke, agent escrow
+  smoke, paid MCP tool smoke, data-license smoke, service-bounty smoke, A2A
+  well-known smoke, testnet readiness example, package dry-runs, docs check,
+  and secret scan.
+
+Known unproven claims:
+
+- No live IOTA RPC, IOTA Gas Station, localnet/testnet/mainnet deployment, real
+  provider credential, production service delivery, legal service enforcement,
+  live payment settlement, provider verification, marketplace UI/API, custody,
+  staking/bonding, slashing, public dispute moderation, or production operation
+  was implemented by Slice 3.4.
+- The service-bounty workflow proves local policy-gated receipt/completion-proof
+  sequencing, not production marketplace or provider-settlement behavior.
+
+Next recommended slice:
+
+- Do not start production marketplace implementation from this handoff. Choose
+  one explicit next slice from the readiness gaps, such as a read-only
+  marketplace architecture/spec slice, marketplace access-control/
+  dispute-evidence proof, live IOTA Names/Identity proof, signed/live A2A
+  discovery proof, or another expanded contract workflow such as subscription
+  or reputation receipt.
 
 ## Completed Slice 3.3
 

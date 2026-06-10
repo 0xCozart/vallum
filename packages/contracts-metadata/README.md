@@ -4,8 +4,10 @@ Versioned contract template metadata registry for Agentic GasKit policy
 allow-lists.
 
 This package is local prerelease workspace code. It provides metadata and pure
-evaluation helpers for approved contract templates such as `escrow_v1` and
-`receipt_v1`; it does not deploy contracts or prove live package addresses.
+evaluation helpers for approved contract templates such as `escrow_v1`,
+`receipt_v1`, `pay_per_call_v1`, `data_license_v1`, and
+`service_bounty_v1`; it does not deploy contracts, verify providers, settle
+payments, or prove live package addresses.
 
 ## Local checks
 

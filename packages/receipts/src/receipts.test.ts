@@ -4,27 +4,35 @@ import { test } from "node:test";
 import {
   approveReceipt,
   approvePayPerCallReceipt,
+  approveServiceBountyReceipt,
   approveDataLicenseReceipt,
   completeEscrow,
   completePayPerCallReceipt,
+  completeServiceBountyReceipt,
   createDataLicenseReceipt,
   createEscrowReceipt,
   createPayPerCallReceipt,
+  createServiceBountyReceipt,
   denyDataLicenseReceipt,
+  denyServiceBountyReceipt,
   expireEscrow,
   failDataLicenseReceipt,
   failPayPerCallReceipt,
+  failServiceBountyReceipt,
   grantDataLicenseAccess,
   linkExternalPaymentState,
   linkIotaReceiptState,
   revokeDataLicenseAccess,
   releaseEscrow,
+  releaseServiceBountyReceipt,
   refundEscrow,
   sponsorDataLicenseReceipt,
   sponsorPayPerCallReceipt,
+  sponsorServiceBountyReceipt,
   sponsorReceipt,
   submitDataLicenseReceipt,
   submitPayPerCallReceipt,
+  submitServiceBountyReceipt,
   submitReceipt,
   ReceiptInputError,
   ReceiptTransitionError,
@@ -286,6 +294,106 @@ test("data-license receipts reject blank terms and access proof evidence", () =>
   );
 });
 
+test("service-bounty receipt advances through completion and release lifecycle", () => {
+  const approved = approveServiceBountyReceipt(baseServiceBountyReceipt(), { at: now });
+  const sponsored = sponsorServiceBountyReceipt(approved, {
+    at: now,
+    sponsorshipId: "mock_sponsorship_service_bounty_1",
+  });
+  const submitted = submitServiceBountyReceipt(sponsored, {
+    at: now,
+    transactionDigest: "digest_service_bounty_1",
+  });
+  const completed = completeServiceBountyReceipt(submitted, {
+    at: now,
+    completionProofHash: "sha256:service-bounty-completion-proof",
+  });
+  const released = releaseServiceBountyReceipt(completed, {
+    at: now,
+    releaseProofHash: "sha256:service-bounty-release-proof",
+  });
+
+  assert.equal(released.status, "released");
+  assert.equal(released.requesterId, "agent:bounty-requester");
+  assert.equal(released.providerId, "agent:bounty-provider");
+  assert.equal(released.bountyId, "bounty:research-summary-1");
+  assert.equal(released.deliverableHash, "sha256:expected-deliverable");
+  assert.equal(released.completionProofHash, "sha256:service-bounty-completion-proof");
+  assert.equal(released.releaseProofHash, "sha256:service-bounty-release-proof");
+  assert.deepEqual(released.events.map((event) => event.type), [
+    "service_bounty_created",
+    "approved",
+    "sponsored",
+    "submitted",
+    "completed",
+    "released",
+  ]);
+});
+
+test("denied and failed service-bounty receipts cannot later release", () => {
+  const denied = denyServiceBountyReceipt(baseServiceBountyReceipt(), {
+    at: now,
+    reason: "GAS_BUDGET_TOO_HIGH",
+  });
+  assert.equal(denied.status, "denied");
+  assert.throws(
+    () => releaseServiceBountyReceipt(denied, {
+      at: now,
+      releaseProofHash: "sha256:late-release",
+    }),
+    (error) => error instanceof ReceiptTransitionError && error.code === "INVALID_TRANSITION",
+  );
+
+  const failed = failServiceBountyReceipt(approveServiceBountyReceipt(baseServiceBountyReceipt(), { at: now }), {
+    at: now,
+    reason: "COMPLETION_PROOF_INVALID",
+  });
+  assert.equal(failed.status, "failed");
+  assert.equal(failed.failureReason, "COMPLETION_PROOF_INVALID");
+  assert.throws(
+    () => releaseServiceBountyReceipt(failed, {
+      at: now,
+      releaseProofHash: "sha256:late-release",
+    }),
+    (error) => error instanceof ReceiptTransitionError && error.code === "INVALID_TRANSITION",
+  );
+});
+
+test("service-bounty receipts reject blank bounty and proof evidence", () => {
+  assert.throws(
+    () => createServiceBountyReceipt({
+      ...baseServiceBountyReceiptInput(),
+      bountyId: "",
+    }),
+    (error) => error instanceof ReceiptInputError && error.code === "FIELD_REQUIRED",
+  );
+  assert.throws(
+    () => createServiceBountyReceipt({
+      ...baseServiceBountyReceiptInput(),
+      deliverableHash: " ",
+    }),
+    (error) => error instanceof ReceiptInputError && error.code === "FIELD_REQUIRED",
+  );
+
+  const approved = approveServiceBountyReceipt(createServiceBountyReceipt(baseServiceBountyReceiptInput()), { at: now });
+  const sponsored = sponsorServiceBountyReceipt(approved, {
+    at: now,
+    sponsorshipId: "mock_sponsorship_service_bounty_1",
+  });
+  const submitted = submitServiceBountyReceipt(sponsored, {
+    at: now,
+    transactionDigest: "digest_service_bounty_1",
+  });
+
+  assert.throws(
+    () => completeServiceBountyReceipt(submitted, {
+      at: now,
+      completionProofHash: "",
+    }),
+    (error) => error instanceof ReceiptInputError && error.code === "FIELD_REQUIRED",
+  );
+});
+
 function baseEscrowReceipt() {
   return createEscrowReceipt({
     receiptId: "receipt_escrow_1",
@@ -346,6 +454,26 @@ function baseDataLicenseReceiptInput() {
     licenseeId: "agent:data-buyer",
     termsHash: "sha256:data-license-terms",
     amount: { amount: "7.50", asset: "USD" },
+    createdAt: now,
+  };
+}
+
+function baseServiceBountyReceipt() {
+  return createServiceBountyReceipt(baseServiceBountyReceiptInput());
+}
+
+function baseServiceBountyReceiptInput() {
+  return {
+    receiptId: "receipt_service_bounty_1",
+    manifestId: "idem_service_bounty_1",
+    idempotencyKey: "idem_service_bounty_1",
+    agentId: "agent:bounty-requester",
+    ownerId: "owner:bounty-requester",
+    requesterId: "agent:bounty-requester",
+    providerId: "agent:bounty-provider",
+    bountyId: "bounty:research-summary-1",
+    deliverableHash: "sha256:expected-deliverable",
+    amount: { amount: "12.00", asset: "USD" },
     createdAt: now,
   };
 }

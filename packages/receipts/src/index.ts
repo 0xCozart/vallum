@@ -83,6 +83,28 @@ export interface DataLicenseReceipt {
   readonly events: readonly ReceiptEvent[];
 }
 
+export interface ServiceBountyReceipt {
+  readonly receiptId: string;
+  readonly manifestId: string;
+  readonly idempotencyKey: string;
+  readonly agentId: string;
+  readonly ownerId: string;
+  readonly requesterId: string;
+  readonly providerId: string;
+  readonly bountyId: string;
+  readonly deliverableHash: string;
+  readonly status: ReceiptStatus;
+  readonly amount: ReceiptAmount;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly sponsorshipId?: string;
+  readonly transactionDigest?: string;
+  readonly completionProofHash?: string;
+  readonly releaseProofHash?: string;
+  readonly failureReason?: string;
+  readonly events: readonly ReceiptEvent[];
+}
+
 export interface EscrowState {
   readonly status: EscrowStatus;
   readonly providerId: string;
@@ -99,6 +121,7 @@ export interface ReceiptEvent {
     | "escrow_created"
     | "pay_per_call_created"
     | "data_license_created"
+    | "service_bounty_created"
     | "approved"
     | "denied"
     | "sponsored"
@@ -148,6 +171,20 @@ export interface CreateDataLicenseReceiptInput {
   readonly licenseeId: string;
   readonly datasetId: string;
   readonly termsHash: string;
+  readonly amount: ReceiptAmount;
+  readonly createdAt: Date;
+}
+
+export interface CreateServiceBountyReceiptInput {
+  readonly receiptId: string;
+  readonly manifestId: string;
+  readonly idempotencyKey: string;
+  readonly agentId: string;
+  readonly ownerId: string;
+  readonly requesterId: string;
+  readonly providerId: string;
+  readonly bountyId: string;
+  readonly deliverableHash: string;
   readonly amount: ReceiptAmount;
   readonly createdAt: Date;
 }
@@ -239,6 +276,30 @@ export function createDataLicenseReceipt(input: CreateDataLicenseReceiptInput): 
   };
 }
 
+export function createServiceBountyReceipt(input: CreateServiceBountyReceiptInput): ServiceBountyReceipt {
+  requireNonEmpty(input.requesterId, "requesterId");
+  requireNonEmpty(input.providerId, "providerId");
+  requireNonEmpty(input.bountyId, "bountyId");
+  requireNonEmpty(input.deliverableHash, "deliverableHash");
+  const at = input.createdAt.toISOString();
+  return {
+    receiptId: input.receiptId,
+    manifestId: input.manifestId,
+    idempotencyKey: input.idempotencyKey,
+    agentId: input.agentId,
+    ownerId: input.ownerId,
+    requesterId: input.requesterId,
+    providerId: input.providerId,
+    bountyId: input.bountyId,
+    deliverableHash: input.deliverableHash,
+    status: "attempted",
+    amount: input.amount,
+    createdAt: at,
+    updatedAt: at,
+    events: [{ type: "service_bounty_created", at }],
+  };
+}
+
 export function approveReceipt(receipt: EscrowReceipt, options: TransitionOptions): EscrowReceipt {
   requireReceiptStatus(receipt, ["attempted"], "approve");
   return withReceiptEvent(receipt, "approved", options.at, { status: "approved" });
@@ -258,6 +319,14 @@ export function approveDataLicenseReceipt(
 ): DataLicenseReceipt {
   requireReceiptStatus(receipt, ["attempted"], "approve");
   return withDataLicenseReceiptEvent(receipt, "approved", options.at, { status: "approved" });
+}
+
+export function approveServiceBountyReceipt(
+  receipt: ServiceBountyReceipt,
+  options: TransitionOptions,
+): ServiceBountyReceipt {
+  requireReceiptStatus(receipt, ["attempted"], "approve");
+  return withServiceBountyReceiptEvent(receipt, "approved", options.at, { status: "approved" });
 }
 
 export function denyReceipt(receipt: EscrowReceipt, options: TransitionOptions & { readonly reason: string }): EscrowReceipt {
@@ -284,6 +353,17 @@ export function denyDataLicenseReceipt(
 ): DataLicenseReceipt {
   requireReceiptStatus(receipt, ["attempted"], "deny");
   return withDataLicenseReceiptEvent(receipt, "denied", options.at, {
+    status: "denied",
+    failureReason: options.reason,
+  }, options.reason);
+}
+
+export function denyServiceBountyReceipt(
+  receipt: ServiceBountyReceipt,
+  options: TransitionOptions & { readonly reason: string },
+): ServiceBountyReceipt {
+  requireReceiptStatus(receipt, ["attempted"], "deny");
+  return withServiceBountyReceiptEvent(receipt, "denied", options.at, {
     status: "denied",
     failureReason: options.reason,
   }, options.reason);
@@ -322,6 +402,17 @@ export function sponsorDataLicenseReceipt(
   });
 }
 
+export function sponsorServiceBountyReceipt(
+  receipt: ServiceBountyReceipt,
+  options: TransitionOptions & { readonly sponsorshipId: string },
+): ServiceBountyReceipt {
+  requireReceiptStatus(receipt, ["approved"], "sponsor");
+  return withServiceBountyReceiptEvent(receipt, "sponsored", options.at, {
+    status: "sponsored",
+    sponsorshipId: options.sponsorshipId,
+  });
+}
+
 export function submitReceipt(
   receipt: EscrowReceipt,
   options: TransitionOptions & { readonly transactionDigest: string },
@@ -350,6 +441,17 @@ export function submitDataLicenseReceipt(
 ): DataLicenseReceipt {
   requireReceiptStatus(receipt, ["sponsored"], "submit");
   return withDataLicenseReceiptEvent(receipt, "submitted", options.at, {
+    status: "submitted",
+    transactionDigest: options.transactionDigest,
+  });
+}
+
+export function submitServiceBountyReceipt(
+  receipt: ServiceBountyReceipt,
+  options: TransitionOptions & { readonly transactionDigest: string },
+): ServiceBountyReceipt {
+  requireReceiptStatus(receipt, ["sponsored"], "submit");
+  return withServiceBountyReceiptEvent(receipt, "submitted", options.at, {
     status: "submitted",
     transactionDigest: options.transactionDigest,
   });
@@ -408,6 +510,41 @@ export function failDataLicenseReceipt(
 ): DataLicenseReceipt {
   requireReceiptStatus(receipt, ["attempted", "approved", "sponsored", "submitted"], "fail");
   return withDataLicenseReceiptEvent(receipt, "failed", options.at, {
+    status: "failed",
+    failureReason: options.reason,
+  }, options.reason);
+}
+
+export function completeServiceBountyReceipt(
+  receipt: ServiceBountyReceipt,
+  options: TransitionOptions & { readonly completionProofHash: string },
+): ServiceBountyReceipt {
+  requireReceiptStatus(receipt, ["submitted"], "complete");
+  requireNonEmpty(options.completionProofHash, "completionProofHash");
+  return withServiceBountyReceiptEvent(receipt, "completed", options.at, {
+    status: "completed",
+    completionProofHash: options.completionProofHash,
+  });
+}
+
+export function releaseServiceBountyReceipt(
+  receipt: ServiceBountyReceipt,
+  options: TransitionOptions & { readonly releaseProofHash: string },
+): ServiceBountyReceipt {
+  requireReceiptStatus(receipt, ["completed"], "release");
+  requireNonEmpty(options.releaseProofHash, "releaseProofHash");
+  return withServiceBountyReceiptEvent(receipt, "released", options.at, {
+    status: "released",
+    releaseProofHash: options.releaseProofHash,
+  });
+}
+
+export function failServiceBountyReceipt(
+  receipt: ServiceBountyReceipt,
+  options: TransitionOptions & { readonly reason: string },
+): ServiceBountyReceipt {
+  requireReceiptStatus(receipt, ["attempted", "approved", "sponsored", "submitted", "completed"], "fail");
+  return withServiceBountyReceiptEvent(receipt, "failed", options.at, {
     status: "failed",
     failureReason: options.reason,
   }, options.reason);
@@ -557,6 +694,29 @@ function withDataLicenseReceiptEvent(
   patch: Partial<DataLicenseReceipt>,
   reason?: string,
 ): DataLicenseReceipt {
+  const timestamp = at.toISOString();
+  return {
+    ...receipt,
+    ...patch,
+    updatedAt: timestamp,
+    events: [
+      ...receipt.events,
+      {
+        type: eventType,
+        at: timestamp,
+        ...(reason ? { reason } : {}),
+      },
+    ],
+  };
+}
+
+function withServiceBountyReceiptEvent(
+  receipt: ServiceBountyReceipt,
+  eventType: ReceiptEvent["type"],
+  at: Date,
+  patch: Partial<ServiceBountyReceipt>,
+  reason?: string,
+): ServiceBountyReceipt {
   const timestamp = at.toISOString();
   return {
     ...receipt,
