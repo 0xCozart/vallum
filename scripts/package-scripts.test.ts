@@ -119,6 +119,14 @@ test("A2A HTTP smoke is wired into local verification", () => {
   assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run smoke:a2a-http/);
 });
 
+test("A2A local server smoke is wired into local verification", () => {
+  assert.equal(
+    packageJson.scripts?.["smoke:a2a-local-server"],
+    "npm run build && tsx scripts/smoke-a2a-local-server.ts",
+  );
+  assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run smoke:a2a-local-server/);
+});
+
 test("Move contract tests are wired into local verification", () => {
   assert.equal(packageJson.scripts?.["contracts:test"], "tsx scripts/run-move-tests.ts");
   assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run contracts:test/);
