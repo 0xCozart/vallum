@@ -24,6 +24,8 @@ This fork was created from `https://github.com/0xCozart/iota-gaskit` to move
 the Agentic GasKit direction into the actual GasKit codebase instead of keeping
 the implementation plan in `/home/sacred/code/agents`.
 
+Canonical GitHub repo: `https://github.com/0xCozart/agentic-gaskit`
+
 Start with [`docs/agentic-gaskit/migration-plan.md`](docs/agentic-gaskit/migration-plan.md)
 before changing package names, wallet behavior, MCP tools, gateway policy, or
 remote publishing. Existing GasKit sponsorship behavior remains the foundation;

@@ -25,19 +25,19 @@ Local fork created for the new direction:
 
 - fork path: `/home/sacred/code/agentic-gaskit`
 - branch: `agentic-gaskit-direction`
+- canonical GitHub repo: `https://github.com/0xCozart/agentic-gaskit`
 - upstream source remote: `https://github.com/0xCozart/iota-gaskit`
 - local Git remote state: `upstream` fetches from the source repo and has push
-  disabled until a canonical remote is chosen
+  disabled; `origin` pushes to the canonical Agentic GasKit repo
 
 Existing local source checkouts:
 
 - `/home/sacred/code/iota-gaskit` remains the old/current GasKit checkout.
 - `/home/sacred/code/agents` remains a staging/planning source only.
 
-Remote publishing is not complete until an operator explicitly chooses the
-remote repo name, visibility, and push target. Do not claim a GitHub fork or
-new canonical remote exists until that push is done. Do not re-enable push to
-the source GasKit remote as a shortcut.
+Remote publishing is complete for the initial fork: `origin` points at
+`https://github.com/0xCozart/agentic-gaskit`. Do not re-enable push to the
+source GasKit remote as a shortcut.
 
 ## Product Framing
 
@@ -224,8 +224,6 @@ repo.
 
 ## Remaining Decisions Before Push
 
-- Remote repo target: keep branch under `0xCozart/iota-gaskit`, create
-  `0xCozart/agentic-gaskit`, or use another owner/name.
 - Public package namespace: `@iota-gaskit/agent-*` first or full
   `@agentic-gaskit/*` migration.
 - Whether to expand the minimal `apex.workflow.json` into a full repo profile
