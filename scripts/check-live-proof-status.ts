@@ -36,6 +36,11 @@ const IOTA_NAMES_REQUIRED_ENV = [
   "IOTA_NAMES_EXPECTED_ADDRESS",
 ] as const;
 
+const IOTA_IDENTITY_REQUIRED_ENV = [
+  "IOTA_IDENTITY_PROOF_ENDPOINT",
+  "IOTA_IDENTITY_PROFILE_PATH",
+] as const;
+
 const VC_TRUST_POLICY_REQUIRED_ENV = [
   "IOTA_IDENTITY_TRUSTED_ISSUER_DIDS",
   "IOTA_IDENTITY_ALLOWED_VERIFICATION_METHODS",
@@ -61,13 +66,7 @@ export async function checkLiveProofStatus(
   const checks: LiveProofCheck[] = [
     await checkTestnetReadinessStatus(envFile, cwd),
     checkIotaNamesStatus(mergeEnv(fileEnv, env)),
-    {
-      id: "iota-identity-live",
-      status: "blocked",
-      code: "IOTA_IDENTITY_LIVE_PROOF_UNIMPLEMENTED",
-      message: "No live IOTA Identity DID or credential validation command is implemented yet.",
-      next: "Implement a live Identity proof slice with trusted resolver, issuer, verification method, revocation, and cache policy configuration.",
-    },
+    checkIotaIdentityStatus(mergeEnv(fileEnv, env)),
     checkVcTrustPolicyStatus(mergeEnv(fileEnv, env)),
   ];
 
@@ -153,7 +152,7 @@ function checkIotaNamesStatus(env: Record<string, string | undefined>): LiveProo
   }
 
   const endpoint = readEnv(env, "IOTA_NAMES_GRAPHQL_URL");
-  if (!endpoint || !isSafeGraphQLEndpoint(endpoint)) {
+  if (!endpoint || !isSafeEndpoint(endpoint)) {
     return {
       id: "iota-names-live",
       status: "blocked",
@@ -169,6 +168,39 @@ function checkIotaNamesStatus(env: Record<string, string | undefined>): LiveProo
     code: "IOTA_NAMES_LIVE_CONFIG_PRESENT",
     message: "IOTA Names live smoke configuration is present and endpoint scheme is safe.",
     next: "Run npm run smoke:iota-names-live to contact the configured endpoint and prove the name/address binding.",
+  };
+}
+
+function checkIotaIdentityStatus(env: Record<string, string | undefined>): LiveProofCheck {
+  const missing = IOTA_IDENTITY_REQUIRED_ENV.filter((key) => !readEnv(env, key));
+  if (missing.length > 0) {
+    return {
+      id: "iota-identity-live",
+      status: "blocked",
+      code: "IOTA_IDENTITY_LIVE_CONFIG_MISSING",
+      missing,
+      message: "IOTA Identity live proof requires an operator-provided proof endpoint and Agent Profile path.",
+      next: "Set the missing variables outside committed files, then run npm run smoke:iota-identity-live.",
+    };
+  }
+
+  const endpoint = readEnv(env, "IOTA_IDENTITY_PROOF_ENDPOINT");
+  if (!endpoint || !isSafeEndpoint(endpoint)) {
+    return {
+      id: "iota-identity-live",
+      status: "blocked",
+      code: "IOTA_IDENTITY_PROOF_ENDPOINT_UNSAFE",
+      message: "IOTA Identity proof endpoint must be HTTPS or loopback HTTP.",
+      next: "Use an HTTPS endpoint or loopback local proof endpoint before running npm run smoke:iota-identity-live.",
+    };
+  }
+
+  return {
+    id: "iota-identity-live",
+    status: "ready",
+    code: "IOTA_IDENTITY_LIVE_CONFIG_PRESENT",
+    message: "IOTA Identity live proof endpoint and Agent Profile path configuration are present.",
+    next: "Run npm run smoke:iota-identity-live to contact the configured proof endpoint and prove DID and credential evidence.",
   };
 }
 
@@ -271,7 +303,7 @@ function hasOnlyVerificationMethodList(env: Record<string, string | undefined>, 
   return values.length > 0 && values.every((value) => value.startsWith("did:iota:") || value.startsWith("#"));
 }
 
-function isSafeGraphQLEndpoint(endpoint: string): boolean {
+function isSafeEndpoint(endpoint: string): boolean {
   try {
     const url = new URL(endpoint);
     if (url.protocol === "https:") return true;

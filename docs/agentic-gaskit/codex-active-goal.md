@@ -16,11 +16,12 @@ local proof as live IOTA testnet, production marketplace, public scoring,
 public A2A discovery, production key management, or provider-verification
 proof.
 
-As of the latest update, Slice 2.7 is the newest completed Packet C slice:
-local VC trust-policy evaluation for IOTA Identity credential evidence. It
-defines fail-closed trusted issuer, verification method, credential type,
-revocation status, expiry, max-age, and cache-policy behavior. It is not live
-IOTA Identity or VC proof.
+As of the latest update, Slice 2.8 is the newest completed Packet C slice: an
+opt-in IOTA Identity live proof harness. It can contact an operator-provided
+HTTPS or loopback proof endpoint, validate a configured Agent Profile, resolve
+profile DIDs, validate credential refs, and apply the local VC trust policy. It
+is not production key management, provider verification, or a live proof claim
+unless the operator-provided endpoint is configured and the smoke passes.
 
 Do not use the old Slice 4.5 A2A task/message goal as the active objective.
 That slice was previously completed and locally verified.

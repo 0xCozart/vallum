@@ -41,6 +41,8 @@ It also includes the first Agentic GasKit implementation slices:
 - local fail-closed IOTA Identity VC trust-policy evaluator for trusted
   issuers, verification methods, credential types, revocation status, expiry,
   max credential age, and cache-policy binding
+- opt-in IOTA Identity live proof harness through an operator-provided proof
+  endpoint and configured Agent Profile path
 - local A2A Agent Card mapping from Agent Profiles
 - local A2A Agent Card well-known serving helper and smoke proof
 - local A2A Agent Card JWS signing and trusted-key verification smoke proof
@@ -66,12 +68,12 @@ It also includes the first Agentic GasKit implementation slices:
 The remaining Agentic GasKit direction is documented under
 `docs/agentic-gaskit/`. A configured IOTA Names live smoke path exists, but
 actual live proof still requires an operator-provided endpoint/name/address and
-a passing run. Live IOTA Identity proof still requires a live resolver and
-credential-validation command plus operator-provided trust-policy config.
-Public signed A2A discovery, external A2A conformance proof, device-access
-contract workflows, production custody, production subscription operations, and
-live deployment proof remain roadmap unless later slices implement and verify
-them.
+a passing run. IOTA Identity live proof now has an opt-in proof-endpoint smoke
+path, but actual proof still requires operator-provided endpoint/profile and
+trust-policy configuration plus a passing run. Public signed A2A discovery,
+external A2A conformance proof, device-access contract workflows, production
+custody, production subscription operations, and live deployment proof remain
+roadmap unless later slices implement and verify them.
 
 ## Start Here
 
@@ -105,6 +107,9 @@ them.
   `scripts/roadmap-safety.test.ts`
 - Live proof status: `docs/agentic-gaskit/live-proof-status.md`,
   `scripts/check-live-proof-status.ts`, `scripts/live-proof-status.test.ts`
+- IOTA Identity live smoke:
+  `scripts/smoke-iota-identity-live.ts`,
+  `scripts/iota-identity-live-smoke.test.ts`
 - MCP sponsorship tools: `packages/mcp-server/src/`
 - Receipts: `packages/receipts/src/`
 - Move escrow contract: `contracts/escrow_v1/`

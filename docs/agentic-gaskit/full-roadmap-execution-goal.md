@@ -95,6 +95,11 @@ Confirmed current state:
   It is still local/mock evidence; live IOTA Identity proof remains blocked
   until an operator-configured live resolver and credential validator command
   exists and passes.
+- Slice 2.8 adds an opt-in IOTA Identity live proof harness. It can contact an
+  operator-provided HTTPS or loopback proof endpoint, validate a configured
+  Agent Profile, resolve profile DIDs, validate credential refs, and apply the
+  local VC trust policy. It is not part of local verification and does not
+  prove production key management or provider verification by itself.
 
 Confirmed remaining gaps:
 
@@ -404,10 +409,11 @@ Slice 2.5 adds an opt-in IOTA Names GraphQL smoke and exact missing-config
 blocker path. Slice 2.6 adds a non-networked status report for current live
 proof readiness and blockers. Slice 2.7 adds local/mock VC trust-policy
 evaluation for trusted issuers, verification methods, revocation status,
-credential type, expiry, max-age, and cache-policy binding. Configured live
-IOTA Names proof, live IOTA Identity proof, and live VC validation remain
-unproven unless operator-provided configuration is present and the relevant
-live command passes.
+credential type, expiry, max-age, and cache-policy binding. Slice 2.8 adds the
+opt-in `npm run smoke:iota-identity-live` command for an operator-provided
+proof endpoint. Configured live IOTA Names proof, live IOTA Identity proof,
+and live VC validation remain unproven unless operator-provided configuration
+is present and the relevant live command passes.
 
 Acceptance criteria:
 

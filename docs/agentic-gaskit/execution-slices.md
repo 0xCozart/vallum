@@ -733,6 +733,65 @@ Escalation triggers:
 - Operator wants to accept live policy-gated actions from VC evidence.
 - Trust policy values need to be managed as production config or rotated.
 
+## Slice 2.8: IOTA Identity Live Proof Harness
+
+User-visible outcome:
+Operators have an opt-in command that can contact an operator-provided IOTA
+Identity proof endpoint, validate a configured Agent Profile, resolve the
+profile DIDs, validate credential refs, and apply the local VC trust policy
+without printing endpoint, DID, or credential values.
+
+Likely files:
+
+- `scripts/smoke-iota-identity-live.ts`
+- `scripts/iota-identity-live-smoke.test.ts`
+- `scripts/check-live-proof-status.ts`
+- `scripts/live-proof-status.test.ts`
+- `scripts/package-scripts.test.ts`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `package.json`
+
+Acceptance criteria:
+
+- `npm run smoke:iota-identity-live` exists and builds before running.
+- The command requires `IOTA_IDENTITY_PROOF_ENDPOINT`,
+  `IOTA_IDENTITY_PROFILE_PATH`, and the VC trust-policy variables.
+- Missing configuration reports exact variable names without printing values.
+- Non-HTTPS non-loopback proof endpoints are blocked without printing endpoint
+  values.
+- The command validates the local Agent Profile before contacting the proof
+  endpoint.
+- The command routes DID resolution and credential validation through the
+  existing registry identity verifier and trust-policy layer.
+- The command is opt-in and not part of `npm run verify:local`.
+- `npm run proof:live-status` reports Identity live config missing, invalid, or
+  present instead of an unimplemented command blocker.
+
+Verification:
+
+- Focused Identity live smoke tests.
+- Focused live proof status tests.
+- Package-script wiring tests.
+- `npm run proof:live-status`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:local`.
+
+Dependencies:
+Slice 2.7.
+
+Risk:
+High. A proof endpoint can overclaim live Identity behavior unless it is backed
+by a real IOTA Identity resolver and credential validator.
+
+Escalation triggers:
+
+- Product needs to bundle `@iota/identity-wasm` directly instead of using an
+  operator proof endpoint.
+- Operator wants this command to spend gas, publish identities, mutate
+  revocation state, or accept credentials for production policy-gated actions.
+
 ## Slice 3.1: Contract Metadata Registry
 
 User-visible outcome:

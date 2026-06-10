@@ -138,6 +138,15 @@ Current planning assumptions:
   evidence and adds only local fail-closed trust-policy evaluation for trusted
   issuers, verification methods, credential types, revocation status, expiry,
   max age, and cache-policy binding.
+- On 2026-06-10, Slice 2.8 rechecked the official DID resolution, VC
+  validation, and VC revocation docs before adding an opt-in live proof
+  harness. The docs still describe `Resolver`/client DID resolution from the
+  IOTA network, validation through issuer DID Document public keys, issuance
+  and expiration checks, and revocation through credential status mechanisms.
+  Slice 2.8 does not bundle a live `@iota/identity-wasm` adapter; it contacts
+  an operator-provided proof endpoint over HTTPS or loopback HTTP and then
+  applies the local Agent Profile validation plus VC trust-policy evaluator to
+  the returned DID and credential evidence.
 
 Implementation checks:
 

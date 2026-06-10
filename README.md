@@ -85,7 +85,8 @@ interfaces, an opt-in IOTA Names live resolution smoke, capability policy checks
 x402/AP2/A2A standards bridge helpers,
 local pay-per-call, data-license, service-bounty, reputation-receipt, and
 subscription workflows, bounded local IOTA Identity verification cache helpers,
-local VC trust-policy evaluation, and local A2A well-known Agent Card response proof plus local/mock A2A
+local VC trust-policy evaluation, an opt-in IOTA Identity live proof harness,
+and local A2A well-known Agent Card response proof plus local/mock A2A
 signed Agent Card proof, task/message operation helpers, a local A2A
 HTTP-shaped boundary, a loopback HTTP server smoke proof, and a local
 read-only marketplace evidence model.

@@ -21,14 +21,58 @@ test("live proof status reports exact blockers without secret values", async () 
       [
         ["testnet-readiness", "blocked", "TESTNET_ENV_FILE_MISSING"],
         ["iota-names-live", "blocked", "IOTA_NAMES_LIVE_CONFIG_MISSING"],
-        ["iota-identity-live", "blocked", "IOTA_IDENTITY_LIVE_PROOF_UNIMPLEMENTED"],
+        ["iota-identity-live", "blocked", "IOTA_IDENTITY_LIVE_CONFIG_MISSING"],
         ["vc-validation-live", "blocked", "VC_TRUST_POLICY_CONFIG_MISSING"],
       ],
     );
     assert.match(formatted, /IOTA_NAMES_GRAPHQL_URL/);
+    assert.match(formatted, /IOTA_IDENTITY_PROOF_ENDPOINT/);
     assert.match(formatted, /IOTA_IDENTITY_TRUSTED_ISSUER_DIDS/);
     assert.match(formatted, /\.env/);
     assert.doesNotMatch(formatted, /private|mnemonic|bearer|token|secret|iotaprivkey|local-secret/i);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("live proof status marks configured identity proof endpoint as ready without contacting it", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  try {
+    const report = await checkLiveProofStatus({
+      cwd,
+      env: {
+        IOTA_IDENTITY_PROOF_ENDPOINT: "https://identity.testnet.example/proof",
+        IOTA_IDENTITY_PROFILE_PATH: "profiles/researcher.json",
+      },
+    });
+    const formatted = formatLiveProofStatusReport(report);
+    const identity = report.checks.find((check) => check.id === "iota-identity-live");
+
+    assert.equal(identity?.status, "ready");
+    assert.equal(identity?.code, "IOTA_IDENTITY_LIVE_CONFIG_PRESENT");
+    assert.match(identity?.next ?? "", /smoke:iota-identity-live/);
+    assert.doesNotMatch(formatted, /identity\.testnet\.example|researcher\.json/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("live proof status blocks unsafe identity proof endpoints without printing them", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  try {
+    const report = await checkLiveProofStatus({
+      cwd,
+      env: {
+        IOTA_IDENTITY_PROOF_ENDPOINT: "http://identity.testnet.example/proof",
+        IOTA_IDENTITY_PROFILE_PATH: "profiles/researcher.json",
+      },
+    });
+    const formatted = formatLiveProofStatusReport(report);
+    const identity = report.checks.find((check) => check.id === "iota-identity-live");
+
+    assert.equal(identity?.status, "blocked");
+    assert.equal(identity?.code, "IOTA_IDENTITY_PROOF_ENDPOINT_UNSAFE");
+    assert.doesNotMatch(formatted, /identity\.testnet\.example|researcher\.json/);
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }
