@@ -2104,7 +2104,7 @@ Implemented local/mock A2A signed Agent Card proof.
 
 Implementation commit:
 
-- Pending commit in current working tree.
+- `1ecb76f` (`feat: add signed a2a agent cards`)
 
 Slice and PRD coverage:
 
