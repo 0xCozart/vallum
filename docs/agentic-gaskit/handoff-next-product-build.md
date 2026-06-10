@@ -8,8 +8,8 @@ Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 3.1, 3.2,
-4.1, and 4.2 are implemented and locally verified. The immediate target is
-Slice 4.3: A2A Agent Card. Use
+4.1, 4.2, and 4.3 are implemented and locally verified. The immediate target
+is Slice 5.1: Marketplace Readiness Gate. Use
 `docs/agentic-gaskit/execution-entry.md` as the entry doc, then continue
 through `docs/agentic-gaskit/execution-slices.md`.
 
@@ -25,6 +25,7 @@ through `docs/agentic-gaskit/execution-slices.md`.
 
 Recent commits to know:
 
+- `2a72b62` feat: add a2a agent card mapping
 - `8e228cf` feat: add ap2 mandate bridge
 - `b49daba` docs: rename agentic fork branch to main
 - `fe5a6ee` docs: record agentic gaskit github remote
@@ -153,21 +154,30 @@ Recent commits to know:
   closed; AP2 receipt references and dispute evidence are preserved; sensitive
   mandate/payment metadata is redacted; and the local mock AP2 flow executes
   only after policy-gateway approval and successful checkout/payment receipts.
+- Slice 4.3 A2A Agent Card mapping is implemented in `packages/registry` and
+  exported through `packages/standards`.
+- Slice 4.3 tests prove active Agent Profiles generate current A2A Agent Card
+  fields; revoked/expired profiles fail closed and do not advertise skills;
+  missing A2A endpoints and unsupported local A2A protocol versions fail
+  closed; malformed auth requirements fail closed; and public card metadata
+  omits credential refs, revocation refs, signer refs, wallet internals, payment
+  addresses, and private profile metadata.
 - `docs/agentic-gaskit/external-api-notes.md` was refreshed on 2026-06-10 for
-  current IOTA Names GraphQL, IOTA Identity DID/VC, x402 v2, and AP2 v0.2
-  mandate/receipt assumptions.
+  current IOTA Names GraphQL, IOTA Identity DID/VC, x402 v2, AP2 v0.2
+  mandate/receipt, and A2A Agent Card assumptions.
 - Root build, test, typecheck, package dry-run, docs, smokes, readiness example,
   contract tests, and secret scan include the accounts, manifest, MCP,
   registry, contracts metadata, receipts, escrow/receipt/pay-per-call contract
-  surfaces, x402/AP2 standards bridges, agent escrow demo smoke, and paid
+  surfaces, x402/AP2/A2A standards bridges, agent escrow demo smoke, and paid
   MCP-style tool smoke.
 
 ## What Is Not Complete
 
-- A2A protocol tools/discovery are not implemented.
-- Live IOTA Names/Identity proof, full verifiable credential validation, A2A
-  mapping, live standards-bridge proof, and expanded contract workflows beyond
-  local escrow/receipt/pay-per-call metadata are not implemented.
+- A2A task/message protocol operations, well-known serving, signed public Agent
+  Cards, and live A2A discovery proof are not implemented.
+- Live IOTA Names/Identity proof, full verifiable credential validation, live
+  standards-bridge proof, and expanded contract workflows beyond local
+  escrow/receipt/pay-per-call metadata are not implemented.
 - Slice 2.3 is locally verified only. Localnet/testnet deployment smoke has not
   run, and the demo/escrow contract does not custody real funds.
 - Package namespace strategy is still open.
@@ -913,9 +923,11 @@ Next recommended slice:
 
 Implemented the local Agent Profile schema package.
 
-The package is schema/validation only. It does not resolve live IOTA Names,
-validate IOTA Identity credentials, generate A2A Agent Cards, call IOTA RPC, or
-contact testnet/mainnet services.
+At Slice 2.1 completion, the package was schema/validation only. Later slices
+added local resolver/adapters and A2A Agent Card generation, but live IOTA
+Names resolution, live IOTA Identity credential validation, IOTA RPC calls, and
+testnet/mainnet services remain out of scope until a later explicit live-proof
+slice.
 
 Acceptance is defined in:
 
@@ -1553,9 +1565,102 @@ Known unproven claims:
   boundaries, policy-gateway sequencing, receipt linkage, dispute references,
   and redaction, not live AP2/payment settlement.
 
-Next recommended slice:
+Historical next recommendation before Slice 4.3 was implemented:
 
 - Slice 4.3 A2A Agent Card.
+
+## Completed Slice 4.3
+
+Implemented A2A Agent Card mapping from Agentic GasKit Agent Profiles in
+`packages/registry` and exported it through `packages/standards`.
+
+Implementation commit:
+
+- `2a72b62` feat: add a2a agent card mapping
+
+Acceptance is defined in:
+
+- `docs/agentic-gaskit/prds/phase-4-standards-bridges.md`
+- `docs/agentic-gaskit/execution-slices.md` Slice 4.3
+- `docs/agentic-gaskit/codex-active-goal.md` as of the Slice 4.3 session
+- Current official A2A spec and protobuf links in
+  `docs/agentic-gaskit/external-api-notes.md`
+
+Changed files:
+
+- `packages/registry/src/a2aCard.ts`
+- `packages/registry/src/a2aCard.test.ts`
+- `packages/registry/src/index.ts`
+- `packages/registry/README.md`
+- `packages/standards/src/a2a.ts`
+- `packages/standards/src/a2a.test.ts`
+- `packages/standards/src/index.ts`
+- `packages/standards/package.json`
+- `packages/standards/README.md`
+- `package-lock.json`
+- `docs/agentic-gaskit/external-api-notes.md`
+- `docs/agentic-gaskit/codex-active-goal.md`
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+- `docs/CODEBASE_MAP.md`
+- `tmp/apex-workflow/a2a-slice-4-3-scope.md`
+
+Commands run:
+
+```bash
+git status --short --branch
+npm run docs:check
+npm run secrets:scan
+npm test
+npm run typecheck
+node --import tsx --test packages/registry/src/a2aCard.test.ts packages/standards/src/a2a.test.ts
+npm run build -w @iota-gaskit/registry
+npm run build -w @iota-gaskit/standards
+npm run build -w @iota-gaskit/registry && npm run build -w @iota-gaskit/standards && node --import tsx --test packages/registry/src/a2aCard.test.ts packages/standards/src/a2a.test.ts
+npm run typecheck
+npm test
+git diff --check
+npm run verify:local
+```
+
+Evidence:
+
+- Official A2A specification and protobuf files were rechecked on 2026-06-10
+  before coding. The implemented local bridge targets the current Agent Card
+  fields, `/.well-known/agent-card.json`, protocol version `1.0`, and the
+  `HTTP+JSON` binding by default.
+- Baseline `npm run docs:check`, `npm run secrets:scan`, `npm test`, and
+  `npm run typecheck` passed before implementation.
+- Focused red state failed because A2A Agent Card exports did not exist.
+- Focused A2A tests pass for active profile-to-card mapping, current
+  `supportedInterfaces`/auth/mode/capability/skill field shape,
+  revoked/expired profile denial, missing A2A endpoint denial, unsupported
+  local protocol version denial, malformed auth requirement denial, private
+  extension metadata denial, and omission of credential refs, revocation refs,
+  signer refs, wallet internals, payment addresses, and private profile
+  metadata.
+- Hardening added validation that final public cards cannot include private
+  Agent Profile field names and that security requirements must reference
+  declared security schemes.
+- Final `npm run verify:local` passed with 250 TypeScript tests, 13 Move tests
+  across escrow/receipt/pay-per-call contracts, local gateway smoke, demo dApp
+  smoke, browser wrapper smoke, agent escrow smoke, paid MCP tool smoke,
+  readiness example, package dry-runs including `@iota-gaskit/standards`, docs
+  check, and secret scan.
+- `git diff --check` passed before the implementation commit.
+
+Known unproven claims:
+
+- No live A2A server, public well-known route, signed Agent Card, task/message
+  protocol operation, external A2A client, localnet/testnet/mainnet deployment,
+  formal A2A conformance suite, or live IOTA Gas Station call was run for Slice
+  4.3.
+- The A2A bridge is a local card-generation adapter. It proves current field
+  mapping, fail-closed profile states, auth declaration shape, and public-card
+  redaction, not live A2A interoperability.
+
+Next recommended slice:
+
+- Slice 5.1 Marketplace Readiness Gate.
 
 ## Guardrails
 
@@ -1583,18 +1688,21 @@ npm test
 npm run typecheck
 ```
 
-For Slice 4.3, refresh the current A2A Agent Card specification before coding.
-Start with the baseline above plus:
+For Slice 5.1, perform a marketplace readiness review without starting
+marketplace implementation. Start with the baseline above plus:
 
 ```bash
-sed -n '1,180p' docs/agentic-gaskit/prds/phase-4-standards-bridges.md
-sed -n '657,686p' docs/agentic-gaskit/execution-slices.md
+sed -n '690,730p' docs/agentic-gaskit/execution-slices.md
+sed -n '1,140p' docs/agentic-gaskit/prds/phase-5-marketplace.md
+sed -n '1,220p' docs/agentic-gaskit/verification-hardening.md
 ```
 
-Finish with:
+Finish with the lightest checks justified by docs-only review, at minimum:
 
 ```bash
-npm run verify:local
+npm run docs:check
+npm run secrets:scan
+git diff --check
 ```
 
 ## Known Adjacent Dirty State

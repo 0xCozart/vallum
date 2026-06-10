@@ -17,7 +17,7 @@ Execution entry:
 
 Immediate product slice:
 
-- Slice 4.3: A2A Agent Card after Slice 4.2 is committed
+- Slice 5.1: Marketplace Readiness Gate after Slice 4.3 is committed
 
 ## Intent Read
 
@@ -68,7 +68,9 @@ The current slices also add a local x402 v2 standards bridge for mapping
 payment requirements to manifests and receipts without operating a production
 facilitator, plus a local AP2 closed checkout/payment mandate bridge for
 mapping mandates to manifests and dispute-linked receipts without operating
-live AP2 or production payment rails. The next gaps are A2A protocol tools,
+live AP2 or production payment rails. The current slices also add local A2A
+Agent Card mapping from Agent Profiles without operating an A2A server or
+public discovery endpoint. The next gaps are marketplace readiness review,
 data-license and expanded contract workflows, live IOTA Names/Identity proof,
 and live deployment proof when explicitly in scope.
 
@@ -195,14 +197,16 @@ Run this loop for every slice.
 
 ## Current Slice Acceptance
 
-Slice 4.3 is complete only when:
+Slice 5.1 is complete only when:
 
-- A2A Agent Card generation from Agent Profiles works against the current
-  official A2A fields.
-- Revoked or expired profiles do not advertise active skills.
-- Auth, endpoint, supported interface, input/output mode, capability, and skill
-  fields are present without leaking private credential or revocation refs.
-- Unsupported or malformed A2A/profile inputs fail closed.
+- A local marketplace readiness document reviews whether Phases 1-4 primitives
+  are strong enough to justify marketplace work.
+- The review cites current local verification evidence for implemented
+  primitives and separates local/mock proof from live testnet or production
+  proof.
+- Marketplace non-goals remain explicit.
+- Compliance, provider-verification, moderation, custody, live-payment, and
+  security questions are listed as unresolved or gated where applicable.
 - Existing GasKit tests and safety checks still pass, or any failure is
   explained as a pre-existing/blocking condition with exact evidence.
 
@@ -239,5 +243,5 @@ sed -n '1,220p' docs/agentic-gaskit/verification-hardening.md
 ```
 
 Then create the next slice scope record/manifest, run the baseline evals, add
-focused tests, and implement Slice 4.3 unless the handoff names a different
-immediate target.
+focused tests or review checks, and implement Slice 5.1 unless the handoff
+names a different immediate target.

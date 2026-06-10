@@ -369,6 +369,7 @@ Sources:
 - https://github.com/a2aproject/A2A
 - https://github.com/a2aproject/A2A/blob/main/docs/specification.md
 - https://a2a-protocol.org/latest/specification
+- https://github.com/a2aproject/A2A/blob/main/specification/a2a.proto
 - Current Google codelab examples, only as compatibility notes.
 
 Current planning assumptions:
@@ -390,7 +391,8 @@ Current planning assumptions:
 - Slice 2.1 records MCP endpoint, A2A endpoint, Agent Card URL, capabilities,
   credential refs, and payment methods so Phase 4 can map Agent Profile data to
   A2A Agent Card fields without replacing A2A.
-- On 2026-06-09, Slice 4.3 rechecked the latest A2A specification. The Agent
+- On 2026-06-10, Slice 4.3 rechecked the latest A2A specification and
+  protobuf definition. The Agent
   Card required fields include `name`, `description`, `supportedInterfaces`,
   `version`, `capabilities`, `defaultInputModes`, `defaultOutputModes`, and
   `skills`.
@@ -407,10 +409,21 @@ Current planning assumptions:
 - The well-known registration states that public Agent Cards should not include
   sensitive credentials or internal implementation details. Agentic GasKit must
   not emit profile credential refs or revocation refs into the public card.
+- Slice 4.3 implements local Agent Profile to A2A Agent Card mapping only. It
+  emits current lower-camel discovery fields, the `HTTP+JSON` supported
+  interface by default, bearer auth scheme metadata, default text/JSON modes,
+  capability-derived skills, and a public Agentic GasKit profile extension. It
+  fails closed for revoked/expired profiles, missing A2A endpoints, unsupported
+  local protocol versions, malformed auth requirements, and private profile
+  fields in public metadata.
+- Slice 4.3 does not serve `/.well-known/agent-card.json`, operate an A2A
+  server, implement task/message operations, sign Agent Cards, or publish live
+  public discovery.
 
 Implementation checks:
 
 - Verify current official repository/spec URL.
 - Verify the Agent Card path and required fields.
 - Verify auth scheme representation.
+- Verify signature requirements before publishing public cards.
 - Verify task/message/artifact schema only if implementing more than discovery.
