@@ -7,8 +7,8 @@ Last updated: 2026-06-10.
 Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
-Slices 1.0, 1.1, and 1.2 are implemented and locally verified. The immediate
-target is Slice 1.3: gateway mock mode. Use
+Slices 1.0, 1.1, 1.2, and 1.3 are implemented and locally verified. The
+immediate target is Slice 1.4: SDK sponsored action. Use
 `docs/agentic-gaskit/execution-entry.md` as the entry doc, then continue
 through `docs/agentic-gaskit/execution-slices.md`.
 
@@ -65,12 +65,19 @@ Recent commits to know:
   revoked agents, missing manifests, expired manifests, over-budget actions,
   disallowed contracts/actions, unauthorized counterparties, missing simulation,
   human approval thresholds, and unsupported manifest versions are denied.
+- Slice 1.3 gateway mock mode is implemented in `packages/policy-gateway` as a
+  local-only agent sponsorship endpoint.
+- Slice 1.3 tests prove the gateway starts locally, valid manifests return
+  approved decisions with mock sponsorship ids, denied requests return reason
+  codes without reserving sponsorship, redacted events omit prompt-like and
+  secret-like request fields, and event sink failures do not affect request
+  handling.
 - Root build, test, typecheck, package dry-run, docs, smokes, readiness example,
   and secret scan include the accounts and manifest packages.
 
 ## What Is Not Complete
 
-- Gateway mock mode for agent sponsored actions is not implemented.
+- SDK sponsored action helper is not implemented.
 - MCP/A2A tools are not implemented.
 - Registry, receipts, and contract workflows are not implemented.
 - Package namespace strategy is still open.
@@ -339,6 +346,83 @@ Next recommended slice:
 
 - Slice 1.3 Gateway Mock Mode in `packages/policy-gateway`.
 
+## Completed Slice 1.3
+
+Implemented gateway mock mode for agent sponsored actions in
+`packages/policy-gateway`.
+
+This slice adds a package-level local agent sponsorship server and mock Gas
+Station adapter instead of changing the existing app-level gateway service. The
+endpoint is `/v1/agent/sponsorships` and accepts `{ manifest }` JSON bodies.
+
+Acceptance is defined in:
+
+- `docs/agentic-gaskit/prds/phase-1-sponsored-policy-mvp.md`
+- `docs/agentic-gaskit/execution-slices.md` Slice 1.3
+- `docs/agentic-gaskit/module-specs.md` `packages/policy-gateway`
+- `docs/agentic-gaskit/verification-hardening.md` Gateway/mock-mode concerns
+
+Changed files:
+
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+- `packages/policy-gateway/src/index.ts`
+- `packages/policy-gateway/src/mockGasStationAdapter.ts`
+- `packages/policy-gateway/src/routes.ts`
+- `packages/policy-gateway/src/server.ts`
+- `packages/policy-gateway/src/server.test.ts`
+
+Commands run:
+
+```bash
+git status --short --branch
+npm run docs:check
+npm run secrets:scan
+npm test
+npm run typecheck
+node --import tsx --test packages/policy-gateway/src/server.test.ts
+node --import tsx --test packages/policy-gateway/src/evaluatePolicy.test.ts packages/policy-gateway/src/policy.test.ts packages/policy-gateway/src/server.test.ts
+npm run verify:local
+git diff --check
+```
+
+Verification result:
+
+- Baseline before editing passed: docs check, secret scan, `npm test`, and
+  `npm run typecheck`.
+- Focused gateway mock-mode tests passed: 4 tests.
+- Focused policy gateway regression tests passed: 26 tests.
+- `npm run typecheck` passed.
+- `npm run verify:local` passed with 161 tests, typecheck, local gateway smoke,
+  demo dApp smoke, browser wrapper smoke, readiness example, package dry-run,
+  docs check, and secret scan.
+
+Hardening notes:
+
+- The mock gateway calls no live IOTA, Gas Station, SDK, MCP, custody, signing,
+  or payment systems.
+- Denied policy decisions do not call the mock sponsorship adapter.
+- Redacted events store bounded metadata such as ids, action metadata, gas
+  budget, intent length, and metadata presence, not signer refs, full intent
+  text, prompt-like metadata, or secret-like request fields.
+- Event sink failures are swallowed so observability cannot change local
+  sponsorship decisions.
+- The existing app-level gateway service contract was left unchanged.
+- Apex manifest helper remains unusable because the current
+  `apex.workflow.json` lacks required mode definitions and
+  `manifest.defaultDir`, so Slice 1.3 scope was recorded locally under ignored
+  `tmp/apex-workflow/` and this slice does not claim Apex verification.
+
+Known unproven claims:
+
+- The SDK cannot yet submit an agent manifest to this mock gateway.
+- MCP/A2A routing through the gateway is not implemented.
+- Idempotent sponsorship storage, receipts, escrow contracts, and live
+  execution remain future slices.
+
+Next recommended slice:
+
+- Slice 1.4 SDK Sponsored Action in `packages/sdk`.
+
 ## Guardrails
 
 - Do not expose seeds, mnemonics, private keys, raw keypairs, raw transaction
@@ -363,7 +447,7 @@ npm test
 npm run typecheck
 ```
 
-For the gateway mock mode slice, add focused integration tests first and finish
+For the SDK sponsored action slice, add focused SDK tests first and finish
 with:
 
 ```bash
