@@ -98,7 +98,7 @@ Do not create all of these at once. Add them through vertical slices:
 
 - gateway extensions for agent manifests and capabilities
 - registry live adapters
-- AP2 and A2A adapters under `packages/standards`
+- A2A adapter under `packages/standards`
 - A2A protocol tools and standards-compatible discovery
 - expanded contract packages for data license and device access workflows
 

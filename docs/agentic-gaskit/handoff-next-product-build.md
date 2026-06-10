@@ -8,8 +8,8 @@ Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 3.1, 3.2,
-and 4.1 are implemented and locally verified. The immediate target is Slice
-4.2: AP2 Mandate Mapping. Use
+4.1, and 4.2 are implemented and locally verified. The immediate target is
+Slice 4.3: A2A Agent Card. Use
 `docs/agentic-gaskit/execution-entry.md` as the entry doc, then continue
 through `docs/agentic-gaskit/execution-slices.md`.
 
@@ -25,6 +25,7 @@ through `docs/agentic-gaskit/execution-slices.md`.
 
 Recent commits to know:
 
+- `8e228cf` feat: add ap2 mandate bridge
 - `b49daba` docs: rename agentic fork branch to main
 - `fe5a6ee` docs: record agentic gaskit github remote
 - `b2d9928` chore: migrate reviewed gaskit local changes
@@ -144,17 +145,26 @@ Recent commits to know:
   evidence preserves external payment state separately; sensitive payment
   metadata is redacted; and a local mock facilitator flow returns a tool result
   only after policy-gateway approval, verify, and settle.
+- Slice 4.2 AP2 Mandate Mapping is implemented in `packages/manifest`,
+  `packages/receipts`, and `packages/standards`.
+- Slice 4.2 tests prove closed AP2 checkout/payment mandates map to Agentic
+  GasKit manifests; unsupported AP2 mandate `vct` strings fail closed; agentic
+  Trusted Surfaces fail closed; checkout/payment reference mismatches fail
+  closed; AP2 receipt references and dispute evidence are preserved; sensitive
+  mandate/payment metadata is redacted; and the local mock AP2 flow executes
+  only after policy-gateway approval and successful checkout/payment receipts.
 - `docs/agentic-gaskit/external-api-notes.md` was refreshed on 2026-06-10 for
-  current IOTA Names GraphQL, IOTA Identity DID/VC, and x402 v2 assumptions.
+  current IOTA Names GraphQL, IOTA Identity DID/VC, x402 v2, and AP2 v0.2
+  mandate/receipt assumptions.
 - Root build, test, typecheck, package dry-run, docs, smokes, readiness example,
   contract tests, and secret scan include the accounts, manifest, MCP,
   registry, contracts metadata, receipts, escrow/receipt/pay-per-call contract
-  surfaces, x402 standards bridge, agent escrow demo smoke, and paid MCP-style
-  tool smoke.
+  surfaces, x402/AP2 standards bridges, agent escrow demo smoke, and paid
+  MCP-style tool smoke.
 
 ## What Is Not Complete
 
-- AP2 mandate mapping and A2A protocol tools/discovery are not implemented.
+- A2A protocol tools/discovery are not implemented.
 - Live IOTA Names/Identity proof, full verifiable credential validation, A2A
   mapping, live standards-bridge proof, and expanded contract workflows beyond
   local escrow/receipt/pay-per-call metadata are not implemented.
@@ -1454,9 +1464,98 @@ Known unproven claims:
   policy-gateway enforcement, receipt linkage, and redaction, not live
   settlement.
 
-Next recommended slice:
+Historical next recommendation before Slice 4.2 was implemented:
 
 - Slice 4.2 AP2 Mandate Mapping.
+
+## Completed Slice 4.2
+
+Implemented AP2 closed checkout/payment mandate compatibility in
+`packages/manifest`, `packages/receipts`, and `packages/standards`.
+
+Implementation commit:
+
+- `8e228cf` feat: add ap2 mandate bridge
+
+Acceptance is defined in:
+
+- `docs/agentic-gaskit/prds/phase-4-standards-bridges.md`
+- `docs/agentic-gaskit/execution-slices.md` Slice 4.2
+- `docs/agentic-gaskit/codex-active-goal.md` as of the Slice 4.2 session
+- Current official AP2 spec and schema links in
+  `docs/agentic-gaskit/external-api-notes.md`
+
+Changed files:
+
+- `packages/manifest/src/ap2Mapping.ts`
+- `packages/manifest/src/ap2Mapping.test.ts`
+- `packages/manifest/src/index.ts`
+- `packages/receipts/src/ap2Receipt.ts`
+- `packages/receipts/src/ap2Receipt.test.ts`
+- `packages/receipts/src/index.ts`
+- `packages/standards/src/ap2.ts`
+- `packages/standards/src/ap2.test.ts`
+- `packages/standards/src/index.ts`
+- `packages/standards/README.md`
+- `docs/agentic-gaskit/external-api-notes.md`
+- `docs/agentic-gaskit/codex-active-goal.md`
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+- `docs/CODEBASE_MAP.md`
+- `tmp/apex-workflow/ap2-slice-4-2-scope.md`
+
+Commands run:
+
+```bash
+git status --short --branch
+npm run docs:check
+npm run secrets:scan
+npm test
+npm run typecheck
+node --import tsx --test packages/manifest/src/ap2Mapping.test.ts packages/receipts/src/ap2Receipt.test.ts packages/standards/src/ap2.test.ts
+npm run build -w @iota-gaskit/manifest && npm run build -w @iota-gaskit/receipts && npm run build -w @iota-gaskit/standards && node --import tsx --test packages/manifest/src/ap2Mapping.test.ts packages/receipts/src/ap2Receipt.test.ts packages/standards/src/ap2.test.ts
+npm run typecheck
+npm test
+git diff --check
+npm run verify:local
+```
+
+Evidence:
+
+- Official AP2 specification and schema files were rechecked on 2026-06-10
+  before coding. The implemented local bridge targets closed checkout/payment
+  mandate `vct` strings `mandate.checkout.1` and `mandate.payment.1`.
+- Baseline `npm run docs:check`, `npm run secrets:scan`, `npm test`, and
+  `npm run typecheck` passed before implementation.
+- Focused red state failed because AP2 mapping, AP2 receipt, and AP2 standards
+  exports did not exist.
+- Focused AP2 tests pass for mandate-to-manifest mapping, unsupported mandate
+  version denial, agentic Trusted Surface denial, checkout/payment reference
+  mismatch denial, AP2 receipt linkage, failed AP2 receipt state, receipt
+  reference mismatch denial, sensitive metadata redaction, local mock AP2
+  success, policy denial before receipt issuance/execution, payment receipt
+  failure before execution, and standards-layer receipt mismatch rejection.
+- Hardening added receipt-reference validation so checkout receipts must bind to
+  the checkout hash and payment receipts must bind to the payment mandate id.
+- Final `npm run verify:local` passed with 244 TypeScript tests, 13 Move tests
+  across escrow/receipt/pay-per-call contracts, local gateway smoke, demo dApp
+  smoke, browser wrapper smoke, agent escrow smoke, paid MCP tool smoke,
+  readiness example, package dry-runs including `@iota-gaskit/standards`, docs
+  check, and secret scan.
+- `git diff --check` passed before the implementation commit.
+
+Known unproven claims:
+
+- No live AP2 participant, real card/bank/wallet credential, PSP/PISP,
+  production payment processor, live external payment rail, localnet/testnet/
+  mainnet deployment, formal AP2 conformance suite, or live IOTA Gas Station
+  call was run for Slice 4.2.
+- The AP2 flow is a local mock integration. It proves mapping, fail-closed
+  boundaries, policy-gateway sequencing, receipt linkage, dispute references,
+  and redaction, not live AP2/payment settlement.
+
+Next recommended slice:
+
+- Slice 4.3 A2A Agent Card.
 
 ## Guardrails
 
@@ -1465,7 +1564,9 @@ Next recommended slice:
   credentials, or private prompt text.
 - Do not treat a signer reference as bearer authorization.
 - Do not let SDK/MCP value-bearing flows bypass the policy gateway.
-- Do not run live testnet commands unless the user explicitly asks.
+- IOTA testnet verification is allowed when relevant and configured with
+  operator-owned local settings; do not expose secrets or claim local/mock proof
+  as live AP2/payment/IOTA proof.
 - Do not commit tmp live scripts as product code.
 - Do not clean or revert `/home/sacred/code/iota-gaskit` dirty files unless the
   user explicitly asks.
@@ -1482,13 +1583,12 @@ npm test
 npm run typecheck
 ```
 
-For Slice 4.2, keep AP2 mandate mapping local unless the user explicitly asks
-for live external payment proof and operator-owned credentials are configured.
+For Slice 4.3, refresh the current A2A Agent Card specification before coding.
 Start with the baseline above plus:
 
 ```bash
 sed -n '1,180p' docs/agentic-gaskit/prds/phase-4-standards-bridges.md
-sed -n '618,652p' docs/agentic-gaskit/execution-slices.md
+sed -n '657,686p' docs/agentic-gaskit/execution-slices.md
 ```
 
 Finish with:

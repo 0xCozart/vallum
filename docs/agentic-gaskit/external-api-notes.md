@@ -307,6 +307,13 @@ Implementation checks:
 Sources:
 
 - https://ap2-protocol.org/ap2/specification/
+- https://github.com/google-agentic-commerce/AP2/blob/main/docs/ap2/specification.md
+- https://github.com/google-agentic-commerce/AP2/blob/main/code/sdk/schemas/ap2/checkout_mandate.json
+- https://github.com/google-agentic-commerce/AP2/blob/main/code/sdk/schemas/ap2/payment_mandate.json
+- https://github.com/google-agentic-commerce/AP2/blob/main/code/sdk/schemas/ap2/checkout_receipt.json
+- https://github.com/google-agentic-commerce/AP2/blob/main/code/sdk/schemas/ap2/payment_receipt.json
+- https://github.com/google-agentic-commerce/AP2/blob/main/code/sdk/schemas/ap2/types/amount.json
+- https://github.com/google-agentic-commerce/AP2/blob/main/code/sdk/schemas/ap2/types/receipt_status.json
 
 Current planning assumptions:
 
@@ -320,11 +327,17 @@ Current planning assumptions:
 - Current docs distinguish Human Present direct mode from Human Not Present
   autonomous mode. Autonomous mode requires agent public-key confirmation
   material and constrained open mandates.
-- On 2026-06-09, Slice 4.2 rechecked the AP2 v0.2 specification. AP2 still
+- On 2026-06-10, Slice 4.2 rechecked the AP2 v0.2 specification and current
+  JSON schemas. AP2 still
   defines Checkout Mandates and Payment Mandates as linked evidence for
   agent-performed payments, and it identifies mandate schema versions through
-  exact `vct` strings such as `mandate.payment.1` and
-  `mandate.checkout.open.1`.
+  exact `vct` strings. The closed checkout/payment mandates use
+  `mandate.checkout.1` and `mandate.payment.1`; open mandates use
+  `mandate.checkout.open.1` and `mandate.payment.open.1`.
+- Current payment amount schema uses minor-unit integer `amount` plus a
+  three-letter ISO-4217 `currency`.
+- Current payment receipt schema requires `status`, `iss`, `iat`,
+  `reference`, and `payment_id`; receipt status is `Success` or `Error`.
 - Current AP2 docs require the Trusted Surface role to be non-agentic. They
   also state that deterministic validation and processing must be performed
   regardless of whether another role is agentic.
@@ -334,11 +347,17 @@ Current planning assumptions:
 - AP2 dispute evidence combines checkout mandate/receipt and payment
   mandate/receipt. Agentic GasKit receipts must preserve those links rather
   than collapsing them into one payment boolean.
+- Slice 4.2 implements a local compatibility bridge only. It maps closed AP2
+  checkout/payment mandates to Agentic GasKit manifests, preserves mandate and
+  receipt references for dispute evidence, redacts private mandate/payment
+  material, and fails closed for unsupported AP2 `vct` strings. It does not
+  operate AP2, payment credentials, real PSP/PISP rails, or production
+  settlement.
 
 Implementation checks:
 
-- Verify current AP2 version.
-- Verify mandate and receipt schemas.
+- Verify current AP2 version and `vct` strings before any follow-up change.
+- Verify mandate and receipt schemas before adding open-mandate support.
 - Verify dispute evidence fields.
 - Verify how AP2 sample x402 flows model human-present and autonomous
   scenarios.

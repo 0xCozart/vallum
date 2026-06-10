@@ -17,7 +17,7 @@ Execution entry:
 
 Immediate product slice:
 
-- Slice 4.2: AP2 Mandate Mapping after Slice 4.1 is committed
+- Slice 4.3: A2A Agent Card after Slice 4.2 is committed
 
 ## Intent Read
 
@@ -66,7 +66,9 @@ checks, mock-tested IOTA Names/Identity adapter interfaces, a local
 contract-template metadata registry, and a local pay-per-call tool workflow.
 The current slices also add a local x402 v2 standards bridge for mapping
 payment requirements to manifests and receipts without operating a production
-facilitator. The next gaps are AP2 mandate mapping, A2A protocol tools,
+facilitator, plus a local AP2 closed checkout/payment mandate bridge for
+mapping mandates to manifests and dispute-linked receipts without operating
+live AP2 or production payment rails. The next gaps are A2A protocol tools,
 data-license and expanded contract workflows, live IOTA Names/Identity proof,
 and live deployment proof when explicitly in scope.
 
@@ -110,7 +112,9 @@ Constraints:
 - Read `CLAUDE.md` and `docs/CODEBASE_MAP.md` before broad search.
 - Respect `apex.workflow.json`; do not claim Apex verification until Apex
   profile review/setup concerns are addressed or explicitly accepted.
-- Do not run live testnet commands without explicit operator intent.
+- IOTA testnet verification is allowed when it is relevant to the current
+  slice and required operator-owned local config is present; do not expose
+  secrets or turn local/mock proof into a live proof claim.
 - Do not expose seeds, mnemonics, private keys, raw keypairs, raw transaction
   bytes, user signatures, sponsor keys, app API keys, bearer tokens, payment
   credentials, or private prompt text.
@@ -191,14 +195,14 @@ Run this loop for every slice.
 
 ## Current Slice Acceptance
 
-Slice 4.2 is complete only when:
+Slice 4.3 is complete only when:
 
-- AP2 checkout and payment mandate fixtures map to Agentic GasKit manifests and
-  receipt evidence.
-- Trusted-surface/non-agentic boundaries are represented explicitly.
-- Dispute evidence pointers are preserved without embedding private payment or
-  mandate payloads.
-- Unsupported AP2 protocol/schema versions fail closed.
+- A2A Agent Card generation from Agent Profiles works against the current
+  official A2A fields.
+- Revoked or expired profiles do not advertise active skills.
+- Auth, endpoint, supported interface, input/output mode, capability, and skill
+  fields are present without leaking private credential or revocation refs.
+- Unsupported or malformed A2A/profile inputs fail closed.
 - Existing GasKit tests and safety checks still pass, or any failure is
   explained as a pre-existing/blocking condition with exact evidence.
 
@@ -235,5 +239,5 @@ sed -n '1,220p' docs/agentic-gaskit/verification-hardening.md
 ```
 
 Then create the next slice scope record/manifest, run the baseline evals, add
-focused tests, and implement Slice 4.2 unless the handoff names a different
+focused tests, and implement Slice 4.3 unless the handoff names a different
 immediate target.
