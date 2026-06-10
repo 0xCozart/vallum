@@ -17,7 +17,7 @@ Execution entry:
 
 Immediate product slice:
 
-- Slice 4.1: x402 Mapping after Slice 3.2 is committed
+- Slice 4.2: AP2 Mandate Mapping after Slice 4.1 is committed
 
 ## Intent Read
 
@@ -64,9 +64,11 @@ agent-to-agent escrow demo. The current slices add local Agent Profile schema
 validation, local fixture resolution, SDK resolver access, capability policy
 checks, mock-tested IOTA Names/Identity adapter interfaces, a local
 contract-template metadata registry, and a local pay-per-call tool workflow.
-The next gaps are standards bridges, data-license and expanded contract
-workflows, A2A protocol tools, live IOTA Names/Identity proof, and live
-deployment proof when explicitly in scope.
+The current slices also add a local x402 v2 standards bridge for mapping
+payment requirements to manifests and receipts without operating a production
+facilitator. The next gaps are AP2 mandate mapping, A2A protocol tools,
+data-license and expanded contract workflows, live IOTA Names/Identity proof,
+and live deployment proof when explicitly in scope.
 
 Desired outcome:
 Codex repeatedly implements one vertical slice, proves it with focused and
@@ -189,13 +191,14 @@ Run this loop for every slice.
 
 ## Current Slice Acceptance
 
-Slice 4.1 is complete only when:
+Slice 4.2 is complete only when:
 
-- x402 payment requirement fixtures map to Agentic GasKit manifests.
-- Unsupported x402 protocol versions fail closed.
-- Receipt mapping/redaction tests cover external payment metadata.
-- Mock facilitator integration stays local and does not use production payment
-  credentials.
+- AP2 checkout and payment mandate fixtures map to Agentic GasKit manifests and
+  receipt evidence.
+- Trusted-surface/non-agentic boundaries are represented explicitly.
+- Dispute evidence pointers are preserved without embedding private payment or
+  mandate payloads.
+- Unsupported AP2 protocol/schema versions fail closed.
 - Existing GasKit tests and safety checks still pass, or any failure is
   explained as a pre-existing/blocking condition with exact evidence.
 
@@ -232,5 +235,5 @@ sed -n '1,220p' docs/agentic-gaskit/verification-hardening.md
 ```
 
 Then create the next slice scope record/manifest, run the baseline evals, add
-focused tests, and implement Slice 4.1 unless the handoff names a different
+focused tests, and implement Slice 4.2 unless the handoff names a different
 immediate target.

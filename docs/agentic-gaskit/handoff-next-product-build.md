@@ -7,9 +7,9 @@ Last updated: 2026-06-10.
 Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
-Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 3.1, and 3.2
-are implemented and locally verified. The immediate target is Slice 4.1: x402
-Mapping. Use
+Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 3.1, 3.2,
+and 4.1 are implemented and locally verified. The immediate target is Slice
+4.2: AP2 Mandate Mapping. Use
 `docs/agentic-gaskit/execution-entry.md` as the entry doc, then continue
 through `docs/agentic-gaskit/execution-slices.md`.
 
@@ -136,19 +136,28 @@ Recent commits to know:
   policy approval, mock payment confirmation, and receipt submission; policy
   denial, failed payment, thrown payment confirmation, thrown tool invocation,
   blank proof fields, and malformed runtime proof fields withhold paid results.
+- Slice 4.1 x402 Mapping is implemented in `packages/manifest`,
+  `packages/receipts`, and `packages/standards` as `@iota-gaskit/standards`.
+- Slice 4.1 tests prove x402 v2 payment requirements map to Agentic GasKit
+  manifests; unsupported x402 protocol versions and unsupported schemes fail
+  closed; malformed network ids and accepted indexes fail closed; receipt
+  evidence preserves external payment state separately; sensitive payment
+  metadata is redacted; and a local mock facilitator flow returns a tool result
+  only after policy-gateway approval, verify, and settle.
 - `docs/agentic-gaskit/external-api-notes.md` was refreshed on 2026-06-10 for
-  current IOTA Names GraphQL and IOTA Identity DID/VC assumptions.
+  current IOTA Names GraphQL, IOTA Identity DID/VC, and x402 v2 assumptions.
 - Root build, test, typecheck, package dry-run, docs, smokes, readiness example,
   contract tests, and secret scan include the accounts, manifest, MCP,
   registry, contracts metadata, receipts, escrow/receipt/pay-per-call contract
-  surfaces, agent escrow demo smoke, and paid MCP-style tool smoke.
+  surfaces, x402 standards bridge, agent escrow demo smoke, and paid MCP-style
+  tool smoke.
 
 ## What Is Not Complete
 
-- A2A protocol tools and standards-compatible discovery are not implemented.
+- AP2 mandate mapping and A2A protocol tools/discovery are not implemented.
 - Live IOTA Names/Identity proof, full verifiable credential validation, A2A
-  mapping, standards bridges, and expanded contract workflows beyond local
-  escrow/receipt/pay-per-call metadata are not implemented.
+  mapping, live standards-bridge proof, and expanded contract workflows beyond
+  local escrow/receipt/pay-per-call metadata are not implemented.
 - Slice 2.3 is locally verified only. Localnet/testnet deployment smoke has not
   run, and the demo/escrow contract does not custody real funds.
 - Package namespace strategy is still open.
@@ -1207,10 +1216,6 @@ Known unproven claims:
   view, A2A Agent Card mapping, or live testnet/manual resolution proof exists
   yet.
 
-Next recommended slice:
-
-- Slice 4.1 x402 Mapping.
-
 ## Slice 3.1 Completion Evidence
 
 Committed slice:
@@ -1367,6 +1372,92 @@ Known unproven claims:
 - The pay-per-call package id is local metadata fixture data for policy tests,
   not a deployed address claim.
 
+## Slice 4.1 Completion Evidence
+
+Committed slice:
+
+- `3c68e22 feat: add x402 standards bridge`
+
+Files changed:
+
+- `packages/manifest/src/index.ts`
+- `packages/manifest/src/x402Mapping.ts`
+- `packages/manifest/src/x402Mapping.test.ts`
+- `packages/receipts/src/index.ts`
+- `packages/receipts/src/x402Receipt.ts`
+- `packages/receipts/src/x402Receipt.test.ts`
+- `packages/standards/README.md`
+- `packages/standards/package.json`
+- `packages/standards/src/index.ts`
+- `packages/standards/src/x402.ts`
+- `packages/standards/src/x402.test.ts`
+- `packages/standards/tsconfig.build.json`
+- `scripts/package-scripts.test.ts`
+- `package.json`
+- `package-lock.json`
+- `docs/agentic-gaskit/external-api-notes.md`
+- `docs/agentic-gaskit/codex-active-goal.md`
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+- `docs/CODEBASE_MAP.md`
+- `README.md`
+- `tmp/apex-workflow/x402-slice-4-1-scope.md`
+
+Commands run:
+
+```bash
+git status --short --branch
+npm run docs:check
+npm run secrets:scan
+npm test
+npm run typecheck
+node --import tsx --test packages/manifest/src/x402Mapping.test.ts packages/receipts/src/x402Receipt.test.ts packages/standards/src/x402.test.ts
+npm run build -w @iota-gaskit/manifest && npm run build -w @iota-gaskit/receipts && npm run build -w @iota-gaskit/standards && node --import tsx --test packages/manifest/src/x402Mapping.test.ts packages/receipts/src/x402Receipt.test.ts packages/standards/src/x402.test.ts
+npm install --package-lock-only --ignore-scripts
+npm run typecheck
+npm run verify:local
+npm run build -w @iota-gaskit/standards && npm pack --dry-run -w @iota-gaskit/standards
+git diff --check
+```
+
+Evidence:
+
+- Official x402 docs and source types were rechecked on 2026-06-10 before
+  coding. The implemented local bridge targets x402 v2 `PaymentRequired`
+  objects with `resource` plus `accepts[]` payment requirements.
+- Baseline `npm run docs:check`, `npm run secrets:scan`, `npm test`, and
+  `npm run typecheck` passed before implementation.
+- Focused red state failed because `x402Mapping.js`, `x402Receipt.js`, and
+  `packages/standards/src/index.js` did not exist.
+- Focused x402 tests pass for v2 requirement-to-manifest mapping,
+  unsupported protocol version denial, unsupported scheme denial, malformed
+  CAIP-2 network id denial, invalid accepted-index denial, external payment
+  receipt linkage, payment metadata redaction, local mock facilitator success,
+  policy denial before facilitator calls, verify failure before settlement/tool
+  invocation, settle failure before tool invocation, and unsupported x402
+  version denial.
+- Hardening changed the standards helper to use the real
+  `evaluateAgentActionPolicy` path instead of a duplicate local policy
+  evaluator.
+- Final `npm run verify:local` passed with 231 TypeScript tests, 13 Move tests
+  across escrow/receipt/pay-per-call contracts, local gateway smoke, demo dApp
+  smoke, browser wrapper smoke, agent escrow smoke, paid MCP tool smoke,
+  readiness example, package dry-runs including `@iota-gaskit/standards`, docs
+  check, and secret scan.
+- `git diff --check` passed before the implementation commit.
+
+Known unproven claims:
+
+- No production x402 facilitator, real payment credential, live external
+  payment rail, localnet/testnet/mainnet deployment, formal protocol
+  conformance suite, or live IOTA Gas Station call was run for Slice 4.1.
+- The x402 facilitator flow is a local mock integration. It proves sequencing,
+  policy-gateway enforcement, receipt linkage, and redaction, not live
+  settlement.
+
+Next recommended slice:
+
+- Slice 4.2 AP2 Mandate Mapping.
+
 ## Guardrails
 
 - Do not expose seeds, mnemonics, private keys, raw keypairs, raw transaction
@@ -1391,12 +1482,13 @@ npm test
 npm run typecheck
 ```
 
-For Slice 3.1, keep contract metadata work local unless the user explicitly
-asks for live localnet/testnet proof and operator-owned credentials are
-configured. Start with the baseline above plus:
+For Slice 4.2, keep AP2 mandate mapping local unless the user explicitly asks
+for live external payment proof and operator-owned credentials are configured.
+Start with the baseline above plus:
 
 ```bash
-node --import tsx --test packages/policy-gateway/src/*.test.ts
+sed -n '1,180p' docs/agentic-gaskit/prds/phase-4-standards-bridges.md
+sed -n '618,652p' docs/agentic-gaskit/execution-slices.md
 ```
 
 Finish with:

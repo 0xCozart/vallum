@@ -256,6 +256,9 @@ Sources:
 
 - https://docs.x402.org/introduction
 - https://www.x402.org/
+- https://github.com/x402-foundation/x402/blob/main/specs/x402-specification-v2.md
+- https://github.com/x402-foundation/x402/blob/main/typescript/packages/core/src/types/payments.ts
+- https://github.com/x402-foundation/x402/blob/main/typescript/packages/core/src/types/facilitator.ts
 
 Current planning assumptions:
 
@@ -269,10 +272,13 @@ Current planning assumptions:
 - Current facilitator docs describe the facilitator as an independent
   verification and settlement layer that helps servers confirm payments and
   submit on-chain transactions without direct chain infrastructure.
-- On 2026-06-09, Slice 4.1 rechecked current x402 docs. The documented HTTP
+- On 2026-06-10, Slice 4.1 rechecked current x402 docs/specs. The documented HTTP
   flow still starts with `402 Payment Required`, then client payment payload,
   facilitator or local `/verify`, facilitator or local `/settle`, and resource
   delivery only after a valid payment path.
+- Current v2 TypeScript types define `PaymentRequired` with `x402Version`,
+  `resource`, and `accepts`; each payment requirement carries `scheme`,
+  `network`, `asset`, `amount`, `payTo`, `maxTimeoutSeconds`, and `extra`.
 - Current facilitator docs say the resource server advertises requirements in a
   Base64-encoded `PAYMENT-REQUIRED` header, the client sends a Base64-encoded
   `PAYMENT-SIGNATURE` header, `/verify` checks payment payload plus payment

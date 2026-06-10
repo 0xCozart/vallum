@@ -179,6 +179,7 @@ packages/
   manifest/               # Agent transaction manifest schema and validation
   registry/               # Agent Profile schema, validation, resolver, and adapters
   contracts-metadata/     # Versioned contract template metadata for policy
+  standards/              # x402/AP2/A2A standards bridge adapters
   mcp-server/             # MCP-shaped sponsorship tool facade
   receipts/               # Receipt and escrow state machine
 contracts/
