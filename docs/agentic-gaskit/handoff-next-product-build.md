@@ -8,7 +8,9 @@ Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, and 1.5 are implemented and locally verified.
-The immediate target is Slice 1.6: Escrow And Receipt MVP. Use
+Slice 1.6 has partial local receipt/SDK progress, but the real Move escrow and
+receipt contracts are not implemented or tested. The immediate target remains
+completing Slice 1.6: Escrow And Receipt MVP. Use
 `docs/agentic-gaskit/execution-entry.md` as the entry doc, then continue
 through `docs/agentic-gaskit/execution-slices.md`.
 
@@ -82,13 +84,31 @@ Recent commits to know:
   `iota.open_escrow` route through the SDK/gateway, invalid inputs return typed
   MCP tool errors, gateway denials return structured errors, and MCP tools post
   only to the sponsorship gateway route.
+- Slice 1.6 partial local receipt state is implemented in `packages/receipts`
+  as `@iota-gaskit/receipts`.
+- Slice 1.6 partial receipt tests prove the local lifecycle, double-release
+  denial, unauthorized verifier denial, refund after completion, expiry to a
+  refunded receipt with expired escrow state, and divergent external/IOTA
+  receipt state links without data loss.
+- Slice 1.6 partial SDK helper `openEscrow` is implemented in
+  `packages/sdk/src/contracts/openEscrow.ts`; it creates an attempted receipt,
+  routes through `requestSponsoredAction`, and returns either sponsored or
+  denied receipt state.
 - Root build, test, typecheck, package dry-run, docs, smokes, readiness example,
-  and secret scan include the accounts and manifest packages.
+  and secret scan include the accounts, manifest, MCP, and receipts packages.
 
 ## What Is Not Complete
 
 - A2A tools are not implemented.
-- Registry, receipts, and contract workflows are not implemented.
+- Registry and full contract workflows are not implemented.
+- Real Move contracts under `contracts/escrow_v1` and `contracts/receipt_v1`
+  are not implemented.
+- Move contract tests for create/release/refund, double release denial, and
+  unauthorized verifier denial have not run because the `iota` CLI is not
+  available on this machine.
+- Full Slice 1.6 is not complete. The current work is a local TypeScript
+  receipt state machine plus SDK gateway helper, not deployed escrow custody or
+  on-chain receipt behavior.
 - Package namespace strategy is still open.
 - Production custody, KMS, and recovery/export are not designed or implemented.
 
@@ -602,6 +622,113 @@ Next recommended slice:
 
 - Slice 1.6 Escrow And Receipt MVP.
 
+## Slice 1.6 Partial Progress
+
+Implemented a local TypeScript receipt and escrow state machine in
+`packages/receipts`, plus an SDK `openEscrow` helper that routes escrow opening
+through the existing Slice 1.4 sponsored-action gateway path.
+
+This is not the full Slice 1.6 acceptance target because the local machine does
+not have the IOTA CLI or a Move test harness available. No Move contracts,
+localnet deployment, testnet deployment, or real custody/settlement behavior is
+claimed.
+
+Acceptance references:
+
+- `docs/agentic-gaskit/prds/phase-1-sponsored-policy-mvp.md`
+- `docs/agentic-gaskit/execution-slices.md` Slice 1.6
+- `docs/agentic-gaskit/module-specs.md` contracts and receipts modules
+- `docs/agentic-gaskit/verification-hardening.md` contract/receipt risks
+
+Changed files:
+
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+- `package.json`
+- `package-lock.json`
+- `packages/receipts/README.md`
+- `packages/receipts/package.json`
+- `packages/receipts/src/index.ts`
+- `packages/receipts/src/receipts.test.ts`
+- `packages/receipts/tsconfig.build.json`
+- `packages/sdk/package.json`
+- `packages/sdk/src/contracts/openEscrow.ts`
+- `packages/sdk/src/contracts/openEscrow.test.ts`
+- `packages/sdk/src/index.ts`
+
+Commands run:
+
+```bash
+git status --short --branch
+command -v iota
+iota --version
+iota move test --help
+find . -maxdepth 3 -name Move.toml -o -name '*.move'
+npm run docs:check
+npm run secrets:scan
+npm test
+npm run typecheck
+node --import tsx --test packages/receipts/src/receipts.test.ts
+node --import tsx --test packages/sdk/src/contracts/openEscrow.test.ts
+node --import tsx --test packages/receipts/src/receipts.test.ts packages/sdk/src/contracts/openEscrow.test.ts
+node --import tsx --test packages/policy-gateway/src/server.test.ts packages/sdk/src/client.test.ts packages/mcp-server/src/tools.test.ts packages/receipts/src/receipts.test.ts packages/sdk/src/contracts/openEscrow.test.ts
+npm install
+npm run verify:local
+git diff --check
+```
+
+Verification result:
+
+- Baseline before editing passed: docs check, secret scan, `npm test`, and
+  `npm run typecheck`.
+- `iota` CLI was unavailable: `command -v iota` returned no path, and
+  `iota --version` plus `iota move test --help` failed with command not found.
+- No `Move.toml` or `.move` files were present under the first three directory
+  levels.
+- Focused receipt tests passed: 6 tests.
+- Focused receipt plus SDK `openEscrow` tests passed: 8 tests.
+- Focused policy gateway plus SDK plus MCP plus receipt regression tests
+  passed: 31 tests.
+- `npm run typecheck` passed after `npm install` created the workspace link for
+  `@iota-gaskit/receipts`.
+- `npm run verify:local` passed with 176 tests, typecheck, local gateway smoke,
+  demo dApp smoke, browser wrapper smoke, readiness example, package dry-run,
+  docs check, and secret scan.
+- `git diff --check` passed.
+
+Hardening notes:
+
+- `packages/receipts` is a pure local state machine. It adds no custody, live
+  IOTA, Gas Station, gateway reserve/execute, signing, or payment behavior.
+- `openEscrow` calls `requestSponsoredAction`, so it uses the existing
+  SDK/gateway sponsorship route instead of direct reserve/execute or raw
+  transaction/user-signature paths.
+- Denied gateway decisions become denied receipt state, not execution attempts.
+- Double release is denied after release, only the configured verifier can
+  release escrow, and refunded or expired escrow cannot be released.
+- Receipt links allow external payment and IOTA receipt state to diverge
+  without overwriting the core receipt status.
+- Secret scan passed; the only hardening search hits in the changed SDK/receipt
+  surface were test `apiKey` fixtures and the expected `apiKey` option name.
+- Apex manifest helper remains unusable because the current
+  `apex.workflow.json` lacks required mode definitions and
+  `manifest.defaultDir`, so Slice 1.6 partial scope was recorded locally under
+  ignored `tmp/apex-workflow/` and this work does not claim Apex verification.
+
+Known unproven claims:
+
+- Real Move contracts `contracts/escrow_v1` and `contracts/receipt_v1` are not
+  implemented.
+- Move tests for create, release, refund, double release denial, and
+  unauthorized verifier denial are not run.
+- Localnet/testnet deployment smoke is not run.
+- No actual fund custody, settlement, verifier oracle, on-chain receipt, or
+  dispute resolution behavior exists.
+
+Next recommended slice:
+
+- Continue Slice 1.6 by setting up the Move harness or adding verified contract
+  implementation and tests for escrow and receipts.
+
 ## Guardrails
 
 - Do not expose seeds, mnemonics, private keys, raw keypairs, raw transaction
@@ -626,8 +753,9 @@ npm test
 npm run typecheck
 ```
 
-For the escrow and receipt MVP slice, add focused contract/receipt tests first
-and finish
+For the continuing escrow and receipt MVP slice, first verify whether the IOTA
+CLI and Move harness are available. If they are not available, do not claim
+contract acceptance. Add focused contract/receipt tests first and finish
 with:
 
 ```bash
