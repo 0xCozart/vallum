@@ -10,8 +10,8 @@ Continue actual Agentic GasKit product implementation in
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5,
 2.6, 2.7, 2.8,
 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8,
-5.1, 5.2, 6.1, and 6.2 are implemented, reviewed, locally verified, or explicitly
-deferred with a verified hardening gate.
+5.1, 5.2, 6.1, 6.2, and 6.3 are implemented, reviewed, locally verified, or
+explicitly deferred with a verified hardening gate.
 Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
 `docs/marketplace-readiness.md` before choosing the next slice. Do not start
 production marketplace implementation unless the user explicitly approves the
@@ -29,6 +29,7 @@ new scope and its unresolved gates.
 
 Recent commits to know:
 
+- `6d9e64f` feat: add package install smoke
 - `7ed27b1` feat: add package publish dry-run gate
 - `45bf716` feat: add iota identity live proof smoke
 - `9f10bad` feat: harden identity verification cache
@@ -3714,4 +3715,103 @@ Next safe slice:
 - Continue with a non-live roadmap slice that improves installability or
   operator usability; or provide operator-owned local configuration to run one
   live gate: `npm run readiness:testnet`, `npm run smoke:iota-names-live`, or
+  `npm run smoke:iota-identity-live`.
+
+## Completed Slice 6.3: Package Install Smoke
+
+Implementation commit: `6d9e64f` (`feat: add package install smoke`).
+
+What changed:
+
+- Added `npm run smoke:package-install` as a local bundle installability gate.
+- Added `scripts/smoke-package-install.ts`, which builds the repo, packs every
+  non-private package workspace into a temporary directory, installs the local
+  tarballs together into a temporary consumer project, imports every public
+  package root entrypoint, and deletes the temporary directory.
+- Added `scripts/package-install-smoke.test.ts` to prove npm pack/install
+  argument construction, temp consumer package JSON generation, root import
+  smoke source generation, expected tarball discovery, cleanup on failure, and
+  redacted failure logging.
+- Wired `npm run smoke:package-install` into `npm run verify:local` after
+  `npm run pack:check`.
+- Updated package script, reviewer-doc, milestone proof, package release,
+  README, overview, codebase map, active goal, full roadmap goal, and execution
+  slice documentation.
+
+Important boundary:
+
+- This proves local tarball bundle install/import behavior only.
+- It does not prove npm registry installability, package-name ownership,
+  package publication, provenance signing, registry authorization, 2FA,
+  downstream framework compatibility, live IOTA behavior, or package namespace
+  rename readiness.
+
+Commands run:
+
+```bash
+npm run docs:check
+npm run secrets:scan
+npm test
+npm run typecheck
+node --import tsx --test scripts/package-install-smoke.test.ts scripts/package-publish-dry-run.test.ts scripts/package-scripts.test.ts scripts/reviewer-docs.test.ts
+npm run smoke:package-install
+npm run docs:check
+npm run secrets:scan
+npm run typecheck
+npm run verify:local
+git diff --check
+```
+
+Verification result:
+
+- Baseline before editing passed: docs check, secret scan, `npm test`, and
+  `npm run typecheck`.
+- Focused package install smoke tests passed with 54 tests across install smoke,
+  package publish dry-run, package script wiring, and reviewer docs.
+- `npm run smoke:package-install` passed. It built the repo, installed local
+  tarballs into a temporary consumer, and imported 11 public package entrypoints:
+  `@iota-gaskit/accounts`, `@iota-gaskit/contracts-metadata`,
+  `@iota-gaskit/manifest`, `@iota-gaskit/marketplace`,
+  `@iota-gaskit/mcp-server`, `@iota-gaskit/policy-gateway`,
+  `@iota-gaskit/receipts`, `@iota-gaskit/registry`, `@iota-gaskit/sdk`,
+  `@iota-gaskit/shared-types`, and `@iota-gaskit/standards`.
+- `npm run docs:check` passed: 31 HTML pages from 30 Markdown sources.
+- `npm run secrets:scan` passed: 303 tracked/staged/untracked text files,
+  findings 0.
+- `npm run typecheck` passed.
+- `npm run verify:local` passed with 367 TypeScript tests, 33 Move tests,
+  typecheck, local gateway smoke, demo dApp smoke, browser smoke, agent escrow
+  smoke, paid MCP tool smoke, data-license smoke, service-bounty smoke,
+  reputation-receipt smoke, subscription smoke, A2A well-known smoke, A2A
+  signed-card smoke, A2A task/message smoke, A2A HTTP smoke, A2A local server
+  smoke, marketplace read-model smoke, testnet readiness example, package
+  dry-runs, package install smoke, docs check, and secret scan.
+- `git diff --check` passed.
+
+Hardening notes:
+
+- The install smoke uses `npm install --ignore-scripts --no-audit
+  --fund=false --package-lock=false` in the temporary consumer.
+- The temporary consumer imports package root entrypoints only; it does not
+  execute live network calls.
+- Failure logging redacts the repo path and system temp directory.
+- Temporary directories are removed in `finally` after success or failure.
+
+Known unproven claims:
+
+- No package is published to npm.
+- No npm account ownership, namespace ownership, package-name availability,
+  package install from the npm registry, 2FA, provenance, registry
+  authorization, rollback plan, or downstream application compatibility is
+  proven.
+- No package namespace rename to `@agentic-gaskit/*` was performed.
+- No live IOTA, Gas Station, IOTA Names, IOTA Identity, payment facilitator,
+  public A2A hosting, production marketplace, custody, or provider verification
+  behavior was changed.
+
+Next safe slice:
+
+- Continue with a non-live roadmap slice that improves release/operator
+  readiness; or provide operator-owned local configuration to run one live gate:
+  `npm run readiness:testnet`, `npm run smoke:iota-names-live`, or
   `npm run smoke:iota-identity-live`.
