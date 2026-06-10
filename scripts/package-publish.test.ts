@@ -73,6 +73,19 @@ test("public package metadata pins safe prerelease publish settings", async () =
   }
 });
 
+test("publish dry-run helper is the only package publication command wired at root", async () => {
+  const root = JSON.parse(await readFile("package.json", "utf8")) as PackageJson;
+  const publishDryRun = root.scripts?.["publish:dry-run"] ?? "";
+
+  assert.equal(publishDryRun, "npm run build && tsx scripts/package-publish-dry-run.ts");
+  assert.doesNotMatch(root.scripts?.["verify:local"] ?? "", /publish:dry-run/);
+
+  for (const [scriptName, scriptValue] of Object.entries(root.scripts ?? {})) {
+    if (scriptName === "publish:dry-run") continue;
+    assert.doesNotMatch(scriptValue, /npm publish(?! --dry-run)/, `${scriptName} must not run real npm publish`);
+  }
+});
+
 test("public package readmes match package names", async () => {
   for (const packageDir of publicPackages) {
     const packageJson = await readPackageJson(packageDir);

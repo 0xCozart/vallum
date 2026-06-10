@@ -55,6 +55,21 @@ The release metadata tests enforce:
 - root `build` and `pack:check` cover every public package workspace;
 - private app workspaces do not carry public publish metadata.
 
+`npm run publish:dry-run` adds an opt-in release-operator gate:
+
+- builds every workspace first;
+- enumerates every non-private package under `packages/*`;
+- excludes private app workspaces;
+- runs `npm publish --dry-run --tag next --access public` with explicit `-w`
+  workspace arguments for the public packages;
+- prints package names plus `mode=dry-run` and `realPublish=false`.
+
+This command may print npm's normal dry-run warning about not being logged in.
+That warning is acceptable for local release rehearsal; it is also why this
+gate must not be treated as proof of npm account ownership, package-name
+availability, 2FA readiness, provenance signing, registry authorization, or
+successful real publication.
+
 ## Explicit Non-Claims
 
 No package is claimed as published to npm today.

@@ -59,6 +59,7 @@ It also includes the first Agentic GasKit implementation slices:
   compatibility, receipt access control, and dispute evidence bundle smoke
 - package namespace and release metadata strategy for the current
   `@iota-gaskit/*` prerelease line
+- opt-in package publish dry-run gate for public workspace packages
 - device access safety gate that blocks physical-device implementation and
   limits any future proof to virtual or simulated resources until a separate
   approved safety design exists
@@ -101,6 +102,8 @@ roadmap unless later slices implement and verify them.
 - Marketplace read model: `packages/marketplace/src/`,
   `scripts/smoke-marketplace-read-model.ts`
 - Package release strategy: `docs/agentic-gaskit/package-release-strategy.md`,
+  `scripts/package-publish-dry-run.ts`,
+  `scripts/package-publish-dry-run.test.ts`,
   `scripts/package-publish.test.ts`, `scripts/package-scripts.test.ts`
 - Device access safety gate:
   `docs/agentic-gaskit/device-access-safety-gate.md`,

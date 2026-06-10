@@ -85,6 +85,11 @@ test("root build and package dry-run cover every public package workspace", () =
   }
 });
 
+test("package publish dry-run is opt-in and not part of local verification", () => {
+  assert.equal(packageJson.scripts?.["publish:dry-run"], "npm run build && tsx scripts/package-publish-dry-run.ts");
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /npm run publish:dry-run/);
+});
+
 test("agent escrow smoke is wired into local verification", () => {
   assert.equal(packageJson.scripts?.["smoke:agent-escrow"], "npm run build && tsx scripts/smoke-agent-escrow.ts");
   assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run smoke:agent-escrow/);

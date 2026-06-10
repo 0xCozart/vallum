@@ -64,7 +64,8 @@ Confirmed current state:
   verification, local A2A task/message helpers, a local A2A HTTP-shaped
   boundary, a loopback A2A server smoke, and a local read-only marketplace
   evidence package, plus a conservative package namespace/release metadata
-  strategy for the current `@iota-gaskit/*` prerelease line.
+  strategy and publish dry-run gate for the current `@iota-gaskit/*`
+  prerelease line.
 - `docs/agentic-gaskit/handoff-next-product-build.md` says Slices 1.0, 1.1,
   1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.3,
   3.4, 3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 5.1, and 5.2 are
@@ -116,9 +117,9 @@ Confirmed remaining gaps:
   subscription paths remain unimplemented unless separately approved. Physical
   device access is explicitly deferred by the safety gate; no
   `device_access_lease_v1` contract exists.
-- Package publication to npm. The current package namespace and prerelease
-  metadata strategy is documented and locally checked, but no package is
-  claimed as published.
+- Package publication to npm. The current package namespace, prerelease
+  metadata strategy, package pack dry-runs, and publish dry-run are documented
+  and locally checked, but no package is claimed as published.
 - Production custody, KMS, and recovery/export design if the product ever
   needs those surfaces.
 - Marketplace production app/API, provider verification/moderation decisions,
@@ -508,19 +509,22 @@ Outcome:
 Partially complete. Slice 6.1 documents the conservative current
 `@iota-gaskit/*` prerelease namespace, defers any `@agentic-gaskit/*` rename to
 a dedicated compatibility slice, and mechanically checks public package
-metadata plus root build/pack coverage. Real npm publication remains
-operator-gated and unrun.
+metadata plus root build/pack coverage. Slice 6.2 adds an opt-in
+`npm publish --dry-run` gate for public workspace packages. Real npm
+publication remains operator-gated and unrun.
 
 Acceptance criteria:
 
 - Namespace decision is documented.
 - Package exports and dry-runs pass.
+- Publish dry-run command shape passes without real publication.
 - Backward compatibility or migration notes exist.
 - No package exposes unsupported production/custody claims.
 
 Verification:
 
 - `npm run pack:check`
+- `npm run publish:dry-run`
 - `npm run docs:check`
 - `npm run verify:local`
 

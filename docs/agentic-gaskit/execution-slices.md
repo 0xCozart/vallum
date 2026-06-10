@@ -1590,3 +1590,58 @@ Escalation triggers:
 - Any request to run real `npm publish`.
 - Any package release requiring registry credentials, provenance, tags,
   changelogs, or downstream compatibility guarantees.
+
+## Slice 6.2: Package Publish Dry-Run Gate
+
+User-visible outcome:
+Release operators have one opt-in local command that builds all workspaces and
+runs an npm publish dry-run for every public package, proving publication
+command shape without publishing packages or requiring committed credentials.
+
+Likely files:
+
+- `scripts/package-publish-dry-run.ts`
+- `scripts/package-publish-dry-run.test.ts`
+- `scripts/package-publish.test.ts`
+- `scripts/package-scripts.test.ts`
+- `docs/agentic-gaskit/package-release-strategy.md`
+- `package.json`
+
+Acceptance criteria:
+
+- `npm run publish:dry-run` builds first.
+- The dry-run helper enumerates all non-private packages under `packages/*`.
+- Private app workspaces are excluded.
+- The helper invokes `npm publish --dry-run --tag next --access public` with
+  explicit `-w` workspace arguments.
+- The command prints package names and dry-run mode, but no registry tokens,
+  one-time passwords, or credentials.
+- The command is opt-in and not part of `npm run verify:local`.
+- No real `npm publish` script is wired at the root.
+- Docs state that dry-run proof is not publication, installability, npm
+  account ownership, provenance, package-name availability, or release
+  approval.
+
+Verification:
+
+- Focused package publish dry-run tests.
+- Package metadata and package-script wiring tests.
+- `npm run publish:dry-run`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:local`.
+
+Dependencies:
+Slice 6.1.
+
+Risk:
+Medium. Dry-run output can be mistaken for a real release or for proof that
+npm account ownership, package-name availability, 2FA, provenance, and
+registry permissions are ready.
+
+Escalation triggers:
+
+- Any request to run real `npm publish`.
+- Any npm token, OTP, provenance signing, organization ownership, package name
+  transfer, namespace rename, or post-publish rollback decision.

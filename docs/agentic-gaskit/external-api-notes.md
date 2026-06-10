@@ -515,3 +515,18 @@ Implementation checks:
 - Verify auth scheme representation.
 - Verify signature requirements before publishing public cards.
 - Verify task/message/artifact schema only if implementing more than discovery.
+
+## npm Package Publishing
+
+Last checked: 2026-06-10.
+
+- Official npm CLI docs for `npm publish` say `--tag` controls the published
+  dist-tag and `--dry-run` is similar to `npm pack` for seeing what would be
+  included before upload:
+  <https://docs.npmjs.com/cli/v10/commands/npm-publish>.
+- Local verification on 2026-06-10 confirmed
+  `npm publish --dry-run --tag next --access public -w ...` packs all public
+  workspaces and exits successfully without publishing. npm still warns that
+  login is required for real publication, so dry-run proof is not proof of
+  account ownership, package-name availability, 2FA, provenance, registry
+  authorization, or actual publish readiness.

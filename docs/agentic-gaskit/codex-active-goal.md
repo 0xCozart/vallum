@@ -23,5 +23,10 @@ profile DIDs, validate credential refs, and apply the local VC trust policy. It
 is not production key management, provider verification, or a live proof claim
 unless the operator-provided endpoint is configured and the smoke passes.
 
+The current continuation is Slice 6.2: an opt-in package publish dry-run gate
+for public workspaces. This can prove local npm dry-run command shape, not real
+publication, npm account ownership, provenance, package-name availability, or
+release approval.
+
 Do not use the old Slice 4.5 A2A task/message goal as the active objective.
 That slice was previously completed and locally verified.

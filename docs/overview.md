@@ -97,7 +97,7 @@ The official Gas Station is the sponsorship engine. GasKit is the app integratio
 | Live proof status | `npm run proof:live-status` reports testnet, IOTA Names, IOTA Identity, and VC proof readiness or blockers without contacting live services or printing configured values. | [Live Proof Status](agentic-gaskit/live-proof-status.md) |
 | A2A bridge | Local Agent Card mapping, signed-card verification helpers, `/.well-known/agent-card.json` response helpers, local/mock task/message operation helpers, a local HTTP-shaped handler, and a loopback HTTP server smoke expose sanitized profile and task metadata with bearer-authenticated task routes, without live public discovery, streaming, push notifications, production key management, or external conformance proof. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
 | Marketplace evidence | Local `@iota-gaskit/marketplace` read model consumes registry profiles, policy compatibility, contract template metadata, receipts, manifests, and standards evidence to prove access-controlled receipt views and redacted dispute bundles without production marketplace operation. | [Marketplace Readiness](marketplace-readiness.md) |
-| Package release strategy | The prerelease package strategy keeps `@iota-gaskit/*` package names, keeps the monorepo root private, checks public package metadata mechanically, and defers any `@agentic-gaskit/*` rename to a dedicated compatibility slice. | [Package Release Strategy](agentic-gaskit/package-release-strategy.md) |
+| Package release strategy | The prerelease package strategy keeps `@iota-gaskit/*` package names, keeps the monorepo root private, checks public package metadata mechanically, provides opt-in pack and publish dry-run gates, and defers any `@agentic-gaskit/*` rename to a dedicated compatibility slice. | [Package Release Strategy](agentic-gaskit/package-release-strategy.md) |
 | Device access safety | Physical device operation is blocked; any future proof must start with virtual or simulated devices only. | [Device Access Safety Gate](agentic-gaskit/device-access-safety-gate.md) |
 | Agent roadmap | PRDs, execution slices, module specs, and hardening gates have been migrated into this fork. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
 | Beginner concepts | Plain-English explanations of IOTA, sponsored gas, GasKit roles, and common terms. | [IOTA and GasKit Basics](concepts.md) |
@@ -128,7 +128,7 @@ These are not complete production claims yet:
 - full dashboard UI;
 - production-grade durable usage storage;
 - production monitoring and alerting templates;
-- package publication;
+- real package publication;
 - KMS or external signer production integration;
 - mainnet operational validation;
 - final public walkthrough assets.

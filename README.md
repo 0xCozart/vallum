@@ -156,6 +156,8 @@ Latest local verification and prior live proof:
   and a passing live run requires operator-provided endpoint/name/address.
 - `npm run readiness:testnet:example`: deterministic example testnet-readiness preflight passed locally.
 - `npm run pack:check`: workspace package dry-runs completed locally.
+- `npm run publish:dry-run`: opt-in npm publish dry-run completed locally for
+  public workspaces; no package was published.
 - Prior `npm run execute:testnet-demo`: real sponsored IOTA testnet execute succeeded through the local policy gateway and Gas Station; public digest `2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H`.
 - secret-oriented scan over tracked project files is wired into `npm run secrets:scan` and `npm run verify:local`.
 
@@ -249,19 +251,27 @@ examples/
 
 The monorepo root is marked `private` to prevent accidental publication of the workspace root. The workspace packages are not claimed as published yet. The current package namespace decision keeps the conservative `@iota-gaskit/*` package names for the prerelease line; any `@agentic-gaskit/*` rename is deferred to a separate compatibility slice. See [`docs/agentic-gaskit/package-release-strategy.md`](docs/agentic-gaskit/package-release-strategy.md).
 
-Package release remains roadmap work; today the repo provides package READMEs, public prerelease publish metadata (`access=public`, `tag=next`), map-free packed artifacts, and local `npm pack --dry-run` verification for publishable packages.
+Package release remains roadmap work; today the repo provides package READMEs,
+public prerelease publish metadata (`access=public`, `tag=next`), map-free
+packed artifacts, local `npm pack --dry-run` verification, and an opt-in
+`npm publish --dry-run` gate for publishable packages.
 
 Package Publication remains a roadmap gate. Do not treat the Agentic GasKit fork
 or any future namespace rename as package-publication-ready until dry-run pack
-checks, import examples, README package names, lockfiles, and npm registry
-credentials are reviewed in a dedicated release slice.
+and publish checks, import examples, README package names, lockfiles, npm
+account ownership, provenance decisions, and registry credentials are reviewed
+in a dedicated release slice.
 
 Dry-run package checks:
 
 ```bash
 npm run pack:check
-npm publish --dry-run --tag next --access public -w @iota-gaskit/shared-types -w @iota-gaskit/policy-gateway -w @iota-gaskit/sdk
+npm run publish:dry-run
 ```
+
+`npm run publish:dry-run` builds first and then invokes npm's dry-run publish
+path with `npm publish --dry-run --tag next --access public` for every public
+workspace package.
 
 Do not run a real `npm publish` without explicit operator approval and registry credentials handled outside the repo.
 

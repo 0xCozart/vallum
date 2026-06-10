@@ -38,6 +38,7 @@
     "readiness:testnet:example": "npm run build && tsx scripts/check-testnet-readiness.ts --env-file .env.example --expect-placeholders",
     "secrets:scan": "tsx scripts/scan-secrets.ts",
     "pack:check": "npm run build && npm pack --dry-run -w @iota-gaskit/shared-types -w @iota-gaskit/policy-gateway -w @iota-gaskit/receipts -w @iota-gaskit/standards -w @iota-gaskit/marketplace -w @iota-gaskit/sdk -w @iota-gaskit/mcp-server -w @iota-gaskit/accounts -w @iota-gaskit/manifest -w @iota-gaskit/registry -w @iota-gaskit/contracts-metadata",
+    "publish:dry-run": "npm run build && tsx scripts/package-publish-dry-run.ts",
     "docs:build": "npm run build -w @iota-gaskit/docs-site",
     "docs:check": "npm run check -w @iota-gaskit/docs-site",
     "docs:serve": "npm run serve -w @iota-gaskit/docs-site --",
