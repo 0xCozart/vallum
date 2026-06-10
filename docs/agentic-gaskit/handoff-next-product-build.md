@@ -7,10 +7,10 @@ Last updated: 2026-06-10.
 Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
-Slices 1.0 and 1.1 are implemented and locally verified. The immediate target
-is Slice 1.2: pure policy evaluator. Use
-`docs/agentic-gaskit/execution-entry.md` as the entry doc, then continue through
-`docs/agentic-gaskit/execution-slices.md`.
+Slices 1.0, 1.1, and 1.2 are implemented and locally verified. The immediate
+target is Slice 1.3: gateway mock mode. Use
+`docs/agentic-gaskit/execution-entry.md` as the entry doc, then continue
+through `docs/agentic-gaskit/execution-slices.md`.
 
 ## Current State
 
@@ -58,12 +58,19 @@ Recent commits to know:
   versions fail closed, malformed and oversized manifests fail, simulation and
   receipt requirements are explicit, and top-level or nested secret-bearing
   fields are rejected.
+- Slice 1.2 pure policy evaluator is implemented in `packages/policy-gateway`
+  and exported without replacing the existing app-level GasKit sponsorship
+  evaluator.
+- Slice 1.2 tests prove known valid agent actions are approved; unknown and
+  revoked agents, missing manifests, expired manifests, over-budget actions,
+  disallowed contracts/actions, unauthorized counterparties, missing simulation,
+  human approval thresholds, and unsupported manifest versions are denied.
 - Root build, test, typecheck, package dry-run, docs, smokes, readiness example,
   and secret scan include the accounts and manifest packages.
 
 ## What Is Not Complete
 
-- Agent-aware policy extensions are not implemented.
+- Gateway mock mode for agent sponsored actions is not implemented.
 - MCP/A2A tools are not implemented.
 - Registry, receipts, and contract workflows are not implemented.
 - Package namespace strategy is still open.
@@ -251,6 +258,87 @@ Next recommended slice:
 
 - Slice 1.2 Pure Policy Evaluator in `packages/policy-gateway`.
 
+## Completed Slice 1.2
+
+Implemented a pure agent-action policy evaluator in `packages/policy-gateway`.
+
+This slice adds a new evaluator instead of replacing
+`evaluateSponsorshipPolicy`, preserving the existing GasKit app credential,
+quota, wallet deny-list, package/function allow-list, policy simulation, and
+gateway service behavior.
+
+Acceptance is defined in:
+
+- `docs/agentic-gaskit/prds/phase-1-sponsored-policy-mvp.md`
+- `docs/agentic-gaskit/execution-slices.md` Slice 1.2
+- `docs/agentic-gaskit/module-specs.md` `packages/policy-gateway`
+- `docs/agentic-gaskit/verification-hardening.md` Policy verification matrix
+
+Changed files:
+
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+- `package.json`
+- `package-lock.json`
+- `packages/policy-gateway/package.json`
+- `packages/policy-gateway/src/evaluatePolicy.ts`
+- `packages/policy-gateway/src/evaluatePolicy.test.ts`
+- `packages/policy-gateway/src/index.ts`
+- `packages/policy-gateway/src/policySchema.ts`
+
+Commands run:
+
+```bash
+git status --short --branch
+npm run docs:check
+npm run secrets:scan
+npm test
+npm run typecheck
+node --import tsx --test packages/policy-gateway/src/evaluatePolicy.test.ts
+node --import tsx --test packages/policy-gateway/src/policy.test.ts
+npm install
+npm run verify:local
+git diff --check
+```
+
+Verification result:
+
+- Baseline before editing passed: docs check, secret scan, `npm test`, and
+  `npm run typecheck`.
+- Focused agent policy tests passed: 11 tests.
+- Existing app sponsorship policy tests passed: 11 tests.
+- `npm test` passed with 157 tests.
+- `npm run typecheck` passed.
+- `npm run verify:local` passed, including local gateway smoke, demo dApp
+  smoke, browser wrapper smoke, readiness example, package dry-run, docs check,
+  and secret scan.
+- `git diff --check` passed.
+
+Hardening notes:
+
+- Policy remains deterministic and pure; no LLM judgment, live IOTA, Gas
+  Station, SDK, MCP, custody, or secret-bearing behavior was added.
+- Unknown agents and unsupported manifest versions fail closed.
+- Revoked agents fail closed.
+- Human approval thresholds cannot be bypassed by a manifest setting
+  `humanMandate.required` to false.
+- Manifest validation is reused from `@iota-gaskit/manifest`; root build order
+  now compiles manifest before policy-gateway.
+- Apex manifest helper remains unusable because the current
+  `apex.workflow.json` lacks required mode definitions and
+  `manifest.defaultDir`, so Slice 1.2 scope was recorded locally under ignored
+  `tmp/apex-workflow/` and this slice does not claim Apex verification.
+
+Known unproven claims:
+
+- Gateway endpoint/mock mode for agent sponsorship requests is not implemented.
+- SDK/MCP routing through the gateway is not implemented.
+- Idempotent sponsorship, receipts, escrow contracts, and simulation binding
+  beyond manifest fields remain future slices.
+
+Next recommended slice:
+
+- Slice 1.3 Gateway Mock Mode in `packages/policy-gateway`.
+
 ## Guardrails
 
 - Do not expose seeds, mnemonics, private keys, raw keypairs, raw transaction
@@ -275,7 +363,8 @@ npm test
 npm run typecheck
 ```
 
-For the policy evaluator slice, add focused tests first and finish with:
+For the gateway mock mode slice, add focused integration tests first and finish
+with:
 
 ```bash
 npm run verify:local
