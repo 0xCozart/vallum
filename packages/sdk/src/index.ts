@@ -5,6 +5,7 @@ export * from "./contracts/openEscrow.js";
 export * from "./contracts/payPerCall.js";
 export * from "./contracts/reputationReceipt.js";
 export * from "./contracts/serviceBounty.js";
+export * from "./contracts/subscription.js";
 export * from "./errors.js";
 export * from "./requestSponsoredAction.js";
 export * from "./resolveAgent.js";

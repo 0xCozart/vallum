@@ -121,6 +121,19 @@ export const reputationReceiptContractTemplateV1: ContractTemplateMetadata = {
   refundDisputeBehavior: "Issuer attests local reputation evidence; failures are receipt evidence, not public scoring.",
 };
 
+export const subscriptionContractTemplateV1: ContractTemplateMetadata = {
+  templateId: "subscription_v1",
+  version: "1.0.0",
+  packageId: "0x9999999999999999999999999999999999999999999999999999999999999998",
+  module: "subscription",
+  entryFunctions: ["start_subscription", "renew_subscription", "cancel_subscription", "fail_subscription"],
+  allowedActions: ["start_subscription", "renew_subscription", "cancel_subscription", "fail_subscription"],
+  riskCategory: "medium",
+  receiptEvents: ["subscription_created", "activated", "renewed", "canceled", "failed"],
+  requiredManifestFields: ["agent", "owner", "spend", "action", "counterparty", "receipt"],
+  refundDisputeBehavior: "Local entitlement evidence for activation, renewal, cancellation, or failed proof.",
+};
+
 export const defaultContractTemplates = [
   escrowContractTemplateV1,
   receiptContractTemplateV1,
@@ -128,6 +141,7 @@ export const defaultContractTemplates = [
   dataLicenseContractTemplateV1,
   serviceBountyContractTemplateV1,
   reputationReceiptContractTemplateV1,
+  subscriptionContractTemplateV1,
 ] as const;
 
 export const defaultContractTemplateRegistry = createContractTemplateRegistry(defaultContractTemplates);

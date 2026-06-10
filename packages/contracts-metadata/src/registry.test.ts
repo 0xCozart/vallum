@@ -8,6 +8,7 @@ import {
   payPerCallContractTemplateV1,
   reputationReceiptContractTemplateV1,
   serviceBountyContractTemplateV1,
+  subscriptionContractTemplateV1,
 } from "./index.js";
 
 const registry = createContractTemplateRegistry([
@@ -16,6 +17,7 @@ const registry = createContractTemplateRegistry([
   dataLicenseContractTemplateV1,
   serviceBountyContractTemplateV1,
   reputationReceiptContractTemplateV1,
+  subscriptionContractTemplateV1,
 ]);
 
 test("approved template and version metadata is accepted", () => {
@@ -138,5 +140,26 @@ test("reputation receipt template metadata is accepted", () => {
   if (decision.allowed) {
     assert.equal(decision.template.templateId, "reputation_receipt_v1");
     assert.deepEqual(decision.template.allowedActions, ["create_receipt", "attest_reputation", "fail_receipt"]);
+  }
+});
+
+test("subscription template metadata is accepted", () => {
+  const decision = evaluateContractTemplateAction(registry, {
+    templateId: "subscription_v1",
+    templateVersion: "1.0.0",
+    packageId: "0x9999999999999999999999999999999999999999999999999999999999999998",
+    module: "subscription",
+    functionName: "start_subscription",
+  });
+
+  assert.equal(decision.allowed, true);
+  if (decision.allowed) {
+    assert.equal(decision.template.templateId, "subscription_v1");
+    assert.deepEqual(decision.template.allowedActions, [
+      "start_subscription",
+      "renew_subscription",
+      "cancel_subscription",
+      "fail_subscription",
+    ]);
   }
 });

@@ -9,6 +9,7 @@ const packages = [
   "contracts/data_license_v1",
   "contracts/service_bounty_v1",
   "contracts/reputation_receipt_v1",
+  "contracts/subscription_v1",
 ] as const;
 
 const iotaBin = resolveIotaBin();

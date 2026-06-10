@@ -6,6 +6,9 @@ export type ReceiptStatus =
   | "approved"
   | "sponsored"
   | "submitted"
+  | "active"
+  | "renewed"
+  | "canceled"
   | "completed"
   | "released"
   | "refunded"
@@ -128,6 +131,34 @@ export interface ReputationReceipt {
   readonly events: readonly ReceiptEvent[];
 }
 
+export interface SubscriptionReceipt {
+  readonly receiptId: string;
+  readonly manifestId: string;
+  readonly idempotencyKey: string;
+  readonly agentId: string;
+  readonly ownerId: string;
+  readonly subscriberId: string;
+  readonly providerId: string;
+  readonly planId: string;
+  readonly termsHash: string;
+  readonly periodStart: string;
+  readonly periodEnd: string;
+  readonly renewalCount: number;
+  readonly status: ReceiptStatus;
+  readonly amount: ReceiptAmount;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly sponsorshipId?: string;
+  readonly transactionDigest?: string;
+  readonly renewalSponsorshipId?: string;
+  readonly renewalTransactionDigest?: string;
+  readonly activationProofHash?: string;
+  readonly renewalProofHash?: string;
+  readonly cancellationReason?: string;
+  readonly failureReason?: string;
+  readonly events: readonly ReceiptEvent[];
+}
+
 export interface EscrowState {
   readonly status: EscrowStatus;
   readonly providerId: string;
@@ -146,10 +177,14 @@ export interface ReceiptEvent {
     | "data_license_created"
     | "service_bounty_created"
     | "reputation_receipt_created"
+    | "subscription_created"
     | "approved"
     | "denied"
     | "sponsored"
     | "submitted"
+    | "activated"
+    | "renewed"
+    | "canceled"
     | "completed"
     | "access_granted"
     | "access_revoked"
@@ -223,6 +258,22 @@ export interface CreateReputationReceiptInput {
   readonly subjectId: string;
   readonly interactionId: string;
   readonly criteriaHash: string;
+  readonly amount: ReceiptAmount;
+  readonly createdAt: Date;
+}
+
+export interface CreateSubscriptionReceiptInput {
+  readonly receiptId: string;
+  readonly manifestId: string;
+  readonly idempotencyKey: string;
+  readonly agentId: string;
+  readonly ownerId: string;
+  readonly subscriberId: string;
+  readonly providerId: string;
+  readonly planId: string;
+  readonly termsHash: string;
+  readonly periodStart: string;
+  readonly periodEnd: string;
   readonly amount: ReceiptAmount;
   readonly createdAt: Date;
 }
@@ -363,6 +414,37 @@ export function createReputationReceipt(input: CreateReputationReceiptInput): Re
   };
 }
 
+export function createSubscriptionReceipt(input: CreateSubscriptionReceiptInput): SubscriptionReceipt {
+  requireNonEmpty(input.subscriberId, "subscriberId");
+  requireNonEmpty(input.providerId, "providerId");
+  requireNonEmpty(input.planId, "planId");
+  requireSafeHashReference(input.termsHash, "termsHash");
+  requireNonEmpty(input.periodStart, "periodStart");
+  requireNonEmpty(input.periodEnd, "periodEnd");
+  requireMatchingField(input.subscriberId, input.agentId, "subscriberId", "agentId");
+  requirePeriodAfter(input.periodStart, input.periodEnd, "periodEnd");
+  const at = input.createdAt.toISOString();
+  return {
+    receiptId: input.receiptId,
+    manifestId: input.manifestId,
+    idempotencyKey: input.idempotencyKey,
+    agentId: input.agentId,
+    ownerId: input.ownerId,
+    subscriberId: input.subscriberId,
+    providerId: input.providerId,
+    planId: input.planId,
+    termsHash: input.termsHash,
+    periodStart: input.periodStart,
+    periodEnd: input.periodEnd,
+    renewalCount: 0,
+    status: "attempted",
+    amount: input.amount,
+    createdAt: at,
+    updatedAt: at,
+    events: [{ type: "subscription_created", at }],
+  };
+}
+
 export function approveReceipt(receipt: EscrowReceipt, options: TransitionOptions): EscrowReceipt {
   requireReceiptStatus(receipt, ["attempted"], "approve");
   return withReceiptEvent(receipt, "approved", options.at, { status: "approved" });
@@ -398,6 +480,14 @@ export function approveReputationReceipt(
 ): ReputationReceipt {
   requireReceiptStatus(receipt, ["attempted"], "approve");
   return withReputationReceiptEvent(receipt, "approved", options.at, { status: "approved" });
+}
+
+export function approveSubscriptionReceipt(
+  receipt: SubscriptionReceipt,
+  options: TransitionOptions,
+): SubscriptionReceipt {
+  requireReceiptStatus(receipt, ["attempted"], "approve");
+  return withSubscriptionReceiptEvent(receipt, "approved", options.at, { status: "approved" });
 }
 
 export function denyReceipt(receipt: EscrowReceipt, options: TransitionOptions & { readonly reason: string }): EscrowReceipt {
@@ -446,6 +536,17 @@ export function denyReputationReceipt(
 ): ReputationReceipt {
   requireReceiptStatus(receipt, ["attempted"], "deny");
   return withReputationReceiptEvent(receipt, "denied", options.at, {
+    status: "denied",
+    failureReason: options.reason,
+  }, options.reason);
+}
+
+export function denySubscriptionReceipt(
+  receipt: SubscriptionReceipt,
+  options: TransitionOptions & { readonly reason: string },
+): SubscriptionReceipt {
+  requireReceiptStatus(receipt, ["attempted"], "deny");
+  return withSubscriptionReceiptEvent(receipt, "denied", options.at, {
     status: "denied",
     failureReason: options.reason,
   }, options.reason);
@@ -506,6 +607,17 @@ export function sponsorReputationReceipt(
   });
 }
 
+export function sponsorSubscriptionReceipt(
+  receipt: SubscriptionReceipt,
+  options: TransitionOptions & { readonly sponsorshipId: string },
+): SubscriptionReceipt {
+  requireReceiptStatus(receipt, ["approved"], "sponsor");
+  return withSubscriptionReceiptEvent(receipt, "sponsored", options.at, {
+    status: "sponsored",
+    sponsorshipId: options.sponsorshipId,
+  });
+}
+
 export function submitReceipt(
   receipt: EscrowReceipt,
   options: TransitionOptions & { readonly transactionDigest: string },
@@ -556,6 +668,17 @@ export function submitReputationReceipt(
 ): ReputationReceipt {
   requireReceiptStatus(receipt, ["sponsored"], "submit");
   return withReputationReceiptEvent(receipt, "submitted", options.at, {
+    status: "submitted",
+    transactionDigest: options.transactionDigest,
+  });
+}
+
+export function submitSubscriptionReceipt(
+  receipt: SubscriptionReceipt,
+  options: TransitionOptions & { readonly transactionDigest: string },
+): SubscriptionReceipt {
+  requireReceiptStatus(receipt, ["sponsored"], "submit");
+  return withSubscriptionReceiptEvent(receipt, "submitted", options.at, {
     status: "submitted",
     transactionDigest: options.transactionDigest,
   });
@@ -685,6 +808,66 @@ export function failReputationReceipt(
   }, options.reason);
 }
 
+export function activateSubscriptionReceipt(
+  receipt: SubscriptionReceipt,
+  options: TransitionOptions & { readonly activationProofHash: string },
+): SubscriptionReceipt {
+  requireReceiptStatus(receipt, ["submitted"], "activate");
+  requireSafeHashReference(options.activationProofHash, "activationProofHash");
+  return withSubscriptionReceiptEvent(receipt, "activated", options.at, {
+    status: "active",
+    activationProofHash: options.activationProofHash,
+  });
+}
+
+export function renewSubscriptionReceipt(
+  receipt: SubscriptionReceipt,
+  options: TransitionOptions & {
+    readonly periodEnd: string;
+    readonly renewalProofHash: string;
+    readonly sponsorshipId?: string;
+    readonly transactionDigest?: string;
+  },
+): SubscriptionReceipt {
+  requireReceiptStatus(receipt, ["active", "renewed"], "renew");
+  requireNonEmpty(options.periodEnd, "periodEnd");
+  requireSafeHashReference(options.renewalProofHash, "renewalProofHash");
+  if (options.sponsorshipId !== undefined) requireNonEmpty(options.sponsorshipId, "sponsorshipId");
+  if (options.transactionDigest !== undefined) requireNonEmpty(options.transactionDigest, "transactionDigest");
+  requirePeriodAfter(receipt.periodEnd, options.periodEnd, "periodEnd");
+  return withSubscriptionReceiptEvent(receipt, "renewed", options.at, {
+    status: "renewed",
+    periodEnd: options.periodEnd,
+    renewalCount: receipt.renewalCount + 1,
+    renewalProofHash: options.renewalProofHash,
+    ...(options.sponsorshipId ? { renewalSponsorshipId: options.sponsorshipId } : {}),
+    ...(options.transactionDigest ? { renewalTransactionDigest: options.transactionDigest } : {}),
+  });
+}
+
+export function cancelSubscriptionReceipt(
+  receipt: SubscriptionReceipt,
+  options: TransitionOptions & { readonly reason: string },
+): SubscriptionReceipt {
+  requireReceiptStatus(receipt, ["active", "renewed"], "cancel");
+  requireNonEmpty(options.reason, "reason");
+  return withSubscriptionReceiptEvent(receipt, "canceled", options.at, {
+    status: "canceled",
+    cancellationReason: options.reason,
+  }, options.reason);
+}
+
+export function failSubscriptionReceipt(
+  receipt: SubscriptionReceipt,
+  options: TransitionOptions & { readonly reason: string },
+): SubscriptionReceipt {
+  requireReceiptStatus(receipt, ["attempted", "approved", "sponsored", "submitted", "active", "renewed"], "fail");
+  return withSubscriptionReceiptEvent(receipt, "failed", options.at, {
+    status: "failed",
+    failureReason: options.reason,
+  }, options.reason);
+}
+
 export function revokeDataLicenseAccess(
   receipt: DataLicenseReceipt,
   options: TransitionOptions & { readonly reason: string },
@@ -776,9 +959,27 @@ function requireNonEmpty(value: string, field: string): void {
   }
 }
 
+function requireSafeHashReference(value: string, field: string): void {
+  requireNonEmpty(value, field);
+  if (
+    !/^sha256:[A-Za-z0-9._:-]+$/.test(value)
+    || /(private prompt|review payload|bearer|access-token|signer_ref|payment credential|privateKey|mnemonic|seed)/i.test(value)
+  ) {
+    throw new ReceiptInputError("FIELD_REQUIRED", `${field} must be a safe sha256 reference.`);
+  }
+}
+
 function requireMatchingField(left: string, right: string, leftField: string, rightField: string): void {
   if (left !== right) {
     throw new ReceiptInputError("FIELD_REQUIRED", `${leftField} must match ${rightField}.`);
+  }
+}
+
+function requirePeriodAfter(start: string, end: string, field: string): void {
+  const startTime = Date.parse(start);
+  const endTime = Date.parse(end);
+  if (!Number.isFinite(startTime) || !Number.isFinite(endTime) || endTime <= startTime) {
+    throw new ReceiptInputError("FIELD_REQUIRED", `${field} must be after the current period end.`);
   }
 }
 
@@ -887,6 +1088,29 @@ function withReputationReceiptEvent(
   patch: Partial<ReputationReceipt>,
   reason?: string,
 ): ReputationReceipt {
+  const timestamp = at.toISOString();
+  return {
+    ...receipt,
+    ...patch,
+    updatedAt: timestamp,
+    events: [
+      ...receipt.events,
+      {
+        type: eventType,
+        at: timestamp,
+        ...(reason ? { reason } : {}),
+      },
+    ],
+  };
+}
+
+function withSubscriptionReceiptEvent(
+  receipt: SubscriptionReceipt,
+  eventType: ReceiptEvent["type"],
+  at: Date,
+  patch: Partial<SubscriptionReceipt>,
+  reason?: string,
+): SubscriptionReceipt {
   const timestamp = at.toISOString();
   return {
     ...receipt,

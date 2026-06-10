@@ -6,7 +6,10 @@ import {
   approvePayPerCallReceipt,
   approveReputationReceipt,
   approveServiceBountyReceipt,
+  approveSubscriptionReceipt,
   approveDataLicenseReceipt,
+  activateSubscriptionReceipt,
+  cancelSubscriptionReceipt,
   completeEscrow,
   completePayPerCallReceipt,
   completeReputationReceipt,
@@ -16,17 +19,21 @@ import {
   createPayPerCallReceipt,
   createReputationReceipt,
   createServiceBountyReceipt,
+  createSubscriptionReceipt,
   denyDataLicenseReceipt,
   denyReputationReceipt,
   denyServiceBountyReceipt,
+  denySubscriptionReceipt,
   expireEscrow,
   failDataLicenseReceipt,
   failPayPerCallReceipt,
   failReputationReceipt,
   failServiceBountyReceipt,
+  failSubscriptionReceipt,
   grantDataLicenseAccess,
   linkExternalPaymentState,
   linkIotaReceiptState,
+  renewSubscriptionReceipt,
   revokeDataLicenseAccess,
   releaseEscrow,
   releaseServiceBountyReceipt,
@@ -35,11 +42,13 @@ import {
   sponsorPayPerCallReceipt,
   sponsorReputationReceipt,
   sponsorServiceBountyReceipt,
+  sponsorSubscriptionReceipt,
   sponsorReceipt,
   submitDataLicenseReceipt,
   submitPayPerCallReceipt,
   submitReputationReceipt,
   submitServiceBountyReceipt,
+  submitSubscriptionReceipt,
   submitReceipt,
   ReceiptInputError,
   ReceiptTransitionError,
@@ -513,6 +522,152 @@ test("reputation receipts reject blank fields and malformed score", () => {
   );
 });
 
+test("subscription receipt advances through activation renewal and cancellation lifecycle", () => {
+  const approved = approveSubscriptionReceipt(baseSubscriptionReceipt(), { at: now });
+  const sponsored = sponsorSubscriptionReceipt(approved, {
+    at: now,
+    sponsorshipId: "mock_sponsorship_subscription_1",
+  });
+  const submitted = submitSubscriptionReceipt(sponsored, {
+    at: now,
+    transactionDigest: "digest_subscription_1",
+  });
+  const active = activateSubscriptionReceipt(submitted, {
+    at: now,
+    activationProofHash: "sha256:subscription-activation-proof",
+  });
+  const renewed = renewSubscriptionReceipt(active, {
+    at: now,
+    periodEnd: "2026-08-10T12:00:00.000Z",
+    renewalProofHash: "sha256:subscription-renewal-proof",
+  });
+  const canceled = cancelSubscriptionReceipt(renewed, {
+    at: now,
+    reason: "subscriber-canceled",
+  });
+
+  assert.equal(active.status, "active");
+  assert.equal(renewed.status, "renewed");
+  assert.equal(canceled.status, "canceled");
+  assert.equal(renewed.subscriberId, "agent:subscription-buyer");
+  assert.equal(renewed.providerId, "agent:subscription-provider");
+  assert.equal(renewed.planId, "plan:research-feed-monthly");
+  assert.equal(renewed.termsHash, "sha256:subscription-terms");
+  assert.equal(renewed.periodEnd, "2026-08-10T12:00:00.000Z");
+  assert.equal(renewed.renewalCount, 1);
+  assert.equal(renewed.activationProofHash, "sha256:subscription-activation-proof");
+  assert.equal(renewed.renewalProofHash, "sha256:subscription-renewal-proof");
+  assert.deepEqual(canceled.events.map((event) => event.type), [
+    "subscription_created",
+    "approved",
+    "sponsored",
+    "submitted",
+    "activated",
+    "renewed",
+    "canceled",
+  ]);
+});
+
+test("denied failed and canceled subscription receipts cannot later activate or renew", () => {
+  const denied = denySubscriptionReceipt(baseSubscriptionReceipt(), {
+    at: now,
+    reason: "GAS_BUDGET_TOO_HIGH",
+  });
+  assert.equal(denied.status, "denied");
+  assert.throws(
+    () => activateSubscriptionReceipt(denied, {
+      at: now,
+      activationProofHash: "sha256:late-activation",
+    }),
+    (error) => error instanceof ReceiptTransitionError && error.code === "INVALID_TRANSITION",
+  );
+
+  const failed = failSubscriptionReceipt(approveSubscriptionReceipt(baseSubscriptionReceipt(), { at: now }), {
+    at: now,
+    reason: "SUBSCRIPTION_PROOF_INVALID",
+  });
+  assert.equal(failed.status, "failed");
+  assert.equal(failed.failureReason, "SUBSCRIPTION_PROOF_INVALID");
+  assert.throws(
+    () => activateSubscriptionReceipt(failed, {
+      at: now,
+      activationProofHash: "sha256:late-activation",
+    }),
+    (error) => error instanceof ReceiptTransitionError && error.code === "INVALID_TRANSITION",
+  );
+
+  const submitted = submitSubscriptionReceipt(
+    sponsorSubscriptionReceipt(approveSubscriptionReceipt(baseSubscriptionReceipt(), { at: now }), {
+      at: now,
+      sponsorshipId: "mock_sponsorship_subscription_1",
+    }),
+    { at: now, transactionDigest: "digest_subscription_1" },
+  );
+  const canceled = cancelSubscriptionReceipt(activateSubscriptionReceipt(submitted, {
+    at: now,
+    activationProofHash: "sha256:subscription-activation-proof",
+  }), {
+    at: now,
+    reason: "subscriber-canceled",
+  });
+  assert.throws(
+    () => renewSubscriptionReceipt(canceled, {
+      at: now,
+      periodEnd: "2026-08-10T12:00:00.000Z",
+      renewalProofHash: "sha256:late-renewal",
+    }),
+    (error) => error instanceof ReceiptTransitionError && error.code === "INVALID_TRANSITION",
+  );
+});
+
+test("subscription receipts reject blank fields malformed proofs and backwards renewal periods", () => {
+  assert.throws(
+    () => createSubscriptionReceipt({
+      ...baseSubscriptionReceiptInput(),
+      planId: "",
+    }),
+    (error) => error instanceof ReceiptInputError && error.code === "FIELD_REQUIRED",
+  );
+  assert.throws(
+    () => createSubscriptionReceipt({
+      ...baseSubscriptionReceiptInput(),
+      subscriberId: "agent:spoofed-subscriber",
+    }),
+    (error) => error instanceof ReceiptInputError && error.code === "FIELD_REQUIRED",
+  );
+
+  const submitted = submitSubscriptionReceipt(
+    sponsorSubscriptionReceipt(approveSubscriptionReceipt(createSubscriptionReceipt(baseSubscriptionReceiptInput()), {
+      at: now,
+    }), {
+      at: now,
+      sponsorshipId: "mock_sponsorship_subscription_1",
+    }),
+    { at: now, transactionDigest: "digest_subscription_1" },
+  );
+
+  assert.throws(
+    () => activateSubscriptionReceipt(submitted, {
+      at: now,
+      activationProofHash: "raw bearer token access-token",
+    }),
+    (error) => error instanceof ReceiptInputError && error.code === "FIELD_REQUIRED",
+  );
+
+  const active = activateSubscriptionReceipt(submitted, {
+    at: now,
+    activationProofHash: "sha256:subscription-activation-proof",
+  });
+  assert.throws(
+    () => renewSubscriptionReceipt(active, {
+      at: now,
+      periodEnd: "2026-06-01T12:00:00.000Z",
+      renewalProofHash: "sha256:subscription-renewal-proof",
+    }),
+    (error) => error instanceof ReceiptInputError && error.code === "FIELD_REQUIRED",
+  );
+});
+
 function baseEscrowReceipt() {
   return createEscrowReceipt({
     receiptId: "receipt_escrow_1",
@@ -613,6 +768,28 @@ function baseReputationReceiptInput() {
     interactionId: "task:research-summary-1",
     criteriaHash: "sha256:reputation-criteria",
     amount: { amount: "0.00", asset: "USD" },
+    createdAt: now,
+  };
+}
+
+function baseSubscriptionReceipt() {
+  return createSubscriptionReceipt(baseSubscriptionReceiptInput());
+}
+
+function baseSubscriptionReceiptInput() {
+  return {
+    receiptId: "receipt_subscription_1",
+    manifestId: "idem_subscription_1",
+    idempotencyKey: "idem_subscription_1",
+    agentId: "agent:subscription-buyer",
+    ownerId: "owner:subscription-buyer",
+    subscriberId: "agent:subscription-buyer",
+    providerId: "agent:subscription-provider",
+    planId: "plan:research-feed-monthly",
+    termsHash: "sha256:subscription-terms",
+    periodStart: "2026-06-10T12:00:00.000Z",
+    periodEnd: "2026-07-10T12:00:00.000Z",
+    amount: { amount: "9.00", asset: "USD" },
     createdAt: now,
   };
 }
