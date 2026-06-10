@@ -48,6 +48,8 @@ It also includes the first Agentic GasKit implementation slices:
   authenticated task routes
 - opt-in IOTA Names GraphQL live resolution smoke with an exact missing-config
   blocker path
+- non-networked live proof status command for testnet, IOTA Names, IOTA
+  Identity, and VC blocker reporting
 - local read-only marketplace evidence package with provider labels, policy
   compatibility, receipt access control, and dispute evidence bundle smoke
 - package namespace and release metadata strategy for the current
@@ -96,6 +98,8 @@ unless later slices implement and verify them.
 - Device access safety gate:
   `docs/agentic-gaskit/device-access-safety-gate.md`,
   `scripts/roadmap-safety.test.ts`
+- Live proof status: `docs/agentic-gaskit/live-proof-status.md`,
+  `scripts/check-live-proof-status.ts`, `scripts/live-proof-status.test.ts`
 - MCP sponsorship tools: `packages/mcp-server/src/`
 - Receipts: `packages/receipts/src/`
 - Move escrow contract: `contracts/escrow_v1/`
@@ -184,6 +188,7 @@ Safe local checks:
 - `npm run smoke:a2a-http`
 - `npm run smoke:a2a-local-server`
 - `npm run smoke:marketplace-read-model`
+- `npm run proof:live-status`
 - `npm run secrets:scan`
 
 Full local proof:
@@ -195,6 +200,8 @@ Opt-in configured/live checks:
 - `npm run smoke:iota-names-live` only when an operator provides
   `IOTA_NAMES_GRAPHQL_URL`, `IOTA_NAMES_NAME`, and
   `IOTA_NAMES_EXPECTED_ADDRESS`; this is not part of `npm run verify:local`
+- `npm run proof:live-status` is non-networked and reports live/testnet proof
+  blockers or ready-to-run configuration without printing configured values
 
 `npm run contracts:test` requires the IOTA CLI. Set `IOTA_BIN` to a local
 binary path, install `iota` on `PATH`, or use the ignored local release binary

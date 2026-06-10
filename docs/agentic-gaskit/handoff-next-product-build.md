@@ -8,6 +8,7 @@ Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5,
+2.6,
 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8,
 5.1, 5.2, and 6.1 are implemented, reviewed, locally verified, or explicitly
 deferred with a verified hardening gate.
@@ -144,6 +145,10 @@ Recent commits to know:
   `IOTA_NAMES_EXPECTED_ADDRESS`, resolves through the existing registry GraphQL
   adapter, fails closed on address mismatch, and reports missing configuration
   without printing secret-like values.
+- Slice 2.6 Live Proof Status Report is implemented as a non-networked
+  `npm run proof:live-status` command. It reports testnet readiness,
+  IOTA Names, IOTA Identity, and VC proof blockers or ready-to-run
+  configuration without contacting live services or printing configured values.
 - Slice 3.1 Contract Metadata Registry is implemented in
   `packages/contracts-metadata` as `@iota-gaskit/contracts-metadata`.
 - Slice 3.1 tests prove approved template/version metadata is accepted, unknown
@@ -281,6 +286,10 @@ Recent commits to know:
   `scripts/roadmap-safety.test.ts`. It explicitly blocks physical device
   operation and keeps any future device access proof virtual or simulated until
   an owner-approved safety design exists.
+- Slice 2.6 Live Proof Status Report currently reports these local blockers:
+  `TESTNET_ENV_FILE_MISSING`, `IOTA_NAMES_LIVE_CONFIG_MISSING`,
+  `IOTA_IDENTITY_LIVE_PROOF_UNIMPLEMENTED`, and
+  `VC_TRUST_POLICY_UNDEFINED`.
 - `docs/agentic-gaskit/external-api-notes.md` was refreshed on 2026-06-10 for
   current IOTA Names GraphQL, IOTA Identity DID/VC, x402 v2, AP2 v0.2
   mandate/receipt, A2A Agent Card, A2A signed-card, and A2A task/message
@@ -306,6 +315,10 @@ Recent commits to know:
   standards-bridge proof, and expanded contract workflows beyond local
   escrow/receipt/pay-per-call/data-license/service-bounty/reputation-receipt/
   subscription metadata are not implemented.
+- `npm run proof:live-status` is not live proof. It records blocker and
+  ready-to-run status only; `npm run smoke:iota-names-live`,
+  `npm run readiness:testnet`, or later live Identity/VC commands must pass
+  before any live claim is made.
 - Slice 2.3 and Slice 2.5 are locally verified only unless
   `smoke:iota-names-live` is run with operator-provided endpoint/name/address
   and passes. Localnet/testnet deployment smoke has not run, and the
@@ -2351,6 +2364,111 @@ Next recommended slice:
   blocker/proof, live/testnet standards bridge proof, or package publication
   readiness. Do not implement physical device access without a new
   owner-approved safety design.
+
+## Completed Slice 2.6
+
+Implemented Live Proof Status Report.
+
+Implementation commit:
+
+- Pending final commit.
+
+This slice adds `npm run proof:live-status`, a non-networked status command
+that reports which live/testnet proof paths are ready to run and which are
+blocked. It does not contact IOTA Names, IOTA Identity, IOTA RPC, Gas Station,
+payment facilitators, A2A endpoints, npm, or any live service.
+
+Acceptance is defined in:
+
+- `docs/agentic-gaskit/execution-slices.md` Slice 2.6 Live Proof Status
+  Report.
+- `docs/agentic-gaskit/live-proof-status.md`.
+- `docs/agentic-gaskit/full-roadmap-execution-goal.md` Packet C Live IOTA
+  Names/Identity And VC Validation.
+- `docs/agentic-gaskit/full-roadmap-execution-goal.md` Packet H Final Product
+  E2E And Launch-Readiness Audit.
+
+Changed files:
+
+- `apps/docs-site/docs.config.mjs`
+- `docs/CODEBASE_MAP.md`
+- `docs/agentic-gaskit/codex-active-goal.md`
+- `docs/agentic-gaskit/execution-slices.md`
+- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/overview.md`
+- `package.json`
+- `scripts/check-live-proof-status.ts`
+- `scripts/live-proof-status.test.ts`
+- `scripts/package-scripts.test.ts`
+
+Commands run:
+
+```bash
+git status --short --branch
+npm run docs:check
+npm run secrets:scan
+npm test
+npm run typecheck
+node --import tsx --test scripts/live-proof-status.test.ts scripts/package-scripts.test.ts
+npm run proof:live-status
+npm run verify:local
+git diff --check
+```
+
+Verification result:
+
+- Baseline `npm run docs:check`, `npm run secrets:scan`, `npm test`, and
+  `npm run typecheck` passed before editing.
+- Initial focused status test failed because the command resolved `.env`
+  relative to the process cwd instead of the supplied cwd; path handling was
+  fixed and focused tests then passed.
+- Focused live proof status and package-script tests passed with 34 tests.
+- A hardening pass found optional `.env` loading could throw before the
+  readiness checker reported a safe blocker; optional `.env` loading now fails
+  closed to an empty config and the focused tests still pass.
+- `npm run proof:live-status` passed on the current machine and reported
+  blocked status with these exact codes:
+  `TESTNET_ENV_FILE_MISSING`, `IOTA_NAMES_LIVE_CONFIG_MISSING`,
+  `IOTA_IDENTITY_LIVE_PROOF_UNIMPLEMENTED`, and
+  `VC_TRUST_POLICY_UNDEFINED`.
+- Final `npm run verify:local` passed with 340 TypeScript tests, 33 Move tests,
+  typecheck, local gateway smoke, demo dApp smoke, browser smoke, agent escrow
+  smoke, paid MCP tool smoke, data-license smoke, service-bounty smoke,
+  reputation-receipt smoke, subscription smoke, A2A well-known smoke, A2A
+  signed-card smoke, A2A task/message smoke, A2A HTTP smoke, A2A local server
+  smoke, marketplace read-model smoke, testnet readiness example, package
+  dry-runs, docs check, and secret scan.
+- Final docs check generated 31 HTML pages from 30 Markdown sources.
+- Final secret scan checked 297 tracked/staged/untracked text files with 0
+  findings.
+- `git diff --check` passed.
+
+Hardening notes:
+
+- The command returns status successfully even when proofs are blocked; blocked
+  with exact reason is valid evidence for this goal.
+- Missing configuration output names variables and readiness check ids only.
+- Unsafe IOTA Names HTTP endpoints are blocked without printing endpoint
+  values.
+- The command is intentionally not part of `npm run verify:local` and does not
+  replace live smoke commands.
+
+Known unproven claims:
+
+- No live IOTA Names resolution, live IOTA Identity DID resolution, live VC
+  signature/revocation validation, IOTA testnet sponsorship, Gas Station
+  availability, standards provider interoperability, package publication,
+  public A2A discovery, production marketplace, custody, payment, or provider
+  verification is proven by this slice.
+
+Next recommended slice:
+
+- Continue Packet C by implementing a live IOTA Identity/VC trust-policy proof
+  design or runner, or run `npm run smoke:iota-names-live` only when
+  operator-provided `IOTA_NAMES_GRAPHQL_URL`, `IOTA_NAMES_NAME`, and
+  `IOTA_NAMES_EXPECTED_ADDRESS` are configured outside committed files.
 
 ## Completed Slice 4.4
 

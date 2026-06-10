@@ -159,6 +159,14 @@ test("IOTA Names live smoke is opt-in and not part of local verification", () =>
   assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /npm run smoke:iota-names-live/);
 });
 
+test("live proof status is non-networked and not part of local verification", () => {
+  assert.equal(
+    packageJson.scripts?.["proof:live-status"],
+    "npm run build && tsx scripts/check-live-proof-status.ts",
+  );
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /npm run proof:live-status/);
+});
+
 test("Move contract tests are wired into local verification", () => {
   assert.equal(packageJson.scripts?.["contracts:test"], "tsx scripts/run-move-tests.ts");
   assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run contracts:test/);

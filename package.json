@@ -30,6 +30,7 @@
     "smoke:a2a-local-server": "npm run build && tsx scripts/smoke-a2a-local-server.ts",
     "smoke:marketplace-read-model": "npm run build && tsx scripts/smoke-marketplace-read-model.ts",
     "smoke:iota-names-live": "npm run build && tsx scripts/smoke-iota-names-live.ts",
+    "proof:live-status": "npm run build && tsx scripts/check-live-proof-status.ts",
     "readiness:testnet": "npm run build && tsx scripts/check-testnet-readiness.ts",
     "diagnose:gas-station": "npm run build && tsx scripts/diagnose-gas-station-upstream.ts",
     "execute:testnet-demo": "npm run build && tsx scripts/execute-testnet-sponsored-demo.ts",

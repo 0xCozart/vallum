@@ -16,11 +16,10 @@ local proof as live IOTA testnet, production marketplace, public scoring,
 public A2A discovery, production key management, or provider-verification
 proof.
 
-As of the latest update, Slice 3.7 is the newest completed slice: a device
-access safety gate. It is a verified deferment and hardening slice, not a
-device access implementation. It does not create a `device_access_lease_v1`
-Move contract, SDK helper, receipt state, localnet/testnet deploy, live device
-workflow, marketplace action, or physical-device approval.
+As of the latest update, Slice 2.6 is the newest completed slice: a
+non-networked live proof status report. It reports current testnet, IOTA Names,
+IOTA Identity, and VC proof blockers or ready-to-run configuration without
+contacting live services or printing configured values. It is not live proof.
 
 Do not use the old Slice 4.5 A2A task/message goal as the active objective.
 That slice was previously completed and locally verified.

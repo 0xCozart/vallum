@@ -96,6 +96,12 @@ export default {
           description: "Physical-device blocker and virtual-only path for any future device access lease work."
         },
         {
+          title: "Live Proof Status",
+          source: "docs/agentic-gaskit/live-proof-status.md",
+          slug: "agentic-live-proof-status",
+          description: "Non-networked live/testnet proof status command, blocker codes, and safe next commands."
+        },
+        {
           title: "Local Dirty Work Review",
           source: "docs/agentic-gaskit/local-dirty-work-review.md",
           slug: "agentic-local-dirty-work-review",

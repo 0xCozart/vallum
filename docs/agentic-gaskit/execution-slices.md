@@ -626,6 +626,58 @@ Escalation triggers:
 - The official IOTA Names GraphQL shape changes from the current documented
   `resolveIotaNamesAddress` operation.
 
+## Slice 2.6: Live Proof Status Report
+
+User-visible outcome:
+Operators and future agents can run one safe command that reports which
+live/testnet proof paths are ready to run and which are blocked, without
+contacting live services or printing configured values.
+
+Likely files:
+
+- `scripts/check-live-proof-status.ts`
+- `scripts/live-proof-status.test.ts`
+- `scripts/package-scripts.test.ts`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `package.json`
+
+Acceptance criteria:
+
+- `npm run proof:live-status` exists and builds before running.
+- The status command does not contact IOTA Names, IOTA Identity, IOTA RPC, Gas
+  Station, payment facilitators, A2A endpoints, or npm.
+- Missing testnet `.env` is reported as `TESTNET_ENV_FILE_MISSING`.
+- Missing IOTA Names configuration is reported as
+  `IOTA_NAMES_LIVE_CONFIG_MISSING` with only variable names.
+- Unsafe IOTA Names GraphQL endpoints are blocked without printing endpoint
+  values.
+- Live IOTA Identity and full VC validation are listed as blocked until live
+  resolver, trusted issuer, verification method, revocation, and cache policy
+  configuration exists.
+- The command is not part of `npm run verify:local`.
+
+Verification:
+
+- Focused live proof status tests.
+- Package-script wiring tests.
+- `npm run proof:live-status` on the current machine.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run verify:local`.
+
+Dependencies:
+Slice 2.5.
+
+Risk:
+Medium. A proof-status command can be mistaken for live proof unless it clearly
+separates ready-to-run configuration from actual live/testnet execution.
+
+Escalation triggers:
+
+- The command needs to contact live services.
+- Live Identity/VC proof requires issuer trust, resolver configuration, or
+  revocation decisions not represented in local config.
+
 ## Slice 3.1: Contract Metadata Registry
 
 User-visible outcome:

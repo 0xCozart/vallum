@@ -84,6 +84,9 @@ Confirmed current state:
 - Slice 3.7 adds the device access safety gate. Physical device operation is
   explicitly blocked; any future proof must start with virtual or simulated
   resources only and must not claim a `device_access_lease_v1` implementation.
+- Slice 2.6 adds a non-networked live proof status command. It reports current
+  testnet/IOTA Names/IOTA Identity/VC proof readiness or blockers without
+  contacting live services or printing configured values.
 
 Confirmed remaining gaps:
 
@@ -390,15 +393,19 @@ bounded revocation and credential validation. Slice 2.4 now provides local/mock
 bounded cache behavior for successful DID and credential evidence, including
 fail-closed stale refresh and revoked-credential detection after TTL expiry.
 Slice 2.5 adds an opt-in IOTA Names GraphQL smoke and exact missing-config
-blocker path. Configured live IOTA Names proof, live IOTA Identity proof, and
-full VC validation remain unproven unless operator-provided configuration is
-present and the relevant live command passes.
+blocker path. Slice 2.6 adds a non-networked status report for current live
+proof readiness and blockers. Configured live IOTA Names proof, live IOTA
+Identity proof, and full VC validation remain unproven unless
+operator-provided configuration is present and the relevant live command
+passes.
 
 Acceptance criteria:
 
 - External API notes are refreshed against official docs before code.
 - Testnet or official-environment proof is recorded when credentials/config are
   available.
+- Exact blocker status is recorded when live/testnet configuration or live proof
+  commands are unavailable.
 - Full VC validation defines trusted issuers, verification method handling,
   revocation, cache TTL, stale behavior, and fail-closed cases.
 - Policy-gated actions deny revoked, expired, mismatched, or stale profiles.
@@ -407,6 +414,7 @@ Verification:
 
 - Registry adapter tests.
 - Capability policy tests.
+- `npm run proof:live-status`
 - `npm run readiness:testnet`
 - `npm run smoke:iota-names-live` when an operator supplies
   `IOTA_NAMES_GRAPHQL_URL`, `IOTA_NAMES_NAME`, and
