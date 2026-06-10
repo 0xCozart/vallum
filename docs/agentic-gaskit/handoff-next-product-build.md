@@ -8,8 +8,9 @@ Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5,
-3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 5.1,
-5.2, and 6.1 are implemented or reviewed and locally verified.
+3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8,
+5.1, 5.2, and 6.1 are implemented, reviewed, locally verified, or explicitly
+deferred with a verified hardening gate.
 Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
 `docs/marketplace-readiness.md` before choosing the next slice. Do not start
 production marketplace implementation unless the user explicitly approves the
@@ -275,6 +276,11 @@ Recent commits to know:
   tests. It keeps the current `@iota-gaskit/*` prerelease namespace, defers any
   `@agentic-gaskit/*` rename to a dedicated compatibility slice, checks
   public package metadata, and keeps real npm publication operator-gated.
+- Slice 3.7 Device Access Lease Safety Gate is implemented in
+  `docs/agentic-gaskit/device-access-safety-gate.md` and
+  `scripts/roadmap-safety.test.ts`. It explicitly blocks physical device
+  operation and keeps any future device access proof virtual or simulated until
+  an owner-approved safety design exists.
 - `docs/agentic-gaskit/external-api-notes.md` was refreshed on 2026-06-10 for
   current IOTA Names GraphQL, IOTA Identity DID/VC, x402 v2, AP2 v0.2
   mandate/receipt, A2A Agent Card, A2A signed-card, and A2A task/message
@@ -306,6 +312,9 @@ Recent commits to know:
   demo/escrow contract does not custody real funds.
 - Real npm package publication is still not run. Any package namespace migration
   to `@agentic-gaskit/*` remains deferred to a dedicated compatibility slice.
+- No `device_access_lease_v1` Move contract, SDK helper, receipt state,
+  localnet/testnet deploy, live device workflow, physical-device approval, or
+  device marketplace action is implemented.
 - Production custody, KMS, and recovery/export are not designed or implemented.
 - Production marketplace app/API implementation is not started. The local
   read-only Slice 5.2 package is not provider onboarding, public search UI,
@@ -2238,6 +2247,110 @@ Next recommended slice:
   address values are present, choose production marketplace API/session
   authorization design, or choose a live/public A2A discovery and conformance
   blocker/proof slice.
+
+## Completed Slice 3.7
+
+Implemented Device Access Lease Safety Gate.
+
+Implementation commit:
+
+- Pending final commit.
+
+This slice explicitly blocks physical device access and records that any future
+device-access proof must start with virtual or simulated resources only. It is
+a verified deferment and hardening gate, not a `device_access_lease_v1`
+implementation.
+
+Acceptance is defined in:
+
+- `docs/agentic-gaskit/execution-slices.md` Slice 3.7 Device Access Lease
+  Safety Gate.
+- `docs/agentic-gaskit/device-access-safety-gate.md`.
+- `docs/agentic-gaskit/full-roadmap-execution-goal.md` Packet B Complete
+  Remaining Phase 3 Contract Library Slices.
+- `docs/agentic-gaskit/prds/phase-3-contract-block-library.md` device lease
+  physical-safety escalation trigger.
+- `docs/marketplace-readiness.md` no IoT-heavy marketplace gate.
+
+Changed files:
+
+- `apps/docs-site/docs.config.mjs`
+- `docs/CODEBASE_MAP.md`
+- `docs/agentic-gaskit/codex-active-goal.md`
+- `docs/agentic-gaskit/device-access-safety-gate.md`
+- `docs/agentic-gaskit/execution-slices.md`
+- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+- `docs/agentic-gaskit/module-specs.md`
+- `docs/agentic-gaskit/roadmap.md`
+- `docs/marketplace-readiness.md`
+- `docs/overview.md`
+- `scripts/roadmap-safety.test.ts`
+
+Commands run:
+
+```bash
+git status --short --branch
+npm run docs:check
+npm run secrets:scan
+npm test
+npm run typecheck
+node --import tsx --test scripts/roadmap-safety.test.ts
+npm run verify:local
+git diff --check
+```
+
+Verification result:
+
+- Baseline `npm run docs:check`, `npm run secrets:scan`, `npm test`, and
+  `npm run typecheck` passed before editing.
+- Initial focused safety test failed because the new gate said "local or
+  simulated workflow" where the intended invariant was "virtual or simulated
+  workflow"; the doc was tightened and the focused test then passed.
+- Focused roadmap safety test passed with 2 tests. It proves Slice 3.7 is
+  present, the physical-device blocker is explicit, no
+  `contracts/device_access_lease_v1` path exists, and root build/pack/verify
+  scripts do not expose device access as a working product path.
+- `npm run docs:check` passed with 30 generated HTML pages from 29 Markdown
+  sources.
+- `npm run secrets:scan` passed with 294 tracked/staged/untracked text files
+  and 0 findings.
+- Final `npm run verify:local` passed with 335 TypeScript tests, 33 Move tests,
+  typecheck, local gateway smoke, demo dApp smoke, browser smoke, agent escrow
+  smoke, paid MCP tool smoke, data-license smoke, service-bounty smoke,
+  reputation-receipt smoke, subscription smoke, A2A well-known smoke, A2A
+  signed-card smoke, A2A task/message smoke, A2A HTTP smoke, A2A local server
+  smoke, marketplace read-model smoke, testnet readiness example, package
+  dry-runs, docs check, and secret scan.
+- `git diff --check` passed.
+
+Hardening notes:
+
+- Physical device operation remains blocked.
+- Future work is limited to virtual, simulated, emulator, or non-physical API
+  fixtures until owner-approved physical safety design exists.
+- The gate names physical-device, provider-accountability, revocation,
+  emergency-stop, credential, privacy, dispute, compliance, and marketplace
+  blockers.
+- The docs and regression test intentionally avoid claiming a Move contract,
+  SDK helper, receipt state, package metadata, marketplace action,
+  localnet/testnet deployment, or live device workflow.
+
+Known unproven claims:
+
+- No `device_access_lease_v1` Move contract, SDK helper, receipt state,
+  contract metadata, package script, localnet/testnet deployment, live device
+  workflow, physical-device safety design, production provider verification,
+  compliance review, or marketplace operation is implemented.
+
+Next recommended slice:
+
+- Continue with configured live IOTA Names proof when operator endpoint/name/
+  address values are present, or choose another remaining proof gap such as
+  live IOTA Identity/VC validation, public/live A2A discovery and conformance
+  blocker/proof, live/testnet standards bridge proof, or package publication
+  readiness. Do not implement physical device access without a new
+  owner-approved safety design.
 
 ## Completed Slice 4.4
 

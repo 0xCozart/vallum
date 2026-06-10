@@ -16,10 +16,11 @@ local proof as live IOTA testnet, production marketplace, public scoring,
 public A2A discovery, production key management, or provider-verification
 proof.
 
-As of the latest update, Slice 6.1 is the newest completed implementation
-slice: a local package namespace and release metadata strategy. It is still
-local proof only and is not npm publication, package namespace migration,
-registry credential handling, or downstream compatibility proof.
+As of the latest update, Slice 3.7 is the newest completed slice: a device
+access safety gate. It is a verified deferment and hardening slice, not a
+device access implementation. It does not create a `device_access_lease_v1`
+Move contract, SDK helper, receipt state, localnet/testnet deploy, live device
+workflow, marketplace action, or physical-device approval.
 
 Do not use the old Slice 4.5 A2A task/message goal as the active objective.
 That slice was previously completed and locally verified.

@@ -52,6 +52,9 @@ It also includes the first Agentic GasKit implementation slices:
   compatibility, receipt access control, and dispute evidence bundle smoke
 - package namespace and release metadata strategy for the current
   `@iota-gaskit/*` prerelease line
+- device access safety gate that blocks physical-device implementation and
+  limits any future proof to virtual or simulated resources until a separate
+  approved safety design exists
 - pure profile capability policy check
 - contract template metadata registry consumed by agent policy allow-lists
 
@@ -90,6 +93,9 @@ unless later slices implement and verify them.
   `scripts/smoke-marketplace-read-model.ts`
 - Package release strategy: `docs/agentic-gaskit/package-release-strategy.md`,
   `scripts/package-publish.test.ts`, `scripts/package-scripts.test.ts`
+- Device access safety gate:
+  `docs/agentic-gaskit/device-access-safety-gate.md`,
+  `scripts/roadmap-safety.test.ts`
 - MCP sponsorship tools: `packages/mcp-server/src/`
 - Receipts: `packages/receipts/src/`
 - Move escrow contract: `contracts/escrow_v1/`
@@ -153,7 +159,9 @@ Do not create all of these at once. Add them through vertical slices:
 - public signed Agent Card hosting, external A2A conformance proof, and live
   standards-compatible discovery
 - expanded contract packages beyond pay-per-call, data-license, service-bounty,
-  reputation receipt, and subscription, including device access workflows
+  reputation receipt, and subscription. Device access workflows must stay
+  virtual/simulated unless the safety gate is replaced by an approved physical
+  device design.
 
 ## Verification Guidance
 

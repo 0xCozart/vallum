@@ -374,13 +374,18 @@ Phase 3 templates:
 - `service_bounty_v1`
 - `subscription_v1`
 - `reputation_receipt_v1`
-- `device_access_lease_v1`
+- `device_access_lease_v1` remains safety-gated; physical device operation is
+  blocked until a separate approved design exists. Any first implementation
+  must be virtual or simulated only.
 
 Acceptance:
 
 - Each template has state-machine docs, Move tests, and metadata.
 - Unauthorized release, double release, refund/expiry, and invalid counterparty
   cases are tested where relevant.
+- Device access must not ship as a physical-device contract without the
+  `docs/agentic-gaskit/device-access-safety-gate.md` requirements being
+  replaced by an approved implementation design.
 
 Verification:
 

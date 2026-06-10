@@ -268,7 +268,10 @@ tooling for agent service, API/data, and later IoT workflows.
 Exit gate:
 Developers can deploy and use audited/tested contract templates for escrow,
 receipt, pay-per-call, data license, bounty, subscription, reputation receipt,
-and device access lease in localnet/testnet.
+and any approved virtual device access lease in localnet/testnet. Physical
+device access remains blocked by
+`docs/agentic-gaskit/device-access-safety-gate.md` until a separate owner
+approved safety design exists.
 
 PRD:
 `docs/agentic-gaskit/prds/phase-3-contract-block-library.md`

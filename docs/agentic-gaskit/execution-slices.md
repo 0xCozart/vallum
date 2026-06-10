@@ -885,6 +885,56 @@ Escalation triggers:
   private access-token issuance, legal subscription enforcement, provider
   verification, or public marketplace subscription listing.
 
+## Slice 3.7: Device Access Lease Safety Gate
+
+User-visible outcome:
+The roadmap explicitly blocks physical device access and records the only safe
+future path: a virtual or simulated device lease proof that cannot operate real
+hardware.
+
+Likely files:
+
+- `docs/agentic-gaskit/device-access-safety-gate.md`
+- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
+- `docs/marketplace-readiness.md`
+- `scripts/roadmap-safety.test.ts`
+
+Acceptance criteria:
+
+- Physical device operation remains blocked.
+- Future work is limited to virtual, simulated, emulator, or non-physical API
+  fixtures until an owner-approved physical safety design exists.
+- The gate names physical-device, provider-accountability, revocation,
+  emergency-stop, credential, privacy, dispute, compliance, and marketplace
+  blockers.
+- Docs do not claim a `device_access_lease_v1` Move contract, SDK helper,
+  receipt state, package metadata, marketplace action, localnet/testnet deploy,
+  or live device workflow.
+- A regression test keeps the blocker and non-implementation boundary visible.
+
+Verification:
+
+- Roadmap safety regression test.
+- Docs check.
+- Secret scan.
+- `npm run verify:local`.
+
+Dependencies:
+Slice 3.6.
+
+Risk:
+High. Device access can create physical safety, regulatory, provider
+accountability, and incident-response obligations if it is treated as another
+generic payment contract.
+
+Escalation triggers:
+
+- Any request to operate real hardware, locks, vehicles, robots, sensors with
+  actuators, industrial equipment, medical systems, or safety-critical devices.
+- Any request for production device provider onboarding, marketplace listing,
+  live credentials, custody, staking, bonding, slashing, insurance, or legal
+  lease enforcement.
+
 ## Slice 4.1: x402 Mapping
 
 User-visible outcome:

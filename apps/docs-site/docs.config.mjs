@@ -90,6 +90,12 @@ export default {
           description: "Current package namespace decision, prerelease metadata gates, and future rename boundaries."
         },
         {
+          title: "Device Access Safety Gate",
+          source: "docs/agentic-gaskit/device-access-safety-gate.md",
+          slug: "agentic-device-access-safety-gate",
+          description: "Physical-device blocker and virtual-only path for any future device access lease work."
+        },
+        {
           title: "Local Dirty Work Review",
           source: "docs/agentic-gaskit/local-dirty-work-review.md",
           slug: "agentic-local-dirty-work-review",

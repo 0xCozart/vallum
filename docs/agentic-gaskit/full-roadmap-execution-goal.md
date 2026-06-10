@@ -81,6 +81,9 @@ Confirmed current state:
   receipt state, metadata, smoke proof, and handoff evidence. It is local
   entitlement evidence only, not recurring billing, production provider access
   enforcement, marketplace subscription operation, or live IOTA proof.
+- Slice 3.7 adds the device access safety gate. Physical device operation is
+  explicitly blocked; any future proof must start with virtual or simulated
+  resources only and must not claim a `device_access_lease_v1` implementation.
 
 Confirmed remaining gaps:
 
@@ -94,7 +97,9 @@ Confirmed remaining gaps:
 - Testnet/localnet deployment proof for relevant Move contracts and demos.
 - Expanded Phase 3 contract workflows beyond the implemented escrow, receipt,
   pay-per-call, data-license, service-bounty, reputation-receipt, and
-  subscription paths, including device access lease where still in scope.
+  subscription paths remain unimplemented unless separately approved. Physical
+  device access is explicitly deferred by the safety gate; no
+  `device_access_lease_v1` contract exists.
 - Package publication to npm. The current package namespace and prerelease
   metadata strategy is documented and locally checked, but no package is
   claimed as published.
@@ -332,13 +337,16 @@ control, moderation, and dispute-evidence slices.
 ### Packet B: Complete Remaining Phase 3 Contract Library Slices
 
 Outcome:
-Partially complete. Slice 3.6 added local/mock subscription state,
+Complete for the current approved local/mock scope. Slice 3.6 added local/mock
+subscription state,
 policy-gated SDK activation/renewal, template metadata, Move tests, example
-smoke, docs, and handoff evidence. Device access lease remains unimplemented
-and should stay blocked unless physical safety and provider accountability
-constraints are scoped.
+smoke, docs, and handoff evidence. Slice 3.7 adds the device access safety
+gate: physical device operation remains blocked, and any future work is limited
+to virtual or simulated resources until physical safety, provider
+accountability, revocation, emergency-stop, credential, privacy, dispute, and
+compliance requirements are approved.
 
-Completed subscription files:
+Completed Packet B files:
 
 - `contracts/subscription_v1/`
 - `packages/sdk/src/contracts/subscription.ts`
@@ -350,6 +358,8 @@ Completed subscription files:
 - `package.json`
 - `scripts/run-move-tests.ts`
 - `scripts/package-scripts.test.ts`
+- `docs/agentic-gaskit/device-access-safety-gate.md`
+- `scripts/roadmap-safety.test.ts`
 
 Acceptance criteria:
 
@@ -357,12 +367,13 @@ Acceptance criteria:
 - Each target has Move tests, SDK wrapper tests, receipt state tests, metadata
   allow-list tests, denial/failure cases, and a local smoke or explicit reason
   no smoke is safe.
-- Device access remains blocked unless physical safety and provider
-  accountability constraints are scoped.
+- Device access lease is explicitly deferred with a hardening rationale unless
+  a later approved virtual-device slice implements a non-physical local proof.
 
 Verification:
 
 - Focused contract and SDK tests per template.
+- Roadmap safety regression test for the device access gate.
 - `npm run contracts:test`
 - `npm run smoke:subscription`
 - `npm run verify:local`
