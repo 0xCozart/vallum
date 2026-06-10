@@ -1,0 +1,163 @@
+import { validManifestFixture } from "@iota-gaskit/manifest";
+import type { AgentActionPolicy } from "@iota-gaskit/policy-gateway";
+import { validAgentProfileFixture } from "@iota-gaskit/registry";
+import {
+  A2A_AGENT_CARD_WELL_KNOWN_PATH,
+  A2A_HTTP_SEND_MESSAGE_PATH,
+  A2A_HTTP_TASKS_PATH,
+  A2A_TASK_PROTOCOL_VERSION,
+  LocalA2ATaskStore,
+  handleLocalA2AHttpRequest,
+  type A2AHttpResponse,
+} from "../../packages/standards/src/index.js";
+
+export interface A2AHttpDemoResult {
+  readonly agentCardStatus: number;
+  readonly unauthorizedStatus: number;
+  readonly sentStatus: number;
+  readonly taskStatus: string;
+  readonly hiddenArtifacts: boolean;
+  readonly listedCount: number;
+  readonly canceledStatus: string;
+  readonly logLeaksSecretMaterial: boolean;
+}
+
+const now = new Date("2026-06-10T12:00:00.000Z");
+const taskAuthToken = "local-a2a-demo-token";
+
+const policy: AgentActionPolicy = {
+  knownAgents: ["agent:quote-bot"],
+  maxGasBudget: 50_000_000,
+  allowedContracts: [{
+    packageId: "0x2222222222222222222222222222222222222222222222222222222222222222",
+    module: "escrow",
+    functionName: "open_escrow",
+  }],
+  allowedCounterparties: ["provider:quote-service"],
+  requireSimulation: true,
+  humanApprovalGasThreshold: 100_000_000,
+};
+
+export async function runA2AHttpDemo(): Promise<A2AHttpDemoResult> {
+  const store = new LocalA2ATaskStore();
+  const options = {
+    store,
+    agentCardProfile: {
+      ...validAgentProfileFixture(),
+      endpoints: [
+        { type: "a2a" as const, url: "https://agent.example.test/a2a" },
+        ...validAgentProfileFixture().endpoints,
+      ],
+    },
+    taskAuthToken,
+    taskPolicy: policy,
+    now: () => now,
+    processMessage: () => ({
+      state: "TASK_STATE_WORKING" as const,
+      artifacts: [{
+        artifactId: "demo-draft",
+        parts: [{ text: "draft output" }],
+      }],
+    }),
+  };
+  const auth = { authorization: `Bearer ${taskAuthToken}` };
+
+  const agentCard = await handleLocalA2AHttpRequest({
+    method: "GET",
+    path: A2A_AGENT_CARD_WELL_KNOWN_PATH,
+  }, options);
+  const unauthorized = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: A2A_HTTP_SEND_MESSAGE_PATH,
+    body: sendBody("demo-unauthorized"),
+  }, options);
+  const sent = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: A2A_HTTP_SEND_MESSAGE_PATH,
+    headers: auth,
+    body: sendBody("demo-authorized"),
+  }, options);
+  if (!isTaskResponse(sent)) {
+    throw new Error("A2A HTTP demo did not create a task.");
+  }
+
+  const task = sent.body.task;
+  const hidden = await handleLocalA2AHttpRequest({
+    method: "GET",
+    path: `/tasks/${encodeURIComponent(task.id)}`,
+    headers: auth,
+  }, options);
+  const listed = await handleLocalA2AHttpRequest({
+    method: "GET",
+    path: A2A_HTTP_TASKS_PATH,
+    headers: auth,
+  }, options);
+  const canceled = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: `/tasks/${encodeURIComponent(task.id)}:cancel`,
+    headers: auth,
+  }, options);
+
+  return {
+    agentCardStatus: agentCard.status,
+    unauthorizedStatus: unauthorized.status,
+    sentStatus: sent.status,
+    taskStatus: task.status.state,
+    hiddenArtifacts: !JSON.stringify(hidden.body).includes("demo-draft"),
+    listedCount: isTaskListResponse(listed) ? listed.body.tasks.length : 0,
+    canceledStatus: isTaskResponse(canceled) ? canceled.body.task.status.state : "unknown",
+    logLeaksSecretMaterial: responseLeaks(agentCard)
+      || responseLeaks(unauthorized)
+      || responseLeaks(sent)
+      || responseLeaks(hidden)
+      || responseLeaks(listed)
+      || responseLeaks(canceled),
+  };
+}
+
+export function formatA2AHttpDemoResult(result: A2AHttpDemoResult): string {
+  return [
+    "A2A HTTP demo passed",
+    `agentCard.status=${result.agentCardStatus}`,
+    `unauthorized.status=${result.unauthorizedStatus}`,
+    `sent.status=${result.sentStatus}`,
+    `task.status=${result.taskStatus}`,
+    `hiddenArtifacts=${String(result.hiddenArtifacts)}`,
+    `listed.count=${result.listedCount}`,
+    `canceled.status=${result.canceledStatus}`,
+    `logLeaksSecretMaterial=${String(result.logLeaksSecretMaterial)}`,
+  ].join("\n");
+}
+
+function sendBody(messageId: string) {
+  return {
+    message: {
+      messageId,
+      role: "ROLE_USER",
+      parts: [{ text: "Use private prompt: run local A2A HTTP work with Bearer abc.def.ghi" }],
+      metadata: {
+        signerRef: "signer_ref_demo_secret",
+        walletId: "wallet_demo_secret",
+        paymentCredential: "payment-secret",
+      },
+    },
+    manifest: validManifestFixture(),
+    protocolVersion: A2A_TASK_PROTOCOL_VERSION,
+  };
+}
+
+function responseLeaks(response: A2AHttpResponse): boolean {
+  return /private prompt|Bearer abc|signer_ref_demo_secret|wallet_demo_secret|payment-secret/i.test(response.json);
+}
+
+function isTaskResponse(response: A2AHttpResponse): response is A2AHttpResponse & {
+  readonly body: Extract<A2AHttpResponse["body"], { readonly kind: "task" }>;
+} {
+  return response.status === 200 && "kind" in response.body && response.body.kind === "task";
+}
+
+function isTaskListResponse(response: A2AHttpResponse): response is A2AHttpResponse & {
+  readonly body: Extract<A2AHttpResponse["body"], { readonly kind: "task-list" }>;
+} {
+  return response.status === 200 && "kind" in response.body && response.body.kind === "task-list";
+}

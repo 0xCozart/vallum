@@ -41,6 +41,8 @@ It also includes the first Agentic GasKit implementation slices:
 - local A2A Agent Card mapping from Agent Profiles
 - local A2A Agent Card well-known serving helper and smoke proof
 - local A2A task/message operation helpers and smoke proof
+- local A2A HTTP-shaped handler and smoke proof for public discovery plus
+  bearer-authenticated task routes
 - pure profile capability policy check
 - contract template metadata registry consumed by agent policy allow-lists
 
@@ -100,6 +102,8 @@ proof remain roadmap unless later slices implement and verify them.
   `scripts/smoke-a2a-well-known.ts`
 - A2A task/message demo: `examples/a2a-task-message/`,
   `scripts/smoke-a2a-task-message.ts`
+- A2A HTTP boundary demo: `examples/a2a-http/`,
+  `scripts/smoke-a2a-http.ts`
 - Docs site: `apps/docs-site/`
 - Examples: `examples/node-backend/`, `examples/nextjs-api-route/`,
   `examples/policies/`
@@ -146,6 +150,7 @@ Safe local checks:
 - `npm run smoke:subscription`
 - `npm run smoke:a2a-well-known`
 - `npm run smoke:a2a-task-message`
+- `npm run smoke:a2a-http`
 - `npm run secrets:scan`
 
 Full local proof:

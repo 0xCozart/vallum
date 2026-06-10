@@ -8,8 +8,8 @@ Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 3.1,
-3.2, 3.3, 3.4, 3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5, and 5.1 are implemented
-or reviewed and locally verified.
+3.2, 3.3, 3.4, 3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, and 5.1 are
+implemented or reviewed and locally verified.
 Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
 `docs/marketplace-readiness.md` before choosing the next slice. Do not start
 production marketplace implementation unless the user explicitly approves the
@@ -230,6 +230,14 @@ Recent commits to know:
   task state and omit artifacts by default; and task log output redacts prompt
   text, bearer tokens, payment credentials, signer refs, wallet internals, and
   key-like material.
+- Slice 4.6 A2A local HTTP boundary is implemented in `packages/standards`.
+- Slice 4.6 tests prove public Agent Card discovery remains unauthenticated,
+  task routes require configured bearer auth, authorized `message:send`,
+  get/list/cancel task routes use the existing local task store, artifacts are
+  hidden by default, unsupported A2A versions fail closed, streaming and push
+  notification routes are explicitly unsupported, and safe errors do not echo
+  bearer tokens, private prompts, signer refs, wallet internals, or payment
+  credentials.
 - Slice 5.1 marketplace readiness review exists at
   `docs/marketplace-readiness.md`. It concludes that marketplace
   requirements/design work is justified only inside local/mock proof, while
@@ -244,14 +252,15 @@ Recent commits to know:
   registry, contracts metadata, receipts, escrow/receipt/pay-per-call contract
   surfaces, x402/AP2/A2A standards bridges, agent escrow demo smoke, paid
   MCP-style tool smoke, data-license smoke, service-bounty smoke,
-  reputation-receipt smoke, subscription smoke, A2A well-known smoke, and A2A
-  task/message smoke.
+  reputation-receipt smoke, subscription smoke, A2A well-known smoke, A2A
+  task/message smoke, and A2A HTTP boundary smoke.
 
 ## What Is Not Complete
 
-- Signed public Agent Cards, live A2A discovery proof, live A2A server
-  operation, streaming/push notification support, external A2A conformance
-  proof, and production A2A authentication decisions are not implemented.
+- Signed public Agent Cards, live A2A discovery proof, live public A2A server
+  operation beyond the local HTTP-shaped handler, streaming/push notification
+  support, external A2A conformance proof, and production A2A authentication
+  decisions are not implemented.
 - Live IOTA Names/Identity proof, full verifiable credential validation beyond
   local/mock bounded cache behavior, live standards-bridge proof, and expanded
   contract workflows beyond local escrow/receipt/pay-per-call/data-license/
@@ -2078,6 +2087,113 @@ Next recommended slice:
   Agent Card design/proof, live IOTA Names/Identity proof, read-only
   marketplace access-control/dispute-evidence proof, or another local contract
   workflow.
+
+## Completed Slice 4.6
+
+Implemented local/mock A2A HTTP boundary proof.
+
+Implementation commit:
+
+- Pending commit in current working tree.
+
+Slice and PRD coverage:
+
+- `docs/agentic-gaskit/execution-slices.md` Slice 4.6 A2A Local HTTP Boundary.
+- `docs/agentic-gaskit/prds/phase-4-standards-bridges.md`.
+- `docs/agentic-gaskit/verification-hardening.md` Phase 4 A2A bridge gate and
+  log privacy invariants.
+- `docs/agentic-gaskit/external-api-notes.md` current A2A HTTP+JSON operation
+  mapping assumptions.
+
+Changed files:
+
+- `examples/a2a-http/`
+- `packages/standards/src/a2aHttp.ts`
+- `packages/standards/src/a2aHttp.test.ts`
+- `packages/standards/src/index.ts`
+- `packages/standards/README.md`
+- `scripts/smoke-a2a-http.ts`
+- `scripts/package-scripts.test.ts`
+- `package.json`
+- continuation and public docs
+
+Commands run:
+
+```bash
+git status --short --branch
+npm run docs:check
+npm run secrets:scan
+npm test
+npm run typecheck
+node --import tsx --test packages/standards/src/a2aHttp.test.ts packages/standards/src/a2aTask.test.ts
+node --import tsx --test packages/standards/src/a2aHttp.test.ts packages/standards/src/a2aTask.test.ts examples/a2a-http/a2a-http-demo.test.ts
+npm run smoke:a2a-http
+node --import tsx --test scripts/package-scripts.test.ts
+git diff --check
+npm run readiness:testnet
+npm run verify:local
+```
+
+Evidence:
+
+- Baseline `npm run docs:check` and `npm run secrets:scan` passed before
+  implementation.
+- Red focused A2A HTTP tests failed before implementation because
+  `handleLocalA2AHttpRequest` was not exported yet.
+- Focused implementation fixes covered Agent Card test-clock handling, malformed
+  JSON error mapping, fixture A2A endpoint coverage, and demo route alignment
+  with the exported local HTTP path constants.
+- Focused A2A HTTP tests pass for public well-known Agent Card serving without
+  task auth, missing/wrong/unconfigured bearer auth denial, authorized
+  `POST /message:send`, `GET /tasks`, `GET /tasks/{id}`, and
+  `POST /tasks/{id}:cancel`, artifact omission by default, safe error JSON,
+  unsupported `A2A-Version` denial, auth-before-unsupported behavior on
+  task-family routes, and explicit unsupported streaming/push responses.
+- Focused A2A task/message regressions still pass.
+- `npm run smoke:a2a-http` passes and reports Agent Card status 200,
+  unauthorized status 401, task status `TASK_STATE_WORKING`, hidden artifacts,
+  one listed task, canceled status `TASK_STATE_CANCELED`, and
+  `logLeaksSecretMaterial=false`.
+- `node --import tsx --test scripts/package-scripts.test.ts` passes and proves
+  the smoke is wired into `npm run verify:local`.
+- `npm test` passes with 304 TypeScript tests.
+- `npm run typecheck` passes.
+- `npm run docs:check` passes after documentation updates.
+- `npm run secrets:scan` passes after Slice 4.6 changes with 273 checked
+  tracked/staged/untracked text files and 0 findings.
+- `git diff --check` passes.
+- `npm run readiness:testnet` builds and stops before live testnet proof because
+  this checkout has no `.env` configured.
+- `npm run verify:local` passes locally, including the new A2A HTTP smoke.
+
+Hardening notes:
+
+- The local HTTP handler keeps public Agent Card discovery separate from
+  bearer-authenticated task routes.
+- Task route auth must be configured; missing auth config fails closed with
+  `503` rather than accidentally allowing local task operation.
+- Unsupported `A2A-Version`, streaming, and push notification requests fail
+  closed instead of silently falling back, and streaming/push routes still pass
+  through the task auth boundary before returning unsupported.
+- Error responses are fixed-shape JSON and do not echo request bodies or
+  authorization headers.
+
+Known unproven claims:
+
+- No live public A2A server, signed Agent Card, public hosting, streaming,
+  push notification, external conformance suite, live IOTA RPC, IOTA Gas
+  Station, localnet/testnet/mainnet deployment, production authentication,
+  production marketplace/provider workflow, custody, or live payment settlement
+  was implemented by Slice 4.6.
+- The A2A HTTP boundary proves local handler semantics, route auth, protocol
+  version denial, unsupported-operation boundaries, and redaction behavior
+  only.
+
+Next recommended slice:
+
+- Continue Packet D with signed Agent Card decision/proof or external A2A
+  conformance-blocker documentation, or switch to Packet C live IOTA
+  Names/Identity proof if operator credentials/endpoints are configured.
 
 ## Completed Slice 3.6
 

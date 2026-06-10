@@ -1,0 +1,292 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+
+import { validManifestFixture } from "@iota-gaskit/manifest";
+import type { AgentActionPolicy } from "@iota-gaskit/policy-gateway";
+import { validAgentProfileFixture } from "@iota-gaskit/registry";
+
+import {
+  A2A_AGENT_CARD_WELL_KNOWN_PATH,
+  A2A_HTTP_SEND_MESSAGE_PATH,
+  A2A_HTTP_STREAM_MESSAGE_PATH,
+  A2A_HTTP_TASKS_PATH,
+  A2A_TASK_PROTOCOL_VERSION,
+  LocalA2ATaskStore,
+  handleLocalA2AHttpRequest,
+  type A2AHttpResponse,
+} from "./index.js";
+
+const now = new Date("2026-06-10T12:00:00.000Z");
+
+const policy: AgentActionPolicy = {
+  knownAgents: ["agent:quote-bot"],
+  maxGasBudget: 50_000_000,
+  allowedContracts: [{
+    packageId: "0x2222222222222222222222222222222222222222222222222222222222222222",
+    module: "escrow",
+    functionName: "open_escrow",
+  }],
+  allowedCounterparties: ["provider:quote-service"],
+  requireSimulation: true,
+  humanApprovalGasThreshold: 100_000_000,
+};
+
+test("local A2A HTTP handler serves public well-known Agent Card without task auth", async () => {
+  const response = await handleLocalA2AHttpRequest({
+    method: "GET",
+    path: A2A_AGENT_CARD_WELL_KNOWN_PATH,
+  }, {
+    store: new LocalA2ATaskStore(),
+    agentCardProfile: a2aProfileFixture(),
+    taskAuthToken: "local-a2a-token",
+    taskPolicy: policy,
+    now: () => now,
+  });
+
+  assert.equal(response.status, 200);
+  assertAgentCardResponse(response);
+  assert.match(response.headers["content-type"] ?? "", /application\/a2a\+json/);
+  assert.equal(response.body.kind, "agent-card");
+  assert.doesNotMatch(response.json, /signer_ref|walletId|credential:|payment address/i);
+});
+
+test("local A2A HTTP task endpoints fail closed when bearer auth is missing or unconfigured", async () => {
+  const missingAuth = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: A2A_HTTP_SEND_MESSAGE_PATH,
+    body: sendBody("msg-missing-auth"),
+  }, {
+    store: new LocalA2ATaskStore(),
+    taskAuthToken: "local-a2a-token",
+    taskPolicy: policy,
+    now: () => now,
+  });
+  const unconfiguredAuth = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: A2A_HTTP_SEND_MESSAGE_PATH,
+    headers: { authorization: "Bearer local-a2a-token" },
+    body: sendBody("msg-unconfigured-auth"),
+  }, {
+    store: new LocalA2ATaskStore(),
+    taskPolicy: policy,
+    now: () => now,
+  });
+  const streamingWithoutAuth = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: A2A_HTTP_STREAM_MESSAGE_PATH,
+    body: sendBody("msg-stream-no-auth"),
+  }, {
+    store: new LocalA2ATaskStore(),
+    taskAuthToken: "local-a2a-token",
+    taskPolicy: policy,
+    now: () => now,
+  });
+
+  assert.equal(missingAuth.status, 401);
+  assert.deepEqual(missingAuth.body, {
+    error: {
+      code: "A2A_AUTH_REQUIRED",
+      message: "A2A task endpoints require bearer authentication.",
+    },
+  });
+  assert.equal(unconfiguredAuth.status, 503);
+  assert.deepEqual(unconfiguredAuth.body, {
+    error: {
+      code: "A2A_AUTH_NOT_CONFIGURED",
+      message: "A2A task endpoint authentication is not configured.",
+    },
+  });
+  assert.equal(streamingWithoutAuth.status, 401);
+  assert.deepEqual(streamingWithoutAuth.body, missingAuth.body);
+});
+
+test("local A2A HTTP handler sends gets lists and cancels authorized tasks", async () => {
+  const store = new LocalA2ATaskStore();
+  const options = {
+    store,
+    taskAuthToken: "local-a2a-token",
+    taskPolicy: policy,
+    now: () => now,
+    processMessage: () => ({
+      state: "TASK_STATE_WORKING" as const,
+      artifacts: [{
+        artifactId: "draft-1",
+        parts: [{ text: "draft output" }],
+      }],
+    }),
+  };
+  const auth = { authorization: "Bearer local-a2a-token" };
+
+  const sent = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: A2A_HTTP_SEND_MESSAGE_PATH,
+    headers: auth,
+    body: sendBody("msg-authorized"),
+  }, options);
+  assert.equal(sent.status, 200);
+  assertTaskResponse(sent);
+  assert.equal(sent.body.task.status.state, "TASK_STATE_WORKING");
+
+  const taskId = sent.body.task.id;
+  const hiddenArtifacts = await handleLocalA2AHttpRequest({
+    method: "GET",
+    path: `/tasks/${taskId}`,
+    headers: auth,
+  }, options);
+  const visibleArtifacts = await handleLocalA2AHttpRequest({
+    method: "GET",
+    path: `/tasks/${taskId}?includeArtifacts=true`,
+    headers: auth,
+  }, options);
+  const listed = await handleLocalA2AHttpRequest({
+    method: "GET",
+    path: A2A_HTTP_TASKS_PATH,
+    headers: auth,
+  }, options);
+  const canceled = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: `/tasks/${taskId}:cancel`,
+    headers: auth,
+  }, options);
+
+  assert.equal(hiddenArtifacts.status, 200);
+  assertTaskResponse(hiddenArtifacts);
+  assertTaskResponse(visibleArtifacts);
+  assertTaskListResponse(listed);
+  assertTaskResponse(canceled);
+  assert.equal(hiddenArtifacts.body.task.artifacts, undefined);
+  assert.equal(visibleArtifacts.body.task.artifacts?.[0]?.artifactId, "draft-1");
+  assert.equal(listed.body.tasks.length, 1);
+  assert.equal(listed.body.tasks[0]?.artifacts, undefined);
+  assert.equal(canceled.body.task.status.state, "TASK_STATE_CANCELED");
+  assert.equal(canceled.body.task.artifacts, undefined);
+});
+
+test("local A2A HTTP handler returns safe errors without leaking request secrets", async () => {
+  const response = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: A2A_HTTP_SEND_MESSAGE_PATH,
+    headers: { authorization: "Bearer wrong-token" },
+    body: {
+      message: {
+        messageId: "msg-secret",
+        role: "ROLE_USER",
+        parts: [{ text: "private prompt: Bearer abc.def.ghi signer_ref_secret" }],
+      },
+      manifest: validManifestFixture(),
+      protocolVersion: A2A_TASK_PROTOCOL_VERSION,
+    },
+  }, {
+    store: new LocalA2ATaskStore(),
+    taskAuthToken: "local-a2a-token",
+    taskPolicy: policy,
+    now: () => now,
+  });
+
+  assert.equal(response.status, 401);
+  assert.match(response.headers["content-type"] ?? "", /application\/json/);
+  assert.doesNotMatch(response.json, /wrong-token|abc\.def|signer_ref_secret|private prompt/i);
+  assert.match(response.json, /A2A_AUTH_REQUIRED/);
+});
+
+test("local A2A HTTP handler denies unsupported methods and malformed bodies safely", async () => {
+  const options = {
+    store: new LocalA2ATaskStore(),
+    taskAuthToken: "local-a2a-token",
+    taskPolicy: policy,
+    now: () => now,
+  };
+  const auth = { authorization: "Bearer local-a2a-token" };
+
+  const badMethod = await handleLocalA2AHttpRequest({
+    method: "DELETE",
+    path: A2A_HTTP_TASKS_PATH,
+    headers: auth,
+  }, options);
+  const badBody = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: A2A_HTTP_SEND_MESSAGE_PATH,
+    headers: auth,
+    body: "{not json",
+  }, options);
+  const badVersion = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: A2A_HTTP_SEND_MESSAGE_PATH,
+    headers: { ...auth, "A2A-Version": "0.3" },
+    body: sendBody("msg-bad-version"),
+  }, options);
+  const streaming = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: A2A_HTTP_STREAM_MESSAGE_PATH,
+    headers: auth,
+    body: sendBody("msg-streaming"),
+  }, options);
+  const push = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: "/tasks/task-1/pushNotificationConfigs",
+    headers: auth,
+    body: {},
+  }, options);
+
+  assert.equal(badMethod.status, 405);
+  assert.equal(badMethod.headers.allow, "GET");
+  assert.equal(badBody.status, 400);
+  assert.equal(badVersion.status, 400);
+  assert.deepEqual(badVersion.body, {
+    error: {
+      code: "A2A_VERSION_NOT_SUPPORTED",
+      message: "A2A protocol version is unsupported.",
+    },
+  });
+  assert.equal(streaming.status, 501);
+  assert.equal(push.status, 501);
+  assertSafeJson(badBody);
+});
+
+function sendBody(messageId: string) {
+  return {
+    message: {
+      messageId,
+      role: "ROLE_USER",
+      parts: [{ text: "Run local A2A work." }],
+    },
+    manifest: validManifestFixture(),
+    protocolVersion: A2A_TASK_PROTOCOL_VERSION,
+  };
+}
+
+function a2aProfileFixture() {
+  return {
+    ...validAgentProfileFixture(),
+    endpoints: [
+      { type: "a2a" as const, url: "https://agent.example.test/a2a" },
+      ...validAgentProfileFixture().endpoints,
+    ],
+  };
+}
+
+function assertSafeJson(response: A2AHttpResponse): void {
+  assert.doesNotThrow(() => JSON.parse(response.json));
+  assert.doesNotMatch(response.json, /not json|Bearer|signer_ref|private prompt/i);
+}
+
+function assertAgentCardResponse(response: A2AHttpResponse): asserts response is A2AHttpResponse & {
+  readonly body: Extract<A2AHttpResponse["body"], { readonly kind: "agent-card" }>;
+} {
+  assert.equal(response.status, 200);
+  assert.ok("kind" in response.body && response.body.kind === "agent-card");
+}
+
+function assertTaskResponse(response: A2AHttpResponse): asserts response is A2AHttpResponse & {
+  readonly body: Extract<A2AHttpResponse["body"], { readonly kind: "task" }>;
+} {
+  assert.equal(response.status, 200);
+  assert.ok("kind" in response.body && response.body.kind === "task");
+}
+
+function assertTaskListResponse(response: A2AHttpResponse): asserts response is A2AHttpResponse & {
+  readonly body: Extract<A2AHttpResponse["body"], { readonly kind: "task-list" }>;
+} {
+  assert.equal(response.status, 200);
+  assert.ok("kind" in response.body && response.body.kind === "task-list");
+}

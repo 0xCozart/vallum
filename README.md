@@ -85,7 +85,7 @@ interfaces, capability policy checks, x402/AP2/A2A standards bridge helpers,
 local pay-per-call, data-license, service-bounty, reputation-receipt, and
 subscription workflows, bounded local IOTA Identity verification cache helpers,
 and local A2A well-known Agent Card response proof plus local/mock A2A
-task/message operation helpers.
+task/message operation helpers and a local A2A HTTP-shaped boundary.
 
 Some production surfaces remain planned roadmap work, including the full
 dashboard UI, production persistence, production monitoring, package
@@ -125,7 +125,7 @@ npm run verify:local
 
 Latest local verification and prior live proof:
 
-- `npm test`: 297 deterministic TypeScript tests passed locally after Slice 2.4.
+- `npm test`: 304 deterministic TypeScript tests passed locally after Slice 4.6.
 - `npm run contracts:test`: 33 Move escrow/receipt/pay-per-call/data-license/service-bounty/reputation-receipt/subscription contract tests passed locally.
 - `npm run typecheck`: passed locally.
 - `npm run smoke:local`: deterministic local gateway smoke passed locally, including policy simulation, sanitized event, local usage read-model, file-backed usage event-store replay, and authenticated local operator usage API checks.
@@ -139,6 +139,7 @@ Latest local verification and prior live proof:
 - `npm run smoke:subscription`: deterministic local subscription smoke passed locally.
 - `npm run smoke:a2a-well-known`: deterministic local A2A Agent Card discovery response smoke passed locally.
 - `npm run smoke:a2a-task-message`: deterministic local A2A task/message operation smoke passed locally.
+- `npm run smoke:a2a-http`: deterministic local A2A HTTP boundary smoke passed locally.
 - `npm run readiness:testnet:example`: deterministic example testnet-readiness preflight passed locally.
 - `npm run pack:check`: workspace package dry-runs completed locally.
 - Prior `npm run execute:testnet-demo`: real sponsored IOTA testnet execute succeeded through the local policy gateway and Gas Station; public digest `2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H`.
@@ -220,6 +221,7 @@ docs/
 examples/
   agent-escrow/           # Local agent-to-agent escrow demo
   a2a-task-message/       # Local A2A task/message operation demo
+  a2a-http/               # Local A2A HTTP-shaped boundary demo
   paid-mcp-tool/           # Local paid MCP-style tool demo
   nextjs-api-route/
   node-backend/

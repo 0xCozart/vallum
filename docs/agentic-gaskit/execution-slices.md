@@ -1016,6 +1016,59 @@ Escalation triggers:
   notifications, external A2A client conformance, live discovery, or production
   agent authentication decisions.
 
+## Slice 4.6: A2A Local HTTP Boundary
+
+User-visible outcome:
+Agentic GasKit can expose local/mock A2A Agent Card discovery and task/message
+operations through a deterministic HTTP-shaped handler with explicit bearer
+authentication for task routes.
+
+Likely files:
+
+- `packages/standards/src/a2aHttp.ts`
+- `packages/standards/src/a2aHttp.test.ts`
+- `examples/a2a-http/`
+- `scripts/smoke-a2a-http.ts`
+- `package.json`
+- `scripts/package-scripts.test.ts`
+
+Acceptance criteria:
+
+- Public `GET /.well-known/agent-card.json` remains available without task
+  bearer auth.
+- Task/message routes fail closed when bearer auth is missing, wrong, or not
+  configured.
+- Authorized local task routes can send a message, get a task, list tasks, and
+  cancel a task using the existing local A2A task store.
+- Get/list task reads omit artifacts by default unless explicitly requested.
+- Unsupported streaming and push-notification routes return explicit
+  unsupported responses rather than silently pretending support.
+- Safe error JSON never echoes bearer tokens, private prompts, signer refs,
+  wallet internals, or payment credentials.
+- Local smoke is wired into `npm run verify:local`.
+- This slice does not claim public hosting, signed Agent Cards, streaming,
+  push notifications, external conformance, or live A2A discovery proof.
+
+Verification:
+
+- Standards unit tests.
+- Local A2A HTTP smoke.
+- `npm run verify:local`.
+
+Dependencies:
+Slice 4.5.
+
+Risk:
+Medium to high. A local HTTP boundary can be mistaken for live public A2A
+interoperability unless unsupported operations, auth, and deployment boundaries
+stay explicit.
+
+Escalation triggers:
+
+- Need for public hosting, signed Agent Cards, streaming, push notifications,
+  external A2A client conformance, live discovery, or production agent
+  authentication decisions.
+
 ## Slice 5.1: Marketplace Readiness Gate
 
 User-visible outcome:

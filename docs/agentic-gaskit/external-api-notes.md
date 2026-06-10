@@ -434,6 +434,16 @@ Current planning assumptions:
   manifest/policy binding, and redacted task logging. It does not host a public
   A2A endpoint, stream events, configure push notifications, sign Agent Cards,
   run an external conformance suite, or prove live A2A discovery.
+- On 2026-06-10, Slice 4.6 rechecked the current A2A specification page. It
+  identifies `1.0.0` as the latest released version and describes protocol
+  layers for data model, operations, and bindings. Current operation mappings
+  include HTTP+JSON endpoints such as `POST /message:send`, `POST
+  /message:stream`, `GET /tasks/{id}`, `GET /tasks`, `POST
+  /tasks/{id}:cancel`, and push-notification config routes. Slice 4.6
+  implements a local HTTP-shaped handler for public Agent Card discovery and
+  bearer-authenticated non-streaming task routes only. It explicitly returns
+  unsupported for streaming and push-notification routes and does not prove
+  public hosting, signed Agent Cards, external conformance, or live discovery.
 
 Implementation checks:
 

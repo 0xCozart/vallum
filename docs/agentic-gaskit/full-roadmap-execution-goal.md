@@ -59,7 +59,8 @@ Confirmed current state:
   receipts, local Move contracts, local contract workflows, registry/profile
   schema, mock IOTA Names/Identity adapters, bounded local IOTA Identity
   verification cache helpers, x402/AP2/A2A mappings, local A2A well-known
-  serving, and local A2A task/message helpers.
+  serving, local A2A task/message helpers, and a local A2A HTTP-shaped
+  boundary.
 - `docs/agentic-gaskit/handoff-next-product-build.md` says Slices 1.0, 1.1,
   1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3, 3.4,
   3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5, and 5.1 are implemented or reviewed and
@@ -80,9 +81,10 @@ Confirmed current state:
 
 Confirmed remaining gaps:
 
-- Signed public Agent Cards, live A2A discovery proof, live A2A server
-  operation, streaming/push notification support, external A2A conformance
-  proof, and production A2A authentication decisions.
+- Signed public Agent Cards, live A2A discovery proof, live public A2A server
+  operation beyond the local HTTP-shaped handler, streaming/push notification
+  support, external A2A conformance proof, and production A2A authentication
+  decisions.
 - Live IOTA Names/Identity proof, full verifiable credential validation beyond
   local/mock cache behavior, and live standards-bridge proof.
 - Testnet/localnet deployment proof for relevant Move contracts and demos.
@@ -394,8 +396,11 @@ High. Stale identity or revocation data can allow revoked agents to spend.
 ### Packet D: A2A Live Discovery, Server, Auth, And Conformance
 
 Outcome:
-Turn local A2A cards and task/message helpers into an honestly scoped live
-interoperability path.
+Turn local A2A cards, task/message helpers, and HTTP-shaped handler into an
+honestly scoped live interoperability path. Slice 4.6 now proves a local/mock
+HTTP boundary with public Agent Card discovery and bearer-authenticated task
+routes, but it is not public hosting, signed Agent Card proof, streaming, push
+notification support, external conformance, or live A2A discovery proof.
 
 Acceptance criteria:
 
