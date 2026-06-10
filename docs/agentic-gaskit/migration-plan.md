@@ -24,7 +24,7 @@ Implementation should move into the GasKit codebase, not remain in
 Local fork created for the new direction:
 
 - fork path: `/home/sacred/code/agentic-gaskit`
-- branch: `agentic-gaskit-direction`
+- branch: `main`
 - canonical GitHub repo: `https://github.com/0xCozart/agentic-gaskit`
 - upstream source remote: `https://github.com/0xCozart/iota-gaskit`
 - local Git remote state: `upstream` fetches from the source repo and has push
