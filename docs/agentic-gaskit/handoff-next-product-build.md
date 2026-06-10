@@ -7,9 +7,9 @@ Last updated: 2026-06-10.
 Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
-Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, and 2.2 are implemented
-and locally verified. The immediate target is Slice 2.3: IOTA Names And
-Identity Adapters. Use
+Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, and 2.3 are
+implemented and locally verified. The immediate target is Slice 3.1: Contract
+Metadata Registry. Use
 `docs/agentic-gaskit/execution-entry.md` as the entry doc, then continue
 through `docs/agentic-gaskit/execution-slices.md`.
 
@@ -116,6 +116,15 @@ Recent commits to know:
 - Slice 2.2 tests prove local fixture profile resolution, typed resolver errors,
   revoked/expired and revoked-wallet denial, SDK pass-through resolution, and
   capability mismatch denial.
+- Slice 2.3 IOTA Names adapter interface is implemented in `packages/registry`
+  with mock GraphQL tests for `resolveIotaNamesAddress(name) { address }`,
+  name/profile binding, unresolved names, and address mismatch failure.
+- Slice 2.3 IOTA Identity adapter interface is implemented in
+  `packages/registry` with mock DID and credential tests for agent/owner DID
+  resolution, credential reference validation, DID mismatch failure, and revoked
+  credential denial.
+- `docs/agentic-gaskit/external-api-notes.md` was refreshed on 2026-06-10 for
+  current IOTA Names GraphQL and IOTA Identity DID/VC assumptions.
 - Root build, test, typecheck, package dry-run, docs, smokes, readiness example,
   contract tests, and secret scan include the accounts, manifest, MCP,
   registry, receipts, escrow/receipt contract surfaces, and agent escrow demo
@@ -124,9 +133,9 @@ Recent commits to know:
 ## What Is Not Complete
 
 - A2A protocol tools and standards-compatible discovery are not implemented.
-- Live IOTA Names/Identity adapters, verifiable credential validation, A2A
+- Live IOTA Names/Identity proof, full verifiable credential validation, A2A
   mapping, and expanded contract workflows are not implemented.
-- Slice 2.2 is locally verified only. Localnet/testnet deployment smoke has not
+- Slice 2.3 is locally verified only. Localnet/testnet deployment smoke has not
   run, and the demo/escrow contract does not custody real funds.
 - Package namespace strategy is still open.
 - Production custody, KMS, and recovery/export are not designed or implemented.
@@ -1082,6 +1091,112 @@ Next recommended slice:
 
 - Slice 2.3 IOTA Names And Identity Adapters.
 
+## Completed Slice 2.3
+
+Implemented mock-tested IOTA Names and IOTA Identity adapter interfaces for the
+Agent Profile registry.
+
+This slice stays local by default. It does not call live IOTA GraphQL, IOTA
+Identity, IOTA RPC, IOTA Gas Station, localnet, testnet, mainnet, paid APIs, or
+external identity providers in automated verification.
+
+Acceptance is defined in:
+
+- `docs/agentic-gaskit/execution-slices.md` Slice 2.3
+- `docs/agentic-gaskit/prds/phase-2-identity-registry.md`
+- `docs/agentic-gaskit/module-specs.md` `packages/registry`
+- `docs/agentic-gaskit/verification-hardening.md` IOTA adapters and Phase 2
+  gate
+- current official IOTA docs recorded in
+  `docs/agentic-gaskit/external-api-notes.md`
+
+Changed files:
+
+- `README.md`
+- `docs/CODEBASE_MAP.md`
+- `docs/overview.md`
+- `docs/agentic-gaskit/codex-active-goal.md`
+- `docs/agentic-gaskit/external-api-notes.md`
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+- `packages/registry/src/index.ts`
+- `packages/registry/src/iotaIdentityAdapter.test.ts`
+- `packages/registry/src/iotaIdentityAdapter.ts`
+- `packages/registry/src/iotaNamesAdapter.test.ts`
+- `packages/registry/src/iotaNamesAdapter.ts`
+- `packages/registry/src/resolveAgent.ts`
+
+Commands run:
+
+```bash
+git status --short --branch
+npm run docs:check
+npm run secrets:scan
+npm test
+npm run typecheck
+node --import tsx --test packages/registry/src/iotaNamesAdapter.test.ts packages/registry/src/iotaIdentityAdapter.test.ts
+node --import tsx --test packages/registry/src/profileSchema.test.ts packages/registry/src/resolveAgent.test.ts packages/registry/src/iotaNamesAdapter.test.ts packages/registry/src/iotaIdentityAdapter.test.ts
+npm run verify:local
+git diff --check
+git diff --cached --check
+```
+
+Verification result:
+
+- Baseline before editing passed: docs check, secret scan, `npm test` with 194
+  TypeScript tests, and `npm run typecheck`.
+- Initial focused adapter tests failed before implementation because
+  `createIotaNamesAgentResolver` and `createIotaIdentityVerifiedResolver` were
+  not exported.
+- Focused adapter tests passed after adding Names and Identity adapters.
+- Focused registry tests passed with 20 tests after adding adapter coverage and
+  fail-closed hardening cases.
+- Final `npm test` passed with 204 TypeScript tests.
+- Final `npm run typecheck` passed.
+- Final `npm run docs:check` passed with 27 HTML pages generated from 26
+  Markdown sources.
+- Final `npm run secrets:scan` passed with 196 tracked/staged/untracked text
+  files checked and 0 findings.
+- Final `npm run verify:local` passed, including TypeScript tests, 8 Move
+  contract tests, typecheck, local gateway smoke, demo dApp smoke, browser
+  wrapper smoke, agent escrow smoke, readiness example, package dry-run, docs
+  check, and secret scan.
+- Final `git diff --check` and `git diff --cached --check` passed.
+
+Hardening notes:
+
+- IOTA Names adapter follows the current official GraphQL
+  `resolveIotaNamesAddress(name: String!): Address` query and selects
+  `address`.
+- Names resolution fails closed for unresolved names, GraphQL errors, malformed
+  address responses, missing profile metadata, invalid profiles, profile-name
+  mismatch, profile wallet-address mismatch, and profile metadata source
+  failures.
+- Identity adapter is dependency-injected around current IOTA Identity
+  DID-resolution and JWT credential-validation shapes; automated tests use mock
+  resolvers and validators only.
+- Identity verification fails closed for DID-resolution failures, agent DID
+  mismatch, owner DID mismatch, revoked credentials, expired credentials, and
+  unverifiable or unavailable credential validation.
+- Local fixture resolver behavior is preserved, and Identity verification can
+  wrap any existing `AgentResolver`.
+- Manual localnet/testnet path is documented in
+  `docs/agentic-gaskit/external-api-notes.md` but was not run.
+- Apex manifest helper remains unusable because the current
+  `apex.workflow.json` lacks required mode definitions and
+  `manifest.defaultDir`, so Slice 2.3 scope was recorded locally under ignored
+  `tmp/apex-workflow/` and this work does not claim Apex verification.
+
+Known unproven claims:
+
+- No live IOTA Names query, live IOTA Identity DID resolution, live credential
+  JWT validation, cache TTL policy, reverse-name enforcement, dashboard profile
+  view, A2A Agent Card mapping, or live testnet/manual resolution proof exists
+  yet.
+
+Next recommended slice:
+
+- Slice 3.1 Contract Metadata Registry.
+
 ## Guardrails
 
 - Do not expose seeds, mnemonics, private keys, raw keypairs, raw transaction
@@ -1106,11 +1221,12 @@ npm test
 npm run typecheck
 ```
 
-For Slice 2.3, do not run live testnet work unless the user explicitly asks and
-operator-owned credentials are configured. Start with the baseline above plus:
+For Slice 3.1, keep contract metadata work local unless the user explicitly
+asks for live localnet/testnet proof and operator-owned credentials are
+configured. Start with the baseline above plus:
 
 ```bash
-node --import tsx --test packages/registry/src/profileSchema.test.ts packages/registry/src/resolveAgent.test.ts packages/policy-gateway/src/capabilityCheck.test.ts
+node --import tsx --test packages/policy-gateway/src/*.test.ts
 ```
 
 Finish with:

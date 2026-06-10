@@ -1,6 +1,6 @@
 # External API Notes
 
-Last refreshed: 2026-06-09.
+Last refreshed: 2026-06-10.
 
 These notes are implementation guardrails, not a substitute for current official
 documentation. Recheck every touched API at the start of the relevant slice.
@@ -91,6 +91,10 @@ Sources:
 - https://www.iota.org/products/identity
 - https://docs.iota.org/developer/iota-identity/explanations/decentralized-identifiers
 - https://docs.iota.org/developer/iota-identity/explanations/verifiable-credentials
+- https://docs.iota.org/developer/iota-identity/how-tos/decentralized-identifiers/create
+- https://docs.iota.org/developer/iota-identity/how-tos/decentralized-identifiers/resolve
+- https://docs.iota.org/developer/iota-identity/how-tos/verifiable-credentials/create
+- https://docs.iota.org/developer/iota-identity/how-tos/verifiable-credentials/revocation
 - https://github.com/iotaledger/identity
 
 Current planning assumptions:
@@ -110,12 +114,30 @@ Current planning assumptions:
   and `StatusList2021`. The local Agent Profile schema therefore records
   credential refs, issuer DID, credential status, and revocation references
   without trying to validate live credentials in Slice 2.1.
+- On 2026-06-10, Slice 2.3 rechecked the current IOTA Identity docs and
+  repository. The current TypeScript examples use `@iota/identity-wasm/node`
+  with `@iota/iota-sdk/client`, `IdentityClientReadOnly.createWithPkgId`,
+  `Resolver`, and `resolveDid`/`resolve`-style DID document resolution.
+- The current Verifiable Credential docs describe JWT credential creation and
+  validation where issuers sign credentials and verifiers validate semantic
+  structure, signatures against issuer DID Documents, issuance dates, expiry,
+  and optional validation settings. Credentials are sent and stored off-chain.
+- The current revocation docs still describe `credentialStatus` plus
+  `RevocationBitmap2022` and `StatusList2021`; removing a verification method
+  can also invalidate credentials signed with that method.
+- Slice 2.3 implements dependency-injected Identity adapter interfaces around
+  those current DID-resolution and credential-validation shapes. It does not
+  import `@iota/identity-wasm`, create live identities, validate live
+  credential JWTs, or run localnet/testnet Identity commands.
 
 Implementation checks:
 
-- Verify current DID method APIs.
-- Verify credential issuance and verification APIs.
-- Verify revocation mechanism and cache strategy.
+- Keep live DID resolution behind an injected resolver compatible with
+  `resolveDid(did)` or `Resolver.resolve(did)`.
+- Keep live JWT credential validation behind an injected validator compatible
+  with the current IOTA Identity credential-validation examples.
+- Verify revocation mechanism and cache strategy before enabling live protected
+  actions.
 - Verify whether profile metadata should be on-chain, off-chain, or hybrid.
 
 ## IOTA Names
@@ -124,6 +146,7 @@ Sources:
 
 - https://github.com/iotaledger/iota-names
 - https://docs.iota.org/developer/references/iota-api/iota-graphql/reference/operations/queries/resolve-iota-names-address
+- https://docs.iota.org/developer/references/iota-api/iota-graphql/reference/types/objects/address
 
 Current planning assumptions:
 
@@ -132,6 +155,12 @@ Current planning assumptions:
   layer.
 - Current IOTA GraphQL docs expose `resolveIotaNamesAddress(name: String!):
   Address` for forward resolution.
+- The returned GraphQL `Address` object exposes the `address: IotaAddress!`
+  field. Slice 2.3 therefore uses the query shape
+  `resolveIotaNamesAddress(name: $name) { address }`.
+- The `Address` object also exposes `iotaNamesDefaultName` and
+  `iotaNamesRegistrations`, which may support later reverse/default-name
+  checks, but those checks are not part of Slice 2.3.
 - Current IOTA Names repository local setup uses `iota-localnet`, CLI
   `--graphql http://127.0.0.1:9125`, `iota name register first.iota`, and a
   feature-enabled IOTA binary for names testing.
@@ -141,14 +170,50 @@ Current planning assumptions:
   bind the human-readable name to a target address first; richer profile
   metadata is modeled as local/test metadata until adapter slices prove storage
   and lookup behavior.
+- On 2026-06-10, Slice 2.3 rechecked the GraphQL and repository docs above and
+  implemented a dependency-injected Names GraphQL adapter. The adapter can use
+  a real GraphQL endpoint, but automated tests use mock GraphQL responses only.
+- Slice 2.3 binds the resolved IOTA Names target address to Agent Profile
+  metadata from an injected profile source. It fails closed if the name is not
+  found, the GraphQL response is malformed, no profile metadata is available,
+  profile validation fails, the profile name differs from the resolved name, or
+  the profile wallet address differs from the resolved IOTA Names address.
 
 Implementation checks:
 
-- Verify current name registration and resolution APIs.
-- Verify reverse lookup support.
+- Verify current name registration and resolution APIs before any live run.
+- Verify reverse lookup/default-name support before enforcing reverse binding.
 - Verify whether and how target address, expiry, NFT/object id, and metadata can
   be queried.
 - Verify whether Agent Profile metadata must live outside the name record.
+
+Manual localnet/testnet resolution path, not run in Slice 2.3:
+
+1. Use a feature-enabled IOTA binary that supports IOTA Names.
+2. Start localnet with GraphQL enabled, for example the repository-documented
+   `iota-localnet start --force-regenesis --with-faucet --with-indexer --with-graphql`.
+3. Configure the CLI with RPC and GraphQL endpoints, for example
+   `iota client new-env --alias localnet --rpc http://127.0.0.1:9000 --graphql http://127.0.0.1:9125`
+   and `iota client switch --env localnet`.
+4. Request faucet gas with `iota client faucet`.
+5. Initialize the IOTA Names packages with the upstream repository scripts.
+6. Register a test name such as `iota name register first.iota`.
+7. Query the GraphQL endpoint with:
+
+   ```graphql
+   query ResolveIotaNamesAddress($name: String!) {
+     resolveIotaNamesAddress(name: $name) {
+       address
+     }
+   }
+   ```
+
+8. Configure a local Agent Profile metadata source whose wallet address matches
+   the returned address, then run the Agentic GasKit resolver against that
+   endpoint.
+
+Do not run the manual path without explicit operator intent, local credentials,
+and a disposable localnet/testnet environment.
 
 ## MCP
 

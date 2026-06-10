@@ -80,7 +80,7 @@ function validateResolvedProfile(name: string, profile: unknown, now?: Date): Re
   return {
     ok: false,
     error: {
-      code: resolveValidationErrorCode(validation.errors),
+      code: resolveAgentValidationErrorCode(validation.errors),
       message: "Agent profile failed validation.",
       name,
       validationErrors: validation.errors,
@@ -88,7 +88,9 @@ function validateResolvedProfile(name: string, profile: unknown, now?: Date): Re
   };
 }
 
-function resolveValidationErrorCode(errors: readonly AgentProfileValidationError[]): ResolveAgentErrorCode {
+export function resolveAgentValidationErrorCode(
+  errors: readonly AgentProfileValidationError[],
+): ResolveAgentErrorCode {
   if (errors.some((error) => error.code === "PROFILE_REVOKED")) return "PROFILE_REVOKED";
   if (errors.some((error) => error.code === "PROFILE_EXPIRED")) return "PROFILE_EXPIRED";
   if (errors.some((error) => error.code === "UNSUPPORTED_VERSION")) return "PROFILE_UNSUPPORTED_SCHEMA";

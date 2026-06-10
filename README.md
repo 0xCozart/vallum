@@ -80,7 +80,8 @@ signer-reference-first account primitives, transaction manifests, pure agent
 policy evaluation, a local mock sponsorship gateway, SDK sponsored actions,
 MCP-shaped sponsorship tools, receipt state, local Move escrow/receipt state
 contracts, a deterministic local agent-to-agent escrow demo, and local Agent
-Profile schema validation with fixture resolution and capability policy checks.
+Profile schema validation with fixture resolution, IOTA Names/Identity adapter
+interfaces, and capability policy checks.
 
 Some production surfaces remain planned roadmap work, including the full
 dashboard UI, production persistence, production monitoring, package
@@ -105,7 +106,8 @@ The repo currently includes:
   and over-budget policy denial without live IOTA calls;
 - agent profile schema validation for required fields, revoked/expired states,
   unsupported versions, and secret-field rejection;
-- local profile resolution through the SDK plus pure capability policy checks.
+- local profile resolution through the SDK, mock-tested IOTA Names/Identity
+  adapter interfaces, and pure capability policy checks.
 
 ## Current proof status
 
@@ -118,7 +120,7 @@ npm run verify:local
 
 Latest local verification and prior live proof:
 
-- `npm test`: 194 deterministic TypeScript tests passed locally after Slice 2.2.
+- `npm test`: 204 deterministic TypeScript tests passed locally after Slice 2.3.
 - `npm run contracts:test`: 8 Move escrow/receipt contract tests passed locally.
 - `npm run typecheck`: passed locally.
 - `npm run smoke:local`: deterministic local gateway smoke passed locally, including policy simulation, sanitized event, local usage read-model, file-backed usage event-store replay, and authenticated local operator usage API checks.
@@ -175,7 +177,7 @@ packages/
   shared-types/           # Shared policy/request/response types
   accounts/               # Agent account and signer-reference primitives
   manifest/               # Agent transaction manifest schema and validation
-  registry/               # Agent Profile schema, validation, and local resolver
+  registry/               # Agent Profile schema, validation, resolver, and adapters
   mcp-server/             # MCP-shaped sponsorship tool facade
   receipts/               # Receipt and escrow state machine
 contracts/
