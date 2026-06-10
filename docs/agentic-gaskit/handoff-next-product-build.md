@@ -8,8 +8,8 @@ Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 3.1, 3.2,
-3.3, 3.4, 3.5, 4.1, 4.2, 4.3, 4.4, 4.5, and 5.1 are implemented or reviewed
-and locally verified.
+3.3, 3.4, 3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5, and 5.1 are implemented or
+reviewed and locally verified.
 Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
 `docs/marketplace-readiness.md` before choosing the next slice. Do not start
 production marketplace implementation unless the user explicitly approves the
@@ -27,6 +27,7 @@ new scope and its unresolved gates.
 
 Recent commits to know:
 
+- `faddf2f` feat: add subscription workflow
 - `0de44a1` feat: add reputation receipt workflow
 - `2a72b62` feat: add a2a agent card mapping
 - `8e228cf` feat: add ap2 mandate bridge
@@ -169,6 +170,17 @@ Recent commits to know:
   receipt state records attested/denied/failed evidence; formatted demo output
   omits private material; and Move tests cover issuer-only attestation, invalid
   score denial, and invalid transitions.
+- Slice 3.6 Subscription Workflow is implemented with local
+  `contracts/subscription_v1`, SDK `startSubscription`/`renewSubscription`,
+  subscription receipt state, template metadata, and `examples/subscription`.
+- Slice 3.6 tests prove subscription activation and renewal happen only after
+  policy-gateway approval and proof collection; policy denial does not collect
+  activation proof; failed/thrown/malformed proof withholds activation or
+  renewal; renewal receipt state records the renewal sponsorship id and
+  transaction digest; receipt state records active/renewed/canceled/denied/
+  failed states; formatted demo output omits private material; and Move tests
+  cover subscriber/provider authorization, cancellation, invalid renewal
+  periods, and invalid transitions.
 - Slice 4.1 x402 Mapping is implemented in `packages/manifest`,
   `packages/receipts`, and `packages/standards` as `@iota-gaskit/standards`.
 - Slice 4.1 tests prove x402 v2 payment requirements map to Agentic GasKit
@@ -223,7 +235,8 @@ Recent commits to know:
   registry, contracts metadata, receipts, escrow/receipt/pay-per-call contract
   surfaces, x402/AP2/A2A standards bridges, agent escrow demo smoke, paid
   MCP-style tool smoke, data-license smoke, service-bounty smoke,
-  reputation-receipt smoke, A2A well-known smoke, and A2A task/message smoke.
+  reputation-receipt smoke, subscription smoke, A2A well-known smoke, and A2A
+  task/message smoke.
 
 ## What Is Not Complete
 
@@ -232,8 +245,8 @@ Recent commits to know:
   proof, and production A2A authentication decisions are not implemented.
 - Live IOTA Names/Identity proof, full verifiable credential validation, live
   standards-bridge proof, and expanded contract workflows beyond local
-  escrow/receipt/pay-per-call/data-license/service-bounty/reputation-receipt
-  metadata are not implemented.
+  escrow/receipt/pay-per-call/data-license/service-bounty/reputation-receipt/
+  subscription metadata are not implemented.
 - Slice 2.3 is locally verified only. Localnet/testnet deployment smoke has not
   run, and the demo/escrow contract does not custody real funds.
 - Package namespace strategy is still open.
@@ -1948,7 +1961,103 @@ Next recommended slice:
   one explicit next slice from the remaining readiness gaps, such as signed
   Agent Card design/proof, live IOTA Names/Identity proof, read-only
   marketplace access-control/dispute-evidence proof, or another local contract
-  workflow such as subscription.
+  workflow.
+
+## Completed Slice 3.6
+
+Implemented local/mock Subscription Workflow.
+
+Implementation commit:
+
+- `faddf2f` feat: add subscription workflow
+
+Slice and PRD coverage:
+
+- `docs/agentic-gaskit/execution-slices.md` Slice 3.6 Subscription Workflow.
+- `docs/agentic-gaskit/prds/phase-3-contract-block-library.md`.
+- `docs/agentic-gaskit/verification-hardening.md` Phase 3 contract and receipt
+  gates.
+- `docs/marketplace-readiness.md` production marketplace/provider-verification
+  gates.
+
+Changed files:
+
+- `contracts/subscription_v1/`
+- `examples/subscription/`
+- `packages/receipts/src/index.ts`
+- `packages/receipts/src/receipts.test.ts`
+- `packages/sdk/src/contracts/subscription.ts`
+- `packages/sdk/src/contracts/subscription.test.ts`
+- `packages/sdk/src/index.ts`
+- `packages/contracts-metadata/src/index.ts`
+- `packages/contracts-metadata/src/registry.test.ts`
+- `scripts/smoke-subscription.ts`
+- `scripts/run-move-tests.ts`
+- `scripts/package-scripts.test.ts`
+- `package.json`
+- continuation docs, overview docs, and package README references
+
+Commands run:
+
+```bash
+git status --short --branch
+node --import tsx --test packages/receipts/src/receipts.test.ts
+npm run typecheck
+node --import tsx --test packages/receipts/src/receipts.test.ts packages/contracts-metadata/src/registry.test.ts packages/sdk/src/contracts/subscription.test.ts scripts/package-scripts.test.ts
+npm run contracts:test
+node --import tsx --test packages/receipts/src/receipts.test.ts packages/contracts-metadata/src/registry.test.ts packages/sdk/src/contracts/subscription.test.ts examples/subscription/subscription-demo.test.ts scripts/package-scripts.test.ts
+npm run smoke:subscription
+npm run docs:check
+npm run secrets:scan
+npm run verify:local
+git diff --check
+```
+
+Evidence:
+
+- Red test confirmed missing subscription receipt exports before
+  implementation.
+- `node --import tsx --test packages/receipts/src/receipts.test.ts` passed with
+  20 receipt tests after subscription state was implemented.
+- Focused subscription tests passed with 57 tests across receipt state,
+  contract metadata, SDK start/renew flows, local demo redaction, and package
+  script wiring.
+- `npm run contracts:test` passed with 33 Move tests across escrow, receipt,
+  pay-per-call, data-license, service-bounty, reputation-receipt, and
+  subscription contracts. Subscription Move tests cover start/activate/renew/
+  cancel, subscriber-only creation, provider-only activation, cancellation
+  terminal behavior, and invalid renewal periods.
+- `npm run typecheck` passed after subscription SDK and receipt exports were
+  wired.
+- `npm run smoke:subscription` passed with approved start, policy-denied start,
+  failed-proof, renewed, and canceled paths.
+- Hardening pass found and fixed missing renewal audit evidence by recording
+  `renewalSponsorshipId` and `renewalTransactionDigest` on renewal receipts.
+- Final `npm run verify:local` passed with 291 TypeScript tests, 33 Move tests,
+  local gateway smoke, demo dApp smoke, browser wrapper smoke, agent escrow
+  smoke, paid MCP tool smoke, data-license smoke, service-bounty smoke,
+  reputation-receipt smoke, subscription smoke, A2A well-known smoke, A2A
+  task/message smoke, testnet readiness example, package dry-runs, docs check,
+  and secret scan.
+- `git diff --check` passed.
+
+Known unproven claims:
+
+- No live IOTA RPC, IOTA Gas Station, localnet/testnet/mainnet deployment, real
+  recurring billing, payment-provider integration, private access-token
+  issuance, legal entitlement enforcement, provider verification, live
+  settlement, marketplace UI/API, custody, staking/bonding, slashing, public
+  moderation, or production operation was implemented by Slice 3.6.
+- The subscription workflow proves local policy-gated entitlement state and
+  proof sequencing only.
+
+Next recommended slice:
+
+- Continue the full-roadmap goal with one remaining gated slice, such as
+  device-access local proof only after physical-safety constraints are scoped,
+  signed/live A2A discovery proof, live IOTA Names/Identity proof, or
+  marketplace access-control/dispute-evidence proof that remains local/read-only
+  until its gates are satisfied.
 
 ## Completed Slice 3.5
 

@@ -5,8 +5,8 @@ Last updated: 2026-06-10.
 ## Goal Pointer
 
 This is the active `/goal` target for continuing Agentic GasKit in
-`/home/sacred/code/agentic-gaskit` after completion of the local Slice 3.5
-Reputation Receipt Workflow.
+`/home/sacred/code/agentic-gaskit` after completion of the local Slice 3.6
+Subscription Workflow.
 
 Primary continuation sources:
 
@@ -43,7 +43,7 @@ traceability between the roadmap, code, tests, audits, and handoffs.
 
 | Raw term | Repo/product term | Assumption |
 | --- | --- | --- |
-| "rest of the full roadmap" | Remaining Agentic GasKit roadmap after locally verified Slices 1.0-4.5, Slice 3.5, and 5.1 readiness review | Continue from current code and handoff, not from the original Phase 0 starting point. |
+| "rest of the full roadmap" | Remaining Agentic GasKit roadmap after locally verified Slices 1.0-4.5, Slices 3.5-3.6, and 5.1 readiness review | Continue from current code and handoff, not from the original Phase 0 starting point. |
 | "proper evals" | Baseline, focused, broad, negative, smoke, testnet, and redaction checks | Every slice must define checks before editing and record exact command evidence. |
 | "audits" | Hardening pass against `verification-hardening.md` and `planning-structure-audit.md` | Security, custody, policy, identity, payment, marketplace, and standards surfaces need adversarial review before acceptance. |
 | "objectives" | Roadmap objective and traceability matrix | Each completion claim must cite the relevant PRD, slice, gate, evidence, and remaining risk. |
@@ -72,6 +72,10 @@ Confirmed current state:
   receipt state, metadata, smoke proof, and handoff evidence. It is local proof
   only, not live reputation scoring, provider-verification, marketplace, or
   public trust proof.
+- Slice 3.6 added the local/mock `subscription_v1` workflow, SDK helper,
+  receipt state, metadata, smoke proof, and handoff evidence. It is local
+  entitlement evidence only, not recurring billing, production provider access
+  enforcement, marketplace subscription operation, or live IOTA proof.
 
 Confirmed remaining gaps:
 
@@ -82,8 +86,8 @@ Confirmed remaining gaps:
   cache-bounded revocation behavior, and live standards-bridge proof.
 - Testnet/localnet deployment proof for relevant Move contracts and demos.
 - Expanded Phase 3 contract workflows beyond the implemented escrow, receipt,
-  pay-per-call, data-license, service-bounty, and reputation-receipt paths,
-  including subscription and device access lease where still in scope.
+  pay-per-call, data-license, service-bounty, reputation-receipt, and
+  subscription paths, including device access lease where still in scope.
 - Package namespace and release strategy.
 - Production custody, KMS, and recovery/export design if the product ever
   needs those surfaces.
@@ -135,6 +139,9 @@ In scope:
 - Preserve the completed local/mock reputation-receipt proof and avoid turning
   it into public marketplace scoring or provider-verification claims without a
   new approved slice.
+- Preserve the completed local/mock subscription proof and avoid turning it
+  into production recurring billing, provider-access enforcement, or
+  marketplace subscription claims without a new approved slice.
 - Add missing vertical slices for remaining Phase 3 contract targets where the
   roadmap still requires them.
 - Add local and testnet deployment/proof paths for contract and product flows
@@ -315,9 +322,24 @@ control, moderation, and dispute-evidence slices.
 ### Packet B: Complete Remaining Phase 3 Contract Library Slices
 
 Outcome:
-Add or explicitly defer remaining contract targets from the Phase 3 PRD:
-subscription and device access lease at minimum if still in scope after
-hardening.
+Partially complete. Slice 3.6 added local/mock subscription state,
+policy-gated SDK activation/renewal, template metadata, Move tests, example
+smoke, docs, and handoff evidence. Device access lease remains unimplemented
+and should stay blocked unless physical safety and provider accountability
+constraints are scoped.
+
+Completed subscription files:
+
+- `contracts/subscription_v1/`
+- `packages/sdk/src/contracts/subscription.ts`
+- `packages/sdk/src/contracts/subscription.test.ts`
+- `packages/contracts-metadata/src/index.ts`
+- `packages/receipts/src/index.ts`
+- `scripts/smoke-subscription.ts`
+- `examples/subscription/`
+- `package.json`
+- `scripts/run-move-tests.ts`
+- `scripts/package-scripts.test.ts`
 
 Acceptance criteria:
 
@@ -332,6 +354,7 @@ Verification:
 
 - Focused contract and SDK tests per template.
 - `npm run contracts:test`
+- `npm run smoke:subscription`
 - `npm run verify:local`
 
 Risk:
@@ -506,6 +529,9 @@ blocked with owner-facing rationale:
 
 - The local/mock reputation-receipt workflow remains verified and its proof is
   not overclaimed as live scoring or provider verification.
+- The local/mock subscription workflow remains verified and its proof is not
+  overclaimed as recurring billing, production access enforcement, or provider
+  verification.
 - The remaining Phase 3 contract workflows are implemented, tested, or
   explicitly deferred with hardening rationale.
 - Live IOTA Names/Identity and VC validation gaps are either proven on

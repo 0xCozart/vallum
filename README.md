@@ -82,8 +82,8 @@ MCP-shaped sponsorship tools, receipt state, local Move escrow/receipt state
 contracts, a deterministic local agent-to-agent escrow demo, and local Agent
 Profile schema validation with fixture resolution, IOTA Names/Identity adapter
 interfaces, capability policy checks, x402/AP2/A2A standards bridge helpers,
-local pay-per-call, data-license, service-bounty, and reputation-receipt
-workflows, and local A2A well-known Agent Card response proof plus local/mock
+local pay-per-call, data-license, service-bounty, reputation-receipt, and
+subscription workflows, and local A2A well-known Agent Card response proof plus local/mock
 A2A task/message operation helpers.
 
 Some production surfaces remain planned roadmap work, including the full
@@ -123,8 +123,8 @@ npm run verify:local
 
 Latest local verification and prior live proof:
 
-- `npm test`: 284 deterministic TypeScript tests passed locally after Slice 3.5.
-- `npm run contracts:test`: 28 Move escrow/receipt/pay-per-call/data-license/service-bounty/reputation-receipt contract tests passed locally.
+- `npm test`: 291 deterministic TypeScript tests passed locally after Slice 3.6.
+- `npm run contracts:test`: 33 Move escrow/receipt/pay-per-call/data-license/service-bounty/reputation-receipt/subscription contract tests passed locally.
 - `npm run typecheck`: passed locally.
 - `npm run smoke:local`: deterministic local gateway smoke passed locally, including policy simulation, sanitized event, local usage read-model, file-backed usage event-store replay, and authenticated local operator usage API checks.
 - `npm run smoke:demo-dapp`: deterministic local demo dApp smoke passed locally.
@@ -134,6 +134,7 @@ Latest local verification and prior live proof:
 - `npm run smoke:data-license`: deterministic local data-license smoke passed locally.
 - `npm run smoke:service-bounty`: deterministic local service-bounty smoke passed locally.
 - `npm run smoke:reputation-receipt`: deterministic local reputation-receipt smoke passed locally.
+- `npm run smoke:subscription`: deterministic local subscription smoke passed locally.
 - `npm run smoke:a2a-well-known`: deterministic local A2A Agent Card discovery response smoke passed locally.
 - `npm run smoke:a2a-task-message`: deterministic local A2A task/message operation smoke passed locally.
 - `npm run readiness:testnet:example`: deterministic example testnet-readiness preflight passed locally.
@@ -272,10 +273,10 @@ Current tests cover:
 
 Versioned contract template metadata registry for Agentic GasKit policy
 allowlists. The local registry currently covers escrow, receipt, pay-per-call,
-data-license, service-bounty, and reputation-receipt template metadata and pure
-checks for approved template/version, unknown package, and mismatched version
-decisions. It does not deploy contracts, operate reputation scoring, or prove
-live package addresses.
+data-license, service-bounty, reputation-receipt, and subscription template
+metadata and pure checks for approved template/version, unknown package, and
+mismatched version decisions. It does not deploy contracts, operate reputation
+scoring, operate recurring billing, or prove live package addresses.
 
 ### `@iota-gaskit/sdk`
 

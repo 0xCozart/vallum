@@ -733,6 +733,60 @@ Escalation triggers:
 - Production marketplace scoring, real provider verification, legal trust
   enforcement, staking/bonding, public moderation, or live identity proof.
 
+## Slice 3.6: Subscription Workflow
+
+User-visible outcome:
+A subscriber can start, renew, cancel, or fail a local/mock subscription through
+policy-gated sponsorship and receive receipt evidence for active, renewed,
+denied, canceled, and failed subscription states.
+
+Likely files:
+
+- `contracts/subscription_v1/`
+- `packages/receipts/src/index.ts`
+- `packages/sdk/src/contracts/subscription.ts`
+- `packages/contracts-metadata/src/index.ts`
+- `examples/subscription/`
+
+Acceptance criteria:
+
+- Subscription Move tests pass.
+- Contract metadata gates policy allow-list by `subscription_v1` template and
+  version.
+- SDK helper routes start and renewal through `requestSponsoredAction` and does
+  not activate or renew on policy denial or missing subscription proof.
+- Receipt state records subscriber id, provider id, plan id, terms hash, period
+  start/end, renewal count, activation proof, renewal proof, cancellation,
+  failure, sponsorship, and transaction digest without private access tokens,
+  payment credentials, or legal terms payloads.
+- Evidence references are hash-like values; raw access tokens, bearer tokens,
+  signer refs, payment credentials, and private prompt material fail closed.
+- Local example proves approved start, policy-denied start, renewal, cancel,
+  and failed-proof paths.
+- Docs and demo output label subscription as local entitlement evidence, not
+  production recurring billing, legal enforcement, live settlement, or
+  marketplace subscription operation.
+
+Verification:
+
+- Move tests.
+- Receipt and SDK unit/integration tests.
+- Local subscription smoke.
+
+Dependencies:
+Slice 3.1.
+
+Risk:
+High. Subscription flows can become recurring billing, payment-provider,
+provider-access, legal entitlement, or marketplace operation surfaces if the
+mock proof is overextended.
+
+Escalation triggers:
+
+- Production recurring billing, real payment credentials, x402/AP2 settlement,
+  private access-token issuance, legal subscription enforcement, provider
+  verification, or public marketplace subscription listing.
+
 ## Slice 4.1: x402 Mapping
 
 User-visible outcome:

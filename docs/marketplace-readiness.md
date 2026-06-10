@@ -17,8 +17,8 @@ justify operating a marketplace or accepting production provider claims.
 
 ## Evidence Reviewed
 
-The latest full local verification evidence is from Slice 4.5 after A2A
-task/message local operations landed. The recorded command was:
+The latest full local verification evidence is from Slice 3.6 after the
+subscription local/mock workflow landed. The recorded command was:
 
 ```bash
 npm run verify:local
@@ -50,7 +50,7 @@ git diff --check
 | SDK and MCP routing | Local tests prove sponsored actions and MCP tools route through gateway paths and return structured approvals or denials. | Marketplace actions should call SDK workflows, not direct IOTA clients or payment rails. |
 | Receipts and escrow | Local receipt state, escrow lifecycle, denial cases, and Move contract tests pass. | Marketplace can display receipt/dispute concepts in local demos, but production dispute resolution remains gated. |
 | Registry and identity adapters | Agent Profile schema, fixture resolver, capability checks, and mock IOTA Names/Identity adapters are tested. | Marketplace can consume profile records and label status, but live name/DID/VC verification remains unproven. |
-| Contract metadata, pay-per-call, data-license, service-bounty, and reputation receipts | Local template metadata allow-listing, paid tool, data-license, service-bounty, and reputation-receipt flows pass with denial and failure cases. | Marketplace can model supported templates and local paid/data-license/service-bounty/reputation evidence calls, but broader contract workflows, dispute operation, public scoring, and production provider access are not complete. |
+| Contract metadata, pay-per-call, data-license, service-bounty, reputation receipts, and subscriptions | Local template metadata allow-listing, paid tool, data-license, service-bounty, reputation-receipt, and subscription flows pass with denial and failure cases. | Marketplace can model supported templates and local paid/data-license/service-bounty/reputation/subscription evidence calls, but broader contract workflows, recurring billing, dispute operation, public scoring, and production provider access are not complete. |
 | x402, AP2, and A2A bridges | Local mapping, well-known response, and task/message operation tests pass for supported versions; unsupported versions fail closed; sensitive metadata redaction is tested. | Marketplace can show standards compatibility as local bridge evidence only, not live facilitator, AP2 network, live A2A server, signed Agent Card, external conformance, or public A2A discovery proof. |
 
 ## Marketplace Non-Goals
@@ -103,7 +103,8 @@ These questions block production marketplace work:
 | Access control for logs and receipts | Not yet marketplace-tested. | Add marketplace-specific access-control tests before exposing buyer/provider/operator records. |
 | Dispute evidence walkthrough | Local receipt concepts exist; marketplace walkthrough not built. | Prove evidence collection, redaction, tamper-evident linking, and reviewer workflow. |
 | Data-license workflows | Implemented locally/mock only. | Prove production provider access, access control, legal terms, live payment, and dispute handling before marketplace use. |
-| Reputation | Not implemented. | Design anti-gaming, low-value spam resistance, and source-of-truth rules. |
+| Reputation scoring | Local reputation receipt evidence exists; public scoring is not implemented. | Design anti-gaming, low-value spam resistance, and source-of-truth rules before any public marketplace ranking claim. |
+| Subscription operations | Local subscription entitlement evidence exists; recurring billing and production access enforcement are not implemented. | Prove provider access control, renewal billing, cancellation/refund policy, legal terms handling, and partial-failure receipts before marketplace subscription use. |
 | Provider endpoint reliability | Not implemented. | Define health checks, stale listing behavior, pricing drift handling, and unavailable-provider UX. |
 | Production operations | Not implemented. | Define incident response, audit exports, retention, privacy, backup, and operator permissions. |
 
