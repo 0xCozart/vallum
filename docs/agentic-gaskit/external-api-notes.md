@@ -178,6 +178,18 @@ Current planning assumptions:
   found, the GraphQL response is malformed, no profile metadata is available,
   profile validation fails, the profile name differs from the resolved name, or
   the profile wallet address differs from the resolved IOTA Names address.
+- On 2026-06-10, Slice 2.5 rechecked the official GraphQL
+  `resolveIotaNamesAddress(name: String!): Address` operation and kept the live
+  smoke on the same minimal `address` field used by the registry adapter.
+- Slice 2.5 adds an opt-in `npm run smoke:iota-names-live` command. It requires
+  `IOTA_NAMES_GRAPHQL_URL`, `IOTA_NAMES_NAME`, and
+  `IOTA_NAMES_EXPECTED_ADDRESS`, accepts HTTPS endpoints or loopback HTTP
+  endpoints, resolves the configured name through the existing registry
+  adapter, and fails closed if the returned address differs from the expected
+  address.
+- The live smoke is intentionally not part of `npm run verify:local`. Missing
+  configuration is recorded as `IOTA_NAMES_LIVE_CONFIG_MISSING`, not as live
+  proof.
 
 Implementation checks:
 
@@ -214,6 +226,19 @@ Manual localnet/testnet resolution path, not run in Slice 2.3:
 
 Do not run the manual path without explicit operator intent, local credentials,
 and a disposable localnet/testnet environment.
+
+Configured live smoke path added in Slice 2.5:
+
+```bash
+IOTA_NAMES_GRAPHQL_URL=https://...
+IOTA_NAMES_NAME=example.iota
+IOTA_NAMES_EXPECTED_ADDRESS=0x...
+npm run smoke:iota-names-live
+```
+
+This smoke contacts only the configured IOTA Names GraphQL endpoint. It does
+not call Gas Station, spend sponsored gas, sign transactions, or prove live
+IOTA Identity/credential validation.
 
 ## MCP
 

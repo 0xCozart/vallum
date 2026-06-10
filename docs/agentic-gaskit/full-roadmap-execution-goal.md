@@ -57,14 +57,16 @@ Confirmed current state:
 - `docs/CODEBASE_MAP.md` says Agentic GasKit currently includes local agent
   accounts, manifests, policy evaluator, mock gateway, SDK/MCP routing,
   receipts, local Move contracts, local contract workflows, registry/profile
-  schema, mock IOTA Names/Identity adapters, bounded local IOTA Identity
-  verification cache helpers, x402/AP2/A2A mappings, local A2A well-known
-  serving, local A2A signed-card verification, local A2A task/message helpers,
-  a local A2A HTTP-shaped boundary, and a loopback A2A server smoke.
+  schema, mock IOTA Names/Identity adapters, an opt-in IOTA Names live
+  resolution smoke, bounded local IOTA Identity verification cache helpers,
+  x402/AP2/A2A mappings, local A2A well-known serving, local A2A signed-card
+  verification, local A2A task/message helpers, a local A2A HTTP-shaped
+  boundary, a loopback A2A server smoke, and a local read-only marketplace
+  evidence package.
 - `docs/agentic-gaskit/handoff-next-product-build.md` says Slices 1.0, 1.1,
-  1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3, 3.4,
-  3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, and 5.1 are implemented
-  or reviewed and locally verified.
+  1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.3,
+  3.4, 3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 5.1, and 5.2 are
+  implemented or reviewed and locally verified.
 - `docs/marketplace-readiness.md` permits marketplace requirements/design work
   only inside local/mock proof. Production marketplace implementation remains
   blocked.
@@ -85,8 +87,9 @@ Confirmed remaining gaps:
   discovery proof, live public A2A server operation beyond the local loopback
   smoke, streaming/push notification support, external A2A conformance proof,
   and production A2A authentication decisions.
-- Live IOTA Names/Identity proof, full verifiable credential validation beyond
-  local/mock cache behavior, and live standards-bridge proof.
+- Configured live IOTA Names proof, live IOTA Identity proof, full verifiable
+  credential validation beyond local/mock cache behavior, and live
+  standards-bridge proof.
 - Testnet/localnet deployment proof for relevant Move contracts and demos.
 - Expanded Phase 3 contract workflows beyond the implemented escrow, receipt,
   pay-per-call, data-license, service-bounty, reputation-receipt, and
@@ -94,10 +97,11 @@ Confirmed remaining gaps:
 - Package namespace and release strategy.
 - Production custody, KMS, and recovery/export design if the product ever
   needs those surfaces.
-- Marketplace app/API, access-control tests, dispute evidence walkthrough,
-  provider verification/moderation decisions, live identity/name proof, live
-  payment/provider-access proof, and standards-discovery proof before any live
-  marketplace claim.
+- Marketplace production app/API, provider verification/moderation decisions,
+  live identity/name proof, live payment/provider-access proof, and
+  standards-discovery proof before any live marketplace claim. Local receipt
+  access-control and redacted dispute-evidence bundle proof now exists, but it
+  is not production API/session authorization or live dispute operation.
 
 ## Objective Contract
 
@@ -371,7 +375,10 @@ Move registry identity from mock adapters toward testnet/live proof with
 bounded revocation and credential validation. Slice 2.4 now provides local/mock
 bounded cache behavior for successful DID and credential evidence, including
 fail-closed stale refresh and revoked-credential detection after TTL expiry.
-Live IOTA Names/Identity proof and full VC validation remain unproven.
+Slice 2.5 adds an opt-in IOTA Names GraphQL smoke and exact missing-config
+blocker path. Configured live IOTA Names proof, live IOTA Identity proof, and
+full VC validation remain unproven unless operator-provided configuration is
+present and the relevant live command passes.
 
 Acceptance criteria:
 
@@ -387,6 +394,9 @@ Verification:
 - Registry adapter tests.
 - Capability policy tests.
 - `npm run readiness:testnet`
+- `npm run smoke:iota-names-live` when an operator supplies
+  `IOTA_NAMES_GRAPHQL_URL`, `IOTA_NAMES_NAME`, and
+  `IOTA_NAMES_EXPECTED_ADDRESS`.
 - Relevant testnet resolution command, or exact blocker if unavailable.
 - `npm run verify:local`
 
@@ -479,9 +489,11 @@ Medium. Naming churn can break consumers and docs.
 ### Packet G: Marketplace/Operator Working Product Slice
 
 Outcome:
-After gates pass, build the smallest marketplace/operator surface that consumes
-existing registry, policy, contract metadata, receipts, and standards evidence
-without duplicating truth.
+Partially complete. Slice 5.2 added a local read-only marketplace evidence
+package that consumes existing registry, policy, contract metadata, receipts,
+manifests, and standards evidence without duplicating truth. Production
+marketplace UI/API, provider onboarding, live settlement, public scoring,
+moderation, and provider verification remain blocked.
 
 Acceptance criteria:
 
@@ -496,6 +508,8 @@ Acceptance criteria:
 
 Verification:
 
+- Marketplace package tests.
+- Local marketplace read-model smoke.
 - Marketplace/API tests if implemented.
 - Access-control tests.
 - Search/filter tests.

@@ -10,7 +10,7 @@
     "apps/*"
   ],
   "scripts": {
-    "build": "npm run build -w @iota-gaskit/shared-types && npm run build -w @iota-gaskit/manifest && npm run build -w @iota-gaskit/registry && npm run build -w @iota-gaskit/contracts-metadata && npm run build -w @iota-gaskit/policy-gateway && npm run build -w @iota-gaskit/receipts && npm run build -w @iota-gaskit/standards && npm run build -w @iota-gaskit/sdk && npm run build -w @iota-gaskit/mcp-server && npm run build -w @iota-gaskit/accounts && npm run build -w @iota-gaskit/policy-gateway-service",
+    "build": "npm run build -w @iota-gaskit/shared-types && npm run build -w @iota-gaskit/manifest && npm run build -w @iota-gaskit/registry && npm run build -w @iota-gaskit/contracts-metadata && npm run build -w @iota-gaskit/policy-gateway && npm run build -w @iota-gaskit/receipts && npm run build -w @iota-gaskit/standards && npm run build -w @iota-gaskit/marketplace && npm run build -w @iota-gaskit/sdk && npm run build -w @iota-gaskit/mcp-server && npm run build -w @iota-gaskit/accounts && npm run build -w @iota-gaskit/policy-gateway-service",
     "test": "npm run build && node --import tsx --test scripts/*.test.ts examples/**/*.test.ts packages/*/src/*.test.ts apps/*/src/*.test.ts",
     "contracts:test": "tsx scripts/run-move-tests.ts",
     "typecheck": "npm run build && tsc --noEmit",
@@ -28,16 +28,18 @@
     "smoke:a2a-task-message": "npm run build && tsx scripts/smoke-a2a-task-message.ts",
     "smoke:a2a-http": "npm run build && tsx scripts/smoke-a2a-http.ts",
     "smoke:a2a-local-server": "npm run build && tsx scripts/smoke-a2a-local-server.ts",
+    "smoke:marketplace-read-model": "npm run build && tsx scripts/smoke-marketplace-read-model.ts",
+    "smoke:iota-names-live": "npm run build && tsx scripts/smoke-iota-names-live.ts",
     "readiness:testnet": "npm run build && tsx scripts/check-testnet-readiness.ts",
     "diagnose:gas-station": "npm run build && tsx scripts/diagnose-gas-station-upstream.ts",
     "execute:testnet-demo": "npm run build && tsx scripts/execute-testnet-sponsored-demo.ts",
     "readiness:testnet:example": "npm run build && tsx scripts/check-testnet-readiness.ts --env-file .env.example --expect-placeholders",
     "secrets:scan": "tsx scripts/scan-secrets.ts",
-    "pack:check": "npm run build && npm pack --dry-run -w @iota-gaskit/shared-types -w @iota-gaskit/policy-gateway -w @iota-gaskit/receipts -w @iota-gaskit/standards -w @iota-gaskit/sdk -w @iota-gaskit/mcp-server -w @iota-gaskit/accounts -w @iota-gaskit/manifest -w @iota-gaskit/registry -w @iota-gaskit/contracts-metadata",
+    "pack:check": "npm run build && npm pack --dry-run -w @iota-gaskit/shared-types -w @iota-gaskit/policy-gateway -w @iota-gaskit/receipts -w @iota-gaskit/standards -w @iota-gaskit/marketplace -w @iota-gaskit/sdk -w @iota-gaskit/mcp-server -w @iota-gaskit/accounts -w @iota-gaskit/manifest -w @iota-gaskit/registry -w @iota-gaskit/contracts-metadata",
     "docs:build": "npm run build -w @iota-gaskit/docs-site",
     "docs:check": "npm run check -w @iota-gaskit/docs-site",
     "docs:serve": "npm run serve -w @iota-gaskit/docs-site --",
-    "verify:local": "npm test && npm run contracts:test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp && npm run smoke:demo-browser && npm run smoke:agent-escrow && npm run smoke:paid-mcp-tool && npm run smoke:data-license && npm run smoke:service-bounty && npm run smoke:reputation-receipt && npm run smoke:subscription && npm run smoke:a2a-well-known && npm run smoke:a2a-signed-card && npm run smoke:a2a-task-message && npm run smoke:a2a-http && npm run smoke:a2a-local-server && npm run readiness:testnet:example && npm run pack:check && npm run docs:check && npm run secrets:scan",
+    "verify:local": "npm test && npm run contracts:test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp && npm run smoke:demo-browser && npm run smoke:agent-escrow && npm run smoke:paid-mcp-tool && npm run smoke:data-license && npm run smoke:service-bounty && npm run smoke:reputation-receipt && npm run smoke:subscription && npm run smoke:a2a-well-known && npm run smoke:a2a-signed-card && npm run smoke:a2a-task-message && npm run smoke:a2a-http && npm run smoke:a2a-local-server && npm run smoke:marketplace-read-model && npm run readiness:testnet:example && npm run pack:check && npm run docs:check && npm run secrets:scan",
     "grant:check": "npm run verify:local"
   },
   "devDependencies": {

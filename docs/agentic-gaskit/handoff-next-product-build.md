@@ -7,9 +7,9 @@ Last updated: 2026-06-10.
 Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
-Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 3.1,
-3.2, 3.3, 3.4, 3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, and 5.1
-are implemented or reviewed and locally verified.
+Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5,
+3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 5.1,
+and 5.2 are implemented or reviewed and locally verified.
 Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
 `docs/marketplace-readiness.md` before choosing the next slice. Do not start
 production marketplace implementation unless the user explicitly approves the
@@ -138,6 +138,11 @@ Recent commits to know:
   credentials are detected after TTL expiry; protected-action resolution can
   force refresh inside the TTL; and capability policy denies stale, revoked,
   expired, unverifiable, or invalid resolved profiles.
+- Slice 2.5 IOTA Names Live Resolution Smoke is implemented as an opt-in
+  command that requires `IOTA_NAMES_GRAPHQL_URL`, `IOTA_NAMES_NAME`, and
+  `IOTA_NAMES_EXPECTED_ADDRESS`, resolves through the existing registry GraphQL
+  adapter, fails closed on address mismatch, and reports missing configuration
+  without printing secret-like values.
 - Slice 3.1 Contract Metadata Registry is implemented in
   `packages/contracts-metadata` as `@iota-gaskit/contracts-metadata`.
 - Slice 3.1 tests prove approved template/version metadata is accepted, unknown
@@ -259,6 +264,12 @@ Recent commits to know:
   production marketplace implementation, live provider onboarding, real-money
   settlement, custody, staking, moderation, and provider verification remain
   blocked.
+- Slice 5.2 Marketplace Access And Dispute Evidence Read Model is implemented
+  in `packages/marketplace` as a local/read-only evidence package. It consumes
+  existing registry profiles, capability policy checks, contract metadata,
+  receipts, manifests, and standards evidence to prove provider labels, policy
+  compatibility, receipt access control, and redacted dispute evidence bundles
+  without operating a production marketplace.
 - `docs/agentic-gaskit/external-api-notes.md` was refreshed on 2026-06-10 for
   current IOTA Names GraphQL, IOTA Identity DID/VC, x402 v2, AP2 v0.2
   mandate/receipt, A2A Agent Card, A2A signed-card, and A2A task/message
@@ -278,19 +289,21 @@ Recent commits to know:
   A2A discovery proof, live public A2A server operation beyond the local
   loopback smoke, streaming/push notification support, external A2A conformance
   proof, and production A2A authentication decisions are not implemented.
-- Live IOTA Names/Identity proof, full verifiable credential validation beyond
-  local/mock bounded cache behavior, live standards-bridge proof, and expanded
-  contract workflows beyond local escrow/receipt/pay-per-call/data-license/
-  service-bounty/reputation-receipt/subscription metadata are not implemented.
-- Slice 2.3 is locally verified only. Localnet/testnet deployment smoke has not
-  run, and the demo/escrow contract does not custody real funds.
+- Configured live IOTA Names proof, live IOTA Identity proof, full verifiable
+  credential validation beyond local/mock bounded cache behavior, live
+  standards-bridge proof, and expanded contract workflows beyond local
+  escrow/receipt/pay-per-call/data-license/service-bounty/reputation-receipt/
+  subscription metadata are not implemented.
+- Slice 2.3 and Slice 2.5 are locally verified only unless
+  `smoke:iota-names-live` is run with operator-provided endpoint/name/address
+  and passes. Localnet/testnet deployment smoke has not run, and the
+  demo/escrow contract does not custody real funds.
 - Package namespace strategy is still open.
 - Production custody, KMS, and recovery/export are not designed or implemented.
-- Marketplace app/API implementation is not started. Any future
-  marketplace-adjacent slice must stay read-only or local/mock until
-  access-control tests, dispute evidence walkthrough, live identity/name proof,
-  live payment/provider-access proof, and provider verification/moderation
-  decisions are explicitly scoped.
+- Production marketplace app/API implementation is not started. The local
+  read-only Slice 5.2 package is not provider onboarding, public search UI,
+  production session authorization, live settlement, provider verification,
+  moderation, staking, bonding, custody, or a public marketplace launch.
 
 ## Suggested Skills
 
@@ -1455,6 +1468,105 @@ Next recommended slice:
   endpoints are configured, or choose signed/live A2A discovery or marketplace
   access-control/dispute evidence as a local/read-only slice.
 
+## Completed Slice 2.5
+
+Implemented an opt-in IOTA Names live GraphQL resolution smoke for the existing
+registry adapter.
+
+Implementation commit:
+
+- Pending final commit.
+
+This slice does not run automatically during local verification. It is a
+configured live smoke path for operator-owned IOTA Names endpoints and
+name/address pairs. It does not call IOTA Gas Station, spend sponsored gas,
+sign transactions, touch sponsor wallets, validate IOTA Identity credentials,
+or prove production registry readiness.
+
+Acceptance is defined in:
+
+- `docs/agentic-gaskit/execution-slices.md` Slice 2.5
+- `docs/agentic-gaskit/external-api-notes.md` IOTA Names notes
+- `docs/testnet-readiness.md` opt-in IOTA Names resolution smoke
+- official IOTA GraphQL docs for `resolveIotaNamesAddress`
+
+Changed files:
+
+- `README.md`
+- `docs/CODEBASE_MAP.md`
+- `docs/overview.md`
+- `docs/marketplace-readiness.md`
+- `docs/testnet-readiness.md`
+- `docs/agentic-gaskit/execution-slices.md`
+- `docs/agentic-gaskit/external-api-notes.md`
+- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+- `package.json`
+- `scripts/iota-names-live-smoke.test.ts`
+- `scripts/package-scripts.test.ts`
+- `scripts/smoke-iota-names-live.ts`
+
+Commands run:
+
+```bash
+git status --short --branch
+npm run docs:check
+npm run secrets:scan
+npm test
+npm run typecheck
+node --import tsx --test scripts/iota-names-live-smoke.test.ts scripts/package-scripts.test.ts packages/registry/src/iotaNamesAdapter.test.ts
+env -u IOTA_NAMES_GRAPHQL_URL -u IOTA_NAMES_NAME -u IOTA_NAMES_EXPECTED_ADDRESS npm run smoke:iota-names-live
+npm run verify:local
+git diff --check
+```
+
+Verification result:
+
+- Focused IOTA Names adapter/live-smoke/script-wiring tests passed, including
+  missing configuration, configured resolution, unsafe non-loopback HTTP
+  endpoint denial, and resolved-address mismatch denial.
+- The opt-in missing-config CLI proof returned blocker exit status `2` with
+  `IOTA_NAMES_LIVE_CONFIG_MISSING` and missing variable names only.
+- Final `npm run verify:local` passed with 328 TypeScript tests, 33 Move tests,
+  typecheck, local gateway smoke, demo dApp smoke, browser smoke, agent escrow
+  smoke, paid MCP tool smoke, data-license smoke, service-bounty smoke,
+  reputation-receipt smoke, subscription smoke, A2A well-known smoke, A2A
+  signed-card smoke, A2A task/message smoke, A2A HTTP smoke, A2A local server
+  smoke, marketplace read-model smoke, testnet readiness example, package
+  dry-runs, docs check, and secret scan.
+- Final secret scan checked 291 tracked/staged/untracked text files with 0
+  findings.
+
+Hardening notes:
+
+- `smoke:iota-names-live` requires `IOTA_NAMES_GRAPHQL_URL`,
+  `IOTA_NAMES_NAME`, and `IOTA_NAMES_EXPECTED_ADDRESS`.
+- Missing required configuration exits with blocker status `2` and reports
+  only variable names.
+- The smoke accepts HTTPS endpoints and loopback HTTP endpoints only, avoiding
+  accidental plain-HTTP live endpoints.
+- The smoke uses the existing `resolveIotaNamesAddress(name) { address }`
+  registry adapter path and fails closed on address mismatch.
+- The command is intentionally not wired into `npm run verify:local`; local
+  verification remains deterministic and does not contact live IOTA services.
+
+Known unproven claims:
+
+- No configured live IOTA Names run has passed unless an operator provides
+  `IOTA_NAMES_GRAPHQL_URL`, `IOTA_NAMES_NAME`, and
+  `IOTA_NAMES_EXPECTED_ADDRESS` and reruns the smoke successfully.
+- No live IOTA Identity DID resolution, live credential JWT validation, trusted
+  issuer policy, reverse-name enforcement, production identity authority,
+  provider verification, marketplace access control, or external standards
+  proof is implemented by this slice.
+
+Next recommended slice:
+
+- Continue Packet C with live IOTA Names proof only when operator
+  endpoint/name/address configuration is present, or choose the next local
+  standards/marketplace access-control slice that does not require live
+  credentials.
+
 ## Slice 3.1 Completion Evidence
 
 Committed slice:
@@ -1878,11 +1990,10 @@ Known unproven claims:
 Next recommended slice:
 
 - Do not start production marketplace implementation from this handoff. Choose
-  one explicit next slice from the readiness gaps, such as a read-only
-  marketplace architecture/spec slice, marketplace access-control/
-  dispute-evidence proof, live IOTA Names/Identity proof, A2A well-known
-  serving proof, or another expanded contract workflow such as service bounty
-  or subscription.
+  one explicit next slice from the remaining readiness gaps, such as configured
+  live IOTA Names/Identity proof, live/public A2A discovery proof, package
+  namespace/release strategy, production API/session authorization design, or
+  another expanded contract workflow if still in scope.
 
 ## Completed Slice 5.1
 
@@ -1918,6 +2029,113 @@ Known unproven claims:
   production operation was implemented by Slice 5.1.
 - Slice 5.1 is a readiness decision. It does not approve production
   marketplace implementation.
+
+## Completed Slice 5.2
+
+Implemented `packages/marketplace` as a read-only local marketplace evidence
+model.
+
+Implementation commit:
+
+- Pending final commit.
+
+This slice stays local. It does not create a production marketplace UI/API,
+provider onboarding, public search, live settlement, custody, staking, bonding,
+moderation, provider verification, public scoring, or marketplace action
+execution.
+
+Acceptance is defined in:
+
+- `docs/agentic-gaskit/execution-slices.md` Slice 5.2 Marketplace Access And
+  Dispute Evidence Read Model.
+- `docs/marketplace-readiness.md` marketplace non-goals and production gates.
+- `docs/agentic-gaskit/full-roadmap-execution-goal.md` Packet G marketplace
+  working product boundary.
+
+Changed files:
+
+- `README.md`
+- `docs/CODEBASE_MAP.md`
+- `docs/overview.md`
+- `docs/marketplace-readiness.md`
+- `docs/agentic-gaskit/execution-slices.md`
+- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+- `package-lock.json`
+- `package.json`
+- `packages/marketplace/README.md`
+- `packages/marketplace/package.json`
+- `packages/marketplace/src/index.ts`
+- `packages/marketplace/src/marketplace.test.ts`
+- `packages/marketplace/tsconfig.build.json`
+- generated `packages/marketplace/dist/`
+- `scripts/package-scripts.test.ts`
+- `scripts/smoke-marketplace-read-model.ts`
+
+Commands run:
+
+```bash
+git status --short --branch
+npm run docs:check
+npm run secrets:scan
+npm test
+npm run typecheck
+node --import tsx --test packages/marketplace/src/marketplace.test.ts scripts/iota-names-live-smoke.test.ts scripts/package-scripts.test.ts packages/registry/src/iotaNamesAdapter.test.ts
+npm run smoke:marketplace-read-model
+npm run verify:local
+git diff --check
+```
+
+Verification result:
+
+- Focused marketplace package and package-script tests passed, including
+  provider listing labels, policy compatibility, contract metadata summaries,
+  buyer/provider/operator/reviewer receipt access, dispute evidence stable
+  hashing, and redaction of private prompt, bearer token, signer, wallet, and
+  payment-secret material.
+- `npm run smoke:marketplace-read-model` passed with `provider.profileLabel=active`,
+  `policy.allowed=true`, `buyerReceipt.allowed=true`,
+  `strangerReceipt.allowed=false`, a stable `sha256:` dispute bundle hash, and
+  `logLeaksSecretMaterial=false`.
+- Final `npm run verify:local` passed with 328 TypeScript tests, 33 Move tests,
+  typecheck, local gateway smoke, demo dApp smoke, browser smoke, agent escrow
+  smoke, paid MCP tool smoke, data-license smoke, service-bounty smoke,
+  reputation-receipt smoke, subscription smoke, A2A well-known smoke, A2A
+  signed-card smoke, A2A task/message smoke, A2A HTTP smoke, A2A local server
+  smoke, marketplace read-model smoke, testnet readiness example, package
+  dry-runs, docs check, and secret scan.
+- Final secret scan checked 291 tracked/staged/untracked text files with 0
+  findings.
+
+Hardening notes:
+
+- Provider listings preserve `providerVerification: "unverified"` even when
+  local evidence labels are present.
+- Policy compatibility is computed through existing profile capability policy
+  checks, not marketplace-only hints.
+- Contract templates are read from the existing contract metadata registry.
+- Receipt views enforce buyer/provider/operator/reviewer access and deny
+  unrelated viewers.
+- Dispute evidence bundles link manifest, receipt, contract template,
+  transaction digest, and standards evidence while redacting private prompts,
+  bearer tokens, signer refs, wallet internals, payment credentials, and
+  provider private metadata.
+- The smoke is wired into `npm run verify:local`.
+
+Known unproven claims:
+
+- No production marketplace API/session authorization, provider onboarding,
+  public listing/search UI, public scoring, moderation, live payment
+  settlement, live provider access proof, live IOTA Names/Identity proof,
+  provider verification, custody, staking, bonding, or marketplace action
+  execution is implemented by this slice.
+
+Next recommended slice:
+
+- Continue with configured live IOTA Names proof when operator
+  endpoint/name/address values are present, or choose a non-live hardening slice
+  such as package namespace/release strategy or production marketplace
+  API/session authorization design.
 
 ## Completed Slice 4.4
 

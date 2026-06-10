@@ -81,12 +81,14 @@ policy evaluation, a local mock sponsorship gateway, SDK sponsored actions,
 MCP-shaped sponsorship tools, receipt state, local Move escrow/receipt state
 contracts, a deterministic local agent-to-agent escrow demo, and local Agent
 Profile schema validation with fixture resolution, IOTA Names/Identity adapter
-interfaces, capability policy checks, x402/AP2/A2A standards bridge helpers,
+interfaces, an opt-in IOTA Names live resolution smoke, capability policy checks,
+x402/AP2/A2A standards bridge helpers,
 local pay-per-call, data-license, service-bounty, reputation-receipt, and
 subscription workflows, bounded local IOTA Identity verification cache helpers,
 and local A2A well-known Agent Card response proof plus local/mock A2A
 signed Agent Card proof, task/message operation helpers, a local A2A
-HTTP-shaped boundary, and a loopback HTTP server smoke proof.
+HTTP-shaped boundary, a loopback HTTP server smoke proof, and a local
+read-only marketplace evidence model.
 
 Some production surfaces remain planned roadmap work, including the full
 dashboard UI, production persistence, production monitoring, package
@@ -114,6 +116,9 @@ The repo currently includes:
 - local profile resolution through the SDK, mock-tested IOTA Names/Identity
   adapter interfaces, bounded identity verification cache helpers, and pure
   capability policy checks.
+- local marketplace read model for provider labels, policy compatibility,
+  receipt access control, and dispute evidence bundles without production
+  marketplace operation.
 
 ## Current proof status
 
@@ -126,7 +131,7 @@ npm run verify:local
 
 Latest local verification and prior live proof:
 
-- `npm test`: 316 deterministic TypeScript tests passed locally after Slice 4.8.
+- `npm test`: 328 deterministic TypeScript tests passed locally after Slice 5.2.
 - `npm run contracts:test`: 33 Move escrow/receipt/pay-per-call/data-license/service-bounty/reputation-receipt/subscription contract tests passed locally.
 - `npm run typecheck`: passed locally.
 - `npm run smoke:local`: deterministic local gateway smoke passed locally, including policy simulation, sanitized event, local usage read-model, file-backed usage event-store replay, and authenticated local operator usage API checks.
@@ -143,6 +148,11 @@ Latest local verification and prior live proof:
 - `npm run smoke:a2a-task-message`: deterministic local A2A task/message operation smoke passed locally.
 - `npm run smoke:a2a-http`: deterministic local A2A HTTP boundary smoke passed locally.
 - `npm run smoke:a2a-local-server`: deterministic loopback A2A server smoke passed locally.
+- `npm run smoke:marketplace-read-model`: deterministic local marketplace
+  access-control and dispute-evidence smoke passed locally.
+- `npm run smoke:iota-names-live`: opt-in configured IOTA Names GraphQL
+  resolution smoke exists; the missing-config blocker path is locally tested
+  and a passing live run requires operator-provided endpoint/name/address.
 - `npm run readiness:testnet:example`: deterministic example testnet-readiness preflight passed locally.
 - `npm run pack:check`: workspace package dry-runs completed locally.
 - Prior `npm run execute:testnet-demo`: real sponsored IOTA testnet execute succeeded through the local policy gateway and Gas Station; public digest `2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H`.
@@ -195,6 +205,7 @@ packages/
   manifest/               # Agent transaction manifest schema and validation
   registry/               # Agent Profile schema, validation, resolver, and adapters
   contracts-metadata/     # Versioned contract template metadata for policy
+  marketplace/            # Read-only marketplace evidence views
   standards/              # x402/AP2/A2A standards bridge adapters
   mcp-server/             # MCP-shaped sponsorship tool facade
   receipts/               # Receipt and escrow state machine

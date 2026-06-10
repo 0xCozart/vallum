@@ -29,6 +29,34 @@ npm exec tsx -- scripts/check-testnet-readiness.ts --env-file path/to/local.env
 
 When `GASKIT_POLICY_PATH` is relative, this CLI resolves it relative to the selected env file directory before falling back to the repo working directory.
 
+## Opt-In IOTA Names Resolution Smoke
+
+After an operator has an IOTA Names GraphQL endpoint and an expected
+name/address pair, the registry adapter can be checked without spending gas:
+
+```bash
+IOTA_NAMES_GRAPHQL_URL=https://...
+IOTA_NAMES_NAME=example.iota
+IOTA_NAMES_EXPECTED_ADDRESS=0x...
+npm run smoke:iota-names-live
+```
+
+The command contacts the configured GraphQL endpoint and verifies that
+`resolveIotaNamesAddress(name) { address }` matches the expected address. It
+does not call Gas Station, sign transactions, use sponsor credentials, or
+execute a Move transaction.
+
+If the three required variables are absent, the command exits with blocker
+status `2` and reports:
+
+```text
+code=IOTA_NAMES_LIVE_CONFIG_MISSING
+missing=IOTA_NAMES_GRAPHQL_URL,IOTA_NAMES_NAME,IOTA_NAMES_EXPECTED_ADDRESS
+```
+
+`smoke:iota-names-live` is opt-in and is not part of `npm run verify:local`.
+Passing local verification therefore does not prove live IOTA Names resolution.
+
 ## What it checks
 
 The preflight requires these keys to be present:

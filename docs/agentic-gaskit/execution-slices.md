@@ -575,6 +575,57 @@ Escalation triggers:
 - Live IOTA Identity credential validation requires issuer trust or third-party
   verifier decisions not represented in local configuration.
 
+## Slice 2.5: IOTA Names Live Resolution Smoke
+
+User-visible outcome:
+Operators have an opt-in command that can prove a configured IOTA Names
+GraphQL endpoint resolves an expected name/address pair, or reports an exact
+configuration blocker without leaking endpoint secrets.
+
+Likely files:
+
+- `scripts/smoke-iota-names-live.ts`
+- `scripts/iota-names-live-smoke.test.ts`
+- `packages/registry/src/iotaNamesAdapter.ts`
+- `docs/testnet-readiness.md`
+- `docs/agentic-gaskit/external-api-notes.md`
+
+Acceptance criteria:
+
+- The smoke requires `IOTA_NAMES_GRAPHQL_URL`, `IOTA_NAMES_NAME`, and
+  `IOTA_NAMES_EXPECTED_ADDRESS`.
+- Missing required configuration exits as a blocker and prints only variable
+  names, not secret-like values.
+- The smoke uses the existing registry adapter query shape for
+  `resolveIotaNamesAddress(name) { address }`.
+- Resolved-address mismatch fails closed.
+- The command is opt-in and is not included in `npm run verify:local`.
+- No Gas Station, sponsor wallet, signer, or transaction execution path is
+  touched.
+
+Verification:
+
+- Focused live-smoke unit tests.
+- Script-wiring tests proving the smoke is not part of local verification.
+- Missing-config CLI blocker proof.
+- `npm run typecheck`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `npm run verify:local`
+
+Dependencies:
+Slice 2.3.
+
+Risk:
+Medium. Live GraphQL endpoints may require operator-specific deployment,
+network, or IOTA Names setup.
+
+Escalation triggers:
+
+- No safe IOTA Names GraphQL endpoint/name/address pair exists for testnet.
+- The official IOTA Names GraphQL shape changes from the current documented
+  `resolveIotaNamesAddress` operation.
+
 ## Slice 3.1: Contract Metadata Registry
 
 User-visible outcome:
@@ -1214,3 +1265,59 @@ Escalation triggers:
 
 - Any real-money production use, custody, provider verification, or moderation
   requirements.
+
+## Slice 5.2: Marketplace Access And Dispute Evidence Read Model
+
+User-visible outcome:
+Agentic GasKit can build a read-only local marketplace evidence view from
+existing registry profiles, policy compatibility, contract template metadata,
+receipts, manifests, and standards evidence without duplicating those sources
+of truth or enabling production marketplace actions.
+
+Likely files:
+
+- `packages/marketplace/`
+- `scripts/smoke-marketplace-read-model.ts`
+- `package.json`
+- `scripts/package-scripts.test.ts`
+- `docs/marketplace-readiness.md`
+
+Acceptance criteria:
+
+- Provider listing labels distinguish active, revoked, expired, unverified,
+  mock, local, testnet, and live evidence states without claiming provider
+  verification.
+- Policy compatibility is computed from existing profile capability policy
+  checks rather than UI-only hints.
+- Supported contract templates are exposed read-only from the existing contract
+  metadata registry.
+- Receipt views enforce buyer/provider/operator/reviewer access control.
+- Dispute evidence bundles preserve stable links across manifest, receipt,
+  contract template, transaction digest, and standards evidence references.
+- Evidence bundles redact private prompts, bearer tokens, raw keys, signer
+  refs, wallet internals, payment credentials, and provider private metadata.
+- Local smoke is wired into `npm run verify:local`.
+- This slice does not create a production marketplace UI/API, provider
+  onboarding, real-money settlement, custody, staking, bonding, moderation, or
+  provider verification.
+
+Verification:
+
+- Marketplace package tests.
+- Package-script wiring tests.
+- `npm run smoke:marketplace-read-model`.
+- `npm run verify:local`.
+
+Dependencies:
+Slice 5.1.
+
+Risk:
+High. Marketplace evidence can become a trust, payment, moderation, or provider
+verification claim if labels, access control, and local/mock boundaries are not
+explicit.
+
+Escalation triggers:
+
+- Any production provider listing, public scoring, provider verification, live
+  payment settlement, dispute moderation, custody, staking, bonding, or
+  marketplace action execution.

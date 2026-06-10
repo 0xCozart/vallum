@@ -46,14 +46,20 @@ It also includes the first Agentic GasKit implementation slices:
   bearer-authenticated task routes
 - local A2A loopback HTTP server smoke proof for signed discovery and
   authenticated task routes
+- opt-in IOTA Names GraphQL live resolution smoke with an exact missing-config
+  blocker path
+- local read-only marketplace evidence package with provider labels, policy
+  compatibility, receipt access control, and dispute evidence bundle smoke
 - pure profile capability policy check
 - contract template metadata registry consumed by agent policy allow-lists
 
 The remaining Agentic GasKit direction is documented under
-`docs/agentic-gaskit/`. Live IOTA Names/Identity proof, public signed A2A
-discovery, external A2A conformance proof, device-access contract workflows,
-production custody, production subscription operations, and live deployment
-proof remain roadmap unless later slices implement and verify them.
+`docs/agentic-gaskit/`. A configured IOTA Names live smoke path exists, but
+actual live proof still requires an operator-provided endpoint/name/address and
+a passing run. Live IOTA Identity proof, public signed A2A discovery, external
+A2A conformance proof, device-access contract workflows, production custody,
+production subscription operations, and live deployment proof remain roadmap
+unless later slices implement and verify them.
 
 ## Start Here
 
@@ -78,6 +84,8 @@ proof remain roadmap unless later slices implement and verify them.
 - Agent registry/profile schema, local resolver, and adapters:
   `packages/registry/src/`
 - Contract template metadata: `packages/contracts-metadata/src/`
+- Marketplace read model: `packages/marketplace/src/`,
+  `scripts/smoke-marketplace-read-model.ts`
 - MCP sponsorship tools: `packages/mcp-server/src/`
 - Receipts: `packages/receipts/src/`
 - Move escrow contract: `contracts/escrow_v1/`
@@ -163,11 +171,18 @@ Safe local checks:
 - `npm run smoke:a2a-task-message`
 - `npm run smoke:a2a-http`
 - `npm run smoke:a2a-local-server`
+- `npm run smoke:marketplace-read-model`
 - `npm run secrets:scan`
 
 Full local proof:
 
 - `npm run verify:local`
+
+Opt-in configured/live checks:
+
+- `npm run smoke:iota-names-live` only when an operator provides
+  `IOTA_NAMES_GRAPHQL_URL`, `IOTA_NAMES_NAME`, and
+  `IOTA_NAMES_EXPECTED_ADDRESS`; this is not part of `npm run verify:local`
 
 `npm run contracts:test` requires the IOTA CLI. Set `IOTA_BIN` to a local
 binary path, install `iota` on `PATH`, or use the ignored local release binary

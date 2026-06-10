@@ -69,6 +69,11 @@ test("registry, contract metadata, and standards packages are built and included
   assert.match(packageJson.scripts?.["pack:check"] ?? "", /-w @iota-gaskit\/standards/);
 });
 
+test("marketplace package is built and included in package dry-runs", () => {
+  assert.match(packageJson.scripts?.["build"] ?? "", /npm run build -w @iota-gaskit\/marketplace/);
+  assert.match(packageJson.scripts?.["pack:check"] ?? "", /-w @iota-gaskit\/marketplace/);
+});
+
 test("agent escrow smoke is wired into local verification", () => {
   assert.equal(packageJson.scripts?.["smoke:agent-escrow"], "npm run build && tsx scripts/smoke-agent-escrow.ts");
   assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run smoke:agent-escrow/);
@@ -125,6 +130,22 @@ test("A2A local server smoke is wired into local verification", () => {
     "npm run build && tsx scripts/smoke-a2a-local-server.ts",
   );
   assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run smoke:a2a-local-server/);
+});
+
+test("marketplace read-model smoke is wired into local verification", () => {
+  assert.equal(
+    packageJson.scripts?.["smoke:marketplace-read-model"],
+    "npm run build && tsx scripts/smoke-marketplace-read-model.ts",
+  );
+  assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run smoke:marketplace-read-model/);
+});
+
+test("IOTA Names live smoke is opt-in and not part of local verification", () => {
+  assert.equal(
+    packageJson.scripts?.["smoke:iota-names-live"],
+    "npm run build && tsx scripts/smoke-iota-names-live.ts",
+  );
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /npm run smoke:iota-names-live/);
 });
 
 test("Move contract tests are wired into local verification", () => {

@@ -16,14 +16,17 @@ Move contracts, local service-bounty state, local reputation-receipt state,
 local subscription state, and local agent escrow plus paid MCP-style tool demos. It now also
 includes the first local Agent Profile schema validator, local fixture resolver,
 pure capability policy check, mock-tested IOTA Names and IOTA Identity adapter
-interfaces, bounded local IOTA Identity verification cache helpers, and a local
+interfaces, an opt-in IOTA Names live resolution smoke, bounded local IOTA
+Identity verification cache helpers, and a local
 contract-template metadata registry consumed by agent policy allow-lists. It
 also includes local standards bridge proof for x402, AP2, and A2A Agent Card
 discovery response generation. Live testnet proof still requires operator-owned
 local credentials. Local/mock A2A helpers now model send-message, get-task,
 list-tasks, cancel-task, an HTTP-shaped boundary, and a loopback HTTP server
 smoke with signed discovery plus bearer-authenticated task routes without
-operating a public A2A server.
+operating a public A2A server. A local read-only marketplace evidence model now
+proves provider labels, policy compatibility, receipt access control, and
+dispute evidence bundle redaction without operating a production marketplace.
 
 If terms like gas, sponsor wallet, package ID, or IOTA Gas Station are new, start with [IOTA and GasKit Basics](concepts.md).
 
@@ -89,8 +92,9 @@ The official Gas Station is the sponsorship engine. GasKit is the app integratio
 | Receipts and contracts | Local receipt state package, non-custodial Move escrow/receipt/pay-per-call/data-license/service-bounty/reputation-receipt/subscription state contracts, and contract-template metadata allow-list checks are implemented and covered by local tests. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
 | Agent escrow demo | Local demo shows one agent hiring another, gateway approval, verifier release, receipt output, and over-budget policy denial without live IOTA calls. | [Agent Escrow Demo](demo-agent-escrow.md) |
 | Paid MCP-style tool demo | Local demo returns a paid result only after gateway approval, mock payment confirmation, and receipt submission; denial and failed payment withhold paid results. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
-| Agent profiles | Local `@iota-gaskit/registry` schema validation, fixture resolution, mock-tested IOTA Names/Identity adapter interfaces, and bounded identity verification cache helpers cover required fields, expired/revoked states, unsupported versions, secret-field rejection, SDK resolution, capability policy checks, and stale identity evidence fail-closed behavior. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
+| Agent profiles | Local `@iota-gaskit/registry` schema validation, fixture resolution, mock-tested IOTA Names/Identity adapter interfaces, an opt-in IOTA Names live resolution smoke, and bounded identity verification cache helpers cover required fields, expired/revoked states, unsupported versions, secret-field rejection, SDK resolution, capability policy checks, and stale identity evidence fail-closed behavior. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
 | A2A bridge | Local Agent Card mapping, signed-card verification helpers, `/.well-known/agent-card.json` response helpers, local/mock task/message operation helpers, a local HTTP-shaped handler, and a loopback HTTP server smoke expose sanitized profile and task metadata with bearer-authenticated task routes, without live public discovery, streaming, push notifications, production key management, or external conformance proof. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
+| Marketplace evidence | Local `@iota-gaskit/marketplace` read model consumes registry profiles, policy compatibility, contract template metadata, receipts, manifests, and standards evidence to prove access-controlled receipt views and redacted dispute bundles without production marketplace operation. | [Marketplace Readiness](marketplace-readiness.md) |
 | Agent roadmap | PRDs, execution slices, module specs, and hardening gates have been migrated into this fork. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
 | Beginner concepts | Plain-English explanations of IOTA, sponsored gas, GasKit roles, and common terms. | [IOTA and GasKit Basics](concepts.md) |
 | Code examples | Backend SDK calls, Next.js route shape, browser caller shape, curl requests, and policy YAML. | [Code Examples](examples.md) |
@@ -109,11 +113,13 @@ These are not complete production claims yet:
 - public Agent Card hosting, production Agent Card key management, live A2A
   task/message server operation, streaming, push notifications, external
   conformance proof, and live standards-compatible discovery;
-- live registry proof and full verifiable credential validation beyond the
-  local bounded cache policy;
+- configured live IOTA Names proof, live IOTA Identity proof, and full
+  verifiable credential validation beyond the local bounded cache policy;
 - expanded contract workflow packages beyond the escrow/receipt/pay-per-call/
   data-license/service-bounty/reputation-receipt/subscription MVP and metadata
   allow-listing, including device access workflows;
+- production marketplace UI/API, provider onboarding, provider verification,
+  public scoring, moderation, and live settlement;
 - full dashboard UI;
 - production-grade durable usage storage;
 - production monitoring and alerting templates;
