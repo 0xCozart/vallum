@@ -2094,7 +2094,7 @@ Implemented local/mock A2A HTTP boundary proof.
 
 Implementation commit:
 
-- Pending commit in current working tree.
+- `ba578aa` (`feat: add local a2a http boundary`)
 
 Slice and PRD coverage:
 
@@ -2164,7 +2164,12 @@ Evidence:
 - `git diff --check` passes.
 - `npm run readiness:testnet` builds and stops before live testnet proof because
   this checkout has no `.env` configured.
-- `npm run verify:local` passes locally, including the new A2A HTTP smoke.
+- `npm run verify:local` passes locally with 304 TypeScript tests, 33 Move
+  tests, typecheck, local gateway smoke, demo dApp smoke, browser wrapper
+  smoke, agent escrow smoke, paid MCP tool smoke, data-license smoke,
+  service-bounty smoke, reputation-receipt smoke, subscription smoke, A2A
+  well-known smoke, A2A task/message smoke, A2A HTTP smoke, testnet readiness
+  example, package dry-runs, docs check, and secret scan.
 
 Hardening notes:
 
