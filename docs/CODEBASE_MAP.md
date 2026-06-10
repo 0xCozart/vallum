@@ -29,10 +29,11 @@ It also includes the first Agentic GasKit implementation slices:
 - receipt state package
 - local Move escrow and receipt state contracts
 - deterministic local agent-to-agent escrow demo
-- agent profile schema package
+- agent profile schema package with local fixture resolver
+- pure profile capability policy check
 
 The remaining Agentic GasKit direction is documented under
-`docs/agentic-gaskit/`. Agent profile resolution, A2A protocol tools,
+`docs/agentic-gaskit/`. Live IOTA Names/Identity adapters, A2A protocol tools,
 standards bridges, expanded contract workflows, production custody, and live
 deployment proof remain roadmap unless later slices implement and verify them.
 
@@ -56,7 +57,7 @@ deployment proof remain roadmap unless later slices implement and verify them.
 - Shared types: `packages/shared-types/src/`
 - Agent accounts: `packages/accounts/src/`
 - Agent manifests: `packages/manifest/src/`
-- Agent registry/profile schema: `packages/registry/src/`
+- Agent registry/profile schema and local resolver: `packages/registry/src/`
 - MCP sponsorship tools: `packages/mcp-server/src/`
 - Receipts: `packages/receipts/src/`
 - Move escrow contract: `contracts/escrow_v1/`
@@ -88,7 +89,7 @@ deployment proof remain roadmap unless later slices implement and verify them.
 Do not create all of these at once. Add them through vertical slices:
 
 - gateway extensions for agent manifests and capabilities
-- registry resolvers and adapters
+- registry live adapters
 - `packages/standards`
 - A2A protocol tools and standards-compatible discovery
 - expanded contract packages for pay-per-call, data license, and device access

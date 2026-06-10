@@ -13,6 +13,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@iota-gaskit/manifest": "0.0.0-prerelease",
+    "@iota-gaskit/registry": "0.0.0-prerelease",
     "@iota-gaskit/shared-types": "0.0.0-prerelease"
   },
   "description": "Fail-closed policy decision engine scaffold for IOTA GasKit sponsorship gateways.",

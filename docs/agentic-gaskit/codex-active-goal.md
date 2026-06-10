@@ -17,7 +17,7 @@ Execution entry:
 
 Immediate product slice:
 
-- Slice 2.2: Resolver With Local Fixtures after Slice 2.1 is committed
+- Slice 2.3: IOTA Names And Identity Adapters after Slice 2.2 is committed
 
 ## Intent Read
 
@@ -60,10 +60,11 @@ Current problem:
 The repository contains the existing GasKit sponsorship toolkit plus locally
 verified Agentic slices for accounts, manifests, mock policy sponsorship,
 SDK/MCP routing, receipts, escrow/receipt Move state contracts, and the local
-agent-to-agent escrow demo. The current slice adds local Agent Profile schema
-validation; the next gaps are local profile resolution, capability policy
-consumption, A2A protocol tools, standards bridges, expanded contracts, and live
-deployment proof when explicitly in scope.
+agent-to-agent escrow demo. The current slices add local Agent Profile schema
+validation, local fixture resolution, SDK resolver access, and capability policy
+checks. The next gaps are live IOTA Names/Identity adapters, A2A protocol tools,
+standards bridges, expanded contracts, and live deployment proof when explicitly
+in scope.
 
 Desired outcome:
 Codex repeatedly implements one vertical slice, proves it with focused and
@@ -186,15 +187,20 @@ Run this loop for every slice.
 
 ## Current Slice Acceptance
 
-Slice 2.1 is complete only when:
+Slice 2.3 is complete only when:
 
-- `packages/registry` exists as `@iota-gaskit/registry`.
-- Valid Agent Profile fixtures pass validation.
-- Missing name, address, DID, capabilities, and endpoints fail with typed
-  errors.
-- Revoked and expired profiles produce explicit states.
-- Unsupported versions, malformed input, and secret-bearing fields fail closed.
-- The registry package is built and included in package dry-runs.
+- `docs/agentic-gaskit/external-api-notes.md` records current official IOTA
+  Names and IOTA Identity API assumptions, plus any blockers.
+- `packages/registry/src/iotaNamesAdapter.ts` and
+  `packages/registry/src/iotaIdentityAdapter.ts` expose adapter interfaces that
+  match those verified assumptions.
+- Mock integration tests prove name/profile and DID/credential resolution
+  behavior without live-network calls.
+- Resolver integration preserves the local fixture resolver and fails closed
+  for unverifiable, revoked, expired, stale, unsupported, and malformed
+  profiles.
+- A manual localnet/testnet resolution path is documented, but not executed
+  without explicit operator intent and credentials.
 - Existing GasKit tests and safety checks still pass, or any failure is
   explained as a pre-existing/blocking condition with exact evidence.
 
@@ -231,5 +237,5 @@ sed -n '1,220p' docs/agentic-gaskit/verification-hardening.md
 ```
 
 Then create the next slice scope record/manifest, run the baseline evals, add
-focused tests, and implement Slice 2.2 unless the handoff names a different
+focused tests, and implement Slice 2.3 unless the handoff names a different
 immediate target.

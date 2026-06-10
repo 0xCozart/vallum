@@ -209,6 +209,8 @@ function requireWallet(errors: AgentProfileValidationError[], value: unknown, pa
   requireNonEmptyString(errors, value.creationSource, `${path}.creationSource`);
   if (!["active", "disabled", "revoked", "rotated"].includes(String(value.status))) {
     push(errors, "FIELD_INVALID", `${path}.status`, "Wallet status is invalid.");
+  } else if (value.status !== "active") {
+    push(errors, "PROFILE_REVOKED", `${path}.status`, "Agent profile wallet is not active.");
   }
 }
 

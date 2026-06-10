@@ -13,8 +13,9 @@ policy gateway, local service, examples, deployment docs, observability
 foundations, account/signer-reference primitives, manifests, mock agent
 sponsorship, MCP tool facade, receipts, local escrow/receipt Move contracts, and
 a deterministic local agent-to-agent escrow demo. It now also includes the
-first local Agent Profile schema validator. Live testnet proof still requires
-operator-owned local credentials.
+first local Agent Profile schema validator, local fixture resolver, and pure
+capability policy check. Live testnet proof still requires operator-owned local
+credentials.
 
 If terms like gas, sponsor wallet, package ID, or IOTA Gas Station are new, start with [IOTA and GasKit Basics](concepts.md).
 
@@ -79,7 +80,7 @@ The official Gas Station is the sponsorship engine. GasKit is the app integratio
 | Agent MCP tools | Local MCP-shaped sponsorship tools route through the SDK and policy gateway. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
 | Receipts and contracts | Local receipt state package plus non-custodial Move escrow/receipt state contracts are implemented and covered by local tests. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
 | Agent escrow demo | Local demo shows one agent hiring another, gateway approval, verifier release, receipt output, and over-budget policy denial without live IOTA calls. | [Agent Escrow Demo](demo-agent-escrow.md) |
-| Agent profiles | Local `@iota-gaskit/registry` schema validation covers required profile fields, expired/revoked states, unsupported versions, and secret-field rejection. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
+| Agent profiles | Local `@iota-gaskit/registry` schema validation and fixture resolution cover required fields, expired/revoked states, unsupported versions, secret-field rejection, SDK resolution, and capability policy checks. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
 | Agent roadmap | PRDs, execution slices, module specs, and hardening gates have been migrated into this fork. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
 | Beginner concepts | Plain-English explanations of IOTA, sponsored gas, GasKit roles, and common terms. | [IOTA and GasKit Basics](concepts.md) |
 | Code examples | Backend SDK calls, Next.js route shape, browser caller shape, curl requests, and policy YAML. | [Code Examples](examples.md) |
@@ -96,7 +97,7 @@ These are not complete production claims yet:
 
 - signer adapter storage beyond documented safety model;
 - A2A protocol tools and standards-compatible discovery;
-- profile resolver, registry adapters, and capability policy integration;
+- live registry adapters and verifiable credential integration;
 - expanded contract workflow packages beyond the escrow/receipt MVP;
 - full dashboard UI;
 - production-grade durable usage storage;
