@@ -8,7 +8,7 @@ Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5,
-2.6,
+2.6, 2.7,
 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8,
 5.1, 5.2, and 6.1 are implemented, reviewed, locally verified, or explicitly
 deferred with a verified hardening gate.
@@ -149,6 +149,12 @@ Recent commits to know:
   `npm run proof:live-status` command. It reports testnet readiness,
   IOTA Names, IOTA Identity, and VC proof blockers or ready-to-run
   configuration without contacting live services or printing configured values.
+- Slice 2.7 Identity VC Trust Policy is implemented in `packages/registry`.
+  It gives the injected credential validator a local fail-closed trust-policy
+  layer for trusted issuer DIDs, issuer-controlled verification methods,
+  required credential types, accepted revocation status mechanisms, revoked
+  status evidence, credential expiry, max credential age, missing evidence, and
+  cache-policy binding.
 - Slice 3.1 Contract Metadata Registry is implemented in
   `packages/contracts-metadata` as `@iota-gaskit/contracts-metadata`.
 - Slice 3.1 tests prove approved template/version metadata is accepted, unknown
@@ -286,10 +292,10 @@ Recent commits to know:
   `scripts/roadmap-safety.test.ts`. It explicitly blocks physical device
   operation and keeps any future device access proof virtual or simulated until
   an owner-approved safety design exists.
-- Slice 2.6 Live Proof Status Report currently reports these local blockers:
+- Slice 2.7 Live Proof Status Report currently reports these local blockers:
   `TESTNET_ENV_FILE_MISSING`, `IOTA_NAMES_LIVE_CONFIG_MISSING`,
   `IOTA_IDENTITY_LIVE_PROOF_UNIMPLEMENTED`, and
-  `VC_TRUST_POLICY_UNDEFINED`.
+  `VC_TRUST_POLICY_CONFIG_MISSING`.
 - `docs/agentic-gaskit/external-api-notes.md` was refreshed on 2026-06-10 for
   current IOTA Names GraphQL, IOTA Identity DID/VC, x402 v2, AP2 v0.2
   mandate/receipt, A2A Agent Card, A2A signed-card, and A2A task/message
@@ -310,8 +316,8 @@ Recent commits to know:
   A2A discovery proof, live public A2A server operation beyond the local
   loopback smoke, streaming/push notification support, external A2A conformance
   proof, and production A2A authentication decisions are not implemented.
-- Configured live IOTA Names proof, live IOTA Identity proof, full verifiable
-  credential validation beyond local/mock bounded cache behavior, live
+- Configured live IOTA Names proof, live IOTA Identity proof, live verifiable
+  credential validation beyond local/mock trust-policy behavior, live
   standards-bridge proof, and expanded contract workflows beyond local
   escrow/receipt/pay-per-call/data-license/service-bounty/reputation-receipt/
   subscription metadata are not implemented.
@@ -3393,3 +3399,117 @@ fork:
 
 Those were inspected. The package pins were migrated. The tmp live scripts were
 documented but not copied as product code.
+
+## Completed Slice 2.7
+
+Implemented Identity VC Trust Policy as a local/mock fail-closed Packet C
+slice.
+
+Implementation commit:
+
+- `cce90e9` feat: add identity vc trust policy
+
+Changed files:
+
+- `packages/registry/src/iotaIdentityAdapter.ts`
+- `packages/registry/src/iotaIdentityAdapter.test.ts`
+- `scripts/check-live-proof-status.ts`
+- `scripts/live-proof-status.test.ts`
+- `docs/agentic-gaskit/execution-slices.md`
+- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/agentic-gaskit/external-api-notes.md`
+- `docs/agentic-gaskit/codex-active-goal.md`
+- `docs/CODEBASE_MAP.md`
+- `docs/overview.md`
+- `README.md`
+
+What landed:
+
+- The injected IOTA Identity credential validator can now return normalized
+  credential evidence for issuer DID, verification method, credential types,
+  credential status, issuance time, and expiry.
+- `evaluateIotaIdentityCredentialTrustPolicy` enforces trusted IOTA issuer
+  DIDs, issuer-controlled verification methods, required credential types,
+  accepted revocation status mechanisms, revoked status evidence, expiry,
+  max credential age, and missing or malformed evidence.
+- Identity verification cache keys now include trust-policy inputs, so evidence
+  gathered under a weaker policy cannot satisfy a stronger policy.
+- `npm run proof:live-status` now reports
+  `VC_TRUST_POLICY_CONFIG_MISSING` or `VC_TRUST_POLICY_CONFIG_INVALID` instead
+  of `VC_TRUST_POLICY_UNDEFINED`.
+- Generated trust-policy error messages avoid echoing arbitrary credential refs
+  or configured live values.
+
+Commands run:
+
+```bash
+git status --short --branch
+npm run docs:check
+npm run secrets:scan
+npm test
+npm run typecheck
+node --import tsx --test packages/registry/src/iotaIdentityAdapter.test.ts
+node --import tsx --test scripts/live-proof-status.test.ts
+node --import tsx --test packages/registry/src/iotaIdentityAdapter.test.ts scripts/live-proof-status.test.ts
+npm run proof:live-status
+npm run verify:local
+git diff --check
+```
+
+Verification result:
+
+- Baseline before editing passed: docs check, secret scan, `npm test`, and
+  `npm run typecheck`.
+- Focused registry identity adapter tests passed with 14 tests.
+- Focused live proof status tests passed with 6 tests.
+- Combined focused tests passed with 20 tests.
+- `npm run proof:live-status` passed and reported these exact blockers:
+  `TESTNET_ENV_FILE_MISSING`, `IOTA_NAMES_LIVE_CONFIG_MISSING`,
+  `IOTA_IDENTITY_LIVE_PROOF_UNIMPLEMENTED`, and
+  `VC_TRUST_POLICY_CONFIG_MISSING`.
+- `npm run docs:check` passed: 31 HTML pages from 30 Markdown sources.
+- `npm run secrets:scan` passed: 297 tracked/staged/untracked text files,
+  findings 0.
+- `npm run typecheck` passed.
+- `npm run verify:local` passed with 348 TypeScript tests, 33 Move tests,
+  typecheck, local gateway smoke, demo dApp smoke, browser smoke, agent escrow
+  smoke, paid MCP tool smoke, data-license smoke, service-bounty smoke,
+  reputation-receipt smoke, subscription smoke, A2A well-known smoke, A2A
+  signed-card smoke, A2A task/message smoke, A2A HTTP smoke, A2A local server
+  smoke, marketplace read-model smoke, testnet readiness example, package
+  dry-runs, docs check, and secret scan.
+- `git diff --check` passed.
+
+Hardening notes:
+
+- Official IOTA Identity VC and revocation docs were rechecked on 2026-06-10
+  while touching this surface. The local evaluator matches the current
+  assumption that issuers sign credentials with DID-controlled verification
+  material and that revocation is represented through credential status
+  mechanisms such as `RevocationBitmap2022` and `StatusList2021Entry`.
+- A hardening pass removed credential-ref echoing from generated
+  trust-policy failures and accepted `StatusList2021Entry` as a live
+  configuration status type.
+- Apex profile setup still has `setup.reviewNeeded: true`; this slice records
+  local scope under ignored `tmp/apex-workflow/` and does not claim Apex
+  verification.
+
+Known unproven claims:
+
+- No live IOTA Identity resolver, live credential JWT parsing, live signature
+  validation, live revocation lookup, live VC proof command, or testnet
+  Identity proof was implemented.
+- No IOTA Names live smoke, testnet readiness against a real `.env`, Gas
+  Station request, sponsored transaction, package publish, public A2A hosting,
+  or production marketplace action was run.
+- VC trust policy is local/mock configuration and evaluation proof only. Live
+  policy-gated actions must wait for a later live Identity proof slice.
+
+Next safe slice:
+
+- Implement a live IOTA Identity proof command that consumes operator-provided
+  resolver, trusted issuer, verification method, revocation status, credential
+  type, and cache TTL configuration without printing secret values; or run
+  `npm run readiness:testnet` / `npm run smoke:iota-names-live` only after the
+  required local operator configuration exists.
