@@ -17,7 +17,7 @@ Execution entry:
 
 Immediate product slice:
 
-- Slice 3.4: Service Bounty Workflow completion and handoff
+- Slice 4.5: A2A Task And Message Local Operations completion and handoff
 
 ## Intent Read
 
@@ -72,11 +72,14 @@ payment mandate bridge for mapping mandates to manifests and dispute-linked
 receipts without operating live AP2 or production payment rails. The current
 slices also add local A2A Agent Card mapping from Agent Profiles and local
 canonical `/.well-known/agent-card.json` serving proof without operating a
-public A2A server, signed Agent Card, or task/message endpoint. Slice 5.1 adds a
+public A2A server, signed Agent Card, or task/message endpoint. Slice 4.5 adds
+local/mock A2A task/message helpers for send-message, get/list/cancel task
+semantics without operating a live A2A server, streaming endpoint, push
+notification path, signed Agent Card, or external conformance proof. Slice 5.1 adds a
 marketplace readiness gate that permits marketplace requirements/design work
 only inside local/mock proof and keeps production marketplace implementation
-blocked. The next gaps are A2A task/message protocol operations, signed public
-Agent Cards, live A2A discovery proof, expanded contract workflows beyond
+blocked. The next gaps are signed public Agent Cards, live A2A discovery proof,
+external A2A conformance/server proof, expanded contract workflows beyond
 pay-per-call, data-license, and service-bounty, access-control/dispute evidence
 for any marketplace-facing surface, live IOTA Names/Identity proof, and live
 deployment proof when explicitly in scope.
@@ -204,27 +207,30 @@ Run this loop for every slice.
 
 ## Current Slice Acceptance
 
-Slice 3.4 is complete only when:
+Slice 4.5 is complete only when:
 
-- Local `service_bounty_v1` Move tests cover post, provider completion,
-  requester release, unauthorized completion/release, cancellation, and invalid
-  transitions.
-- Service-bounty receipt state records attempted, approved, sponsored,
-  submitted, completed, released, denied, and failed paths.
-- SDK helper routes through `requestSponsoredAction` and withholds release on
-  policy denial or missing/malformed completion proof.
-- Contract metadata registers `service_bounty_v1` by template id/version and
-  fails closed for mismatched package/module/function metadata.
+- Local A2A task/message helpers validate protocol version, message id, role,
+  parts, and Agentic manifest/policy metadata before creating or continuing a
+  task.
+- Policy-denied A2A task starts return rejected task state without artifacts or
+  sponsored/value-bearing results.
+- Input-required tasks accept matching follow-up messages and terminal tasks
+  reject continuation attempts.
+- `getA2ATask`, `listA2ATasks`, and `cancelA2ATask` preserve local A2A task
+  state and omit artifacts unless explicitly requested.
+- Message history and serialized task output redact private prompt text,
+  bearer tokens, payment credentials, signer refs, wallet internals, and raw key
+  material.
 - A local smoke script is wired into `npm run verify:local`.
 - Existing GasKit tests and safety checks still pass, or any failure is
   explained as a pre-existing/blocking condition with exact evidence.
 
-Current Slice 3.4 artifacts:
+Current Slice 4.5 artifacts:
 
-- `contracts/service_bounty_v1/`
-- `packages/sdk/src/contracts/serviceBounty.ts`
-- `examples/service-bounty/`
-- `scripts/smoke-service-bounty.ts`
+- `packages/standards/src/a2aTask.ts`
+- `packages/standards/src/a2aTask.test.ts`
+- `examples/a2a-task-message/`
+- `scripts/smoke-a2a-task-message.ts`
 
 ## Completion Standard
 

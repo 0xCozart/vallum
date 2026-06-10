@@ -83,7 +83,8 @@ contracts, a deterministic local agent-to-agent escrow demo, and local Agent
 Profile schema validation with fixture resolution, IOTA Names/Identity adapter
 interfaces, capability policy checks, x402/AP2/A2A standards bridge helpers,
 local pay-per-call, data-license, and service-bounty workflows, and local A2A
-well-known Agent Card response proof.
+well-known Agent Card response proof plus local/mock A2A task/message
+operation helpers.
 
 Some production surfaces remain planned roadmap work, including the full
 dashboard UI, production persistence, production monitoring, package
@@ -133,6 +134,7 @@ Latest local verification and prior live proof:
 - `npm run smoke:data-license`: deterministic local data-license smoke passed locally.
 - `npm run smoke:service-bounty`: deterministic local service-bounty smoke passed locally.
 - `npm run smoke:a2a-well-known`: deterministic local A2A Agent Card discovery response smoke passed locally.
+- `npm run smoke:a2a-task-message`: deterministic local A2A task/message operation smoke passed locally.
 - `npm run readiness:testnet:example`: deterministic example testnet-readiness preflight passed locally.
 - `npm run pack:check`: workspace package dry-runs completed locally.
 - Prior `npm run execute:testnet-demo`: real sponsored IOTA testnet execute succeeded through the local policy gateway and Gas Station; public digest `2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H`.
@@ -213,6 +215,7 @@ docs/
   testnet-readiness.md
 examples/
   agent-escrow/           # Local agent-to-agent escrow demo
+  a2a-task-message/       # Local A2A task/message operation demo
   paid-mcp-tool/           # Local paid MCP-style tool demo
   nextjs-api-route/
   node-backend/

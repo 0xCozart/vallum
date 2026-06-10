@@ -419,6 +419,21 @@ Current planning assumptions:
 - Slice 4.3 does not serve `/.well-known/agent-card.json`, operate an A2A
   server, implement task/message operations, sign Agent Cards, or publish live
   public discovery.
+- On 2026-06-10, Slice 4.5 rechecked the latest A2A repository and
+  specification. The GitHub repository reports latest release `v1.0.1` from May
+  28, 2026. Current task/message operations include `SendMessage`, `GetTask`,
+  `ListTasks`, `CancelTask`, `SendStreamingMessage`, and `SubscribeToTask`,
+  with HTTP+JSON endpoint mappings such as `POST /message:send`, `GET
+  /tasks/{id}`, `GET /tasks`, and `POST /tasks/{id}:cancel`.
+- Current A2A version negotiation uses `A2A-Version` with major/minor protocol
+  versions such as `1.0`, and servers must fail unsupported versions closed
+  rather than silently falling back.
+- Slice 4.5 implements local/mock task operation helpers only. It models
+  send-message, get-task, list-tasks, cancel-task, terminal-state rejection,
+  input-required follow-up, artifact omission by default, Agentic GasKit
+  manifest/policy binding, and redacted task logging. It does not host a public
+  A2A endpoint, stream events, configure push notifications, sign Agent Cards,
+  run an external conformance suite, or prove live A2A discovery.
 
 Implementation checks:
 

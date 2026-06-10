@@ -20,8 +20,12 @@ Current surface:
   profile fields in public metadata.
 - A2A well-known response helpers for serving local Agent Cards at the
   canonical `/.well-known/agent-card.json` path.
+- Local/mock A2A task and message operation helpers for send-message,
+  get-task, list-tasks, and cancel-task semantics, gated by Agentic GasKit
+  manifest/policy metadata and log-safe redaction.
 
 This package does not operate a production x402 facilitator, replace AP2, hold
 payment credentials, sign payment payloads, submit live settlement
-transactions, operate an A2A task/message server, sign public Agent Cards,
-prove live A2A discovery, or replace the A2A protocol.
+transactions, operate a live A2A task/message server, stream or push A2A
+updates, sign public Agent Cards, prove live A2A discovery, or replace the A2A
+protocol.

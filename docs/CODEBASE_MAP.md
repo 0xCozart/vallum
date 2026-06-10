@@ -36,14 +36,15 @@ It also includes the first Agentic GasKit implementation slices:
 - mock-tested IOTA Names/Identity adapter interfaces
 - local A2A Agent Card mapping from Agent Profiles
 - local A2A Agent Card well-known serving helper and smoke proof
+- local A2A task/message operation helpers and smoke proof
 - pure profile capability policy check
 - contract template metadata registry consumed by agent policy allow-lists
 
 The remaining Agentic GasKit direction is documented under
-`docs/agentic-gaskit/`. Live IOTA Names/Identity proof, A2A protocol task
-operations, signed/public A2A discovery, expanded contract workflows beyond the
-current local templates, production custody, and live deployment proof remain
-roadmap unless later slices implement and verify them.
+`docs/agentic-gaskit/`. Live IOTA Names/Identity proof, signed/public A2A
+discovery, live A2A server/conformance proof, expanded contract workflows
+beyond the current local templates, production custody, and live deployment
+proof remain roadmap unless later slices implement and verify them.
 
 ## Start Here
 
@@ -87,6 +88,8 @@ roadmap unless later slices implement and verify them.
   `scripts/smoke-service-bounty.ts`
 - A2A well-known demo: `examples/a2a-well-known/`,
   `scripts/smoke-a2a-well-known.ts`
+- A2A task/message demo: `examples/a2a-task-message/`,
+  `scripts/smoke-a2a-task-message.ts`
 - Docs site: `apps/docs-site/`
 - Examples: `examples/node-backend/`, `examples/nextjs-api-route/`,
   `examples/policies/`
@@ -111,8 +114,8 @@ Do not create all of these at once. Add them through vertical slices:
 
 - gateway extensions for agent manifests and capabilities
 - registry live adapters
-- A2A protocol tools, signed public Agent Cards, and live standards-compatible
-  discovery
+- signed public Agent Cards, live A2A server/conformance proof, and live
+  standards-compatible discovery
 - expanded contract packages beyond pay-per-call, data-license, and
   service-bounty, including subscription, reputation receipt, and device access
   workflows
@@ -131,6 +134,7 @@ Safe local checks:
 - `npm run smoke:data-license`
 - `npm run smoke:service-bounty`
 - `npm run smoke:a2a-well-known`
+- `npm run smoke:a2a-task-message`
 - `npm run secrets:scan`
 
 Full local proof:

@@ -8,7 +8,7 @@ Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 3.1, 3.2,
-3.3, 3.4, 4.1, 4.2, 4.3, 4.4, and 5.1 are implemented or reviewed and
+3.3, 3.4, 4.1, 4.2, 4.3, 4.4, 4.5, and 5.1 are implemented or reviewed and
 locally verified.
 Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
 `docs/marketplace-readiness.md` before choosing the next slice. Do not start
@@ -188,6 +188,15 @@ Recent commits to know:
   discovery paths do not serve active cards; revoked/expired profiles return no
   active card; and response JSON omits signer refs, wallet internals, credential
   refs, revocation refs, payment addresses, and private profile metadata.
+- Slice 4.5 A2A task/message local operations are implemented in
+  `packages/standards`.
+- Slice 4.5 tests prove local send-message validates current A2A protocol
+  version, message shape, manifest, and policy metadata; policy denial returns
+  rejected task state without artifacts; input-required tasks accept matching
+  follow-up messages; terminal tasks reject follow-up; get/list/cancel preserve
+  task state and omit artifacts by default; and task log output redacts prompt
+  text, bearer tokens, payment credentials, signer refs, wallet internals, and
+  key-like material.
 - Slice 5.1 marketplace readiness review exists at
   `docs/marketplace-readiness.md`. It concludes that marketplace
   requirements/design work is justified only inside local/mock proof, while
@@ -196,18 +205,19 @@ Recent commits to know:
   blocked.
 - `docs/agentic-gaskit/external-api-notes.md` was refreshed on 2026-06-10 for
   current IOTA Names GraphQL, IOTA Identity DID/VC, x402 v2, AP2 v0.2
-  mandate/receipt, and A2A Agent Card assumptions.
+  mandate/receipt, A2A Agent Card, and A2A task/message assumptions.
 - Root build, test, typecheck, package dry-run, docs, smokes, readiness example,
   contract tests, and secret scan include the accounts, manifest, MCP,
   registry, contracts metadata, receipts, escrow/receipt/pay-per-call contract
   surfaces, x402/AP2/A2A standards bridges, agent escrow demo smoke, paid
-  MCP-style tool smoke, data-license smoke, service-bounty smoke, and A2A
-  well-known smoke.
+  MCP-style tool smoke, data-license smoke, service-bounty smoke, A2A
+  well-known smoke, and A2A task/message smoke.
 
 ## What Is Not Complete
 
-- A2A task/message protocol operations, signed public Agent Cards, and live A2A
-  discovery proof are not implemented.
+- Signed public Agent Cards, live A2A discovery proof, live A2A server
+  operation, streaming/push notification support, external A2A conformance
+  proof, and production A2A authentication decisions are not implemented.
 - Live IOTA Names/Identity proof, full verifiable credential validation, live
   standards-bridge proof, and expanded contract workflows beyond local
   escrow/receipt/pay-per-call/data-license/service-bounty metadata are not
@@ -1832,6 +1842,101 @@ Next recommended slice:
   dispute-evidence proof, live IOTA Names/Identity proof, signed/live A2A
   discovery proof, or another expanded contract workflow such as service bounty
   or subscription.
+
+## Completed Slice 4.5
+
+Implemented local/mock A2A Task And Message Local Operations.
+
+Implementation commit:
+
+- Pending until this slice is committed.
+
+Slice and PRD coverage:
+
+- `docs/agentic-gaskit/execution-slices.md` Slice 4.5 A2A Task And Message
+  Local Operations.
+- `docs/agentic-gaskit/prds/phase-4-standards-bridges.md`.
+- `docs/agentic-gaskit/verification-hardening.md` Phase 4 A2A bridge gate and
+  log privacy invariants.
+- `docs/agentic-gaskit/external-api-notes.md` current A2A task/message
+  operation assumptions.
+
+Changed files:
+
+- `examples/a2a-task-message/`
+- `packages/standards/src/a2aTask.ts`
+- `packages/standards/src/a2aTask.test.ts`
+- `packages/standards/src/index.ts`
+- `scripts/smoke-a2a-task-message.ts`
+- `scripts/package-scripts.test.ts`
+- `package.json`
+- continuation and public docs
+
+Commands run:
+
+```bash
+git status --short --branch
+npm run docs:check
+npm run secrets:scan
+npm test
+npm run typecheck
+node --import tsx --test packages/standards/src/a2aTask.test.ts examples/a2a-task-message/a2a-task-message-demo.test.ts scripts/package-scripts.test.ts
+npm run smoke:a2a-task-message
+npm run build -w @iota-gaskit/standards && node --import tsx --test packages/standards/src/a2a.test.ts packages/standards/src/a2aTask.test.ts examples/a2a-task-message/a2a-task-message-demo.test.ts scripts/package-scripts.test.ts
+npm run build -w @iota-gaskit/standards && node --import tsx --test packages/standards/src/a2a.test.ts packages/standards/src/a2aTask.test.ts examples/a2a-task-message/a2a-task-message-demo.test.ts scripts/package-scripts.test.ts && npm run smoke:a2a-task-message
+npm run verify:local
+git diff --check
+```
+
+Evidence:
+
+- Baseline `npm run docs:check`, `npm run secrets:scan`, `npm test`, and
+  `npm run typecheck` passed before implementation.
+- Focused red state failed before implementation because A2A task/message
+  exports, example demo, and smoke script wiring did not exist.
+- Focused A2A tests pass for approved completed task creation, unsupported
+  protocol-version denial, malformed message denial, policy-denied rejected
+  task state without artifacts, input-required follow-up, terminal follow-up
+  denial, context-mismatch denial, get/list/cancel behavior, artifact omission
+  by default, prompt/credential/signer/wallet/payment/file-byte redaction, and
+  terminal failed/rejected/canceled artifact denial.
+- `npm run smoke:a2a-task-message` passes and reports completed, rejected,
+  follow-up completed, canceled, four listed tasks, and
+  `logLeaksSecretMaterial=false`.
+- Final `npm run verify:local` passed with 279 TypeScript tests, 23 Move tests,
+  local gateway smoke, demo dApp smoke, browser wrapper smoke, agent escrow
+  smoke, paid MCP tool smoke, data-license smoke, service-bounty smoke, A2A
+  well-known smoke, A2A task/message smoke, readiness example, package
+  dry-runs, docs check, and secret scan.
+- `git diff --check` passed.
+
+Hardening notes:
+
+- Store writes redact task objects before persistence so direct `put()` calls do
+  not become a secret retention path.
+- Canceling a working task drops artifacts from stored task state.
+- Terminal failed, rejected, and canceled processor outcomes cannot attach
+  artifacts.
+- Inline file bytes and signed URL token/signature query values are redacted
+  from log-safe task output.
+
+Known unproven claims:
+
+- No live A2A server, external A2A client, public hosting, signed Agent Card,
+  streaming, push notification, external conformance suite, live IOTA RPC, IOTA
+  Gas Station, localnet/testnet/mainnet deployment, production authentication,
+  production marketplace/provider workflow, custody, or live payment settlement
+  was implemented by Slice 4.5.
+- The A2A task/message helper proves local task state modeling, Agentic
+  manifest/policy binding, and redaction behavior only.
+
+Next recommended slice:
+
+- Do not start production marketplace implementation from this handoff. Choose
+  one explicit next slice from the remaining readiness gaps, such as signed
+  Agent Card design/proof, live IOTA Names/Identity proof, read-only
+  marketplace access-control/dispute-evidence proof, or another local contract
+  workflow such as subscription or reputation receipt.
 
 ## Completed Slice 3.4
 

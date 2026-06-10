@@ -819,6 +819,53 @@ Escalation triggers:
 - Need for public hosting, signed Agent Cards, A2A task/message protocol
   operations, external conformance testing, or live A2A discovery proof.
 
+## Slice 4.5: A2A Task And Message Local Operations
+
+User-visible outcome:
+Agentic GasKit can model local/mock A2A task and message operations using
+current A2A task semantics while binding task initiation to Agentic GasKit
+manifest and policy metadata.
+
+Likely files:
+
+- `packages/standards/src/a2aTask.ts`
+- `packages/standards/src/a2aTask.test.ts`
+- `examples/a2a-task-message/`
+- `scripts/smoke-a2a-task-message.ts`
+
+Acceptance criteria:
+
+- Send-message validates protocol version, message id, role, parts, and
+  Agentic manifest/policy metadata before creating or continuing a task.
+- Policy-denied task requests return rejected task state without artifacts or
+  sponsored/value-bearing output.
+- Input-required tasks accept matching follow-up messages, while terminal tasks
+  reject follow-up messages.
+- Get/list/cancel helpers preserve task state semantics and omit artifacts by
+  default unless requested.
+- Task history and log-safe output redact private prompt text, bearer tokens,
+  payment credentials, signer refs, wallet internals, and key-like material.
+- Local smoke is wired into `npm run verify:local`.
+
+Verification:
+
+- Standards unit tests.
+- Local A2A task/message smoke.
+- `npm run verify:local`.
+
+Dependencies:
+Slice 4.4.
+
+Risk:
+Medium. Local A2A helpers can overclaim interoperability if described as a live
+server or external conformance proof.
+
+Escalation triggers:
+
+- Need for live public hosting, signed Agent Cards, streaming, push
+  notifications, external A2A client conformance, live discovery, or production
+  agent authentication decisions.
+
 ## Slice 5.1: Marketplace Readiness Gate
 
 User-visible outcome:
