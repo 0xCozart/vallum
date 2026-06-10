@@ -27,6 +27,7 @@ new scope and its unresolved gates.
 
 Recent commits to know:
 
+- `0de44a1` feat: add reputation receipt workflow
 - `2a72b62` feat: add a2a agent card mapping
 - `8e228cf` feat: add ap2 mandate bridge
 - `b49daba` docs: rename agentic fork branch to main
@@ -1955,7 +1956,7 @@ Implemented local/mock Reputation Receipt Workflow.
 
 Implementation commit:
 
-- Pending commit in current slice.
+- `0de44a1` feat: add reputation receipt workflow
 
 Slice and PRD coverage:
 
