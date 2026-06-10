@@ -103,6 +103,7 @@ npm run smoke:demo-browser
 npm run readiness:testnet:example
 npm run pack:check
 npm run proof:product-status
+npm run proof:launch-readiness
 npm run secrets:scan
 ```
 
@@ -118,6 +119,8 @@ Expected current result:
 - product-status proof reports local verification and package gates separately
   from live/testnet, publication, marketplace, custody, A2A hosting, payment,
   and device-safety blockers;
+- launch-readiness proof maps each roadmap area to source evidence, local
+  commands, blocker codes, and next gates;
 - tracked-file secret scan passes.
 
 Important source and test files:

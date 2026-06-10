@@ -16,15 +16,16 @@ local proof as live IOTA testnet, production marketplace, public scoring,
 public A2A discovery, production key management, or provider-verification
 proof.
 
-As of the latest completed update, Slice 6.3 is complete: a local package
-install smoke that proves packed public workspace tarballs install and import
-together in a temporary consumer project. It is not registry installability,
-provenance, account ownership, real publication, or downstream compatibility.
+As of the latest completed update, Slice 7.1 is complete: a non-networked
+product status proof gate. It makes the current local/live/production claim
+boundary machine-checkable, keeps `complete=false` while blockers remain, and
+avoids contacting live services or publishing packages.
 
-The current continuation is Slice 7.1: a non-networked product status proof
-gate. It should make the current local/live/production claim boundary
-machine-checkable, keep `complete=false` while blockers remain, and avoid
-contacting live services or publishing packages.
+The current continuation is Slice 7.2: a non-networked launch-readiness
+evidence matrix. It should map major roadmap areas to source evidence, local
+commands, blocker codes, and next gates while keeping `launchReady=false` until
+live/operator-approved blockers are proven or explicitly accepted as out of
+scope.
 
 Do not use the old Slice 4.5 A2A task/message goal as the active objective.
 That slice was previously completed and locally verified.

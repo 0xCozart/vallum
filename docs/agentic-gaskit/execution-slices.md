@@ -1761,3 +1761,72 @@ Escalation triggers:
 - Any request to mark production marketplace, payment, custody, package
   publication, public A2A hosting, or physical device access as complete
   without dedicated live/operator-approved proof.
+
+## Slice 7.2: Launch Readiness Evidence Matrix
+
+User-visible outcome:
+Operators and future agents have one non-networked command that maps every
+major roadmap area to source evidence, local proof commands, current blocker
+codes, and next gates before any launch or completion claim.
+
+Likely files:
+
+- `scripts/check-launch-readiness.ts`
+- `scripts/launch-readiness.test.ts`
+- `scripts/check-product-status.ts`
+- `scripts/product-status.test.ts`
+- `scripts/package-scripts.test.ts`
+- `scripts/reviewer-docs.test.ts`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
+- `docs/agentic-gaskit/codex-active-goal.md`
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+- `package.json`
+
+Acceptance criteria:
+
+- `npm run proof:launch-readiness` builds first and exits successfully after
+  producing a matrix.
+- The command does not contact IOTA services, run live proof endpoints, publish
+  packages, run payment providers, or operate public A2A endpoints.
+- The matrix covers Phase 1 sponsored policy, Phase 2 identity/VC, Phase 3
+  contracts/device safety, Phase 4 standards, Phase 5 marketplace/operator,
+  Phase 6 packages, and Packet H final product status.
+- Each area lists source evidence paths, local proof commands, blocker codes,
+  and next gates.
+- Missing source evidence fails the local evidence check.
+- The matrix imports product-status blockers so launch readiness remains
+  `launchReady=false` while live/testnet, publication, marketplace, custody,
+  A2A hosting, payment, or device-safety blockers remain.
+- `npm run verify:local` includes the launch-readiness gate after
+  product-status and before docs/secret checks.
+- Docs explain that launch-readiness evidence is a matrix, not live proof or
+  product completion.
+
+Verification:
+
+- Focused launch-readiness tests.
+- Product-status tests.
+- Package-script wiring tests.
+- Reviewer-docs regression tests.
+- `npm run proof:launch-readiness`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:local`.
+
+Dependencies:
+Slice 7.1.
+
+Risk:
+Medium. A launch-readiness matrix can become stale or be mistaken for actual
+launch readiness unless blocker import, source-path checks, and
+`launchReady=false` remain enforced.
+
+Escalation triggers:
+
+- Any request to mark the product launch-ready while product-status still
+  reports blockers.
+- Any request to bypass live/testnet proof, production marketplace gates,
+  registry publication proof, public A2A proof, custody review, payment proof,
+  or device safety approval.

@@ -55,6 +55,7 @@ const LOCAL_VERIFY_REQUIRED_PARTS = [
   "npm run pack:check",
   "npm run smoke:package-install",
   "npm run proof:product-status",
+  "npm run proof:launch-readiness",
   "npm run docs:check",
   "npm run secrets:scan",
 ] as const;

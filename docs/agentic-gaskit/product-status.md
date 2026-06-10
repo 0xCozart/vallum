@@ -9,6 +9,7 @@ surface in one machine-checkable place:
 
 - local verification and package release gates that are configured in this
   checkout;
+- launch-readiness evidence matrix wiring;
 - live/testnet readiness, IOTA Names, IOTA Identity, and VC proof status from
   `npm run proof:live-status`;
 - production-only blockers such as npm registry publication, public A2A
@@ -65,6 +66,7 @@ Use the audit output to choose the next gate:
 ```bash
 npm run verify:local
 npm run proof:live-status
+npm run proof:launch-readiness
 npm run readiness:testnet
 ```
 

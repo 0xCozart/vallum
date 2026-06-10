@@ -108,6 +108,12 @@ export default {
           description: "Non-networked product evidence audit that separates local proof from live, production, publication, and safety blockers."
         },
         {
+          title: "Launch Readiness Evidence",
+          source: "docs/agentic-gaskit/launch-readiness-evidence.md",
+          slug: "agentic-launch-readiness-evidence",
+          description: "Non-networked launch-readiness matrix mapping roadmap areas to evidence, commands, blockers, and next gates."
+        },
+        {
           title: "Local Dirty Work Review",
           source: "docs/agentic-gaskit/local-dirty-work-review.md",
           slug: "agentic-local-dirty-work-review",
