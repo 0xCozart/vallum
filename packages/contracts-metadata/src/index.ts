@@ -82,10 +82,24 @@ export const payPerCallContractTemplateV1: ContractTemplateMetadata = {
   refundDisputeBehavior: "Provider delivery after payment confirmation or refund/fail before result delivery.",
 };
 
+export const dataLicenseContractTemplateV1: ContractTemplateMetadata = {
+  templateId: "data_license_v1",
+  version: "1.0.0",
+  packageId: "0x6666666666666666666666666666666666666666666666666666666666666666",
+  module: "data_license",
+  entryFunctions: ["request_license", "grant_access", "revoke_access"],
+  allowedActions: ["request_license", "grant_access", "revoke_access"],
+  riskCategory: "medium",
+  receiptEvents: ["data_license_created", "access_granted", "access_revoked", "failed"],
+  requiredManifestFields: ["agent", "owner", "spend", "action", "counterparty", "receipt"],
+  refundDisputeBehavior: "Provider grants scoped access after policy approval or revokes access with receipt evidence.",
+};
+
 export const defaultContractTemplates = [
   escrowContractTemplateV1,
   receiptContractTemplateV1,
   payPerCallContractTemplateV1,
+  dataLicenseContractTemplateV1,
 ] as const;
 
 export const defaultContractTemplateRegistry = createContractTemplateRegistry(defaultContractTemplates);

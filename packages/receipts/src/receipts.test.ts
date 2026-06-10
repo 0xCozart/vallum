@@ -4,20 +4,29 @@ import { test } from "node:test";
 import {
   approveReceipt,
   approvePayPerCallReceipt,
+  approveDataLicenseReceipt,
   completeEscrow,
   completePayPerCallReceipt,
+  createDataLicenseReceipt,
   createEscrowReceipt,
   createPayPerCallReceipt,
+  denyDataLicenseReceipt,
   expireEscrow,
+  failDataLicenseReceipt,
   failPayPerCallReceipt,
+  grantDataLicenseAccess,
   linkExternalPaymentState,
   linkIotaReceiptState,
+  revokeDataLicenseAccess,
   releaseEscrow,
   refundEscrow,
+  sponsorDataLicenseReceipt,
   sponsorPayPerCallReceipt,
   sponsorReceipt,
+  submitDataLicenseReceipt,
   submitPayPerCallReceipt,
   submitReceipt,
+  ReceiptInputError,
   ReceiptTransitionError,
 } from "./index.js";
 
@@ -174,6 +183,109 @@ test("failed pay-per-call receipt cannot later complete", () => {
   );
 });
 
+test("data-license receipt advances through access grant and revocation lifecycle", () => {
+  const approved = approveDataLicenseReceipt(baseDataLicenseReceipt(), { at: now });
+  const sponsored = sponsorDataLicenseReceipt(approved, {
+    at: now,
+    sponsorshipId: "mock_sponsorship_data_license_1",
+  });
+  const submitted = submitDataLicenseReceipt(sponsored, {
+    at: now,
+    transactionDigest: "digest_data_license_1",
+  });
+  const granted = grantDataLicenseAccess(submitted, {
+    at: now,
+    accessProofHash: "sha256:data-license-access-proof",
+    expiresAt: "2026-07-10T12:00:00.000Z",
+  });
+  const revoked = revokeDataLicenseAccess(granted, {
+    at: now,
+    reason: "provider-rotated-dataset-key",
+  });
+
+  assert.equal(granted.status, "completed");
+  assert.equal(granted.providerId, "agent:data-provider");
+  assert.equal(granted.datasetId, "dataset:pricing-feed-v1");
+  assert.equal(granted.termsHash, "sha256:data-license-terms");
+  assert.equal(granted.accessProofHash, "sha256:data-license-access-proof");
+  assert.equal(granted.expiresAt, "2026-07-10T12:00:00.000Z");
+  assert.equal(revoked.status, "revoked");
+  assert.equal(revoked.revocationReason, "provider-rotated-dataset-key");
+  assert.deepEqual(revoked.events.map((event) => event.type), [
+    "data_license_created",
+    "approved",
+    "sponsored",
+    "submitted",
+    "access_granted",
+    "access_revoked",
+  ]);
+});
+
+test("denied and failed data-license receipts cannot later grant access", () => {
+  const denied = denyDataLicenseReceipt(baseDataLicenseReceipt(), {
+    at: now,
+    reason: "GAS_BUDGET_TOO_HIGH",
+  });
+  assert.equal(denied.status, "denied");
+  assert.throws(
+    () => grantDataLicenseAccess(denied, {
+      at: now,
+      accessProofHash: "sha256:late-access-proof",
+    }),
+    (error) => error instanceof ReceiptTransitionError && error.code === "INVALID_TRANSITION",
+  );
+
+  const approved = approveDataLicenseReceipt(baseDataLicenseReceipt(), { at: now });
+  const failed = failDataLicenseReceipt(approved, {
+    at: now,
+    reason: "ACCESS_PROOF_INVALID",
+  });
+  assert.equal(failed.status, "failed");
+  assert.equal(failed.failureReason, "ACCESS_PROOF_INVALID");
+  assert.throws(
+    () => grantDataLicenseAccess(failed, {
+      at: now,
+      accessProofHash: "sha256:late-access-proof",
+    }),
+    (error) => error instanceof ReceiptTransitionError && error.code === "INVALID_TRANSITION",
+  );
+});
+
+test("data-license receipts reject blank terms and access proof evidence", () => {
+  assert.throws(
+    () => createDataLicenseReceipt({
+      ...baseDataLicenseReceiptInput(),
+      datasetId: " ",
+    }),
+    (error) => error instanceof ReceiptInputError && error.code === "FIELD_REQUIRED",
+  );
+  assert.throws(
+    () => createDataLicenseReceipt({
+      ...baseDataLicenseReceiptInput(),
+      termsHash: "",
+    }),
+    (error) => error instanceof ReceiptInputError && error.code === "FIELD_REQUIRED",
+  );
+
+  const approved = approveDataLicenseReceipt(createDataLicenseReceipt(baseDataLicenseReceiptInput()), { at: now });
+  const sponsored = sponsorDataLicenseReceipt(approved, {
+    at: now,
+    sponsorshipId: "mock_sponsorship_data_license_1",
+  });
+  const submitted = submitDataLicenseReceipt(sponsored, {
+    at: now,
+    transactionDigest: "digest_data_license_1",
+  });
+
+  assert.throws(
+    () => grantDataLicenseAccess(submitted, {
+      at: now,
+      accessProofHash: "",
+    }),
+    (error) => error instanceof ReceiptInputError && error.code === "FIELD_REQUIRED",
+  );
+});
+
 function baseEscrowReceipt() {
   return createEscrowReceipt({
     receiptId: "receipt_escrow_1",
@@ -216,4 +328,24 @@ function basePayPerCallReceipt() {
     amount: { amount: "3.00", asset: "USD" },
     createdAt: now,
   });
+}
+
+function baseDataLicenseReceipt() {
+  return createDataLicenseReceipt(baseDataLicenseReceiptInput());
+}
+
+function baseDataLicenseReceiptInput() {
+  return {
+    receiptId: "receipt_data_license_1",
+    manifestId: "idem_data_license_1",
+    idempotencyKey: "idem_data_license_1",
+    agentId: "agent:data-buyer",
+    ownerId: "owner:data-buyer",
+    providerId: "agent:data-provider",
+    datasetId: "dataset:pricing-feed-v1",
+    licenseeId: "agent:data-buyer",
+    termsHash: "sha256:data-license-terms",
+    amount: { amount: "7.50", asset: "USD" },
+    createdAt: now,
+  };
 }

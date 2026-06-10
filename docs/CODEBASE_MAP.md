@@ -30,6 +30,7 @@ It also includes the first Agentic GasKit implementation slices:
 - local Move escrow and receipt state contracts
 - deterministic local agent-to-agent escrow demo
 - local Move pay-per-call state contract and paid MCP-style tool demo
+- local Move data-license state contract and data-license demo
 - agent profile schema package with local fixture resolver
 - mock-tested IOTA Names/Identity adapter interfaces
 - local A2A Agent Card mapping from Agent Profiles
@@ -70,12 +71,15 @@ and verify them.
 - Move escrow contract: `contracts/escrow_v1/`
 - Move receipt contract: `contracts/receipt_v1/`
 - Move pay-per-call contract: `contracts/pay_per_call_v1/`
+- Move data-license contract: `contracts/data_license_v1/`
 - Policy gateway service: `apps/policy-gateway-service/src/`
 - Demo dApp: `apps/demo-dapp/`
 - Agent escrow demo: `examples/agent-escrow/`, `docs/demo-agent-escrow.md`,
   `scripts/smoke-agent-escrow.ts`
 - Paid MCP-style tool demo: `examples/paid-mcp-tool/`,
   `scripts/smoke-paid-mcp-tool.ts`
+- Data-license demo: `examples/data-license/`,
+  `scripts/smoke-data-license.ts`
 - Docs site: `apps/docs-site/`
 - Examples: `examples/node-backend/`, `examples/nextjs-api-route/`,
   `examples/policies/`
@@ -101,7 +105,8 @@ Do not create all of these at once. Add them through vertical slices:
 - gateway extensions for agent manifests and capabilities
 - registry live adapters
 - A2A protocol tools, well-known serving, and standards-compatible discovery
-- expanded contract packages for data license and device access workflows
+- expanded contract packages beyond pay-per-call and data-license, including
+  service bounty, subscription, reputation receipt, and device access workflows
 
 ## Verification Guidance
 
@@ -114,6 +119,7 @@ Safe local checks:
 - `npm run typecheck`
 - `npm run smoke:local`
 - `npm run smoke:agent-escrow`
+- `npm run smoke:data-license`
 - `npm run secrets:scan`
 
 Full local proof:

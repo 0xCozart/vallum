@@ -8,7 +8,8 @@ Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 3.1, 3.2,
-4.1, 4.2, 4.3, and 5.1 are implemented or reviewed and locally verified.
+3.3, 4.1, 4.2, 4.3, and 5.1 are implemented or reviewed and locally
+verified.
 Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
 `docs/marketplace-readiness.md` before choosing the next slice. Do not start
 production marketplace implementation unless the user explicitly approves the
@@ -139,6 +140,14 @@ Recent commits to know:
   policy approval, mock payment confirmation, and receipt submission; policy
   denial, failed payment, thrown payment confirmation, thrown tool invocation,
   blank proof fields, and malformed runtime proof fields withhold paid results.
+- Slice 3.3 Data License Workflow is implemented with local
+  `contracts/data_license_v1`, SDK `requestDataLicense`, data-license receipt
+  state, template metadata, and `examples/data-license`.
+- Slice 3.3 tests prove data-license access is granted only after
+  policy-gateway approval and access proof evidence; policy denial, failed
+  access proof, and malformed access proof withhold access; receipt state
+  records grant/revoke/failure events; and Move tests cover provider-only grant
+  and revoke controls plus invalid transitions.
 - Slice 4.1 x402 Mapping is implemented in `packages/manifest`,
   `packages/receipts`, and `packages/standards` as `@iota-gaskit/standards`.
 - Slice 4.1 tests prove x402 v2 payment requirements map to Agentic GasKit
@@ -184,7 +193,7 @@ Recent commits to know:
   Cards, and live A2A discovery proof are not implemented.
 - Live IOTA Names/Identity proof, full verifiable credential validation, live
   standards-bridge proof, and expanded contract workflows beyond local
-  escrow/receipt/pay-per-call metadata are not implemented.
+  escrow/receipt/pay-per-call/data-license metadata are not implemented.
 - Slice 2.3 is locally verified only. Localnet/testnet deployment smoke has not
   run, and the demo/escrow contract does not custody real funds.
 - Package namespace strategy is still open.
@@ -192,8 +201,8 @@ Recent commits to know:
 - Marketplace app/API implementation is not started. Any future
   marketplace-adjacent slice must stay read-only or local/mock until
   access-control tests, dispute evidence walkthrough, live identity/name proof,
-  live payment proof, and provider verification/moderation decisions are
-  explicitly scoped.
+  live payment/provider-access proof, and provider verification/moderation
+  decisions are explicitly scoped.
 
 ## Suggested Skills
 
@@ -1675,9 +1684,10 @@ Next recommended slice:
 
 - Do not start production marketplace implementation from this handoff. Choose
   one explicit next slice from the readiness gaps, such as a read-only
-  marketplace architecture/spec slice, data-license contract workflow,
-  marketplace access-control/dispute-evidence proof, live IOTA Names/Identity
-  proof, or A2A well-known serving proof.
+  marketplace architecture/spec slice, marketplace access-control/
+  dispute-evidence proof, live IOTA Names/Identity proof, A2A well-known
+  serving proof, or another expanded contract workflow such as service bounty
+  or subscription.
 
 ## Completed Slice 5.1
 
@@ -1713,6 +1723,63 @@ Known unproven claims:
   production operation was implemented by Slice 5.1.
 - Slice 5.1 is a readiness decision. It does not approve production
   marketplace implementation.
+
+## Completed Slice 3.3
+
+Implemented local/mock Data License Workflow.
+
+Slice and PRD coverage:
+
+- `docs/agentic-gaskit/execution-slices.md` Slice 3.3 Data License Workflow.
+- `docs/agentic-gaskit/prds/phase-3-contract-block-library.md`.
+- `docs/agentic-gaskit/verification-hardening.md` Phase 3 data-license demo
+  gate.
+- `docs/marketplace-readiness.md` data-license production gate.
+
+Changed files:
+
+- `contracts/data_license_v1/`
+- `examples/data-license/`
+- `packages/receipts/src/index.ts`
+- `packages/receipts/src/receipts.test.ts`
+- `packages/sdk/src/contracts/dataLicense.ts`
+- `packages/sdk/src/contracts/dataLicense.test.ts`
+- `packages/contracts-metadata/src/index.ts`
+- `packages/contracts-metadata/src/registry.test.ts`
+- `scripts/smoke-data-license.ts`
+- `scripts/run-move-tests.ts`
+- `scripts/package-scripts.test.ts`
+- `package.json`
+- continuation docs and readiness docs
+
+Evidence:
+
+- Baseline `npm run docs:check`, `npm run secrets:scan`, `npm test`, and
+  `npm run typecheck` passed before implementation.
+- Red tests failed for missing data-license exports/files and missing smoke
+  wiring before implementation.
+- Focused TypeScript tests passed for contract metadata, receipt lifecycle,
+  SDK data-license flow, example demo, and package script wiring.
+- `npm run contracts:test` passed with 17 Move tests across escrow, receipt,
+  pay-per-call, and data-license contracts. Data-license tests cover request,
+  grant, provider-only grant/revoke, revoke, and invalid transition behavior.
+- `npm run smoke:data-license` passed with approved, denied, and failed-access
+  paths.
+- Final `npm run verify:local` passed with 256 TypeScript tests, 17 Move tests,
+  local gateway smoke, demo dApp smoke, browser wrapper smoke, agent escrow
+  smoke, paid MCP tool smoke, data-license smoke, testnet readiness example,
+  package dry-runs, docs check, and secret scan.
+- `git diff --check` passed.
+
+Known unproven claims:
+
+- No live IOTA RPC, IOTA Gas Station, localnet/testnet/mainnet deployment, real
+  data-provider credential, private access-token issuance, production data
+  delivery, live payment settlement, legal license enforcement, provider
+  verification, marketplace UI/API, custody, staking, or production operation
+  was implemented by Slice 3.3.
+- The data-license workflow proves local policy-gated receipt/access-proof
+  sequencing, not production data access or legal licensing.
 
 ## Guardrails
 

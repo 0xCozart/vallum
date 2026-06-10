@@ -591,6 +591,52 @@ Escalation triggers:
 
 - Real external payment rail required before mock proof.
 
+## Slice 3.3: Data License Workflow
+
+User-visible outcome:
+A data buyer can request a local/mock data license through policy-gated
+sponsorship and receive receipt evidence for granted, denied, failed, and
+revoked access states.
+
+Likely files:
+
+- `contracts/data_license_v1/`
+- `packages/receipts/src/index.ts`
+- `packages/sdk/src/contracts/dataLicense.ts`
+- `packages/contracts-metadata/src/index.ts`
+- `examples/data-license/`
+
+Acceptance criteria:
+
+- Data-license Move tests pass.
+- Contract metadata gates policy allow-list by `data_license_v1` template and
+  version.
+- SDK helper routes through `requestSponsoredAction` and does not grant access
+  on policy denial or missing access proof.
+- Receipt state records dataset id, terms hash, access proof hash, expiry,
+  revocation, failure, sponsorship, and transaction digest without private
+  access material.
+- Local example proves approved, policy-denied, and access-proof-failed paths.
+
+Verification:
+
+- Move tests.
+- Receipt and SDK unit/integration tests.
+- Local data-license smoke.
+
+Dependencies:
+Slice 3.1.
+
+Risk:
+High. Data access can become a private-data, legal, or settlement surface if
+the mock proof is overextended.
+
+Escalation triggers:
+
+- Real data-provider credentials, private access-token issuance, legal license
+  enforcement, live settlement, provider verification, or production data
+  delivery.
+
 ## Slice 4.1: x402 Mapping
 
 User-visible outcome:

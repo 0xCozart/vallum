@@ -1,0 +1,224 @@
+import assert from "node:assert/strict";
+import { once } from "node:events";
+import type { AddressInfo } from "node:net";
+import { test } from "node:test";
+
+import { AGENT_TRANSACTION_MANIFEST_VERSION, type AgentTransactionManifest } from "@iota-gaskit/manifest";
+import { createAgentMockGatewayServer, type AgentActionPolicy } from "@iota-gaskit/policy-gateway";
+import { requestDataLicense } from "./dataLicense.js";
+
+const now = new Date("2026-06-10T12:00:00.000Z");
+const packageId = "0x6666666666666666666666666666666666666666666666666666666666666666";
+
+const policy: AgentActionPolicy = {
+  knownAgents: ["agent:data-buyer"],
+  maxGasBudget: 50_000_000,
+  allowedContracts: [{
+    templateId: "data_license_v1",
+    templateVersion: "1.0.0",
+  }],
+  allowedCounterparties: ["agent:data-provider"],
+  requireSimulation: true,
+};
+
+test("requestDataLicense grants access only after gateway approval and access proof", async () => {
+  const order: string[] = [];
+  const gateway = createAgentMockGatewayServer({
+    policy,
+    now: () => now,
+    mockGasStation: {
+      reserve: async () => {
+        order.push("gateway");
+        return { sponsorshipId: "mock_sponsorship_data_license_1" };
+      },
+    },
+  });
+
+  try {
+    const result = await requestDataLicense({
+      gatewayBaseUrl: await listen(gateway),
+      apiKey: "test-key",
+      manifest: dataLicenseManifest(),
+      receiptId: "receipt_data_license_1",
+      providerId: "agent:data-provider",
+      licenseeId: "agent:data-buyer",
+      datasetId: "dataset:pricing-feed-v1",
+      termsHash: "sha256:data-license-terms",
+      amount: { amount: "7.50", asset: "USD" },
+      requestAccess: async () => {
+        order.push("access");
+        return {
+          ok: true,
+          transactionDigest: "mock_digest_data_license_1",
+          accessProofHash: "sha256:data-license-access-proof",
+          expiresAt: "2026-07-10T12:00:00.000Z",
+        };
+      },
+      now: () => now,
+    });
+
+    assert.equal(result.granted, true);
+    assert.deepEqual(order, ["gateway", "access"]);
+    assert.equal(result.receipt.status, "completed");
+    assert.equal(result.receipt.transactionDigest, "mock_digest_data_license_1");
+    assert.equal(result.receipt.accessProofHash, "sha256:data-license-access-proof");
+    assert.equal(result.receipt.expiresAt, "2026-07-10T12:00:00.000Z");
+  } finally {
+    await close(gateway);
+  }
+});
+
+test("requestDataLicense does not request access when gateway denies policy", async () => {
+  const gateway = createAgentMockGatewayServer({
+    policy,
+    now: () => now,
+  });
+
+  try {
+    const result = await requestDataLicense({
+      gatewayBaseUrl: await listen(gateway),
+      apiKey: "test-key",
+      manifest: dataLicenseManifest({ maxGasBudget: 50_000_001 }),
+      receiptId: "receipt_data_license_denied_1",
+      providerId: "agent:data-provider",
+      licenseeId: "agent:data-buyer",
+      datasetId: "dataset:pricing-feed-v1",
+      termsHash: "sha256:data-license-terms",
+      amount: { amount: "7.50", asset: "USD" },
+      requestAccess: async () => {
+        throw new Error("access proof must not run after policy denial");
+      },
+      now: () => now,
+    });
+
+    assert.equal(result.granted, false);
+    assert.equal(result.receipt.status, "denied");
+  } finally {
+    await close(gateway);
+  }
+});
+
+test("requestDataLicense withholds access when proof evidence fails or is malformed", async () => {
+  const gateway = createAgentMockGatewayServer({
+    policy,
+    now: () => now,
+    mockGasStation: {
+      reserve: async () => ({ sponsorshipId: "mock_sponsorship_data_license_2" }),
+    },
+  });
+
+  try {
+    const gatewayBaseUrl = await listen(gateway);
+    const failed = await requestDataLicense({
+      gatewayBaseUrl,
+      apiKey: "test-key",
+      manifest: dataLicenseManifest(),
+      receiptId: "receipt_data_license_failed_access_1",
+      providerId: "agent:data-provider",
+      licenseeId: "agent:data-buyer",
+      datasetId: "dataset:pricing-feed-v1",
+      termsHash: "sha256:data-license-terms",
+      amount: { amount: "7.50", asset: "USD" },
+      requestAccess: async () => ({ ok: false, reason: "provider-refused-access" }),
+      now: () => now,
+    });
+    assert.equal(failed.granted, false);
+    assert.equal(failed.receipt.status, "failed");
+    assert.equal(failed.receipt.failureReason, "provider-refused-access");
+
+    const malformed = await requestDataLicense({
+      gatewayBaseUrl,
+      apiKey: "test-key",
+      manifest: dataLicenseManifest(),
+      receiptId: "receipt_data_license_malformed_access_1",
+      providerId: "agent:data-provider",
+      licenseeId: "agent:data-buyer",
+      datasetId: "dataset:pricing-feed-v1",
+      termsHash: "sha256:data-license-terms",
+      amount: { amount: "7.50", asset: "USD" },
+      requestAccess: async () => ({
+        ok: true,
+        transactionDigest: "mock_digest_data_license_2",
+        accessProofHash: "",
+      }),
+      now: () => now,
+    });
+    assert.equal(malformed.granted, false);
+    assert.equal(malformed.receipt.status, "failed");
+    assert.equal(malformed.receipt.failureReason, "ACCESS_PROOF_INVALID");
+  } finally {
+    await close(gateway);
+  }
+});
+
+function dataLicenseManifest(options: { readonly maxGasBudget?: number } = {}): AgentTransactionManifest {
+  return {
+    version: AGENT_TRANSACTION_MANIFEST_VERSION,
+    agent: {
+      id: "agent:data-buyer",
+      address: "0x1111111111111111111111111111111111111111111111111111111111111111",
+    },
+    owner: {
+      id: "owner:data-buyer",
+    },
+    wallet: {
+      walletId: "wallet_data_license_1",
+      signerRef: "signer_ref_data_license_1",
+    },
+    intent: "Purchase access to one data license.",
+    spend: {
+      maxGasBudget: options.maxGasBudget ?? 50_000_000,
+      maxPayment: {
+        amount: "7.50",
+        asset: "USD",
+      },
+    },
+    action: {
+      packageId,
+      module: "data_license",
+      functionName: "request_license",
+      templateId: "data_license_v1",
+      templateVersion: "1.0.0",
+      displayName: "Request data license",
+    },
+    counterparty: {
+      id: "agent:data-provider",
+      address: "0x3333333333333333333333333333333333333333333333333333333333333333",
+    },
+    scope: ["contract:data_license", "action:request_license", "dataset:pricing-feed-v1"],
+    expiresAt: "2026-06-10T13:00:00.000Z",
+    idempotencyKey: "idem_data_license_20260610_0001",
+    simulation: {
+      required: true,
+      status: "passed",
+      hash: "sha256:data-license-simulation",
+    },
+    receipt: {
+      required: true,
+      templateId: "receipt:data_license:v1",
+    },
+    humanMandate: {
+      required: false,
+    },
+    refundPolicy: {
+      type: "refund_to_owner",
+    },
+    metadata: {
+      purpose: "data-license-test",
+      datasetId: "dataset:pricing-feed-v1",
+      termsHash: "sha256:data-license-terms",
+    },
+  };
+}
+
+async function listen(server: ReturnType<typeof createAgentMockGatewayServer>): Promise<string> {
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  const address = server.address() as AddressInfo;
+  return `http://127.0.0.1:${address.port}`;
+}
+
+async function close(server: ReturnType<typeof createAgentMockGatewayServer>): Promise<void> {
+  server.close();
+  await once(server, "close");
+}

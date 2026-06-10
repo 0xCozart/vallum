@@ -19,6 +19,7 @@
     "smoke:demo-browser": "npm run build && tsx scripts/smoke-demo-dapp-browser.ts",
     "smoke:agent-escrow": "npm run build && tsx scripts/smoke-agent-escrow.ts",
     "smoke:paid-mcp-tool": "npm run build && tsx scripts/smoke-paid-mcp-tool.ts",
+    "smoke:data-license": "npm run build && tsx scripts/smoke-data-license.ts",
     "readiness:testnet": "npm run build && tsx scripts/check-testnet-readiness.ts",
     "diagnose:gas-station": "npm run build && tsx scripts/diagnose-gas-station-upstream.ts",
     "execute:testnet-demo": "npm run build && tsx scripts/execute-testnet-sponsored-demo.ts",
@@ -28,7 +29,7 @@
     "docs:build": "npm run build -w @iota-gaskit/docs-site",
     "docs:check": "npm run check -w @iota-gaskit/docs-site",
     "docs:serve": "npm run serve -w @iota-gaskit/docs-site --",
-    "verify:local": "npm test && npm run contracts:test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp && npm run smoke:demo-browser && npm run smoke:agent-escrow && npm run smoke:paid-mcp-tool && npm run readiness:testnet:example && npm run pack:check && npm run docs:check && npm run secrets:scan",
+    "verify:local": "npm test && npm run contracts:test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp && npm run smoke:demo-browser && npm run smoke:agent-escrow && npm run smoke:paid-mcp-tool && npm run smoke:data-license && npm run readiness:testnet:example && npm run pack:check && npm run docs:check && npm run secrets:scan",
     "grant:check": "npm run verify:local"
   },
   "devDependencies": {

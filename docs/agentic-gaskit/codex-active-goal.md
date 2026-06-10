@@ -63,19 +63,20 @@ SDK/MCP routing, receipts, escrow/receipt Move state contracts, and the local
 agent-to-agent escrow demo. The current slices add local Agent Profile schema
 validation, local fixture resolution, SDK resolver access, capability policy
 checks, mock-tested IOTA Names/Identity adapter interfaces, a local
-contract-template metadata registry, and a local pay-per-call tool workflow.
-The current slices also add a local x402 v2 standards bridge for mapping
-payment requirements to manifests and receipts without operating a production
-facilitator, plus a local AP2 closed checkout/payment mandate bridge for
-mapping mandates to manifests and dispute-linked receipts without operating
-live AP2 or production payment rails. The current slices also add local A2A
-Agent Card mapping from Agent Profiles without operating an A2A server or
-public discovery endpoint. Slice 5.1 adds a marketplace readiness gate that
-permits marketplace requirements/design work only inside local/mock proof and
-keeps production marketplace implementation blocked. The next gaps are
-data-license and expanded contract workflows, access-control/dispute evidence
-for any marketplace-facing surface, live IOTA Names/Identity proof, and live
-deployment proof when explicitly in scope.
+contract-template metadata registry, a local pay-per-call tool workflow, and a
+local/mock data-license workflow. The current slices also add a local x402 v2
+standards bridge for mapping payment requirements to manifests and receipts
+without operating a production facilitator, plus a local AP2 closed checkout/
+payment mandate bridge for mapping mandates to manifests and dispute-linked
+receipts without operating live AP2 or production payment rails. The current
+slices also add local A2A Agent Card mapping from Agent Profiles without
+operating an A2A server or public discovery endpoint. Slice 5.1 adds a
+marketplace readiness gate that permits marketplace requirements/design work
+only inside local/mock proof and keeps production marketplace implementation
+blocked. The next gaps are expanded contract workflows beyond pay-per-call and
+data-license, access-control/dispute evidence for any marketplace-facing
+surface, live IOTA Names/Identity proof, and live deployment proof when
+explicitly in scope.
 
 Desired outcome:
 Codex repeatedly implements one vertical slice, proves it with focused and

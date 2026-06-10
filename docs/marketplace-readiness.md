@@ -50,7 +50,7 @@ git diff --check
 | SDK and MCP routing | Local tests prove sponsored actions and MCP tools route through gateway paths and return structured approvals or denials. | Marketplace actions should call SDK workflows, not direct IOTA clients or payment rails. |
 | Receipts and escrow | Local receipt state, escrow lifecycle, denial cases, and Move contract tests pass. | Marketplace can display receipt/dispute concepts in local demos, but production dispute resolution remains gated. |
 | Registry and identity adapters | Agent Profile schema, fixture resolver, capability checks, and mock IOTA Names/Identity adapters are tested. | Marketplace can consume profile records and label status, but live name/DID/VC verification remains unproven. |
-| Contract metadata and pay-per-call | Local template metadata allow-listing and paid tool flow pass with denial and failure cases. | Marketplace can model supported templates and paid calls, but data-license and broader contract workflows are not complete. |
+| Contract metadata, pay-per-call, and data-license | Local template metadata allow-listing, paid tool flow, and data-license flow pass with denial and failure cases. | Marketplace can model supported templates and local paid/data-license calls, but broader contract workflows and production provider access are not complete. |
 | x402, AP2, and A2A bridges | Local mapping tests pass for supported versions; unsupported versions fail closed; sensitive metadata redaction is tested. | Marketplace can show standards compatibility as local bridge evidence only, not live facilitator, AP2 network, or public A2A discovery proof. |
 
 ## Marketplace Non-Goals
@@ -101,7 +101,7 @@ These questions block production marketplace work:
 | Live payment settlement | Unproven live. | Prove x402/AP2/payment processor paths with safe credentials and partial-failure receipt handling. |
 | Access control for logs and receipts | Not yet marketplace-tested. | Add marketplace-specific access-control tests before exposing buyer/provider/operator records. |
 | Dispute evidence walkthrough | Local receipt concepts exist; marketplace walkthrough not built. | Prove evidence collection, redaction, tamper-evident linking, and reviewer workflow. |
-| Data-license workflows | Not implemented. | Define contract metadata, SDK helper, receipt state, and policy checks before marketplace use. |
+| Data-license workflows | Implemented locally/mock only. | Prove production provider access, access control, legal terms, live payment, and dispute handling before marketplace use. |
 | Reputation | Not implemented. | Design anti-gaming, low-value spam resistance, and source-of-truth rules. |
 | Provider endpoint reliability | Not implemented. | Define health checks, stale listing behavior, pricing drift handling, and unavailable-provider UX. |
 | Production operations | Not implemented. | Define incident response, audit exports, retention, privacy, backup, and operator permissions. |
@@ -113,10 +113,11 @@ The next safe marketplace-adjacent slice is a design-only or read-only local
 architecture slice that proves how marketplace pages would consume existing
 registry, policy, contract metadata, receipt, and standards bridge outputs.
 
-Before any marketplace action can initiate a paid or sponsored workflow, the
-repo needs access-control tests for logs/receipts and a local dispute evidence
-walkthrough. Before any live marketplace claim, the repo needs live proof for
-the relevant IOTA Names/Identity, payment, and standards-discovery paths.
+Before any marketplace action can initiate a paid or sponsored workflow beyond
+local/mock demos, the repo needs access-control tests for logs/receipts and a
+local dispute evidence walkthrough. Before any live marketplace claim, the repo
+needs live proof for the relevant IOTA Names/Identity, payment,
+provider-access, and standards-discovery paths.
 
 ## Manual Review Checklist
 

@@ -1,0 +1,9 @@
+[package]
+name = "data_license_v1"
+version = "0.0.1"
+edition = "2024.beta"
+
+[dependencies]
+
+[addresses]
+data_license_v1 = "0x0"

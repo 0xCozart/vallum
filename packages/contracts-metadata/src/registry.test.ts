@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   createContractTemplateRegistry,
+  dataLicenseContractTemplateV1,
   evaluateContractTemplateAction,
   escrowContractTemplateV1,
   payPerCallContractTemplateV1,
@@ -10,6 +11,7 @@ import {
 const registry = createContractTemplateRegistry([
   escrowContractTemplateV1,
   payPerCallContractTemplateV1,
+  dataLicenseContractTemplateV1,
 ]);
 
 test("approved template and version metadata is accepted", () => {
@@ -84,5 +86,21 @@ test("pay-per-call template metadata is accepted", () => {
   assert.equal(decision.allowed, true);
   if (decision.allowed) {
     assert.equal(decision.template.templateId, "pay_per_call_v1");
+  }
+});
+
+test("data-license template metadata is accepted", () => {
+  const decision = evaluateContractTemplateAction(registry, {
+    templateId: "data_license_v1",
+    templateVersion: "1.0.0",
+    packageId: "0x6666666666666666666666666666666666666666666666666666666666666666",
+    module: "data_license",
+    functionName: "request_license",
+  });
+
+  assert.equal(decision.allowed, true);
+  if (decision.allowed) {
+    assert.equal(decision.template.templateId, "data_license_v1");
+    assert.deepEqual(decision.template.allowedActions, ["request_license", "grant_access", "revoke_access"]);
   }
 });

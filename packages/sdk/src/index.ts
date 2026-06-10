@@ -1,5 +1,6 @@
 export * from "./IotaAgent.js";
 export * from "./client.js";
+export * from "./contracts/dataLicense.js";
 export * from "./contracts/openEscrow.js";
 export * from "./contracts/payPerCall.js";
 export * from "./errors.js";

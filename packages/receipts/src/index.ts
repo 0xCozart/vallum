@@ -10,6 +10,7 @@ export type ReceiptStatus =
   | "released"
   | "refunded"
   | "disputed"
+  | "revoked"
   | "failed";
 
 export type EscrowStatus = "open" | "released" | "refunded" | "expired";
@@ -59,6 +60,29 @@ export interface PayPerCallReceipt {
   readonly events: readonly ReceiptEvent[];
 }
 
+export interface DataLicenseReceipt {
+  readonly receiptId: string;
+  readonly manifestId: string;
+  readonly idempotencyKey: string;
+  readonly agentId: string;
+  readonly ownerId: string;
+  readonly providerId: string;
+  readonly licenseeId: string;
+  readonly datasetId: string;
+  readonly termsHash: string;
+  readonly status: ReceiptStatus;
+  readonly amount: ReceiptAmount;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly sponsorshipId?: string;
+  readonly transactionDigest?: string;
+  readonly accessProofHash?: string;
+  readonly expiresAt?: string;
+  readonly failureReason?: string;
+  readonly revocationReason?: string;
+  readonly events: readonly ReceiptEvent[];
+}
+
 export interface EscrowState {
   readonly status: EscrowStatus;
   readonly providerId: string;
@@ -74,11 +98,14 @@ export interface ReceiptEvent {
   readonly type:
     | "escrow_created"
     | "pay_per_call_created"
+    | "data_license_created"
     | "approved"
     | "denied"
     | "sponsored"
     | "submitted"
     | "completed"
+    | "access_granted"
+    | "access_revoked"
     | "released"
     | "refunded"
     | "expired"
@@ -111,6 +138,20 @@ export interface CreatePayPerCallReceiptInput {
   readonly createdAt: Date;
 }
 
+export interface CreateDataLicenseReceiptInput {
+  readonly receiptId: string;
+  readonly manifestId: string;
+  readonly idempotencyKey: string;
+  readonly agentId: string;
+  readonly ownerId: string;
+  readonly providerId: string;
+  readonly licenseeId: string;
+  readonly datasetId: string;
+  readonly termsHash: string;
+  readonly amount: ReceiptAmount;
+  readonly createdAt: Date;
+}
+
 export interface TransitionOptions {
   readonly at: Date;
 }
@@ -122,6 +163,16 @@ export class ReceiptTransitionError extends Error {
   ) {
     super(message);
     this.name = "ReceiptTransitionError";
+  }
+}
+
+export class ReceiptInputError extends Error {
+  constructor(
+    readonly code: "FIELD_REQUIRED",
+    message: string,
+  ) {
+    super(message);
+    this.name = "ReceiptInputError";
   }
 }
 
@@ -164,6 +215,30 @@ export function createPayPerCallReceipt(input: CreatePayPerCallReceiptInput): Pa
   };
 }
 
+export function createDataLicenseReceipt(input: CreateDataLicenseReceiptInput): DataLicenseReceipt {
+  requireNonEmpty(input.providerId, "providerId");
+  requireNonEmpty(input.licenseeId, "licenseeId");
+  requireNonEmpty(input.datasetId, "datasetId");
+  requireNonEmpty(input.termsHash, "termsHash");
+  const at = input.createdAt.toISOString();
+  return {
+    receiptId: input.receiptId,
+    manifestId: input.manifestId,
+    idempotencyKey: input.idempotencyKey,
+    agentId: input.agentId,
+    ownerId: input.ownerId,
+    providerId: input.providerId,
+    licenseeId: input.licenseeId,
+    datasetId: input.datasetId,
+    termsHash: input.termsHash,
+    status: "attempted",
+    amount: input.amount,
+    createdAt: at,
+    updatedAt: at,
+    events: [{ type: "data_license_created", at }],
+  };
+}
+
 export function approveReceipt(receipt: EscrowReceipt, options: TransitionOptions): EscrowReceipt {
   requireReceiptStatus(receipt, ["attempted"], "approve");
   return withReceiptEvent(receipt, "approved", options.at, { status: "approved" });
@@ -175,6 +250,14 @@ export function approvePayPerCallReceipt(
 ): PayPerCallReceipt {
   requireReceiptStatus(receipt, ["attempted"], "approve");
   return withPayPerCallReceiptEvent(receipt, "approved", options.at, { status: "approved" });
+}
+
+export function approveDataLicenseReceipt(
+  receipt: DataLicenseReceipt,
+  options: TransitionOptions,
+): DataLicenseReceipt {
+  requireReceiptStatus(receipt, ["attempted"], "approve");
+  return withDataLicenseReceiptEvent(receipt, "approved", options.at, { status: "approved" });
 }
 
 export function denyReceipt(receipt: EscrowReceipt, options: TransitionOptions & { readonly reason: string }): EscrowReceipt {
@@ -190,6 +273,17 @@ export function denyPayPerCallReceipt(
 ): PayPerCallReceipt {
   requireReceiptStatus(receipt, ["attempted"], "deny");
   return withPayPerCallReceiptEvent(receipt, "denied", options.at, {
+    status: "denied",
+    failureReason: options.reason,
+  }, options.reason);
+}
+
+export function denyDataLicenseReceipt(
+  receipt: DataLicenseReceipt,
+  options: TransitionOptions & { readonly reason: string },
+): DataLicenseReceipt {
+  requireReceiptStatus(receipt, ["attempted"], "deny");
+  return withDataLicenseReceiptEvent(receipt, "denied", options.at, {
     status: "denied",
     failureReason: options.reason,
   }, options.reason);
@@ -217,6 +311,17 @@ export function sponsorPayPerCallReceipt(
   });
 }
 
+export function sponsorDataLicenseReceipt(
+  receipt: DataLicenseReceipt,
+  options: TransitionOptions & { readonly sponsorshipId: string },
+): DataLicenseReceipt {
+  requireReceiptStatus(receipt, ["approved"], "sponsor");
+  return withDataLicenseReceiptEvent(receipt, "sponsored", options.at, {
+    status: "sponsored",
+    sponsorshipId: options.sponsorshipId,
+  });
+}
+
 export function submitReceipt(
   receipt: EscrowReceipt,
   options: TransitionOptions & { readonly transactionDigest: string },
@@ -234,6 +339,17 @@ export function submitPayPerCallReceipt(
 ): PayPerCallReceipt {
   requireReceiptStatus(receipt, ["sponsored"], "submit");
   return withPayPerCallReceiptEvent(receipt, "submitted", options.at, {
+    status: "submitted",
+    transactionDigest: options.transactionDigest,
+  });
+}
+
+export function submitDataLicenseReceipt(
+  receipt: DataLicenseReceipt,
+  options: TransitionOptions & { readonly transactionDigest: string },
+): DataLicenseReceipt {
+  requireReceiptStatus(receipt, ["sponsored"], "submit");
+  return withDataLicenseReceiptEvent(receipt, "submitted", options.at, {
     status: "submitted",
     transactionDigest: options.transactionDigest,
   });
@@ -270,6 +386,41 @@ export function failPayPerCallReceipt(
   return withPayPerCallReceiptEvent(receipt, "failed", options.at, {
     status: "failed",
     failureReason: options.reason,
+  }, options.reason);
+}
+
+export function grantDataLicenseAccess(
+  receipt: DataLicenseReceipt,
+  options: TransitionOptions & { readonly accessProofHash: string; readonly expiresAt?: string },
+): DataLicenseReceipt {
+  requireReceiptStatus(receipt, ["submitted"], "grant access");
+  requireNonEmpty(options.accessProofHash, "accessProofHash");
+  return withDataLicenseReceiptEvent(receipt, "access_granted", options.at, {
+    status: "completed",
+    accessProofHash: options.accessProofHash,
+    ...(options.expiresAt ? { expiresAt: options.expiresAt } : {}),
+  });
+}
+
+export function failDataLicenseReceipt(
+  receipt: DataLicenseReceipt,
+  options: TransitionOptions & { readonly reason: string },
+): DataLicenseReceipt {
+  requireReceiptStatus(receipt, ["attempted", "approved", "sponsored", "submitted"], "fail");
+  return withDataLicenseReceiptEvent(receipt, "failed", options.at, {
+    status: "failed",
+    failureReason: options.reason,
+  }, options.reason);
+}
+
+export function revokeDataLicenseAccess(
+  receipt: DataLicenseReceipt,
+  options: TransitionOptions & { readonly reason: string },
+): DataLicenseReceipt {
+  requireReceiptStatus(receipt, ["completed"], "revoke access");
+  return withDataLicenseReceiptEvent(receipt, "access_revoked", options.at, {
+    status: "revoked",
+    revocationReason: options.reason,
   }, options.reason);
 }
 
@@ -347,6 +498,12 @@ function requireReceiptStatus(receipt: { readonly status: ReceiptStatus }, allow
   }
 }
 
+function requireNonEmpty(value: string, field: string): void {
+  if (value.trim() === "") {
+    throw new ReceiptInputError("FIELD_REQUIRED", `${field} is required.`);
+  }
+}
+
 function withReceiptEvent(
   receipt: EscrowReceipt,
   eventType: ReceiptEvent["type"],
@@ -377,6 +534,29 @@ function withPayPerCallReceiptEvent(
   patch: Partial<PayPerCallReceipt>,
   reason?: string,
 ): PayPerCallReceipt {
+  const timestamp = at.toISOString();
+  return {
+    ...receipt,
+    ...patch,
+    updatedAt: timestamp,
+    events: [
+      ...receipt.events,
+      {
+        type: eventType,
+        at: timestamp,
+        ...(reason ? { reason } : {}),
+      },
+    ],
+  };
+}
+
+function withDataLicenseReceiptEvent(
+  receipt: DataLicenseReceipt,
+  eventType: ReceiptEvent["type"],
+  at: Date,
+  patch: Partial<DataLicenseReceipt>,
+  reason?: string,
+): DataLicenseReceipt {
   const timestamp = at.toISOString();
   return {
     ...receipt,
