@@ -1,0 +1,18 @@
+export {
+  A2A_AGENT_CARD_PROTOCOL_VERSION,
+  A2A_AGENT_CARD_WELL_KNOWN_PATH,
+  AGENTIC_GASKIT_A2A_PROFILE_EXTENSION_URI,
+  A2AAgentCardError,
+  createA2AAgentCardFromProfile,
+  type A2AAgentCapabilities,
+  type A2AAgentCard,
+  type A2AAgentCardErrorCode,
+  type A2AAgentExtension,
+  type A2AAgentInterface,
+  type A2AAgentProvider,
+  type A2AAgentSkill,
+  type A2AProtocolBinding,
+  type A2ASecurityRequirement,
+  type A2ASecurityScheme,
+  type CreateA2AAgentCardOptions,
+} from "@iota-gaskit/registry";
