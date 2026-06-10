@@ -1,7 +1,7 @@
 export default {
   title: "Agentic GasKit Docs",
   description: "Self-hostable documentation for IOTA gas sponsorship plus agent-safe wallets, manifests, policy controls, receipts, and integrations.",
-  repositoryUrl: "https://github.com/0xCozart/iota-gaskit",
+  repositoryUrl: "https://github.com/0xCozart/agentic-gaskit",
   sections: [
     {
       label: "Start",
@@ -35,6 +35,18 @@ export default {
     {
       label: "Agentic Direction",
       pages: [
+        {
+          title: "Execution Entry",
+          source: "docs/agentic-gaskit/execution-entry.md",
+          slug: "agentic-execution-entry",
+          description: "Start here to begin actual Agentic GasKit product implementation."
+        },
+        {
+          title: "Next Product Build Handoff",
+          source: "docs/agentic-gaskit/handoff-next-product-build.md",
+          slug: "agentic-next-product-build-handoff",
+          description: "Compact handoff for the next agent implementing the first product slice."
+        },
         {
           title: "Migration Plan",
           source: "docs/agentic-gaskit/migration-plan.md",

@@ -162,6 +162,8 @@ site config.
 
 ## Configuration Checklist
 
+- Execution entry doc exists and points first implementation work at
+  `packages/accounts`.
 - Docs site title and description use Agentic GasKit direction.
 - Docs site includes migration, roadmap, wallet safety, execution slices, and
   hardening pages.

@@ -26,10 +26,15 @@ the implementation plan in `/home/sacred/code/agents`.
 
 Canonical GitHub repo: `https://github.com/0xCozart/agentic-gaskit`
 
-Start with [`docs/agentic-gaskit/migration-plan.md`](docs/agentic-gaskit/migration-plan.md)
+Start with [`docs/agentic-gaskit/execution-entry.md`](docs/agentic-gaskit/execution-entry.md)
+to begin actual product implementation. Read
+[`docs/agentic-gaskit/migration-plan.md`](docs/agentic-gaskit/migration-plan.md)
 before changing package names, wallet behavior, MCP tools, gateway policy, or
 remote publishing. Existing GasKit sponsorship behavior remains the foundation;
 agent-specific behavior should be added in vertical slices.
+
+Current continuation handoff:
+[`docs/agentic-gaskit/handoff-next-product-build.md`](docs/agentic-gaskit/handoff-next-product-build.md)
 
 ## One-line pitch
 
