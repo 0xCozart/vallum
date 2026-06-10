@@ -131,7 +131,7 @@ npm run verify:local
 
 Latest local verification and prior live proof:
 
-- `npm test`: 328 deterministic TypeScript tests passed locally after Slice 5.2.
+- `npm test`: 333 deterministic TypeScript tests passed locally after Slice 6.1.
 - `npm run contracts:test`: 33 Move escrow/receipt/pay-per-call/data-license/service-bounty/reputation-receipt/subscription contract tests passed locally.
 - `npm run typecheck`: passed locally.
 - `npm run smoke:local`: deterministic local gateway smoke passed locally, including policy simulation, sanitized event, local usage read-model, file-backed usage event-store replay, and authenticated local operator usage API checks.
@@ -246,7 +246,9 @@ examples/
 
 ## Packages
 
-The monorepo root is marked `private` to prevent accidental publication of the workspace root. The workspace packages are not claimed as published yet. Package release remains roadmap work; today the repo provides package READMEs, public prerelease publish metadata (`access=public`, `tag=next`), map-free packed artifacts, and local `npm pack --dry-run` verification for publishable packages.
+The monorepo root is marked `private` to prevent accidental publication of the workspace root. The workspace packages are not claimed as published yet. The current package namespace decision keeps the conservative `@iota-gaskit/*` package names for the prerelease line; any `@agentic-gaskit/*` rename is deferred to a separate compatibility slice. See [`docs/agentic-gaskit/package-release-strategy.md`](docs/agentic-gaskit/package-release-strategy.md).
+
+Package release remains roadmap work; today the repo provides package READMEs, public prerelease publish metadata (`access=public`, `tag=next`), map-free packed artifacts, and local `npm pack --dry-run` verification for publishable packages.
 
 Package Publication remains a roadmap gate. Do not treat the Agentic GasKit fork
 or any future namespace rename as package-publication-ready until dry-run pack

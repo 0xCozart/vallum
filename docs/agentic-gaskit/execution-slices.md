@@ -1321,3 +1321,56 @@ Escalation triggers:
 - Any production provider listing, public scoring, provider verification, live
   payment settlement, dispute moderation, custody, staking, bonding, or
   marketplace action execution.
+
+## Slice 6.1: Package Namespace And Release Metadata Strategy
+
+User-visible outcome:
+Agentic GasKit has a documented package namespace decision and mechanical
+release metadata checks so future package work is installable without mixing a
+namespace migration into security-sensitive wallet, gateway, payment, identity,
+A2A, or marketplace slices.
+
+Likely files:
+
+- `docs/agentic-gaskit/package-release-strategy.md`
+- `docs/agentic-gaskit/migration-plan.md`
+- `README.md`
+- `apps/docs-site/docs.config.mjs`
+- `scripts/package-publish.test.ts`
+- `scripts/package-scripts.test.ts`
+
+Acceptance criteria:
+
+- The conservative current `@iota-gaskit/*` namespace decision is documented.
+- Any future `@agentic-gaskit/*` rename is explicitly deferred to a dedicated
+  compatibility slice.
+- The monorepo root remains private.
+- Publishable workspace package metadata is consistent for namespace, version,
+  ESM entrypoints, exports, files, license, side-effect flag, Node engine,
+  public prerelease publish config, and internal dependency pins.
+- Private app workspaces are not treated as publishable package surfaces.
+- Root `build` and `pack:check` cover every public package workspace.
+- No real package publish is run or claimed.
+
+Verification:
+
+- Package publish metadata tests.
+- Package script wiring tests.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:local`.
+
+Dependencies:
+Slice 5.2.
+
+Risk:
+Medium. Package naming churn can break consumers, docs, examples, imports, and
+lockfiles if it is mixed into product feature work.
+
+Escalation triggers:
+
+- Any request to rename packages to `@agentic-gaskit/*`.
+- Any request to run real `npm publish`.
+- Any package release requiring registry credentials, provenance, tags,
+  changelogs, or downstream compatibility guarantees.

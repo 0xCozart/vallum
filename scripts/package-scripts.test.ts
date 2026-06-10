@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
+import { readdir, readFile } from "node:fs/promises";
+import { dirname, join, resolve } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
@@ -16,6 +16,7 @@ const ciWorkflow = await readFile(resolve(repoRoot, ".github/workflows/ci.yml"),
 const apexProfile = JSON.parse(await readFile(resolve(repoRoot, "apex.workflow.json"), "utf8")) as {
   authority?: { executionTruth?: string[] };
 };
+const publicPackageNames = await loadPublicPackageNames();
 
 test("local smoke script builds workspace packages before running gateway smoke", () => {
   const smokeLocal = packageJson.scripts?.["smoke:local"];
@@ -72,6 +73,16 @@ test("registry, contract metadata, and standards packages are built and included
 test("marketplace package is built and included in package dry-runs", () => {
   assert.match(packageJson.scripts?.["build"] ?? "", /npm run build -w @iota-gaskit\/marketplace/);
   assert.match(packageJson.scripts?.["pack:check"] ?? "", /-w @iota-gaskit\/marketplace/);
+});
+
+test("root build and package dry-run cover every public package workspace", () => {
+  const build = packageJson.scripts?.["build"] ?? "";
+  const packCheck = packageJson.scripts?.["pack:check"] ?? "";
+
+  for (const packageName of publicPackageNames) {
+    assert.match(build, new RegExp(`npm run build -w ${escapeRegExp(packageName)}`), `${packageName} must be built by root build`);
+    assert.match(packCheck, new RegExp(`-w ${escapeRegExp(packageName)}(\\s|$)`), `${packageName} must be included in pack:check`);
+  }
 });
 
 test("agent escrow smoke is wired into local verification", () => {
@@ -198,3 +209,23 @@ test("root typecheck includes package, app, script, and example source", () => {
   assert.ok(tsconfig.include?.includes("scripts/**/*.ts"));
   assert.ok(tsconfig.include?.includes("examples/**/*.ts"));
 });
+
+async function loadPublicPackageNames(): Promise<string[]> {
+  const packagesDir = resolve(repoRoot, "packages");
+  const entries = await readdir(packagesDir, { withFileTypes: true });
+  const names: string[] = [];
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    const packageJsonPath = join(packagesDir, entry.name, "package.json");
+    const workspacePackageJson = JSON.parse(await readFile(packageJsonPath, "utf8")) as {
+      name: string;
+      private?: boolean;
+    };
+    if (!workspacePackageJson.private) names.push(workspacePackageJson.name);
+  }
+  return names.sort();
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}

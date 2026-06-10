@@ -128,13 +128,14 @@ First code slices:
    - tools route through SDK/gateway
    - no raw IOTA/Gas Station calls for sponsored execution
 
-Package namespace decision is still open:
+Package namespace decision:
 
-- Conservative path: keep existing `@iota-gaskit/*` packages and add
-  `@iota-gaskit/agent-*` packages first.
-- Full rebrand path: migrate package namespace to `@agentic-gaskit/*` in a
-  dedicated compatibility slice with lockfile, examples, docs, and import
-  tests.
+- Current prerelease path: keep the conservative `@iota-gaskit/*` workspace
+  package namespace while the product extends the existing IOTA GasKit
+  sponsorship toolkit.
+- Full rebrand path: defer any migration to `@agentic-gaskit/*` to a dedicated
+  compatibility slice with lockfile, examples, docs, import tests, package
+  dry-runs, and downstream migration notes.
 
 Do not mix a package namespace rename with security-sensitive wallet/gateway
 changes.
@@ -169,6 +170,8 @@ site config.
   hardening pages.
 - `package.json` top-level name/description reflect the fork direction.
 - Package namespace rename is deferred or executed in one isolated slice.
+- Current package release strategy is documented in
+  `docs/agentic-gaskit/package-release-strategy.md`.
 - `AGENTS.md` no longer points to missing setup as if it exists, or the missing
   setup is created deliberately.
 - Skill docs describe both legacy GasKit work and Agentic GasKit work.

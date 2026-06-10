@@ -50,6 +50,8 @@ It also includes the first Agentic GasKit implementation slices:
   blocker path
 - local read-only marketplace evidence package with provider labels, policy
   compatibility, receipt access control, and dispute evidence bundle smoke
+- package namespace and release metadata strategy for the current
+  `@iota-gaskit/*` prerelease line
 - pure profile capability policy check
 - contract template metadata registry consumed by agent policy allow-lists
 
@@ -86,6 +88,8 @@ unless later slices implement and verify them.
 - Contract template metadata: `packages/contracts-metadata/src/`
 - Marketplace read model: `packages/marketplace/src/`,
   `scripts/smoke-marketplace-read-model.ts`
+- Package release strategy: `docs/agentic-gaskit/package-release-strategy.md`,
+  `scripts/package-publish.test.ts`, `scripts/package-scripts.test.ts`
 - MCP sponsorship tools: `packages/mcp-server/src/`
 - Receipts: `packages/receipts/src/`
 - Move escrow contract: `contracts/escrow_v1/`

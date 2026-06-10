@@ -62,7 +62,8 @@ Confirmed current state:
   x402/AP2/A2A mappings, local A2A well-known serving, local A2A signed-card
   verification, local A2A task/message helpers, a local A2A HTTP-shaped
   boundary, a loopback A2A server smoke, and a local read-only marketplace
-  evidence package.
+  evidence package, plus a conservative package namespace/release metadata
+  strategy for the current `@iota-gaskit/*` prerelease line.
 - `docs/agentic-gaskit/handoff-next-product-build.md` says Slices 1.0, 1.1,
   1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.3,
   3.4, 3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 5.1, and 5.2 are
@@ -94,7 +95,9 @@ Confirmed remaining gaps:
 - Expanded Phase 3 contract workflows beyond the implemented escrow, receipt,
   pay-per-call, data-license, service-bounty, reputation-receipt, and
   subscription paths, including device access lease where still in scope.
-- Package namespace and release strategy.
+- Package publication to npm. The current package namespace and prerelease
+  metadata strategy is documented and locally checked, but no package is
+  claimed as published.
 - Production custody, KMS, and recovery/export design if the product ever
   needs those surfaces.
 - Marketplace production app/API, provider verification/moderation decisions,
@@ -467,8 +470,11 @@ settlement guarantees the product has not proven.
 ### Packet F: Package Namespace, Release, And Installability
 
 Outcome:
-Decide and implement package naming/release strategy so the working product can
-be consumed without confusing the inherited GasKit foundation.
+Partially complete. Slice 6.1 documents the conservative current
+`@iota-gaskit/*` prerelease namespace, defers any `@agentic-gaskit/*` rename to
+a dedicated compatibility slice, and mechanically checks public package
+metadata plus root build/pack coverage. Real npm publication remains
+operator-gated and unrun.
 
 Acceptance criteria:
 

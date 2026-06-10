@@ -84,6 +84,12 @@ export default {
           description: "Phase 5 readiness gate separating local marketplace design readiness from live or production marketplace proof."
         },
         {
+          title: "Package Release Strategy",
+          source: "docs/agentic-gaskit/package-release-strategy.md",
+          slug: "agentic-package-release-strategy",
+          description: "Current package namespace decision, prerelease metadata gates, and future rename boundaries."
+        },
+        {
           title: "Local Dirty Work Review",
           source: "docs/agentic-gaskit/local-dirty-work-review.md",
           slug: "agentic-local-dirty-work-review",

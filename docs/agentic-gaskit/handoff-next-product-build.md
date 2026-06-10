@@ -9,7 +9,7 @@ Continue actual Agentic GasKit product implementation in
 
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5,
 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 5.1,
-and 5.2 are implemented or reviewed and locally verified.
+5.2, and 6.1 are implemented or reviewed and locally verified.
 Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
 `docs/marketplace-readiness.md` before choosing the next slice. Do not start
 production marketplace implementation unless the user explicitly approves the
@@ -270,6 +270,11 @@ Recent commits to know:
   receipts, manifests, and standards evidence to prove provider labels, policy
   compatibility, receipt access control, and redacted dispute evidence bundles
   without operating a production marketplace.
+- Slice 6.1 Package Namespace And Release Metadata Strategy is implemented in
+  `docs/agentic-gaskit/package-release-strategy.md` and package metadata
+  tests. It keeps the current `@iota-gaskit/*` prerelease namespace, defers any
+  `@agentic-gaskit/*` rename to a dedicated compatibility slice, checks
+  public package metadata, and keeps real npm publication operator-gated.
 - `docs/agentic-gaskit/external-api-notes.md` was refreshed on 2026-06-10 for
   current IOTA Names GraphQL, IOTA Identity DID/VC, x402 v2, AP2 v0.2
   mandate/receipt, A2A Agent Card, A2A signed-card, and A2A task/message
@@ -281,7 +286,8 @@ Recent commits to know:
   MCP-style tool smoke, data-license smoke, service-bounty smoke,
   reputation-receipt smoke, subscription smoke, A2A well-known smoke, A2A
   signed-card smoke, A2A task/message smoke, A2A HTTP boundary smoke, and A2A
-  local server smoke.
+  local server smoke, marketplace read-model smoke, package dry-runs, docs
+  check, and secret scan.
 
 ## What Is Not Complete
 
@@ -298,7 +304,8 @@ Recent commits to know:
   `smoke:iota-names-live` is run with operator-provided endpoint/name/address
   and passes. Localnet/testnet deployment smoke has not run, and the
   demo/escrow contract does not custody real funds.
-- Package namespace strategy is still open.
+- Real npm package publication is still not run. Any package namespace migration
+  to `@agentic-gaskit/*` remains deferred to a dedicated compatibility slice.
 - Production custody, KMS, and recovery/export are not designed or implemented.
 - Production marketplace app/API implementation is not started. The local
   read-only Slice 5.2 package is not provider onboarding, public search UI,
@@ -2136,6 +2143,101 @@ Next recommended slice:
   endpoint/name/address values are present, or choose a non-live hardening slice
   such as package namespace/release strategy or production marketplace
   API/session authorization design.
+
+## Completed Slice 6.1
+
+Implemented package namespace and release metadata strategy.
+
+Implementation commit:
+
+- Pending final commit.
+
+This slice keeps the current conservative `@iota-gaskit/*` prerelease package
+namespace and explicitly defers any `@agentic-gaskit/*` rename to a dedicated
+compatibility slice. It does not run or claim real npm publication.
+
+Acceptance is defined in:
+
+- `docs/agentic-gaskit/execution-slices.md` Slice 6.1 Package Namespace And
+  Release Metadata Strategy.
+- `docs/agentic-gaskit/package-release-strategy.md`.
+- `docs/agentic-gaskit/full-roadmap-execution-goal.md` Packet F Package
+  Namespace, Release, And Installability.
+- `docs/agentic-gaskit/migration-plan.md` package namespace decision.
+
+Changed files:
+
+- `README.md`
+- `apps/docs-site/docs.config.mjs`
+- `docs/CODEBASE_MAP.md`
+- `docs/overview.md`
+- `docs/agentic-gaskit/codex-active-goal.md`
+- `docs/agentic-gaskit/execution-slices.md`
+- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+- `docs/agentic-gaskit/migration-plan.md`
+- `docs/agentic-gaskit/package-release-strategy.md`
+- `scripts/package-publish.test.ts`
+- `scripts/package-scripts.test.ts`
+
+Commands run:
+
+```bash
+git status --short --branch
+node --import tsx --test scripts/package-publish.test.ts scripts/package-scripts.test.ts
+npm run docs:check
+npm run secrets:scan
+npm run typecheck
+npm run verify:local
+git diff --check
+```
+
+Verification result:
+
+- Focused package release and package-script tests passed, including root
+  `private: true`, conservative public package namespace checks, prerelease
+  version checks, ESM entrypoint/export checks, package file allow-lists,
+  public `next` publish config, internal dependency pins, private app workspace
+  non-publication, and dynamic root build/pack coverage for every public
+  package workspace.
+- `npm run docs:check` passed with 29 generated HTML pages from 28 Markdown
+  sources.
+- `npm run typecheck` passed.
+- Final `npm run verify:local` passed with 333 TypeScript tests, 33 Move tests,
+  typecheck, local gateway smoke, demo dApp smoke, browser smoke, agent escrow
+  smoke, paid MCP tool smoke, data-license smoke, service-bounty smoke,
+  reputation-receipt smoke, subscription smoke, A2A well-known smoke, A2A
+  signed-card smoke, A2A task/message smoke, A2A HTTP smoke, A2A local server
+  smoke, marketplace read-model smoke, testnet readiness example, package
+  dry-runs, docs check, and secret scan.
+- Final secret scan checked 292 tracked/staged/untracked text files with 0
+  findings.
+
+Hardening notes:
+
+- Root package publication remains blocked by `private: true`.
+- Public package metadata checks cover namespace, version, ESM entrypoints,
+  exports, file allow-list, license, side-effect flag, Node engine, public
+  prerelease publish config, and internal dependency pins.
+- Private app workspaces are explicitly checked as non-publishable.
+- Root `build` and `pack:check` now dynamically verify coverage for every
+  public package workspace so newly added packages cannot silently skip package
+  dry-run verification.
+- Real `npm publish` remains operator-gated and was not run.
+
+Known unproven claims:
+
+- No package is published to npm.
+- No `@agentic-gaskit/*` package namespace migration, downstream compatibility
+  proof, npm provenance/signing, changelog, registry credential handling, or
+  release automation is implemented by this slice.
+
+Next recommended slice:
+
+- Continue with configured live IOTA Names proof when operator endpoint/name/
+  address values are present, choose production marketplace API/session
+  authorization design, or choose a live/public A2A discovery and conformance
+  blocker/proof slice.
 
 ## Completed Slice 4.4
 
