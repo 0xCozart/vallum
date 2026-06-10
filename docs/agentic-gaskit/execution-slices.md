@@ -1,6 +1,6 @@
 # Executable Vertical Work Packets
 
-Last updated: 2026-06-09.
+Last updated: 2026-06-10.
 
 Use these packets as the implementation queue. Each packet should be completed,
 verified, and handed off before moving to the next unless the dependency graph
@@ -730,6 +730,47 @@ Medium.
 Escalation triggers:
 
 - Current A2A schema changes path or required fields.
+
+## Slice 4.4: A2A Well-Known Serving
+
+User-visible outcome:
+Agent profile discovery can be served locally at the canonical A2A Agent Card
+well-known path.
+
+Likely files:
+
+- `packages/registry/src/a2aWellKnown.ts`
+- `packages/standards/src/a2a.ts`
+- `examples/a2a-well-known/`
+- `scripts/smoke-a2a-well-known.ts`
+
+Acceptance criteria:
+
+- `GET /.well-known/agent-card.json` returns a current A2A Agent Card response.
+- Response content type is `application/a2a+json`.
+- Revoked and expired profiles fail closed and do not advertise active skills.
+- Non-GET methods and legacy discovery paths do not serve active cards by
+  default.
+- Response JSON omits signer refs, wallet internals, credential refs,
+  revocation refs, payment addresses, and private profile metadata.
+
+Verification:
+
+- Unit tests.
+- Local smoke script.
+- `npm run verify:local`.
+
+Dependencies:
+Slice 4.3.
+
+Risk:
+Medium. Discovery metadata can overclaim live interoperability or leak private
+profile fields.
+
+Escalation triggers:
+
+- Need for public hosting, signed Agent Cards, A2A task/message protocol
+  operations, external conformance testing, or live A2A discovery proof.
 
 ## Slice 5.1: Marketplace Readiness Gate
 

@@ -8,7 +8,9 @@ Current surface:
 - Local fixture profile resolution.
 - Dependency-injected IOTA Names and IOTA Identity adapter interfaces.
 - A2A Agent Card generation from active Agent Profiles.
+- Local A2A Agent Card well-known response helpers for the canonical
+  `/.well-known/agent-card.json` path.
 
 This package is local-first today. It does not resolve live IOTA Names,
-validate live IOTA Identity credentials, serve A2A endpoints, or contact
-testnet/mainnet services.
+validate live IOTA Identity credentials, run A2A task/message operations, host
+public A2A discovery, sign Agent Cards, or contact testnet/mainnet services.

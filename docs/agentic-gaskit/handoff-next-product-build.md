@@ -8,7 +8,7 @@ Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 3.1, 3.2,
-3.3, 4.1, 4.2, 4.3, and 5.1 are implemented or reviewed and locally
+3.3, 4.1, 4.2, 4.3, 4.4, and 5.1 are implemented or reviewed and locally
 verified.
 Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
 `docs/marketplace-readiness.md` before choosing the next slice. Do not start
@@ -172,6 +172,13 @@ Recent commits to know:
   closed; malformed auth requirements fail closed; and public card metadata
   omits credential refs, revocation refs, signer refs, wallet internals, payment
   addresses, and private profile metadata.
+- Slice 4.4 A2A well-known serving is implemented in `packages/registry` and
+  exported through `packages/standards`.
+- Slice 4.4 tests prove canonical `GET /.well-known/agent-card.json` returns an
+  `application/a2a+json` Agent Card response; non-GET methods and legacy
+  discovery paths do not serve active cards; revoked/expired profiles return no
+  active card; and response JSON omits signer refs, wallet internals, credential
+  refs, revocation refs, payment addresses, and private profile metadata.
 - Slice 5.1 marketplace readiness review exists at
   `docs/marketplace-readiness.md`. It concludes that marketplace
   requirements/design work is justified only inside local/mock proof, while
@@ -184,13 +191,13 @@ Recent commits to know:
 - Root build, test, typecheck, package dry-run, docs, smokes, readiness example,
   contract tests, and secret scan include the accounts, manifest, MCP,
   registry, contracts metadata, receipts, escrow/receipt/pay-per-call contract
-  surfaces, x402/AP2/A2A standards bridges, agent escrow demo smoke, and paid
-  MCP-style tool smoke.
+  surfaces, x402/AP2/A2A standards bridges, agent escrow demo smoke, paid
+  MCP-style tool smoke, data-license smoke, and A2A well-known smoke.
 
 ## What Is Not Complete
 
-- A2A task/message protocol operations, well-known serving, signed public Agent
-  Cards, and live A2A discovery proof are not implemented.
+- A2A task/message protocol operations, signed public Agent Cards, and live A2A
+  discovery proof are not implemented.
 - Live IOTA Names/Identity proof, full verifiable credential validation, live
   standards-bridge proof, and expanded contract workflows beyond local
   escrow/receipt/pay-per-call/data-license metadata are not implemented.
@@ -1723,6 +1730,93 @@ Known unproven claims:
   production operation was implemented by Slice 5.1.
 - Slice 5.1 is a readiness decision. It does not approve production
   marketplace implementation.
+
+## Completed Slice 4.4
+
+Implemented local A2A well-known serving proof for canonical Agent Card
+discovery.
+
+Slice and PRD coverage:
+
+- `docs/agentic-gaskit/execution-slices.md` Slice 4.4 A2A Well-Known Serving.
+- `docs/agentic-gaskit/prds/phase-4-standards-bridges.md`.
+- `docs/agentic-gaskit/verification-hardening.md` standards bridge and
+  secret/log redaction boundaries.
+- `docs/agentic-gaskit/external-api-notes.md` A2A Agent Card path and media
+  type assumptions refreshed on 2026-06-10.
+
+Changed files:
+
+- `examples/a2a-well-known/`
+- `packages/registry/src/a2aWellKnown.ts`
+- `packages/registry/src/a2aWellKnown.test.ts`
+- `packages/registry/src/index.ts`
+- `packages/registry/README.md`
+- `packages/standards/src/a2a.ts`
+- `packages/standards/src/a2a.test.ts`
+- `packages/standards/README.md`
+- `scripts/smoke-a2a-well-known.ts`
+- `scripts/package-scripts.test.ts`
+- `package.json`
+- `docs/CODEBASE_MAP.md`
+- `docs/overview.md`
+- `docs/marketplace-readiness.md`
+- `docs/agentic-gaskit/codex-active-goal.md`
+- `docs/agentic-gaskit/execution-slices.md`
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+
+Commands run:
+
+```bash
+git status --short --branch
+npm run docs:check
+npm run secrets:scan
+npm test
+npm run typecheck
+npm run build && node --import tsx --test packages/registry/src/a2aWellKnown.test.ts packages/standards/src/a2a.test.ts examples/a2a-well-known/a2a-well-known-demo.test.ts scripts/package-scripts.test.ts
+npm run smoke:a2a-well-known
+npm run docs:check
+npm run verify:local
+git diff --check
+```
+
+Evidence:
+
+- Baseline `npm run docs:check`, `npm run secrets:scan`, `npm test`, and
+  `npm run typecheck` passed before implementation.
+- Focused red state failed because A2A well-known helper exports, the local
+  demo module, and the smoke script wiring did not exist.
+- Focused tests pass for canonical `GET /.well-known/agent-card.json`, content
+  type `application/a2a+json`, cache-control default `no-store`, active profile
+  card generation, private-field omission, non-GET method denial, legacy
+  `/.well-known/agent.json` denial, revoked/expired profile denial, standards
+  package re-export, and root verification script wiring.
+- `npm run smoke:a2a-well-known` passes and reports canonical status 200,
+  legacy path status 404, revoked status 410, and false for signer-ref,
+  wallet-id, credential-ref, and payment-address exposure.
+- Final `npm run verify:local` passed after the A2A well-known smoke was wired
+  into the local verification script.
+- `git diff --check` passed before the implementation commit.
+
+Known unproven claims:
+
+- No live A2A server, signed Agent Card, public well-known hosting, task/message
+  protocol operation, external A2A client, localnet/testnet/mainnet deployment,
+  formal A2A conformance suite, or live IOTA Gas Station call was run for Slice
+  4.4.
+- The A2A well-known helper is a local response-generation surface. It proves
+  canonical path behavior, fail-closed inactive profile handling, standards
+  package export, smoke wiring, and public response redaction, not live A2A
+  interoperability.
+
+Next recommended slice:
+
+- Do not start production marketplace implementation from this handoff. Choose
+  one explicit next slice from the readiness gaps, such as a read-only
+  marketplace architecture/spec slice, marketplace access-control/
+  dispute-evidence proof, live IOTA Names/Identity proof, signed/live A2A
+  discovery proof, or another expanded contract workflow such as service bounty
+  or subscription.
 
 ## Completed Slice 3.3
 

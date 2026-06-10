@@ -34,14 +34,15 @@ It also includes the first Agentic GasKit implementation slices:
 - agent profile schema package with local fixture resolver
 - mock-tested IOTA Names/Identity adapter interfaces
 - local A2A Agent Card mapping from Agent Profiles
+- local A2A Agent Card well-known serving helper and smoke proof
 - pure profile capability policy check
 - contract template metadata registry consumed by agent policy allow-lists
 
 The remaining Agentic GasKit direction is documented under
 `docs/agentic-gaskit/`. Live IOTA Names/Identity proof, A2A protocol task
-operations or well-known serving, expanded contract workflows, production
-custody, and live deployment proof remain roadmap unless later slices implement
-and verify them.
+operations, signed/public A2A discovery, expanded contract workflows,
+production custody, and live deployment proof remain roadmap unless later
+slices implement and verify them.
 
 ## Start Here
 
@@ -80,6 +81,8 @@ and verify them.
   `scripts/smoke-paid-mcp-tool.ts`
 - Data-license demo: `examples/data-license/`,
   `scripts/smoke-data-license.ts`
+- A2A well-known demo: `examples/a2a-well-known/`,
+  `scripts/smoke-a2a-well-known.ts`
 - Docs site: `apps/docs-site/`
 - Examples: `examples/node-backend/`, `examples/nextjs-api-route/`,
   `examples/policies/`
@@ -104,7 +107,8 @@ Do not create all of these at once. Add them through vertical slices:
 
 - gateway extensions for agent manifests and capabilities
 - registry live adapters
-- A2A protocol tools, well-known serving, and standards-compatible discovery
+- A2A protocol tools, signed public Agent Cards, and live standards-compatible
+  discovery
 - expanded contract packages beyond pay-per-call and data-license, including
   service bounty, subscription, reputation receipt, and device access workflows
 
@@ -120,6 +124,7 @@ Safe local checks:
 - `npm run smoke:local`
 - `npm run smoke:agent-escrow`
 - `npm run smoke:data-license`
+- `npm run smoke:a2a-well-known`
 - `npm run secrets:scan`
 
 Full local proof:

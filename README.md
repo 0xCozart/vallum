@@ -81,7 +81,9 @@ policy evaluation, a local mock sponsorship gateway, SDK sponsored actions,
 MCP-shaped sponsorship tools, receipt state, local Move escrow/receipt state
 contracts, a deterministic local agent-to-agent escrow demo, and local Agent
 Profile schema validation with fixture resolution, IOTA Names/Identity adapter
-interfaces, and capability policy checks.
+interfaces, capability policy checks, x402/AP2/A2A standards bridge helpers,
+local pay-per-call and data-license workflows, and local A2A well-known Agent
+Card response proof.
 
 Some production surfaces remain planned roadmap work, including the full
 dashboard UI, production persistence, production monitoring, package
@@ -120,13 +122,16 @@ npm run verify:local
 
 Latest local verification and prior live proof:
 
-- `npm test`: 204 deterministic TypeScript tests passed locally after Slice 2.3.
-- `npm run contracts:test`: 8 Move escrow/receipt contract tests passed locally.
+- `npm test`: 263 deterministic TypeScript tests passed locally after Slice 4.4.
+- `npm run contracts:test`: 18 Move escrow/receipt/pay-per-call/data-license contract tests passed locally.
 - `npm run typecheck`: passed locally.
 - `npm run smoke:local`: deterministic local gateway smoke passed locally, including policy simulation, sanitized event, local usage read-model, file-backed usage event-store replay, and authenticated local operator usage API checks.
 - `npm run smoke:demo-dapp`: deterministic local demo dApp smoke passed locally.
 - `npm run smoke:demo-browser`: deterministic local browser-wrapper smoke passed locally.
 - `npm run smoke:agent-escrow`: deterministic local agent-to-agent escrow smoke passed locally.
+- `npm run smoke:paid-mcp-tool`: deterministic local paid MCP-style tool smoke passed locally.
+- `npm run smoke:data-license`: deterministic local data-license smoke passed locally.
+- `npm run smoke:a2a-well-known`: deterministic local A2A Agent Card discovery response smoke passed locally.
 - `npm run readiness:testnet:example`: deterministic example testnet-readiness preflight passed locally.
 - `npm run pack:check`: workspace package dry-runs completed locally.
 - Prior `npm run execute:testnet-demo`: real sponsored IOTA testnet execute succeeded through the local policy gateway and Gas Station; public digest `2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H`.

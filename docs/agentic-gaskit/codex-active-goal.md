@@ -17,7 +17,7 @@ Execution entry:
 
 Immediate product slice:
 
-- Slice 5.1: Marketplace Readiness Gate completion and handoff
+- Slice 4.4: A2A well-known serving proof completion and handoff
 
 ## Intent Read
 
@@ -69,14 +69,16 @@ standards bridge for mapping payment requirements to manifests and receipts
 without operating a production facilitator, plus a local AP2 closed checkout/
 payment mandate bridge for mapping mandates to manifests and dispute-linked
 receipts without operating live AP2 or production payment rails. The current
-slices also add local A2A Agent Card mapping from Agent Profiles without
-operating an A2A server or public discovery endpoint. Slice 5.1 adds a
+slices also add local A2A Agent Card mapping from Agent Profiles and local
+canonical `/.well-known/agent-card.json` serving proof without operating a
+public A2A server, signed Agent Card, or task/message endpoint. Slice 5.1 adds a
 marketplace readiness gate that permits marketplace requirements/design work
 only inside local/mock proof and keeps production marketplace implementation
-blocked. The next gaps are expanded contract workflows beyond pay-per-call and
-data-license, access-control/dispute evidence for any marketplace-facing
-surface, live IOTA Names/Identity proof, and live deployment proof when
-explicitly in scope.
+blocked. The next gaps are A2A task/message protocol operations, signed public
+Agent Cards, live A2A discovery proof, expanded contract workflows beyond
+pay-per-call and data-license, access-control/dispute evidence for any
+marketplace-facing surface, live IOTA Names/Identity proof, and live deployment
+proof when explicitly in scope.
 
 Desired outcome:
 Codex repeatedly implements one vertical slice, proves it with focused and
@@ -201,22 +203,26 @@ Run this loop for every slice.
 
 ## Current Slice Acceptance
 
-Slice 5.1 is complete only when:
+Slice 4.4 is complete only when:
 
-- A local marketplace readiness document reviews whether Phases 1-4 primitives
-  are strong enough to justify marketplace work.
-- The review cites current local verification evidence for implemented
-  primitives and separates local/mock proof from live testnet or production
-  proof.
-- Marketplace non-goals remain explicit.
-- Compliance, provider-verification, moderation, custody, live-payment, and
-  security questions are listed as unresolved or gated where applicable.
+- A local registry helper serves the current A2A Agent Card at
+  `/.well-known/agent-card.json`.
+- The response uses `application/a2a+json` and the canonical discovery path.
+- Non-GET methods, legacy discovery paths, revoked profiles, and expired
+  profiles fail closed without advertising active skills.
+- Response JSON omits signer refs, wallet internals, credential refs,
+  revocation refs, payment addresses, private metadata, raw transaction bytes,
+  signatures, and secret material.
+- The standards package re-exports the well-known serving helper.
+- A local smoke script is wired into `npm run verify:local`.
 - Existing GasKit tests and safety checks still pass, or any failure is
   explained as a pre-existing/blocking condition with exact evidence.
 
-Current Slice 5.1 artifact:
+Current Slice 4.4 artifacts:
 
-- `docs/marketplace-readiness.md`
+- `packages/registry/src/a2aWellKnown.ts`
+- `examples/a2a-well-known/`
+- `scripts/smoke-a2a-well-known.ts`
 
 ## Completion Standard
 

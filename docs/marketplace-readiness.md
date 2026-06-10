@@ -17,8 +17,8 @@ justify operating a marketplace or accepting production provider claims.
 
 ## Evidence Reviewed
 
-The latest full local verification evidence is from Slice 4.3 after A2A Agent
-Card mapping landed. The recorded command was:
+The latest full local verification evidence is from Slice 4.4 after A2A
+well-known serving landed. The recorded command was:
 
 ```bash
 npm run verify:local
@@ -51,7 +51,7 @@ git diff --check
 | Receipts and escrow | Local receipt state, escrow lifecycle, denial cases, and Move contract tests pass. | Marketplace can display receipt/dispute concepts in local demos, but production dispute resolution remains gated. |
 | Registry and identity adapters | Agent Profile schema, fixture resolver, capability checks, and mock IOTA Names/Identity adapters are tested. | Marketplace can consume profile records and label status, but live name/DID/VC verification remains unproven. |
 | Contract metadata, pay-per-call, and data-license | Local template metadata allow-listing, paid tool flow, and data-license flow pass with denial and failure cases. | Marketplace can model supported templates and local paid/data-license calls, but broader contract workflows and production provider access are not complete. |
-| x402, AP2, and A2A bridges | Local mapping tests pass for supported versions; unsupported versions fail closed; sensitive metadata redaction is tested. | Marketplace can show standards compatibility as local bridge evidence only, not live facilitator, AP2 network, or public A2A discovery proof. |
+| x402, AP2, and A2A bridges | Local mapping and well-known response tests pass for supported versions; unsupported versions fail closed; sensitive metadata redaction is tested. | Marketplace can show standards compatibility as local bridge evidence only, not live facilitator, AP2 network, signed Agent Card, or public A2A discovery proof. |
 
 ## Marketplace Non-Goals
 
@@ -99,6 +99,7 @@ These questions block production marketplace work:
 | Moderation and abuse response | Unresolved. | Define listing review, takedown, fraud, spam, endpoint abuse, and dispute escalation processes. |
 | Custody and recovery | Out of scope. | Complete legal/security review before any custody, export, staking, bonding, or slashing behavior. |
 | Live payment settlement | Unproven live. | Prove x402/AP2/payment processor paths with safe credentials and partial-failure receipt handling. |
+| Live A2A discovery | Unproven live. | Prove public well-known hosting, signed Agent Card decisions, external client discovery, and task/message protocol boundaries before claiming A2A interoperability. |
 | Access control for logs and receipts | Not yet marketplace-tested. | Add marketplace-specific access-control tests before exposing buyer/provider/operator records. |
 | Dispute evidence walkthrough | Local receipt concepts exist; marketplace walkthrough not built. | Prove evidence collection, redaction, tamper-evident linking, and reviewer workflow. |
 | Data-license workflows | Implemented locally/mock only. | Prove production provider access, access control, legal terms, live payment, and dispute handling before marketplace use. |
