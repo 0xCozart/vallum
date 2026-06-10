@@ -8,7 +8,7 @@ Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5,
-2.6, 2.7,
+2.6, 2.7, 2.8,
 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8,
 5.1, 5.2, and 6.1 are implemented, reviewed, locally verified, or explicitly
 deferred with a verified hardening gate.
@@ -29,6 +29,7 @@ new scope and its unresolved gates.
 
 Recent commits to know:
 
+- `45bf716` feat: add iota identity live proof smoke
 - `9f10bad` feat: harden identity verification cache
 - `faddf2f` feat: add subscription workflow
 - `0de44a1` feat: add reputation receipt workflow
@@ -155,6 +156,11 @@ Recent commits to know:
   required credential types, accepted revocation status mechanisms, revoked
   status evidence, credential expiry, max credential age, missing evidence, and
   cache-policy binding.
+- Slice 2.8 IOTA Identity Live Proof Harness is implemented as an opt-in
+  `npm run smoke:iota-identity-live` command. It can contact an
+  operator-provided HTTPS or loopback proof endpoint, validate a configured
+  Agent Profile, resolve profile DIDs, validate credential refs, and apply the
+  local VC trust policy without printing endpoint, DID, or credential values.
 - Slice 3.1 Contract Metadata Registry is implemented in
   `packages/contracts-metadata` as `@iota-gaskit/contracts-metadata`.
 - Slice 3.1 tests prove approved template/version metadata is accepted, unknown
@@ -292,9 +298,9 @@ Recent commits to know:
   `scripts/roadmap-safety.test.ts`. It explicitly blocks physical device
   operation and keeps any future device access proof virtual or simulated until
   an owner-approved safety design exists.
-- Slice 2.7 Live Proof Status Report currently reports these local blockers:
+- Slice 2.8 Live Proof Status Report currently reports these local blockers:
   `TESTNET_ENV_FILE_MISSING`, `IOTA_NAMES_LIVE_CONFIG_MISSING`,
-  `IOTA_IDENTITY_LIVE_PROOF_UNIMPLEMENTED`, and
+  `IOTA_IDENTITY_LIVE_CONFIG_MISSING`, and
   `VC_TRUST_POLICY_CONFIG_MISSING`.
 - `docs/agentic-gaskit/external-api-notes.md` was refreshed on 2026-06-10 for
   current IOTA Names GraphQL, IOTA Identity DID/VC, x402 v2, AP2 v0.2
@@ -316,8 +322,9 @@ Recent commits to know:
   A2A discovery proof, live public A2A server operation beyond the local
   loopback smoke, streaming/push notification support, external A2A conformance
   proof, and production A2A authentication decisions are not implemented.
-- Configured live IOTA Names proof, live IOTA Identity proof, live verifiable
-  credential validation beyond local/mock trust-policy behavior, live
+- Configured live IOTA Names proof, configured and passing IOTA Identity proof,
+  live verifiable credential validation beyond the opt-in proof endpoint
+  harness and local/mock trust-policy behavior, live
   standards-bridge proof, and expanded contract workflows beyond local
   escrow/receipt/pay-per-call/data-license/service-bounty/reputation-receipt/
   subscription metadata are not implemented.
@@ -3513,3 +3520,99 @@ Next safe slice:
   type, and cache TTL configuration without printing secret values; or run
   `npm run readiness:testnet` / `npm run smoke:iota-names-live` only after the
   required local operator configuration exists.
+
+## Completed Slice 2.8: IOTA Identity Live Proof Harness
+
+Implementation commit: `45bf716` (`feat: add iota identity live proof smoke`).
+
+What changed:
+
+- Added `npm run smoke:iota-identity-live` as an opt-in live proof harness.
+- Added `scripts/smoke-iota-identity-live.ts`, which validates a configured
+  Agent Profile locally, contacts only an HTTPS or loopback proof endpoint, asks
+  that endpoint to resolve agent/owner DIDs, asks it to validate credential
+  refs, and then applies the existing local VC trust policy.
+- Added `scripts/iota-identity-live-smoke.test.ts` to prove missing config,
+  unsafe endpoint handling, happy-path proof endpoint calls, proof endpoint
+  credential rejection, invalid profile preflight, and malformed trust policy
+  handling.
+- Updated `npm run proof:live-status` so IOTA Identity now reports
+  `IOTA_IDENTITY_LIVE_CONFIG_MISSING`, `IOTA_IDENTITY_PROOF_ENDPOINT_UNSAFE`,
+  or `IOTA_IDENTITY_LIVE_CONFIG_PRESENT` instead of the prior hardcoded
+  `IOTA_IDENTITY_LIVE_PROOF_UNIMPLEMENTED`.
+- Updated roadmap, active goal, live proof status, external API notes, README,
+  overview, and codebase map docs to make this proof-endpoint boundary explicit.
+
+Important boundary:
+
+- This is a live-proof harness boundary, not bundled IOTA Identity WASM.
+- It does not spend gas, mutate DIDs, publish credentials, prove production key
+  management, or run against an operator Identity service by default.
+- It is intentionally excluded from `npm run verify:local`; running it requires
+  explicit operator configuration.
+
+Commands run:
+
+```bash
+npm run docs:check
+npm run secrets:scan
+npm test
+npm run typecheck
+node --import tsx --test scripts/iota-identity-live-smoke.test.ts
+node --import tsx --test scripts/iota-identity-live-smoke.test.ts scripts/live-proof-status.test.ts scripts/package-scripts.test.ts
+npm run smoke:iota-identity-live
+npm run proof:live-status
+npm run verify:local
+git diff --check
+```
+
+Verification result:
+
+- Baseline before editing passed: docs check, secret scan, `npm test`, and
+  `npm run typecheck`.
+- Focused IOTA Identity live smoke tests passed with 6 tests.
+- Combined focused script tests passed with 45 tests.
+- `npm run smoke:iota-identity-live` with no config built successfully and then
+  exited with the expected nonzero config gate: `IOTA_IDENTITY_LIVE_CONFIG_MISSING`.
+- `npm run proof:live-status` passed and now reports these exact blockers:
+  `TESTNET_ENV_FILE_MISSING`, `IOTA_NAMES_LIVE_CONFIG_MISSING`,
+  `IOTA_IDENTITY_LIVE_CONFIG_MISSING`, and `VC_TRUST_POLICY_CONFIG_MISSING`.
+- `npm run docs:check` passed: 31 HTML pages from 30 Markdown sources.
+- `npm run secrets:scan` passed: 299 tracked/staged/untracked text files,
+  findings 0.
+- `npm run typecheck` passed.
+- `npm run verify:local` passed with 357 TypeScript tests, 33 Move tests,
+  typecheck, local gateway smoke, demo dApp smoke, browser smoke, agent escrow
+  smoke, paid MCP tool smoke, data-license smoke, service-bounty smoke,
+  reputation-receipt smoke, subscription smoke, A2A well-known smoke, A2A
+  signed-card smoke, A2A task/message smoke, A2A HTTP smoke, A2A local server
+  smoke, marketplace read-model smoke, testnet readiness example, package
+  dry-runs, docs check, and secret scan.
+- `git diff --check` passed.
+
+Hardening notes:
+
+- Proof endpoint and local profile paths are not printed in config errors.
+- Unsafe non-loopback HTTP endpoints fail before any network call.
+- Invalid local Agent Profiles fail before contacting the proof endpoint.
+- Trust-policy parse errors do not echo configured values.
+- Success output avoids printing endpoint, DID, or credential ref values.
+
+Known unproven claims:
+
+- No live proof endpoint is configured in this checkout.
+- No real IOTA Identity resolver, credential parser, signature validator,
+  revocation service, or testnet Identity proof was exercised.
+- No IOTA Names live smoke, real `.env` testnet readiness, Gas Station request,
+  sponsored transaction, package publish, public A2A hosting, or production
+  marketplace action was run.
+- Apex profile setup still has `setup.reviewNeeded: true`; this slice records
+  local scope under ignored `tmp/apex-workflow/` and does not claim Apex
+  verification.
+
+Next safe slice:
+
+- Provide operator configuration and run one of the live gates on IOTA testnet:
+  `npm run readiness:testnet`, `npm run smoke:iota-names-live`, or
+  `npm run smoke:iota-identity-live`; or continue with the next roadmap slice
+  that does not require live credentials.
