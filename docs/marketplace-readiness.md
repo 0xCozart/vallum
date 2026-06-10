@@ -17,8 +17,8 @@ justify operating a marketplace or accepting production provider claims.
 
 ## Evidence Reviewed
 
-The latest full local verification evidence is from Slice 4.4 after A2A
-well-known serving landed. The recorded command was:
+The latest full local verification evidence is from Slice 4.5 after A2A
+task/message local operations landed. The recorded command was:
 
 ```bash
 npm run verify:local
@@ -51,7 +51,7 @@ git diff --check
 | Receipts and escrow | Local receipt state, escrow lifecycle, denial cases, and Move contract tests pass. | Marketplace can display receipt/dispute concepts in local demos, but production dispute resolution remains gated. |
 | Registry and identity adapters | Agent Profile schema, fixture resolver, capability checks, and mock IOTA Names/Identity adapters are tested. | Marketplace can consume profile records and label status, but live name/DID/VC verification remains unproven. |
 | Contract metadata, pay-per-call, data-license, and service-bounty | Local template metadata allow-listing, paid tool, data-license, and service-bounty flows pass with denial and failure cases. | Marketplace can model supported templates and local paid/data-license/service-bounty calls, but broader contract workflows, dispute operation, and production provider access are not complete. |
-| x402, AP2, and A2A bridges | Local mapping and well-known response tests pass for supported versions; unsupported versions fail closed; sensitive metadata redaction is tested. | Marketplace can show standards compatibility as local bridge evidence only, not live facilitator, AP2 network, signed Agent Card, or public A2A discovery proof. |
+| x402, AP2, and A2A bridges | Local mapping, well-known response, and task/message operation tests pass for supported versions; unsupported versions fail closed; sensitive metadata redaction is tested. | Marketplace can show standards compatibility as local bridge evidence only, not live facilitator, AP2 network, live A2A server, signed Agent Card, external conformance, or public A2A discovery proof. |
 
 ## Marketplace Non-Goals
 

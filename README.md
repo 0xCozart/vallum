@@ -123,7 +123,7 @@ npm run verify:local
 
 Latest local verification and prior live proof:
 
-- `npm test`: 269 deterministic TypeScript tests passed locally after Slice 3.4.
+- `npm test`: 279 deterministic TypeScript tests passed locally after Slice 4.5.
 - `npm run contracts:test`: 23 Move escrow/receipt/pay-per-call/data-license/service-bounty contract tests passed locally.
 - `npm run typecheck`: passed locally.
 - `npm run smoke:local`: deterministic local gateway smoke passed locally, including policy simulation, sanitized event, local usage read-model, file-backed usage event-store replay, and authenticated local operator usage API checks.
