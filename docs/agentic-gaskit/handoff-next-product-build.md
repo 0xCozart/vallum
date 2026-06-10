@@ -1292,7 +1292,7 @@ Known unproven claims:
 
 Committed slice:
 
-- Pending commit in this session: `feat: add pay per call tool flow`.
+- `a933fdc feat: add pay per call tool flow`
 
 Files changed:
 
@@ -1334,6 +1334,8 @@ npm run contracts:test
 npm run build -w @iota-gaskit/receipts && npm run build -w @iota-gaskit/contracts-metadata && npm run build -w @iota-gaskit/sdk && node --import tsx --test packages/sdk/src/contracts/payPerCall.test.ts examples/paid-mcp-tool/paid-mcp-tool-demo.test.ts packages/contracts-metadata/src/registry.test.ts packages/receipts/src/receipts.test.ts scripts/package-scripts.test.ts
 npm test
 npm run typecheck
+npm run verify:local
+git diff --check
 ```
 
 Evidence so far:
@@ -1351,6 +1353,11 @@ Evidence so far:
   invocation, blank evidence, and malformed runtime evidence all withhold paid
   results.
 - Mid-slice `npm test` passed with 219 tests and `npm run typecheck` passed.
+- Final `npm run verify:local` passed with 219 TypeScript tests, 13 Move tests
+  across escrow/receipt/pay-per-call contracts, local gateway smoke, demo dApp
+  smoke, browser wrapper smoke, agent escrow smoke, paid MCP tool smoke,
+  readiness example, package dry-runs, docs check, and secret scan.
+- `git diff --check` passed before the implementation commit.
 
 Known unproven claims:
 
