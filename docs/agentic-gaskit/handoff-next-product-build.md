@@ -2150,7 +2150,7 @@ Implemented package namespace and release metadata strategy.
 
 Implementation commit:
 
-- Pending final commit.
+- `6f1b407` docs: codify package release strategy
 
 This slice keeps the current conservative `@iota-gaskit/*` prerelease package
 namespace and explicitly defers any `@agentic-gaskit/*` rename to a dedicated
