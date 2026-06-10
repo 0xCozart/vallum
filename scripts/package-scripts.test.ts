@@ -60,6 +60,11 @@ test("docs site check is wired into local verification", () => {
   assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run docs:check/);
 });
 
+test("Move contract tests are wired into local verification", () => {
+  assert.equal(packageJson.scripts?.["contracts:test"], "tsx scripts/run-move-tests.ts");
+  assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run contracts:test/);
+});
+
 test("root docs scripts build the static hosted documentation site", () => {
   assert.equal(packageJson.scripts?.["docs:build"], "npm run build -w @iota-gaskit/docs-site");
   assert.equal(packageJson.scripts?.["docs:check"], "npm run check -w @iota-gaskit/docs-site");

@@ -1,0 +1,9 @@
+[package]
+name = "receipt_v1"
+version = "0.0.1"
+edition = "2024"
+
+[dependencies]
+
+[addresses]
+receipt_v1 = "0x0"

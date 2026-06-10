@@ -7,7 +7,7 @@ Last updated: 2026-06-10.
 This repository is a local Agentic GasKit fork created from
 `https://github.com/0xCozart/iota-gaskit`.
 
-The current implemented codebase is still the IOTA GasKit toolkit:
+The current implemented codebase includes the original IOTA GasKit toolkit:
 
 - policy gateway
 - TypeScript SDK
@@ -19,10 +19,20 @@ The current implemented codebase is still the IOTA GasKit toolkit:
 - docs site
 - security, readiness, observability, and hardening docs
 
-The Agentic GasKit direction is documented under `docs/agentic-gaskit/`. Agent
-wallet/account packages, manifest packages, MCP/A2A tools, registry surfaces,
-and receipt/contract workflow packages are roadmap unless later slices
-implement and verify them.
+It also includes the first Agentic GasKit implementation slices:
+
+- account/wallet signer-reference contract package
+- agent transaction manifest package
+- pure agent action policy evaluator and mock sponsorship gateway
+- SDK sponsored action and `openEscrow` helpers
+- MCP sponsorship tool facade
+- receipt state package
+- local Move escrow and receipt state contracts
+
+The remaining Agentic GasKit direction is documented under
+`docs/agentic-gaskit/`. A2A tools, registry surfaces, standards bridges,
+expanded contract workflows, production custody, and live deployment proof
+remain roadmap unless later slices implement and verify them.
 
 ## Start Here
 
@@ -42,6 +52,12 @@ implement and verify them.
 - SDK: `packages/sdk/src/`
 - Policy engine: `packages/policy-gateway/src/`
 - Shared types: `packages/shared-types/src/`
+- Agent accounts: `packages/accounts/src/`
+- Agent manifests: `packages/manifest/src/`
+- MCP sponsorship tools: `packages/mcp-server/src/`
+- Receipts: `packages/receipts/src/`
+- Move escrow contract: `contracts/escrow_v1/`
+- Move receipt contract: `contracts/receipt_v1/`
 - Policy gateway service: `apps/policy-gateway-service/src/`
 - Demo dApp: `apps/demo-dapp/`
 - Docs site: `apps/docs-site/`
@@ -62,20 +78,16 @@ implement and verify them.
 - Verification hardening: `docs/agentic-gaskit/verification-hardening.md`
 - Source thesis: `docs/agentic-gaskit/source-thesis.md`
 
-## Future Package Targets
+## Future Targets
 
 Do not create all of these at once. Add them through vertical slices:
 
-- `packages/accounts` or `packages/agent-accounts`
-- `packages/manifest` or `packages/agent-manifest`
 - gateway extensions for agent manifests and capabilities
-- SDK extensions for agent sponsored actions
-- `packages/mcp-server`
 - `packages/registry`
-- `packages/receipts`
 - `packages/standards`
-- contract packages for escrow, receipt, pay-per-call, data license, and device
-  access workflows
+- A2A tools and agent-to-agent demos
+- expanded contract packages for pay-per-call, data license, and device access
+  workflows
 
 ## Verification Guidance
 
@@ -84,6 +96,7 @@ Safe local checks:
 - `npm run docs:check`
 - `npm run docs:build`
 - `npm test`
+- `npm run contracts:test`
 - `npm run typecheck`
 - `npm run smoke:local`
 - `npm run secrets:scan`
@@ -91,6 +104,10 @@ Safe local checks:
 Full local proof:
 
 - `npm run verify:local`
+
+`npm run contracts:test` requires the IOTA CLI. Set `IOTA_BIN` to a local
+binary path, install `iota` on `PATH`, or use the ignored local release binary
+under `tmp/tooling/iota-v1.24.0/iota`.
 
 Live commands such as `npm run execute:testnet-demo` contact live IOTA services
 and spend sponsored testnet gas. Run them only with explicit operator intent and

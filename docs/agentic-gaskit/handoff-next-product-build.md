@@ -7,10 +7,8 @@ Last updated: 2026-06-10.
 Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
-Slices 1.0, 1.1, 1.2, 1.3, 1.4, and 1.5 are implemented and locally verified.
-Slice 1.6 has partial local receipt/SDK progress, but the real Move escrow and
-receipt contracts are not implemented or tested. The immediate target remains
-completing Slice 1.6: Escrow And Receipt MVP. Use
+Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, and 1.6 are implemented and locally
+verified. The immediate target is Slice 1.7: Agent-To-Agent Escrow Demo. Use
 `docs/agentic-gaskit/execution-entry.md` as the entry doc, then continue
 through `docs/agentic-gaskit/execution-slices.md`.
 
@@ -84,31 +82,30 @@ Recent commits to know:
   `iota.open_escrow` route through the SDK/gateway, invalid inputs return typed
   MCP tool errors, gateway denials return structured errors, and MCP tools post
   only to the sponsorship gateway route.
-- Slice 1.6 partial local receipt state is implemented in `packages/receipts`
-  as `@iota-gaskit/receipts`.
-- Slice 1.6 partial receipt tests prove the local lifecycle, double-release
-  denial, unauthorized verifier denial, refund after completion, expiry to a
-  refunded receipt with expired escrow state, and divergent external/IOTA
-  receipt state links without data loss.
-- Slice 1.6 partial SDK helper `openEscrow` is implemented in
+- Slice 1.6 receipt state is implemented in `packages/receipts` as
+  `@iota-gaskit/receipts`.
+- Slice 1.6 receipt tests prove the local lifecycle, double-release denial,
+  unauthorized verifier denial, refund after completion, expiry to a refunded
+  receipt with expired escrow state, and divergent external/IOTA receipt state
+  links without data loss.
+- Slice 1.6 SDK helper `openEscrow` is implemented in
   `packages/sdk/src/contracts/openEscrow.ts`; it creates an attempted receipt,
   routes through `requestSponsoredAction`, and returns either sponsored or
   denied receipt state.
+- Slice 1.6 Move contract packages are implemented in `contracts/escrow_v1`
+  and `contracts/receipt_v1`.
+- Slice 1.6 Move tests prove escrow create/release/refund, double-release
+  denial, unauthorized verifier denial, and receipt lifecycle status updates.
 - Root build, test, typecheck, package dry-run, docs, smokes, readiness example,
-  and secret scan include the accounts, manifest, MCP, and receipts packages.
+  contract tests, and secret scan include the accounts, manifest, MCP,
+  receipts, and escrow/receipt contract surfaces.
 
 ## What Is Not Complete
 
 - A2A tools are not implemented.
-- Registry and full contract workflows are not implemented.
-- Real Move contracts under `contracts/escrow_v1` and `contracts/receipt_v1`
-  are not implemented.
-- Move contract tests for create/release/refund, double release denial, and
-  unauthorized verifier denial have not run because the `iota` CLI is not
-  available on this machine.
-- Full Slice 1.6 is not complete. The current work is a local TypeScript
-  receipt state machine plus SDK gateway helper, not deployed escrow custody or
-  on-chain receipt behavior.
+- Registry and expanded contract workflows are not implemented.
+- Slice 1.6 is locally verified only. Localnet/testnet deployment smoke has not
+  run, and the escrow contract does not custody real funds.
 - Package namespace strategy is still open.
 - Production custody, KMS, and recovery/export are not designed or implemented.
 
@@ -620,18 +617,22 @@ Known unproven claims:
 
 Next recommended slice:
 
-- Slice 1.6 Escrow And Receipt MVP.
+- Slice 1.6 Escrow And Receipt MVP, completed below.
 
-## Slice 1.6 Partial Progress
+## Completed Slice 1.6
 
-Implemented a local TypeScript receipt and escrow state machine in
-`packages/receipts`, plus an SDK `openEscrow` helper that routes escrow opening
-through the existing Slice 1.4 sponsored-action gateway path.
+Implemented the Escrow And Receipt MVP across local TypeScript state, SDK
+gateway routing, and Move contract state packages.
 
-This is not the full Slice 1.6 acceptance target because the local machine does
-not have the IOTA CLI or a Move test harness available. No Move contracts,
-localnet deployment, testnet deployment, or real custody/settlement behavior is
-claimed.
+`packages/receipts` owns the local receipt/escrow lifecycle state machine.
+`packages/sdk/src/contracts/openEscrow.ts` creates an attempted receipt and
+routes through the existing sponsored-action gateway path. `contracts/escrow_v1`
+and `contracts/receipt_v1` provide minimal non-custodial Move state contracts
+for verifier-gated escrow and receipt lifecycle status.
+
+The IOTA CLI was installed locally under ignored `tmp/tooling/` for verification
+from the official Linux x86_64 release. `npm run contracts:test` uses
+`IOTA_BIN`, a PATH `iota`, or that ignored local binary.
 
 Acceptance references:
 
@@ -642,6 +643,16 @@ Acceptance references:
 
 Changed files:
 
+- `.gitignore`
+- `contracts/escrow_v1/Move.toml`
+- `contracts/escrow_v1/sources/escrow.move`
+- `contracts/escrow_v1/tests/escrow_tests.move`
+- `contracts/receipt_v1/Move.toml`
+- `contracts/receipt_v1/sources/receipt.move`
+- `contracts/receipt_v1/tests/receipt_tests.move`
+- `docs/CODEBASE_MAP.md`
+- `docs/overview.md`
+- `docs/agentic-gaskit/codex-active-goal.md`
 - `docs/agentic-gaskit/handoff-next-product-build.md`
 - `package.json`
 - `package-lock.json`
@@ -654,6 +665,7 @@ Changed files:
 - `packages/sdk/src/contracts/openEscrow.ts`
 - `packages/sdk/src/contracts/openEscrow.test.ts`
 - `packages/sdk/src/index.ts`
+- `scripts/run-move-tests.ts`
 
 Commands run:
 
@@ -663,10 +675,16 @@ command -v iota
 iota --version
 iota move test --help
 find . -maxdepth 3 -name Move.toml -o -name '*.move'
+curl -s https://api.github.com/repos/iotaledger/iota/releases/latest
+tmp/tooling/iota-v1.24.0/iota --version
+tmp/tooling/iota-v1.24.0/iota move test -p tmp/iota-move-scaffold-check
+tmp/tooling/iota-v1.24.0/iota move test -p contracts/escrow_v1
+tmp/tooling/iota-v1.24.0/iota move test -p contracts/receipt_v1
 npm run docs:check
 npm run secrets:scan
 npm test
 npm run typecheck
+npm run contracts:test
 node --import tsx --test packages/receipts/src/receipts.test.ts
 node --import tsx --test packages/sdk/src/contracts/openEscrow.test.ts
 node --import tsx --test packages/receipts/src/receipts.test.ts packages/sdk/src/contracts/openEscrow.test.ts
@@ -684,15 +702,25 @@ Verification result:
   `iota --version` plus `iota move test --help` failed with command not found.
 - No `Move.toml` or `.move` files were present under the first three directory
   levels.
+- Official IOTA docs and GitHub releases were checked for the current CLI
+  install path. Release `v1.24.0` provided the Linux x86_64 binary used for
+  local Move verification.
+- Scaffold smoke passed with `tmp/tooling/iota-v1.24.0/iota move test -p
+  tmp/iota-move-scaffold-check`.
 - Focused receipt tests passed: 6 tests.
 - Focused receipt plus SDK `openEscrow` tests passed: 8 tests.
 - Focused policy gateway plus SDK plus MCP plus receipt regression tests
   passed: 31 tests.
+- Focused Move escrow contract tests passed: 4 tests.
+- Focused Move receipt contract tests passed: 4 tests.
+- `npm run contracts:test` passed with 8 Move tests.
+- `npm test` passed with 177 TypeScript tests after adding the contract test
+  runner.
 - `npm run typecheck` passed after `npm install` created the workspace link for
   `@iota-gaskit/receipts`.
-- `npm run verify:local` passed with 176 tests, typecheck, local gateway smoke,
-  demo dApp smoke, browser wrapper smoke, readiness example, package dry-run,
-  docs check, and secret scan.
+- `npm run verify:local` passed with 177 TypeScript tests, 8 Move contract
+  tests, typecheck, local gateway smoke, demo dApp smoke, browser wrapper
+  smoke, readiness example, package dry-run, docs check, and secret scan.
 - `git diff --check` passed.
 
 Hardening notes:
@@ -705,29 +733,32 @@ Hardening notes:
 - Denied gateway decisions become denied receipt state, not execution attempts.
 - Double release is denied after release, only the configured verifier can
   release escrow, and refunded or expired escrow cannot be released.
+- `contracts/escrow_v1` enforces verifier-gated release in Move through
+  `tx_context::sender`, denies double release, and allows owner/verifier refund
+  or expiry while open.
+- `contracts/receipt_v1` keeps attempted, denied, approved, sponsored,
+  submitted, completed, released, refunded, and failed status transitions
+  explicit.
 - Receipt links allow external payment and IOTA receipt state to diverge
   without overwriting the core receipt status.
 - Secret scan passed; the only hardening search hits in the changed SDK/receipt
   surface were test `apiKey` fixtures and the expected `apiKey` option name.
+- Move contract packages do not import Gas Station, SDK reserve/execute,
+  signing, private-key, bearer-token, or payment APIs.
 - Apex manifest helper remains unusable because the current
   `apex.workflow.json` lacks required mode definitions and
-  `manifest.defaultDir`, so Slice 1.6 partial scope was recorded locally under
+  `manifest.defaultDir`, so Slice 1.6 scope was recorded locally under
   ignored `tmp/apex-workflow/` and this work does not claim Apex verification.
 
 Known unproven claims:
 
-- Real Move contracts `contracts/escrow_v1` and `contracts/receipt_v1` are not
-  implemented.
-- Move tests for create, release, refund, double release denial, and
-  unauthorized verifier denial are not run.
 - Localnet/testnet deployment smoke is not run.
-- No actual fund custody, settlement, verifier oracle, on-chain receipt, or
-  dispute resolution behavior exists.
+- No actual fund custody, settlement, verifier oracle, published package ID,
+  on-chain receipt write from SDK, or dispute resolution behavior exists.
 
 Next recommended slice:
 
-- Continue Slice 1.6 by setting up the Move harness or adding verified contract
-  implementation and tests for escrow and receipts.
+- Slice 1.7 Agent-To-Agent Escrow Demo.
 
 ## Guardrails
 
@@ -753,10 +784,14 @@ npm test
 npm run typecheck
 ```
 
-For the continuing escrow and receipt MVP slice, first verify whether the IOTA
-CLI and Move harness are available. If they are not available, do not claim
-contract acceptance. Add focused contract/receipt tests first and finish
-with:
+For Slice 1.7, keep the demo local/mock unless the user explicitly asks for live
+testnet work. Start with the baseline above plus:
+
+```bash
+npm run contracts:test
+```
+
+Finish with:
 
 ```bash
 npm run verify:local

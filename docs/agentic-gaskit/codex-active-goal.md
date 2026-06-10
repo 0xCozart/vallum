@@ -17,9 +17,7 @@ Execution entry:
 
 Immediate product slice:
 
-- Slice 1.0: Agent Account And Wallet Manager Contract
-- Conservative package path: `packages/accounts`
-- Conservative package name: `@iota-gaskit/accounts`
+- Slice 1.7: Agent-To-Agent Escrow Demo
 
 ## Intent Read
 
@@ -59,9 +57,12 @@ receiving raw wallet secrets, bypassing policy controls, or rebuilding proven
 GasKit sponsorship behavior incorrectly.
 
 Current problem:
-The repository contains the existing GasKit sponsorship toolkit and complete
-planning docs, but the Agentic packages for accounts, manifests, MCP/A2A,
-registry, receipts, and contract workflows are not implemented yet.
+The repository contains the existing GasKit sponsorship toolkit plus locally
+verified Agentic slices for accounts, manifests, mock policy sponsorship,
+SDK/MCP routing, receipts, and escrow/receipt Move state contracts. The next
+gaps are agent-to-agent demo flow, A2A tools, registry surfaces, standards
+bridges, expanded contracts, and live deployment proof when explicitly in
+scope.
 
 Desired outcome:
 Codex repeatedly implements one vertical slice, proves it with focused and

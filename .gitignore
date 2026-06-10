@@ -16,6 +16,7 @@ node_modules/
 # Build outputs
 /dist/
 **/dist/
+contracts/*/build/
 .next/
 */.next/
 coverage/
@@ -39,6 +40,8 @@ Thumbs.db
 # Local tooling
 tmp/apex-workflow/
 tmp/gaskit/
+tmp/iota-move-scaffold-check/
+tmp/tooling/
 tmp/live-gas-station/
 tmp/agent-browser/
 docs/plans/

@@ -8,10 +8,11 @@ The short version: users and agents can request useful IOTA actions without
 managing gas up front, while the operator keeps sponsor secrets server-side,
 checks policy before spending gas, and records sanitized usage events.
 
-The current implemented foundation is still GasKit: SDK, policy gateway, local
-service, examples, deployment docs, observability foundations, and testnet
-sponsorship proof. The agent-specific layer is being migrated into this fork in
-documented slices.
+The implemented foundation is GasKit plus the first Agentic GasKit slices: SDK,
+policy gateway, local service, examples, deployment docs, observability
+foundations, account/signer-reference primitives, manifests, mock agent
+sponsorship, MCP tool facade, receipts, and local escrow/receipt Move contracts.
+Live testnet proof still requires operator-owned local credentials.
 
 If terms like gas, sponsor wallet, package ID, or IOTA Gas Station are new, start with [IOTA and GasKit Basics](concepts.md).
 
@@ -71,7 +72,10 @@ The official Gas Station is the sponsorship engine. GasKit is the app integratio
 | Area | Current status | Start here |
 | --- | --- | --- |
 | Agentic migration | The fork direction, migrated planning docs, code-slice gates, and remote/package decisions are documented. | [Agentic Migration Plan](agentic-gaskit/migration-plan.md) |
-| Agent wallets | Signer-reference-first account/wallet safety model is documented; package implementation is still roadmap. | [Account And Wallet Safety](agentic-gaskit/account-wallet-safety.md) |
+| Agent wallets | Signer-reference-first account/wallet safety model and local package implementation exist. | [Account And Wallet Safety](agentic-gaskit/account-wallet-safety.md) |
+| Agent manifests and policy | Manifest validation, pure agent action policy, and mock sponsorship gateway are implemented locally. | [Architecture](architecture.md) |
+| Agent MCP tools | Local MCP-shaped sponsorship tools route through the SDK and policy gateway. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
+| Receipts and contracts | Local receipt state package plus non-custodial Move escrow/receipt state contracts are implemented and covered by local tests. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
 | Agent roadmap | PRDs, execution slices, module specs, and hardening gates have been migrated into this fork. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
 | Beginner concepts | Plain-English explanations of IOTA, sponsored gas, GasKit roles, and common terms. | [IOTA and GasKit Basics](concepts.md) |
 | Code examples | Backend SDK calls, Next.js route shape, browser caller shape, curl requests, and policy YAML. | [Code Examples](examples.md) |
@@ -86,12 +90,10 @@ The official Gas Station is the sponsorship engine. GasKit is the app integratio
 
 These are not complete production claims yet:
 
-- agent account/wallet package;
 - signer adapter storage beyond documented safety model;
-- agent transaction manifest package;
-- MCP/A2A agent tools;
+- A2A agent tools;
 - identity/registry package;
-- receipt and contract workflow packages;
+- expanded contract workflow packages beyond the escrow/receipt MVP;
 - full dashboard UI;
 - production-grade durable usage storage;
 - production monitoring and alerting templates;
