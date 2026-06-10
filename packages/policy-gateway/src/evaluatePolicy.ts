@@ -3,7 +3,8 @@ import {
   type AgentTransactionManifest,
   type ManifestValidationError,
 } from "@iota-gaskit/manifest";
-import type { AgentActionPolicy, AgentPolicyContract, AgentPolicyDecision } from "./policySchema.js";
+import { contractActionAllowed } from "./contractAllowList.js";
+import type { AgentActionPolicy, AgentPolicyDecision } from "./policySchema.js";
 
 export interface AgentActionPolicyEvaluationOptions {
   readonly now?: Date;
@@ -31,7 +32,7 @@ export function evaluateAgentActionPolicy(
   if (validManifest.spend.maxGasBudget > policy.maxGasBudget) {
     return reject("GAS_BUDGET_TOO_HIGH", "Manifest gas budget exceeds policy.");
   }
-  if (!contractAllowed(policy.allowedContracts, validManifest.action)) {
+  if (!contractActionAllowed(policy.allowedContracts, validManifest.action)) {
     return reject("CONTRACT_NOT_ALLOWED", "Manifest contract action is not allowed by policy.");
   }
   if (!policy.allowedCounterparties.includes(validManifest.counterparty.id)) {
@@ -58,14 +59,6 @@ function manifestValidationDecision(errors: readonly ManifestValidationError[]):
     return reject("MANIFEST_EXPIRED", "Manifest is expired.");
   }
   return reject("MANIFEST_INVALID", "Manifest failed validation.");
-}
-
-function contractAllowed(allowedContracts: readonly AgentPolicyContract[], action: AgentTransactionManifest["action"]): boolean {
-  return allowedContracts.some((contract) => (
-    contract.packageId === action.packageId &&
-    contract.functionName === action.functionName &&
-    (contract.module === undefined || contract.module === action.module)
-  ));
 }
 
 function simulationSatisfied(manifest: AgentTransactionManifest): boolean {

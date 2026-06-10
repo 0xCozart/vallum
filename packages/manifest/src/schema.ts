@@ -17,6 +17,8 @@ export interface ManifestAction {
   readonly packageId: string;
   readonly module?: string;
   readonly functionName: string;
+  readonly templateId?: string;
+  readonly templateVersion?: string;
   readonly displayName?: string;
 }
 

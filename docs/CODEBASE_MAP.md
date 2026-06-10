@@ -32,6 +32,7 @@ It also includes the first Agentic GasKit implementation slices:
 - agent profile schema package with local fixture resolver
 - mock-tested IOTA Names/Identity adapter interfaces
 - pure profile capability policy check
+- contract template metadata registry consumed by agent policy allow-lists
 
 The remaining Agentic GasKit direction is documented under
 `docs/agentic-gaskit/`. Live IOTA Names/Identity proof, A2A protocol tools,
@@ -60,6 +61,7 @@ deployment proof remain roadmap unless later slices implement and verify them.
 - Agent manifests: `packages/manifest/src/`
 - Agent registry/profile schema, local resolver, and adapters:
   `packages/registry/src/`
+- Contract template metadata: `packages/contracts-metadata/src/`
 - MCP sponsorship tools: `packages/mcp-server/src/`
 - Receipts: `packages/receipts/src/`
 - Move escrow contract: `contracts/escrow_v1/`

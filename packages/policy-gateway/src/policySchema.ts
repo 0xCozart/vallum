@@ -9,9 +9,11 @@ export interface AgentActionPolicy {
 }
 
 export interface AgentPolicyContract {
-  readonly packageId: string;
+  readonly packageId?: string;
   readonly module?: string;
-  readonly functionName: string;
+  readonly functionName?: string;
+  readonly templateId?: string;
+  readonly templateVersion?: string;
 }
 
 export type AgentPolicyDecision =

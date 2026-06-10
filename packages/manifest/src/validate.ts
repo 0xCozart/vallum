@@ -58,6 +58,8 @@ export function validateAgentTransactionManifest(
   requirePositiveNumber(errors, manifest.spend?.maxGasBudget, "$.spend.maxGasBudget");
   requireNonEmptyString(errors, manifest.action?.packageId, "$.action.packageId");
   requireNonEmptyString(errors, manifest.action?.functionName, "$.action.functionName");
+  requireOptionalNonEmptyString(errors, manifest.action?.templateId, "$.action.templateId");
+  requireOptionalNonEmptyString(errors, manifest.action?.templateVersion, "$.action.templateVersion");
   requireNonEmptyString(errors, manifest.idempotencyKey, "$.idempotencyKey");
   requireNonEmptyString(errors, manifest.expiresAt, "$.expiresAt");
   requireArrayOfStrings(errors, manifest.scope, "$.scope");
@@ -104,6 +106,12 @@ function requireParty(errors: ManifestValidationError[], value: unknown, path: s
 function requireNonEmptyString(errors: ManifestValidationError[], value: unknown, path: string): void {
   if (typeof value !== "string" || value.trim() === "") {
     push(errors, "REQUIRED_FIELD_MISSING", path, "Required string field is missing.");
+  }
+}
+
+function requireOptionalNonEmptyString(errors: ManifestValidationError[], value: unknown, path: string): void {
+  if (value !== undefined && (typeof value !== "string" || value.trim() === "")) {
+    push(errors, "FIELD_INVALID", path, "Optional string field must be non-empty when present.");
   }
 }
 

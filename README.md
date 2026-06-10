@@ -178,6 +178,7 @@ packages/
   accounts/               # Agent account and signer-reference primitives
   manifest/               # Agent transaction manifest schema and validation
   registry/               # Agent Profile schema, validation, resolver, and adapters
+  contracts-metadata/     # Versioned contract template metadata for policy
   mcp-server/             # MCP-shaped sponsorship tool facade
   receipts/               # Receipt and escrow state machine
 contracts/
@@ -234,7 +235,9 @@ Shared TypeScript types for policy decisions, policy reason codes, sponsorship p
 
 ### `@iota-gaskit/policy-gateway`
 
-Policy decision scaffold for validating app status, credentials, daily limits, gas budget, wallet denylist, package allowlist, and function allowlist.
+Policy decision scaffold for validating app status, credentials, daily limits,
+gas budget, wallet denylist, package allowlist, function allowlist, and
+agent contract-template allowlists.
 
 Current tests cover:
 
@@ -247,6 +250,18 @@ Current tests cover:
 - `FUNCTION_NOT_ALLOWED`, including missing function metadata when an allowlist is configured
 - `WALLET_DENIED`
 - valid sponsorship request
+- agent action policy approval by contract template id/version
+- unknown raw packages denied when a template allowlist is configured
+- mismatched template versions denied
+- legacy raw package/function agent allowlists remaining compatible
+
+### `@iota-gaskit/contracts-metadata`
+
+Versioned contract template metadata registry for Agentic GasKit policy
+allowlists. The local registry currently covers escrow and receipt template
+metadata and pure checks for approved template/version, unknown package, and
+mismatched version decisions. It does not deploy contracts or prove live package
+addresses.
 
 ### `@iota-gaskit/sdk`
 

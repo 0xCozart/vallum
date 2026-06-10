@@ -26,6 +26,8 @@ export function validManifestFixture(): AgentTransactionManifest {
       packageId: "0x2222222222222222222222222222222222222222222222222222222222222222",
       module: "escrow",
       functionName: "open_escrow",
+      templateId: "escrow_v1",
+      templateVersion: "1.0.0",
       displayName: "Open escrow",
     },
     counterparty: {

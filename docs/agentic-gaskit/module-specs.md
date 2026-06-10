@@ -268,6 +268,37 @@ Verification:
 - Mock adapter tests.
 - Manual testnet adapter verification after API refresh.
 
+## `packages/contracts-metadata`
+
+Phase:
+3.
+
+Owns:
+
+- Versioned contract template metadata.
+- Template id/version to package/module/function mapping.
+- Pure contract metadata allow-list decisions.
+- Local metadata for approved template fixtures.
+
+Must not own:
+
+- Move deployment or package publication.
+- Live package-address proof.
+- Custody, settlement, or legal audit claims.
+
+Acceptance:
+
+- Approved template/version metadata is accepted.
+- Unknown package addresses fail closed when template allow-lists are used.
+- Mismatched template versions fail closed.
+- Policy gateway can consume metadata without breaking raw package allow-lists.
+
+Verification:
+
+- Metadata registry unit tests.
+- Policy gateway integration tests.
+- Full local verification before advancing contract slices.
+
 ## `packages/receipts`
 
 Phase:
