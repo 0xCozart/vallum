@@ -528,6 +528,53 @@ Escalation triggers:
 - IOTA Names cannot store/resolve required metadata safely.
 - Identity integration requires third-party provider decisions.
 
+## Slice 2.4: Identity Revocation Cache Hardening
+
+User-visible outcome:
+Profile identity verification can use bounded cached DID and credential
+evidence without accepting stale identity data after the cache TTL expires.
+
+Likely files:
+
+- `packages/registry/src/iotaIdentityAdapter.ts`
+- `packages/registry/src/iotaIdentityAdapter.test.ts`
+- `packages/registry/README.md`
+- continuation and overview docs
+
+Acceptance criteria:
+
+- Successful IOTA Identity DID and credential verification results can be
+  cached only inside an explicit finite TTL.
+- Cache keys bind to profile identity, wallet status, profile status,
+  revocation state, expiry, and credential references.
+- Expired cache entries are not used to approve active profiles.
+- If stale identity evidence cannot refresh, profile resolution fails closed.
+- If a credential is revoked after cache expiry, profile resolution returns a
+  revoked profile error.
+- Protected actions can force identity refresh even inside the cache TTL.
+- The slice does not claim live IOTA Identity proof without operator-owned
+  testnet credentials.
+
+Verification:
+
+- Focused registry identity adapter tests.
+- `npm run typecheck`
+- `npm run verify:local`
+- `npm run readiness:testnet`, or exact local configuration blocker.
+
+Dependencies:
+Slice 2.3.
+
+Risk:
+High. Identity caches can accidentally accept revoked agents if cache TTL and
+fail-closed behavior are not explicit.
+
+Escalation triggers:
+
+- Product requires live revocation freshness stronger than a bounded cache TTL.
+- Live IOTA Identity credential validation requires issuer trust or third-party
+  verifier decisions not represented in local configuration.
+
 ## Slice 3.1: Contract Metadata Registry
 
 User-visible outcome:

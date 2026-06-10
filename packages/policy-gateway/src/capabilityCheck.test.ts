@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { validAgentProfileFixture } from "@iota-gaskit/registry";
 
-import { evaluateProfileCapabilityPolicy } from "./index.js";
+import { evaluateProfileCapabilityPolicy, evaluateResolvedProfileCapabilityPolicy } from "./index.js";
 
 const now = new Date("2026-06-10T12:00:00.000Z");
 
@@ -66,4 +66,52 @@ test("profile capability policy denies revoked and expired profiles", () => {
     reasonCode: "PROFILE_EXPIRED",
     message: "Agent profile is expired.",
   });
+});
+
+test("resolved profile capability policy denies stale and revoked resolution results", () => {
+  const stale = evaluateResolvedProfileCapabilityPolicy({
+    ok: false,
+    error: {
+      code: "PROFILE_STALE_CACHE",
+      message: "Cached Agent Profile evidence is stale.",
+      name: "researcher.demo.iota",
+    },
+  }, {
+    capabilityId: "research.summary",
+  }, { now });
+
+  const revoked = evaluateResolvedProfileCapabilityPolicy({
+    ok: false,
+    error: {
+      code: "PROFILE_REVOKED",
+      message: "Capability credential is revoked.",
+      name: "researcher.demo.iota",
+    },
+  }, {
+    capabilityId: "research.summary",
+  }, { now });
+
+  assert.deepEqual(stale, {
+    allowed: false,
+    reasonCode: "PROFILE_STALE_CACHE",
+    message: "Cached Agent Profile evidence is stale.",
+  });
+  assert.deepEqual(revoked, {
+    allowed: false,
+    reasonCode: "PROFILE_REVOKED",
+    message: "Capability credential is revoked.",
+  });
+});
+
+test("resolved profile capability policy evaluates fresh resolved profiles", () => {
+  const decision = evaluateResolvedProfileCapabilityPolicy({
+    ok: true,
+    profile: validAgentProfileFixture(),
+  }, {
+    capabilityId: "research.summary",
+    scope: "action:open_escrow",
+    contract: "escrow:v1",
+  }, { now });
+
+  assert.deepEqual(decision, { allowed: true });
 });

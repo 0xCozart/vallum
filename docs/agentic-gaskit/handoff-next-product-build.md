@@ -7,9 +7,9 @@ Last updated: 2026-06-10.
 Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
-Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 3.1, 3.2,
-3.3, 3.4, 3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5, and 5.1 are implemented or
-reviewed and locally verified.
+Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 3.1,
+3.2, 3.3, 3.4, 3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5, and 5.1 are implemented
+or reviewed and locally verified.
 Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
 `docs/marketplace-readiness.md` before choosing the next slice. Do not start
 production marketplace implementation unless the user explicitly approves the
@@ -27,6 +27,7 @@ new scope and its unresolved gates.
 
 Recent commits to know:
 
+- `dbc4884` feat: harden identity verification cache
 - `faddf2f` feat: add subscription workflow
 - `0de44a1` feat: add reputation receipt workflow
 - `2a72b62` feat: add a2a agent card mapping
@@ -129,6 +130,14 @@ Recent commits to know:
   `packages/registry` with mock DID and credential tests for agent/owner DID
   resolution, credential reference validation, DID mismatch failure, and revoked
   credential denial.
+- Slice 2.4 Identity Revocation Cache Hardening is implemented in
+  `packages/registry` and `packages/policy-gateway`.
+- Slice 2.4 tests prove successful local/mock DID and credential evidence can
+  be cached only inside an explicit TTL; expired cache entries are not used for
+  approval; stale evidence fails closed if refresh cannot complete; revoked
+  credentials are detected after TTL expiry; protected-action resolution can
+  force refresh inside the TTL; and capability policy denies stale, revoked,
+  expired, unverifiable, or invalid resolved profiles.
 - Slice 3.1 Contract Metadata Registry is implemented in
   `packages/contracts-metadata` as `@iota-gaskit/contracts-metadata`.
 - Slice 3.1 tests prove approved template/version metadata is accepted, unknown
@@ -243,10 +252,10 @@ Recent commits to know:
 - Signed public Agent Cards, live A2A discovery proof, live A2A server
   operation, streaming/push notification support, external A2A conformance
   proof, and production A2A authentication decisions are not implemented.
-- Live IOTA Names/Identity proof, full verifiable credential validation, live
-  standards-bridge proof, and expanded contract workflows beyond local
-  escrow/receipt/pay-per-call/data-license/service-bounty/reputation-receipt/
-  subscription metadata are not implemented.
+- Live IOTA Names/Identity proof, full verifiable credential validation beyond
+  local/mock bounded cache behavior, live standards-bridge proof, and expanded
+  contract workflows beyond local escrow/receipt/pay-per-call/data-license/
+  service-bounty/reputation-receipt/subscription metadata are not implemented.
 - Slice 2.3 is locally verified only. Localnet/testnet deployment smoke has not
   run, and the demo/escrow contract does not custody real funds.
 - Package namespace strategy is still open.
@@ -1309,9 +1318,116 @@ Hardening notes:
 Known unproven claims:
 
 - No live IOTA Names query, live IOTA Identity DID resolution, live credential
-  JWT validation, cache TTL policy, reverse-name enforcement, dashboard profile
-  view, A2A Agent Card mapping, or live testnet/manual resolution proof exists
+  JWT validation, reverse-name enforcement, dashboard profile view, signed or
+  public A2A Agent Card proof, or live testnet/manual resolution proof exists
   yet.
+
+## Completed Slice 2.4
+
+Implemented bounded local/mock IOTA Identity verification cache hardening and
+resolved-profile capability policy denial handling.
+
+Implementation commit:
+
+- `dbc4884` feat: harden identity verification cache
+
+This slice stays local by default. It does not call live IOTA Names, IOTA
+Identity, IOTA RPC, IOTA Gas Station, localnet, testnet, mainnet, paid APIs, or
+external identity providers in automated verification.
+
+Acceptance is defined in:
+
+- `docs/agentic-gaskit/execution-slices.md` Slice 2.4
+- `docs/agentic-gaskit/prds/phase-2-identity-registry.md`
+- `docs/agentic-gaskit/verification-hardening.md` Phase 2 gates
+- `docs/marketplace-readiness.md` live identity/name proof gate
+
+Changed files:
+
+- `README.md`
+- `docs/CODEBASE_MAP.md`
+- `docs/overview.md`
+- `docs/marketplace-readiness.md`
+- `docs/agentic-gaskit/execution-slices.md`
+- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+- `packages/registry/README.md`
+- `packages/registry/src/iotaIdentityAdapter.test.ts`
+- `packages/registry/src/iotaIdentityAdapter.ts`
+- `packages/policy-gateway/src/capabilityCheck.test.ts`
+- `packages/policy-gateway/src/capabilityCheck.ts`
+
+Commands run:
+
+```bash
+git status --short --branch
+npm run docs:check
+npm run secrets:scan
+npm test
+npm run typecheck
+node --import tsx --test packages/registry/src/iotaIdentityAdapter.test.ts
+node --import tsx --test packages/policy-gateway/src/capabilityCheck.test.ts
+node --import tsx --test packages/registry/src/resolveAgent.test.ts packages/registry/src/iotaIdentityAdapter.test.ts packages/registry/src/iotaNamesAdapter.test.ts packages/sdk/src/resolveAgent.test.ts packages/policy-gateway/src/capabilityCheck.test.ts
+node --import tsx --test packages/registry/src/*.test.ts packages/policy-gateway/src/capabilityCheck.test.ts packages/sdk/src/resolveAgent.test.ts
+npm run verify:local
+npm run readiness:testnet
+git diff --check
+```
+
+Verification result:
+
+- Baseline before editing passed: docs check, secret scan with 0 findings,
+  `npm test` with 291 TypeScript tests, and `npm run typecheck`.
+- Red tests failed before implementation for missing protected-action force
+  refresh inside the TTL and missing resolved-profile policy evaluation.
+- Focused identity adapter tests passed with 8 tests.
+- Focused policy capability tests passed with 5 tests.
+- Broader focused registry, SDK, and policy tests passed with 25 tests.
+- Final focused registry, SDK, and policy tests passed with 39 tests.
+- `npm run typecheck` passed.
+- `npm run docs:check` passed.
+- `npm run secrets:scan` passed with 267 tracked/staged/untracked text files
+  checked and 0 findings.
+- Final `npm run verify:local` passed with 297 TypeScript tests, 33 Move tests,
+  local gateway smoke, demo dApp smoke, browser wrapper smoke, agent escrow
+  smoke, paid MCP tool smoke, data-license smoke, service-bounty smoke,
+  reputation-receipt smoke, subscription smoke, A2A well-known smoke, A2A
+  task/message smoke, testnet readiness example, package dry-runs, docs check,
+  and secret scan.
+- Final `git diff --check` passed.
+- `npm run readiness:testnet` built successfully but stopped before live IOTA
+  calls because `.env` is absent. The exact blocker was: "Readiness env file
+  not found: .env".
+
+Hardening notes:
+
+- Identity verification cache entries record only successful DID and credential
+  evidence and require an explicit finite positive TTL.
+- Cache reads are keyed by profile identity, wallet status, profile status,
+  revocation state, expiry, and credential references.
+- Expired cache entries are deleted and never used for approval.
+- Failed stale refresh fails closed as unverifiable profile resolution.
+- Protected actions can set `forceRefresh` to delete the current cache entry
+  before verification and detect revocation inside the TTL.
+- Capability policy can evaluate `ResolveAgentResult` directly and deny stale,
+  revoked, expired, unverifiable, or invalid profiles before granting a
+  capability.
+- This work does not claim Apex verification; verification used the repo-local
+  npm, docs, readiness, and secret-scan checks listed above.
+
+Known unproven claims:
+
+- No live IOTA Names query, live IOTA Identity DID resolution, live credential
+  JWT validation, trusted issuer policy, localnet, testnet, mainnet,
+  production identity authority, provider verification, marketplace access
+  control, or external standards proof exists yet.
+- Slice 2.4 proves only local/mock bounded cache behavior.
+
+Next recommended slice:
+
+- Continue Packet C live readiness/proof only if operator credentials and
+  endpoints are configured, or choose signed/live A2A discovery or marketplace
+  access-control/dispute evidence as a local/read-only slice.
 
 ## Slice 3.1 Completion Evidence
 

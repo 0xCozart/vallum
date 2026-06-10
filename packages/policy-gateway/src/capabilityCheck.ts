@@ -1,4 +1,4 @@
-import { validateAgentProfile, type AgentProfile } from "@iota-gaskit/registry";
+import { validateAgentProfile, type AgentProfile, type ResolveAgentResult } from "@iota-gaskit/registry";
 
 export interface AgentCapabilityRequirement {
   readonly capabilityId: string;
@@ -16,6 +16,8 @@ export type AgentCapabilityPolicyDecision =
         | "PROFILE_INVALID"
         | "PROFILE_REVOKED"
         | "PROFILE_EXPIRED"
+        | "PROFILE_UNVERIFIABLE"
+        | "PROFILE_STALE_CACHE"
         | "CAPABILITY_NOT_ALLOWED";
       readonly message: string;
     };
@@ -45,6 +47,30 @@ export function evaluateProfileCapabilityPolicy(
   }
 
   return { allowed: true };
+}
+
+export function evaluateResolvedProfileCapabilityPolicy(
+  resolved: ResolveAgentResult,
+  requirement: AgentCapabilityRequirement,
+  options: AgentCapabilityPolicyOptions = {},
+): AgentCapabilityPolicyDecision {
+  if (!resolved.ok) {
+    if (resolved.error.code === "PROFILE_REVOKED") {
+      return deny("PROFILE_REVOKED", resolved.error.message);
+    }
+    if (resolved.error.code === "PROFILE_EXPIRED") {
+      return deny("PROFILE_EXPIRED", resolved.error.message);
+    }
+    if (resolved.error.code === "PROFILE_STALE_CACHE") {
+      return deny("PROFILE_STALE_CACHE", resolved.error.message);
+    }
+    if (resolved.error.code === "PROFILE_UNVERIFIABLE") {
+      return deny("PROFILE_UNVERIFIABLE", resolved.error.message);
+    }
+    return deny("PROFILE_INVALID", resolved.error.message);
+  }
+
+  return evaluateProfileCapabilityPolicy(resolved.profile, requirement, options);
 }
 
 function hasRequiredCapability(profile: AgentProfile, requirement: AgentCapabilityRequirement): boolean {

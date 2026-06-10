@@ -23,6 +23,32 @@ export type IotaIdentityVerificationResult =
       readonly error: IotaIdentityVerificationError;
     };
 
+export type IotaIdentityVerificationCacheEntry = Extract<IotaIdentityVerificationResult, { ok: true }> & {
+  readonly cachedAt: string;
+  readonly expiresAt: string;
+};
+
+export interface IotaIdentityVerificationCache {
+  readonly get: (key: string) => IotaIdentityVerificationCacheEntry | undefined;
+  readonly set: (key: string, entry: IotaIdentityVerificationCacheEntry) => void;
+  readonly delete?: (key: string) => void;
+}
+
+export function createInMemoryIotaIdentityVerificationCache(): IotaIdentityVerificationCache {
+  const entries = new Map<string, IotaIdentityVerificationCacheEntry>();
+  return {
+    get(key) {
+      return entries.get(key);
+    },
+    set(key, entry) {
+      entries.set(key, entry);
+    },
+    delete(key) {
+      entries.delete(key);
+    },
+  };
+}
+
 export interface IotaIdentityDidResolver {
   /**
    * Matches the current IOTA Identity read surfaces:
@@ -64,6 +90,10 @@ export interface IotaIdentityCredentialValidator {
 export interface IotaIdentityVerificationOptions {
   readonly didResolver: IotaIdentityDidResolver;
   readonly credentialValidator?: IotaIdentityCredentialValidator;
+  readonly verificationCache?: IotaIdentityVerificationCache;
+  readonly cacheTtlMs?: number;
+  readonly forceRefresh?: boolean;
+  readonly now?: () => Date;
 }
 
 export function createIotaIdentityVerifiedResolver(
@@ -94,6 +124,12 @@ export async function verifyAgentProfileIdentity(
   profile: AgentProfile,
   options: IotaIdentityVerificationOptions,
 ): Promise<IotaIdentityVerificationResult> {
+  const now = options.now?.() ?? new Date();
+  const cacheKey = identityVerificationCacheKey(profile);
+  if (options.forceRefresh) options.verificationCache?.delete?.(cacheKey);
+  const cached = readFreshIdentityCache(options, cacheKey, now);
+  if (cached) return withoutCacheMetadata(cached);
+
   const agentDidDocument = await resolveDidDocument(profile.agentDid, options.didResolver);
   if (!agentDidDocument.ok) return agentDidDocument;
   if (extractDidDocumentId(agentDidDocument.document) !== profile.agentDid) {
@@ -125,12 +161,79 @@ export async function verifyAgentProfileIdentity(
     }
   }
 
-  return {
+  const verified: Extract<IotaIdentityVerificationResult, { ok: true }> = {
     ok: true,
     agentDidDocument: agentDidDocument.document,
     ownerDidDocument: ownerDidDocument.document,
     credentialRefsChecked: credentialRefs,
   };
+  writeIdentityCache(options, cacheKey, verified, now);
+  return verified;
+}
+
+function readFreshIdentityCache(
+  options: IotaIdentityVerificationOptions,
+  key: string,
+  now: Date,
+): IotaIdentityVerificationCacheEntry | undefined {
+  if (!isCacheEnabled(options)) return undefined;
+  const entry = options.verificationCache?.get(key);
+  if (!entry) return undefined;
+  if (Date.parse(entry.expiresAt) > now.getTime()) return entry;
+  options.verificationCache?.delete?.(key);
+  return undefined;
+}
+
+function writeIdentityCache(
+  options: IotaIdentityVerificationOptions,
+  key: string,
+  result: Extract<IotaIdentityVerificationResult, { ok: true }>,
+  now: Date,
+): void {
+  if (!isCacheEnabled(options)) return;
+  const ttlMs = options.cacheTtlMs ?? 0;
+  options.verificationCache?.set(key, {
+    ...result,
+    cachedAt: now.toISOString(),
+    expiresAt: new Date(now.getTime() + ttlMs).toISOString(),
+  });
+}
+
+function withoutCacheMetadata(
+  entry: IotaIdentityVerificationCacheEntry,
+): Extract<IotaIdentityVerificationResult, { ok: true }> {
+  return {
+    ok: true,
+    agentDidDocument: entry.agentDidDocument,
+    ownerDidDocument: entry.ownerDidDocument,
+    credentialRefsChecked: entry.credentialRefsChecked,
+  };
+}
+
+function isCacheEnabled(options: IotaIdentityVerificationOptions): boolean {
+  return Boolean(
+    options.verificationCache
+      && options.cacheTtlMs
+      && Number.isFinite(options.cacheTtlMs)
+      && options.cacheTtlMs > 0,
+  );
+}
+
+function identityVerificationCacheKey(profile: AgentProfile): string {
+  return JSON.stringify({
+    version: profile.version,
+    name: profile.name,
+    agentDid: profile.agentDid,
+    ownerDid: profile.ownerDid,
+    walletStatus: profile.wallet.status,
+    expiresAt: profile.expiresAt,
+    status: profile.status,
+    revocation: {
+      revoked: profile.revocation.revoked,
+      revokedAt: profile.revocation.revokedAt ?? "",
+    },
+    credentialRefs: profileCredentialRefs(profile),
+  });
 }
 
 async function resolveDidDocument(

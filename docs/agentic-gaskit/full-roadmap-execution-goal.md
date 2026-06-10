@@ -57,12 +57,13 @@ Confirmed current state:
 - `docs/CODEBASE_MAP.md` says Agentic GasKit currently includes local agent
   accounts, manifests, policy evaluator, mock gateway, SDK/MCP routing,
   receipts, local Move contracts, local contract workflows, registry/profile
-  schema, mock IOTA Names/Identity adapters, x402/AP2/A2A mappings, local A2A
-  well-known serving, and local A2A task/message helpers.
+  schema, mock IOTA Names/Identity adapters, bounded local IOTA Identity
+  verification cache helpers, x402/AP2/A2A mappings, local A2A well-known
+  serving, and local A2A task/message helpers.
 - `docs/agentic-gaskit/handoff-next-product-build.md` says Slices 1.0, 1.1,
-  1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 3.1, 3.2, 3.3, 3.4, 3.5,
-  4.1, 4.2, 4.3, 4.4, 4.5, and 5.1 are implemented or reviewed and locally
-  verified.
+  1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3, 3.4,
+  3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5, and 5.1 are implemented or reviewed and
+  locally verified.
 - `docs/marketplace-readiness.md` permits marketplace requirements/design work
   only inside local/mock proof. Production marketplace implementation remains
   blocked.
@@ -82,8 +83,8 @@ Confirmed remaining gaps:
 - Signed public Agent Cards, live A2A discovery proof, live A2A server
   operation, streaming/push notification support, external A2A conformance
   proof, and production A2A authentication decisions.
-- Live IOTA Names/Identity proof, full verifiable credential validation,
-  cache-bounded revocation behavior, and live standards-bridge proof.
+- Live IOTA Names/Identity proof, full verifiable credential validation beyond
+  local/mock cache behavior, and live standards-bridge proof.
 - Testnet/localnet deployment proof for relevant Move contracts and demos.
 - Expanded Phase 3 contract workflows beyond the implemented escrow, receipt,
   pay-per-call, data-license, service-bounty, reputation-receipt, and
@@ -365,7 +366,10 @@ marketplace obligations.
 
 Outcome:
 Move registry identity from mock adapters toward testnet/live proof with
-bounded revocation and credential validation.
+bounded revocation and credential validation. Slice 2.4 now provides local/mock
+bounded cache behavior for successful DID and credential evidence, including
+fail-closed stale refresh and revoked-credential detection after TTL expiry.
+Live IOTA Names/Identity proof and full VC validation remain unproven.
 
 Acceptance criteria:
 

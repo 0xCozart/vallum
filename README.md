@@ -83,8 +83,9 @@ contracts, a deterministic local agent-to-agent escrow demo, and local Agent
 Profile schema validation with fixture resolution, IOTA Names/Identity adapter
 interfaces, capability policy checks, x402/AP2/A2A standards bridge helpers,
 local pay-per-call, data-license, service-bounty, reputation-receipt, and
-subscription workflows, and local A2A well-known Agent Card response proof plus local/mock
-A2A task/message operation helpers.
+subscription workflows, bounded local IOTA Identity verification cache helpers,
+and local A2A well-known Agent Card response proof plus local/mock A2A
+task/message operation helpers.
 
 Some production surfaces remain planned roadmap work, including the full
 dashboard UI, production persistence, production monitoring, package
@@ -110,7 +111,8 @@ The repo currently includes:
 - agent profile schema validation for required fields, revoked/expired states,
   unsupported versions, and secret-field rejection;
 - local profile resolution through the SDK, mock-tested IOTA Names/Identity
-  adapter interfaces, and pure capability policy checks.
+  adapter interfaces, bounded identity verification cache helpers, and pure
+  capability policy checks.
 
 ## Current proof status
 
@@ -123,7 +125,7 @@ npm run verify:local
 
 Latest local verification and prior live proof:
 
-- `npm test`: 291 deterministic TypeScript tests passed locally after Slice 3.6.
+- `npm test`: 297 deterministic TypeScript tests passed locally after Slice 2.4.
 - `npm run contracts:test`: 33 Move escrow/receipt/pay-per-call/data-license/service-bounty/reputation-receipt/subscription contract tests passed locally.
 - `npm run typecheck`: passed locally.
 - `npm run smoke:local`: deterministic local gateway smoke passed locally, including policy simulation, sanitized event, local usage read-model, file-backed usage event-store replay, and authenticated local operator usage API checks.

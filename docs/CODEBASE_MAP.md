@@ -36,6 +36,8 @@ It also includes the first Agentic GasKit implementation slices:
 - local Move subscription state contract and subscription demo
 - agent profile schema package with local fixture resolver
 - mock-tested IOTA Names/Identity adapter interfaces
+- bounded local IOTA Identity verification cache helpers with fail-closed stale
+  refresh behavior
 - local A2A Agent Card mapping from Agent Profiles
 - local A2A Agent Card well-known serving helper and smoke proof
 - local A2A task/message operation helpers and smoke proof

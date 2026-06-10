@@ -7,6 +7,10 @@ Current surface:
 - Agent Profile schema validation with revoked/expired states.
 - Local fixture profile resolution.
 - Dependency-injected IOTA Names and IOTA Identity adapter interfaces.
+- Bounded in-memory IOTA Identity verification cache helpers that fail closed
+  after TTL expiry if DID or credential evidence cannot refresh.
+- Optional force-refresh behavior for protected actions that must bypass
+  current cache entries.
 - A2A Agent Card generation from active Agent Profiles.
 - Local A2A Agent Card well-known response helpers for the canonical
   `/.well-known/agent-card.json` path.
@@ -14,3 +18,5 @@ Current surface:
 This package is local-first today. It does not resolve live IOTA Names,
 validate live IOTA Identity credentials, run A2A task/message operations, host
 public A2A discovery, sign Agent Cards, or contact testnet/mainnet services.
+The identity cache records only successful local/mock verification evidence and
+does not turn mock credentials into live credential validation.
