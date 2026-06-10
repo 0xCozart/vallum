@@ -1736,6 +1736,10 @@ Known unproven claims:
 Implemented local A2A well-known serving proof for canonical Agent Card
 discovery.
 
+Implementation commit:
+
+- `7619375` feat: add a2a well-known serving
+
 Slice and PRD coverage:
 
 - `docs/agentic-gaskit/execution-slices.md` Slice 4.4 A2A Well-Known Serving.
