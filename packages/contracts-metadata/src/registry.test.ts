@@ -6,6 +6,7 @@ import {
   evaluateContractTemplateAction,
   escrowContractTemplateV1,
   payPerCallContractTemplateV1,
+  reputationReceiptContractTemplateV1,
   serviceBountyContractTemplateV1,
 } from "./index.js";
 
@@ -14,6 +15,7 @@ const registry = createContractTemplateRegistry([
   payPerCallContractTemplateV1,
   dataLicenseContractTemplateV1,
   serviceBountyContractTemplateV1,
+  reputationReceiptContractTemplateV1,
 ]);
 
 test("approved template and version metadata is accepted", () => {
@@ -120,5 +122,21 @@ test("service-bounty template metadata is accepted", () => {
   if (decision.allowed) {
     assert.equal(decision.template.templateId, "service_bounty_v1");
     assert.deepEqual(decision.template.allowedActions, ["post_bounty", "complete_bounty", "release_bounty", "cancel_bounty"]);
+  }
+});
+
+test("reputation receipt template metadata is accepted", () => {
+  const decision = evaluateContractTemplateAction(registry, {
+    templateId: "reputation_receipt_v1",
+    templateVersion: "1.0.0",
+    packageId: "0x8888888888888888888888888888888888888888888888888888888888888888",
+    module: "reputation_receipt",
+    functionName: "create_receipt",
+  });
+
+  assert.equal(decision.allowed, true);
+  if (decision.allowed) {
+    assert.equal(decision.template.templateId, "reputation_receipt_v1");
+    assert.deepEqual(decision.template.allowedActions, ["create_receipt", "attest_reputation", "fail_receipt"]);
   }
 });

@@ -105,6 +105,29 @@ export interface ServiceBountyReceipt {
   readonly events: readonly ReceiptEvent[];
 }
 
+export interface ReputationReceipt {
+  readonly receiptId: string;
+  readonly manifestId: string;
+  readonly idempotencyKey: string;
+  readonly agentId: string;
+  readonly ownerId: string;
+  readonly issuerId: string;
+  readonly subjectId: string;
+  readonly interactionId: string;
+  readonly criteriaHash: string;
+  readonly status: ReceiptStatus;
+  readonly amount: ReceiptAmount;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly sponsorshipId?: string;
+  readonly transactionDigest?: string;
+  readonly score?: number;
+  readonly evidenceHash?: string;
+  readonly attestationHash?: string;
+  readonly failureReason?: string;
+  readonly events: readonly ReceiptEvent[];
+}
+
 export interface EscrowState {
   readonly status: EscrowStatus;
   readonly providerId: string;
@@ -122,6 +145,7 @@ export interface ReceiptEvent {
     | "pay_per_call_created"
     | "data_license_created"
     | "service_bounty_created"
+    | "reputation_receipt_created"
     | "approved"
     | "denied"
     | "sponsored"
@@ -185,6 +209,20 @@ export interface CreateServiceBountyReceiptInput {
   readonly providerId: string;
   readonly bountyId: string;
   readonly deliverableHash: string;
+  readonly amount: ReceiptAmount;
+  readonly createdAt: Date;
+}
+
+export interface CreateReputationReceiptInput {
+  readonly receiptId: string;
+  readonly manifestId: string;
+  readonly idempotencyKey: string;
+  readonly agentId: string;
+  readonly ownerId: string;
+  readonly issuerId: string;
+  readonly subjectId: string;
+  readonly interactionId: string;
+  readonly criteriaHash: string;
   readonly amount: ReceiptAmount;
   readonly createdAt: Date;
 }
@@ -300,6 +338,31 @@ export function createServiceBountyReceipt(input: CreateServiceBountyReceiptInpu
   };
 }
 
+export function createReputationReceipt(input: CreateReputationReceiptInput): ReputationReceipt {
+  requireNonEmpty(input.issuerId, "issuerId");
+  requireNonEmpty(input.subjectId, "subjectId");
+  requireNonEmpty(input.interactionId, "interactionId");
+  requireNonEmpty(input.criteriaHash, "criteriaHash");
+  requireMatchingField(input.issuerId, input.agentId, "issuerId", "agentId");
+  const at = input.createdAt.toISOString();
+  return {
+    receiptId: input.receiptId,
+    manifestId: input.manifestId,
+    idempotencyKey: input.idempotencyKey,
+    agentId: input.agentId,
+    ownerId: input.ownerId,
+    issuerId: input.issuerId,
+    subjectId: input.subjectId,
+    interactionId: input.interactionId,
+    criteriaHash: input.criteriaHash,
+    status: "attempted",
+    amount: input.amount,
+    createdAt: at,
+    updatedAt: at,
+    events: [{ type: "reputation_receipt_created", at }],
+  };
+}
+
 export function approveReceipt(receipt: EscrowReceipt, options: TransitionOptions): EscrowReceipt {
   requireReceiptStatus(receipt, ["attempted"], "approve");
   return withReceiptEvent(receipt, "approved", options.at, { status: "approved" });
@@ -327,6 +390,14 @@ export function approveServiceBountyReceipt(
 ): ServiceBountyReceipt {
   requireReceiptStatus(receipt, ["attempted"], "approve");
   return withServiceBountyReceiptEvent(receipt, "approved", options.at, { status: "approved" });
+}
+
+export function approveReputationReceipt(
+  receipt: ReputationReceipt,
+  options: TransitionOptions,
+): ReputationReceipt {
+  requireReceiptStatus(receipt, ["attempted"], "approve");
+  return withReputationReceiptEvent(receipt, "approved", options.at, { status: "approved" });
 }
 
 export function denyReceipt(receipt: EscrowReceipt, options: TransitionOptions & { readonly reason: string }): EscrowReceipt {
@@ -364,6 +435,17 @@ export function denyServiceBountyReceipt(
 ): ServiceBountyReceipt {
   requireReceiptStatus(receipt, ["attempted"], "deny");
   return withServiceBountyReceiptEvent(receipt, "denied", options.at, {
+    status: "denied",
+    failureReason: options.reason,
+  }, options.reason);
+}
+
+export function denyReputationReceipt(
+  receipt: ReputationReceipt,
+  options: TransitionOptions & { readonly reason: string },
+): ReputationReceipt {
+  requireReceiptStatus(receipt, ["attempted"], "deny");
+  return withReputationReceiptEvent(receipt, "denied", options.at, {
     status: "denied",
     failureReason: options.reason,
   }, options.reason);
@@ -413,6 +495,17 @@ export function sponsorServiceBountyReceipt(
   });
 }
 
+export function sponsorReputationReceipt(
+  receipt: ReputationReceipt,
+  options: TransitionOptions & { readonly sponsorshipId: string },
+): ReputationReceipt {
+  requireReceiptStatus(receipt, ["approved"], "sponsor");
+  return withReputationReceiptEvent(receipt, "sponsored", options.at, {
+    status: "sponsored",
+    sponsorshipId: options.sponsorshipId,
+  });
+}
+
 export function submitReceipt(
   receipt: EscrowReceipt,
   options: TransitionOptions & { readonly transactionDigest: string },
@@ -452,6 +545,17 @@ export function submitServiceBountyReceipt(
 ): ServiceBountyReceipt {
   requireReceiptStatus(receipt, ["sponsored"], "submit");
   return withServiceBountyReceiptEvent(receipt, "submitted", options.at, {
+    status: "submitted",
+    transactionDigest: options.transactionDigest,
+  });
+}
+
+export function submitReputationReceipt(
+  receipt: ReputationReceipt,
+  options: TransitionOptions & { readonly transactionDigest: string },
+): ReputationReceipt {
+  requireReceiptStatus(receipt, ["sponsored"], "submit");
+  return withReputationReceiptEvent(receipt, "submitted", options.at, {
     status: "submitted",
     transactionDigest: options.transactionDigest,
   });
@@ -550,6 +654,37 @@ export function failServiceBountyReceipt(
   }, options.reason);
 }
 
+export function completeReputationReceipt(
+  receipt: ReputationReceipt,
+  options: TransitionOptions & {
+    readonly score: number;
+    readonly evidenceHash: string;
+    readonly attestationHash: string;
+  },
+): ReputationReceipt {
+  requireReceiptStatus(receipt, ["submitted"], "complete");
+  requireScore(options.score);
+  requireNonEmpty(options.evidenceHash, "evidenceHash");
+  requireNonEmpty(options.attestationHash, "attestationHash");
+  return withReputationReceiptEvent(receipt, "completed", options.at, {
+    status: "completed",
+    score: options.score,
+    evidenceHash: options.evidenceHash,
+    attestationHash: options.attestationHash,
+  });
+}
+
+export function failReputationReceipt(
+  receipt: ReputationReceipt,
+  options: TransitionOptions & { readonly reason: string },
+): ReputationReceipt {
+  requireReceiptStatus(receipt, ["attempted", "approved", "sponsored", "submitted"], "fail");
+  return withReputationReceiptEvent(receipt, "failed", options.at, {
+    status: "failed",
+    failureReason: options.reason,
+  }, options.reason);
+}
+
 export function revokeDataLicenseAccess(
   receipt: DataLicenseReceipt,
   options: TransitionOptions & { readonly reason: string },
@@ -641,6 +776,18 @@ function requireNonEmpty(value: string, field: string): void {
   }
 }
 
+function requireMatchingField(left: string, right: string, leftField: string, rightField: string): void {
+  if (left !== right) {
+    throw new ReceiptInputError("FIELD_REQUIRED", `${leftField} must match ${rightField}.`);
+  }
+}
+
+function requireScore(score: number): void {
+  if (!Number.isInteger(score) || score < 1 || score > 5) {
+    throw new ReceiptInputError("FIELD_REQUIRED", "score must be an integer between 1 and 5.");
+  }
+}
+
 function withReceiptEvent(
   receipt: EscrowReceipt,
   eventType: ReceiptEvent["type"],
@@ -717,6 +864,29 @@ function withServiceBountyReceiptEvent(
   patch: Partial<ServiceBountyReceipt>,
   reason?: string,
 ): ServiceBountyReceipt {
+  const timestamp = at.toISOString();
+  return {
+    ...receipt,
+    ...patch,
+    updatedAt: timestamp,
+    events: [
+      ...receipt.events,
+      {
+        type: eventType,
+        at: timestamp,
+        ...(reason ? { reason } : {}),
+      },
+    ],
+  };
+}
+
+function withReputationReceiptEvent(
+  receipt: ReputationReceipt,
+  eventType: ReceiptEvent["type"],
+  at: Date,
+  patch: Partial<ReputationReceipt>,
+  reason?: string,
+): ReputationReceipt {
   const timestamp = at.toISOString();
   return {
     ...receipt,

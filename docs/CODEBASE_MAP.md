@@ -32,6 +32,7 @@ It also includes the first Agentic GasKit implementation slices:
 - local Move pay-per-call state contract and paid MCP-style tool demo
 - local Move data-license state contract and data-license demo
 - local Move service-bounty state contract and service-bounty demo
+- local Move reputation-receipt state contract and reputation-receipt demo
 - agent profile schema package with local fixture resolver
 - mock-tested IOTA Names/Identity adapter interfaces
 - local A2A Agent Card mapping from Agent Profiles
@@ -42,9 +43,10 @@ It also includes the first Agentic GasKit implementation slices:
 
 The remaining Agentic GasKit direction is documented under
 `docs/agentic-gaskit/`. Live IOTA Names/Identity proof, signed/public A2A
-discovery, live A2A server/conformance proof, expanded contract workflows
-beyond the current local templates, production custody, and live deployment
-proof remain roadmap unless later slices implement and verify them.
+discovery, live A2A server/conformance proof, subscription and device-access
+contract workflows beyond the current local templates, production custody, and
+live deployment proof remain roadmap unless later slices implement and verify
+them.
 
 ## Start Here
 
@@ -76,6 +78,7 @@ proof remain roadmap unless later slices implement and verify them.
 - Move pay-per-call contract: `contracts/pay_per_call_v1/`
 - Move data-license contract: `contracts/data_license_v1/`
 - Move service-bounty contract: `contracts/service_bounty_v1/`
+- Move reputation-receipt contract: `contracts/reputation_receipt_v1/`
 - Policy gateway service: `apps/policy-gateway-service/src/`
 - Demo dApp: `apps/demo-dapp/`
 - Agent escrow demo: `examples/agent-escrow/`, `docs/demo-agent-escrow.md`,
@@ -86,6 +89,8 @@ proof remain roadmap unless later slices implement and verify them.
   `scripts/smoke-data-license.ts`
 - Service-bounty demo: `examples/service-bounty/`,
   `scripts/smoke-service-bounty.ts`
+- Reputation-receipt demo: `examples/reputation-receipt/`,
+  `scripts/smoke-reputation-receipt.ts`
 - A2A well-known demo: `examples/a2a-well-known/`,
   `scripts/smoke-a2a-well-known.ts`
 - A2A task/message demo: `examples/a2a-task-message/`,
@@ -116,9 +121,8 @@ Do not create all of these at once. Add them through vertical slices:
 - registry live adapters
 - signed public Agent Cards, live A2A server/conformance proof, and live
   standards-compatible discovery
-- expanded contract packages beyond pay-per-call, data-license, and
-  service-bounty, including subscription, reputation receipt, and device access
-  workflows
+- expanded contract packages beyond pay-per-call, data-license, service-bounty,
+  and reputation receipt, including subscription and device access workflows
 
 ## Verification Guidance
 
@@ -133,6 +137,7 @@ Safe local checks:
 - `npm run smoke:agent-escrow`
 - `npm run smoke:data-license`
 - `npm run smoke:service-bounty`
+- `npm run smoke:reputation-receipt`
 - `npm run smoke:a2a-well-known`
 - `npm run smoke:a2a-task-message`
 - `npm run secrets:scan`

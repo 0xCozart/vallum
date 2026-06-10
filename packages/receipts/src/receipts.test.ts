@@ -4,20 +4,25 @@ import { test } from "node:test";
 import {
   approveReceipt,
   approvePayPerCallReceipt,
+  approveReputationReceipt,
   approveServiceBountyReceipt,
   approveDataLicenseReceipt,
   completeEscrow,
   completePayPerCallReceipt,
+  completeReputationReceipt,
   completeServiceBountyReceipt,
   createDataLicenseReceipt,
   createEscrowReceipt,
   createPayPerCallReceipt,
+  createReputationReceipt,
   createServiceBountyReceipt,
   denyDataLicenseReceipt,
+  denyReputationReceipt,
   denyServiceBountyReceipt,
   expireEscrow,
   failDataLicenseReceipt,
   failPayPerCallReceipt,
+  failReputationReceipt,
   failServiceBountyReceipt,
   grantDataLicenseAccess,
   linkExternalPaymentState,
@@ -28,10 +33,12 @@ import {
   refundEscrow,
   sponsorDataLicenseReceipt,
   sponsorPayPerCallReceipt,
+  sponsorReputationReceipt,
   sponsorServiceBountyReceipt,
   sponsorReceipt,
   submitDataLicenseReceipt,
   submitPayPerCallReceipt,
+  submitReputationReceipt,
   submitServiceBountyReceipt,
   submitReceipt,
   ReceiptInputError,
@@ -394,6 +401,118 @@ test("service-bounty receipts reject blank bounty and proof evidence", () => {
   );
 });
 
+test("reputation receipt advances through attested evidence lifecycle", () => {
+  const approved = approveReputationReceipt(baseReputationReceipt(), { at: now });
+  const sponsored = sponsorReputationReceipt(approved, {
+    at: now,
+    sponsorshipId: "mock_sponsorship_reputation_1",
+  });
+  const submitted = submitReputationReceipt(sponsored, {
+    at: now,
+    transactionDigest: "digest_reputation_1",
+  });
+  const completed = completeReputationReceipt(submitted, {
+    at: now,
+    score: 5,
+    evidenceHash: "sha256:reputation-evidence",
+    attestationHash: "sha256:reputation-attestation",
+  });
+
+  assert.equal(completed.status, "completed");
+  assert.equal(completed.issuerId, "agent:reputation-issuer");
+  assert.equal(completed.subjectId, "agent:service-provider");
+  assert.equal(completed.interactionId, "task:research-summary-1");
+  assert.equal(completed.score, 5);
+  assert.equal(completed.evidenceHash, "sha256:reputation-evidence");
+  assert.equal(completed.attestationHash, "sha256:reputation-attestation");
+  assert.deepEqual(completed.events.map((event) => event.type), [
+    "reputation_receipt_created",
+    "approved",
+    "sponsored",
+    "submitted",
+    "completed",
+  ]);
+});
+
+test("denied and failed reputation receipts cannot later complete", () => {
+  const denied = denyReputationReceipt(baseReputationReceipt(), {
+    at: now,
+    reason: "COUNTERPARTY_NOT_ALLOWED",
+  });
+  assert.equal(denied.status, "denied");
+  assert.throws(
+    () => completeReputationReceipt(denied, {
+      at: now,
+      score: 5,
+      evidenceHash: "sha256:late-evidence",
+      attestationHash: "sha256:late-attestation",
+    }),
+    (error) => error instanceof ReceiptTransitionError && error.code === "INVALID_TRANSITION",
+  );
+
+  const failed = failReputationReceipt(approveReputationReceipt(baseReputationReceipt(), { at: now }), {
+    at: now,
+    reason: "REPUTATION_EVIDENCE_INVALID",
+  });
+  assert.equal(failed.status, "failed");
+  assert.equal(failed.failureReason, "REPUTATION_EVIDENCE_INVALID");
+  assert.throws(
+    () => completeReputationReceipt(failed, {
+      at: now,
+      score: 5,
+      evidenceHash: "sha256:late-evidence",
+      attestationHash: "sha256:late-attestation",
+    }),
+    (error) => error instanceof ReceiptTransitionError && error.code === "INVALID_TRANSITION",
+  );
+});
+
+test("reputation receipts reject blank fields and malformed score", () => {
+  assert.throws(
+    () => createReputationReceipt({
+      ...baseReputationReceiptInput(),
+      interactionId: "",
+    }),
+    (error) => error instanceof ReceiptInputError && error.code === "FIELD_REQUIRED",
+  );
+  assert.throws(
+    () => createReputationReceipt({
+      ...baseReputationReceiptInput(),
+      issuerId: "agent:spoofed-issuer",
+    }),
+    (error) => error instanceof ReceiptInputError && error.code === "FIELD_REQUIRED",
+  );
+
+  const approved = approveReputationReceipt(createReputationReceipt(baseReputationReceiptInput()), { at: now });
+  const sponsored = sponsorReputationReceipt(approved, {
+    at: now,
+    sponsorshipId: "mock_sponsorship_reputation_1",
+  });
+  const submitted = submitReputationReceipt(sponsored, {
+    at: now,
+    transactionDigest: "digest_reputation_1",
+  });
+
+  assert.throws(
+    () => completeReputationReceipt(submitted, {
+      at: now,
+      score: 0,
+      evidenceHash: "sha256:reputation-evidence",
+      attestationHash: "sha256:reputation-attestation",
+    }),
+    (error) => error instanceof ReceiptInputError && error.code === "FIELD_REQUIRED",
+  );
+  assert.throws(
+    () => completeReputationReceipt(submitted, {
+      at: now,
+      score: 5,
+      evidenceHash: " ",
+      attestationHash: "sha256:reputation-attestation",
+    }),
+    (error) => error instanceof ReceiptInputError && error.code === "FIELD_REQUIRED",
+  );
+});
+
 function baseEscrowReceipt() {
   return createEscrowReceipt({
     receiptId: "receipt_escrow_1",
@@ -474,6 +593,26 @@ function baseServiceBountyReceiptInput() {
     bountyId: "bounty:research-summary-1",
     deliverableHash: "sha256:expected-deliverable",
     amount: { amount: "12.00", asset: "USD" },
+    createdAt: now,
+  };
+}
+
+function baseReputationReceipt() {
+  return createReputationReceipt(baseReputationReceiptInput());
+}
+
+function baseReputationReceiptInput() {
+  return {
+    receiptId: "receipt_reputation_1",
+    manifestId: "idem_reputation_1",
+    idempotencyKey: "idem_reputation_1",
+    agentId: "agent:reputation-issuer",
+    ownerId: "owner:reputation-issuer",
+    issuerId: "agent:reputation-issuer",
+    subjectId: "agent:service-provider",
+    interactionId: "task:research-summary-1",
+    criteriaHash: "sha256:reputation-criteria",
+    amount: { amount: "0.00", asset: "USD" },
     createdAt: now,
   };
 }

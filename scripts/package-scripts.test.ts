@@ -89,6 +89,11 @@ test("service bounty smoke is wired into local verification", () => {
   assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run smoke:service-bounty/);
 });
 
+test("reputation receipt smoke is wired into local verification", () => {
+  assert.equal(packageJson.scripts?.["smoke:reputation-receipt"], "npm run build && tsx scripts/smoke-reputation-receipt.ts");
+  assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run smoke:reputation-receipt/);
+});
+
 test("A2A well-known smoke is wired into local verification", () => {
   assert.equal(packageJson.scripts?.["smoke:a2a-well-known"], "npm run build && tsx scripts/smoke-a2a-well-known.ts");
   assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run smoke:a2a-well-known/);

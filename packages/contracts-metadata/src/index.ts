@@ -108,12 +108,26 @@ export const serviceBountyContractTemplateV1: ContractTemplateMetadata = {
   refundDisputeBehavior: "Provider completion proof followed by requester release, or cancellation/failure evidence.",
 };
 
+export const reputationReceiptContractTemplateV1: ContractTemplateMetadata = {
+  templateId: "reputation_receipt_v1",
+  version: "1.0.0",
+  packageId: "0x8888888888888888888888888888888888888888888888888888888888888888",
+  module: "reputation_receipt",
+  entryFunctions: ["create_receipt", "attest_reputation", "fail_receipt"],
+  allowedActions: ["create_receipt", "attest_reputation", "fail_receipt"],
+  riskCategory: "medium",
+  receiptEvents: ["reputation_receipt_created", "submitted", "completed", "failed"],
+  requiredManifestFields: ["agent", "owner", "spend", "action", "counterparty", "receipt"],
+  refundDisputeBehavior: "Issuer attests local reputation evidence; failures are receipt evidence, not public scoring.",
+};
+
 export const defaultContractTemplates = [
   escrowContractTemplateV1,
   receiptContractTemplateV1,
   payPerCallContractTemplateV1,
   dataLicenseContractTemplateV1,
   serviceBountyContractTemplateV1,
+  reputationReceiptContractTemplateV1,
 ] as const;
 
 export const defaultContractTemplateRegistry = createContractTemplateRegistry(defaultContractTemplates);

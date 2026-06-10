@@ -684,6 +684,55 @@ Escalation triggers:
   enforcement, live settlement, provider verification, staking/bonding, or
   public dispute moderation.
 
+## Slice 3.5: Reputation Receipt Workflow
+
+User-visible outcome:
+An issuer can record a local/mock reputation receipt for a completed agent
+interaction through policy-gated sponsorship and receive receipt evidence for
+attested, denied, and failed evidence states.
+
+Likely files:
+
+- `contracts/reputation_receipt_v1/`
+- `packages/receipts/src/index.ts`
+- `packages/sdk/src/contracts/reputationReceipt.ts`
+- `packages/contracts-metadata/src/index.ts`
+- `examples/reputation-receipt/`
+
+Acceptance criteria:
+
+- Reputation-receipt Move tests pass.
+- Contract metadata gates policy allow-list by `reputation_receipt_v1` template
+  and version.
+- SDK helper routes through `requestSponsoredAction` and does not collect or
+  complete reputation evidence on policy denial.
+- Receipt state records issuer id, subject id, interaction id, criteria hash,
+  score, evidence hash, attestation hash, failure, sponsorship, and transaction
+  digest without private review payloads.
+- Evidence references are hash-like values; raw review text, signer refs,
+  bearer tokens, payment credentials, and private prompt material fail closed.
+- Local example proves approved, policy-denied, and evidence-failed paths.
+- Docs and demo output label reputation receipts as local evidence, not public
+  marketplace scoring or provider verification.
+
+Verification:
+
+- Move tests.
+- Receipt and SDK unit/integration tests.
+- Local reputation-receipt smoke.
+
+Dependencies:
+Slice 3.1.
+
+Risk:
+High. Reputation receipts can become marketplace ranking, moderation, provider
+verification, or legal trust claims if the mock proof is overextended.
+
+Escalation triggers:
+
+- Production marketplace scoring, real provider verification, legal trust
+  enforcement, staking/bonding, public moderation, or live identity proof.
+
 ## Slice 4.1: x402 Mapping
 
 User-visible outcome:

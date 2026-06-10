@@ -8,8 +8,8 @@ Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 3.1, 3.2,
-3.3, 3.4, 4.1, 4.2, 4.3, 4.4, 4.5, and 5.1 are implemented or reviewed and
-locally verified.
+3.3, 3.4, 3.5, 4.1, 4.2, 4.3, 4.4, 4.5, and 5.1 are implemented or reviewed
+and locally verified.
 Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
 `docs/marketplace-readiness.md` before choosing the next slice. Do not start
 production marketplace implementation unless the user explicitly approves the
@@ -157,6 +157,17 @@ Recent commits to know:
   state records completion/release/failure events; and Move tests cover
   provider-only completion, requester-only release, cancellation, and invalid
   transitions.
+- Slice 3.5 Reputation Receipt Workflow is implemented with local
+  `contracts/reputation_receipt_v1`, SDK `attestReputation`,
+  reputation-receipt state, template metadata, and
+  `examples/reputation-receipt`.
+- Slice 3.5 tests prove reputation attestation happens only after
+  policy-gateway approval and evidence collection; policy denial does not
+  collect evidence; failed/thrown/malformed evidence withholds completion;
+  raw review payloads fail closed instead of being stored as evidence hashes;
+  receipt state records attested/denied/failed evidence; formatted demo output
+  omits private material; and Move tests cover issuer-only attestation, invalid
+  score denial, and invalid transitions.
 - Slice 4.1 x402 Mapping is implemented in `packages/manifest`,
   `packages/receipts`, and `packages/standards` as `@iota-gaskit/standards`.
 - Slice 4.1 tests prove x402 v2 payment requirements map to Agentic GasKit
@@ -210,8 +221,8 @@ Recent commits to know:
   contract tests, and secret scan include the accounts, manifest, MCP,
   registry, contracts metadata, receipts, escrow/receipt/pay-per-call contract
   surfaces, x402/AP2/A2A standards bridges, agent escrow demo smoke, paid
-  MCP-style tool smoke, data-license smoke, service-bounty smoke, A2A
-  well-known smoke, and A2A task/message smoke.
+  MCP-style tool smoke, data-license smoke, service-bounty smoke,
+  reputation-receipt smoke, A2A well-known smoke, and A2A task/message smoke.
 
 ## What Is Not Complete
 
@@ -220,8 +231,8 @@ Recent commits to know:
   proof, and production A2A authentication decisions are not implemented.
 - Live IOTA Names/Identity proof, full verifiable credential validation, live
   standards-bridge proof, and expanded contract workflows beyond local
-  escrow/receipt/pay-per-call/data-license/service-bounty metadata are not
-  implemented.
+  escrow/receipt/pay-per-call/data-license/service-bounty/reputation-receipt
+  metadata are not implemented.
 - Slice 2.3 is locally verified only. Localnet/testnet deployment smoke has not
   run, and the demo/escrow contract does not custody real funds.
 - Package namespace strategy is still open.
@@ -1936,7 +1947,105 @@ Next recommended slice:
   one explicit next slice from the remaining readiness gaps, such as signed
   Agent Card design/proof, live IOTA Names/Identity proof, read-only
   marketplace access-control/dispute-evidence proof, or another local contract
-  workflow such as subscription or reputation receipt.
+  workflow such as subscription.
+
+## Completed Slice 3.5
+
+Implemented local/mock Reputation Receipt Workflow.
+
+Implementation commit:
+
+- Pending commit in current slice.
+
+Slice and PRD coverage:
+
+- `docs/agentic-gaskit/execution-slices.md` Slice 3.5 Reputation Receipt
+  Workflow.
+- `docs/agentic-gaskit/prds/phase-3-contract-block-library.md`.
+- `docs/agentic-gaskit/verification-hardening.md` Phase 3 contract and receipt
+  gates.
+- `docs/marketplace-readiness.md` production marketplace/provider-verification
+  gates.
+
+Changed files:
+
+- `contracts/reputation_receipt_v1/`
+- `examples/reputation-receipt/`
+- `packages/receipts/src/index.ts`
+- `packages/receipts/src/receipts.test.ts`
+- `packages/sdk/src/contracts/reputationReceipt.ts`
+- `packages/sdk/src/contracts/reputationReceipt.test.ts`
+- `packages/sdk/src/index.ts`
+- `packages/contracts-metadata/src/index.ts`
+- `packages/contracts-metadata/src/registry.test.ts`
+- `scripts/smoke-reputation-receipt.ts`
+- `scripts/run-move-tests.ts`
+- `scripts/package-scripts.test.ts`
+- `package.json`
+- continuation docs, readiness docs, and package READMEs
+
+Commands run:
+
+```bash
+git status --short --branch
+npm run docs:check
+npm run secrets:scan
+node --import tsx --test packages/receipts/src/receipts.test.ts packages/contracts-metadata/src/registry.test.ts scripts/package-scripts.test.ts
+npm run typecheck
+node --import tsx --test packages/receipts/src/receipts.test.ts packages/contracts-metadata/src/registry.test.ts packages/sdk/src/contracts/reputationReceipt.test.ts scripts/package-scripts.test.ts
+npm run contracts:test
+npm run smoke:reputation-receipt
+npm run build
+npm run verify:local
+git diff --check
+```
+
+Evidence:
+
+- Baseline `npm run docs:check`, `npm run secrets:scan`, focused existing
+  receipt/metadata/script tests, and `npm run typecheck` passed before
+  implementation.
+- Red tests failed for missing reputation-receipt exports/files, missing
+  metadata, missing smoke wiring, and missing Move module before
+  implementation.
+- Hardening found and fixed an issuer-spoofing risk: `issuerId` must now match
+  the manifest agent id in receipt creation, the SDK rejects mismatched issuer
+  binding before gateway sponsorship, and the Move contract requires the
+  transaction sender to match the issuer when creating the receipt.
+- Focused TypeScript tests passed for receipt lifecycle, contract metadata, SDK
+  reputation flow, issuer-binding denial, and package script wiring: 50 tests
+  passed.
+- `npm run contracts:test` passed with 28 Move tests across escrow, receipt,
+  pay-per-call, data-license, service-bounty, and reputation-receipt contracts.
+  Reputation-receipt Move tests cover create/attest, issuer-only create,
+  issuer-only attestation, invalid score denial, and invalid transitions.
+- `npm run smoke:reputation-receipt` passed with approved, policy-denied, and
+  failed-evidence paths.
+- Final `npm run verify:local` passed with 284 TypeScript tests, 28 Move tests,
+  local gateway smoke, demo dApp smoke, browser wrapper smoke, agent escrow
+  smoke, paid MCP tool smoke, data-license smoke, service-bounty smoke,
+  reputation-receipt smoke, A2A well-known smoke, A2A task/message smoke,
+  testnet readiness example, package dry-runs, docs check, and secret scan.
+- `git diff --check` passed.
+
+Known unproven claims:
+
+- No live IOTA RPC, IOTA Gas Station, localnet/testnet/mainnet deployment, real
+  provider credential, public reputation scoring, legal trust enforcement,
+  live payment settlement, provider verification, marketplace UI/API, custody,
+  staking/bonding, slashing, public moderation, or production operation was
+  implemented by Slice 3.5.
+- The reputation-receipt workflow proves local policy-gated
+  receipt/evidence-attestation sequencing, not production marketplace ranking,
+  public trust, provider verification, or live identity proof.
+
+Next recommended slice:
+
+- Do not start production marketplace implementation from this handoff. Choose
+  one explicit next slice from the readiness gaps, such as subscription local
+  contract workflow, signed/live A2A discovery proof, live IOTA Names/Identity
+  proof, or marketplace access-control/dispute-evidence proof that remains
+  local/read-only until its gates are satisfied.
 
 ## Completed Slice 3.4
 

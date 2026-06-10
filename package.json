@@ -21,6 +21,7 @@
     "smoke:paid-mcp-tool": "npm run build && tsx scripts/smoke-paid-mcp-tool.ts",
     "smoke:data-license": "npm run build && tsx scripts/smoke-data-license.ts",
     "smoke:service-bounty": "npm run build && tsx scripts/smoke-service-bounty.ts",
+    "smoke:reputation-receipt": "npm run build && tsx scripts/smoke-reputation-receipt.ts",
     "smoke:a2a-well-known": "npm run build && tsx scripts/smoke-a2a-well-known.ts",
     "smoke:a2a-task-message": "npm run build && tsx scripts/smoke-a2a-task-message.ts",
     "readiness:testnet": "npm run build && tsx scripts/check-testnet-readiness.ts",
@@ -32,7 +33,7 @@
     "docs:build": "npm run build -w @iota-gaskit/docs-site",
     "docs:check": "npm run check -w @iota-gaskit/docs-site",
     "docs:serve": "npm run serve -w @iota-gaskit/docs-site --",
-    "verify:local": "npm test && npm run contracts:test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp && npm run smoke:demo-browser && npm run smoke:agent-escrow && npm run smoke:paid-mcp-tool && npm run smoke:data-license && npm run smoke:service-bounty && npm run smoke:a2a-well-known && npm run smoke:a2a-task-message && npm run readiness:testnet:example && npm run pack:check && npm run docs:check && npm run secrets:scan",
+    "verify:local": "npm test && npm run contracts:test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp && npm run smoke:demo-browser && npm run smoke:agent-escrow && npm run smoke:paid-mcp-tool && npm run smoke:data-license && npm run smoke:service-bounty && npm run smoke:reputation-receipt && npm run smoke:a2a-well-known && npm run smoke:a2a-task-message && npm run readiness:testnet:example && npm run pack:check && npm run docs:check && npm run secrets:scan",
     "grant:check": "npm run verify:local"
   },
   "devDependencies": {
