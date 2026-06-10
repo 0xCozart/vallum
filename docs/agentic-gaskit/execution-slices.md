@@ -1645,3 +1645,57 @@ Escalation triggers:
 - Any request to run real `npm publish`.
 - Any npm token, OTP, provenance signing, organization ownership, package name
   transfer, namespace rename, or post-publish rollback decision.
+
+## Slice 6.3: Package Install Smoke
+
+User-visible outcome:
+Release operators and reviewers have a deterministic local command that packs
+all public workspace packages, installs them together into a fresh temporary
+consumer project, and imports every published root entrypoint.
+
+Likely files:
+
+- `scripts/smoke-package-install.ts`
+- `scripts/package-install-smoke.test.ts`
+- `scripts/package-scripts.test.ts`
+- `scripts/reviewer-docs.test.ts`
+- `docs/agentic-gaskit/package-release-strategy.md`
+- `docs/milestone-0-proof.md`
+- `package.json`
+
+Acceptance criteria:
+
+- `npm run smoke:package-install` builds first.
+- The smoke packs all public `packages/*` workspaces.
+- Private app workspaces are excluded.
+- The temporary consumer installs local tarballs with lifecycle scripts, audit,
+  funding prompts, and package-lock writes disabled.
+- The smoke imports every public package root entrypoint from the temporary
+  consumer project.
+- The smoke is wired into `npm run verify:local` after `pack:check`.
+- The smoke does not claim registry installability, real npm publication,
+  package-name ownership, package provenance, or downstream compatibility.
+
+Verification:
+
+- Focused package install smoke tests.
+- Package-script wiring tests.
+- Reviewer-docs regression tests.
+- `npm run smoke:package-install`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:local`.
+
+Dependencies:
+Slice 6.2.
+
+Risk:
+Medium. Local tarball install can be mistaken for npm registry installability
+or broader downstream compatibility if the non-claims are not explicit.
+
+Escalation triggers:
+
+- Any request to install packages from the npm registry.
+- Any external consumer compatibility guarantee, package provenance decision,
+  real publish, package rename, or registry ownership check.

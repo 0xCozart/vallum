@@ -156,6 +156,8 @@ Latest local verification and prior live proof:
   and a passing live run requires operator-provided endpoint/name/address.
 - `npm run readiness:testnet:example`: deterministic example testnet-readiness preflight passed locally.
 - `npm run pack:check`: workspace package dry-runs completed locally.
+- `npm run smoke:package-install`: deterministic local tarball install/import
+  smoke passed for 11 public workspace packages.
 - `npm run publish:dry-run`: opt-in npm publish dry-run completed locally for
   public workspaces; no package was published.
 - Prior `npm run execute:testnet-demo`: real sponsored IOTA testnet execute succeeded through the local policy gateway and Gas Station; public digest `2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H`.
@@ -253,8 +255,9 @@ The monorepo root is marked `private` to prevent accidental publication of the w
 
 Package release remains roadmap work; today the repo provides package READMEs,
 public prerelease publish metadata (`access=public`, `tag=next`), map-free
-packed artifacts, local `npm pack --dry-run` verification, and an opt-in
-`npm publish --dry-run` gate for publishable packages.
+packed artifacts, local `npm pack --dry-run` verification, a local tarball
+install/import smoke, and an opt-in `npm publish --dry-run` gate for
+publishable packages.
 
 Package Publication remains a roadmap gate. Do not treat the Agentic GasKit fork
 or any future namespace rename as package-publication-ready until dry-run pack
@@ -266,6 +269,7 @@ Dry-run package checks:
 
 ```bash
 npm run pack:check
+npm run smoke:package-install
 npm run publish:dry-run
 ```
 

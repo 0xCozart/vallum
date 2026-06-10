@@ -118,8 +118,9 @@ Confirmed remaining gaps:
   device access is explicitly deferred by the safety gate; no
   `device_access_lease_v1` contract exists.
 - Package publication to npm. The current package namespace, prerelease
-  metadata strategy, package pack dry-runs, and publish dry-run are documented
-  and locally checked, but no package is claimed as published.
+  metadata strategy, package pack dry-runs, local tarball install smoke, and
+  publish dry-run are documented and locally checked, but no package is claimed
+  as published.
 - Production custody, KMS, and recovery/export design if the product ever
   needs those surfaces.
 - Marketplace production app/API, provider verification/moderation decisions,
@@ -510,13 +511,15 @@ Partially complete. Slice 6.1 documents the conservative current
 `@iota-gaskit/*` prerelease namespace, defers any `@agentic-gaskit/*` rename to
 a dedicated compatibility slice, and mechanically checks public package
 metadata plus root build/pack coverage. Slice 6.2 adds an opt-in
-`npm publish --dry-run` gate for public workspace packages. Real npm
-publication remains operator-gated and unrun.
+`npm publish --dry-run` gate for public workspace packages. Slice 6.3 adds a
+fresh-consumer local tarball install/import smoke. Real npm publication remains
+operator-gated and unrun.
 
 Acceptance criteria:
 
 - Namespace decision is documented.
 - Package exports and dry-runs pass.
+- Local tarball install/import smoke passes.
 - Publish dry-run command shape passes without real publication.
 - Backward compatibility or migration notes exist.
 - No package exposes unsupported production/custody claims.
@@ -524,6 +527,7 @@ Acceptance criteria:
 Verification:
 
 - `npm run pack:check`
+- `npm run smoke:package-install`
 - `npm run publish:dry-run`
 - `npm run docs:check`
 - `npm run verify:local`

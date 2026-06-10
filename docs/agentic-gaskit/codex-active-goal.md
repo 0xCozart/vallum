@@ -28,5 +28,10 @@ for public workspaces. This can prove local npm dry-run command shape, not real
 publication, npm account ownership, provenance, package-name availability, or
 release approval.
 
+The next continuation is Slice 6.3: a local package install smoke. This can
+prove local packed tarballs install and import together in a temporary consumer
+project, not registry installability, provenance, account ownership, or
+downstream compatibility.
+
 Do not use the old Slice 4.5 A2A task/message goal as the active objective.
 That slice was previously completed and locally verified.

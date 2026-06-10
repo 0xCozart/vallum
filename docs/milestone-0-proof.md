@@ -84,7 +84,7 @@ npm run verify:local
 `verify:local` currently expands to:
 
 ```text
-npm test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp && npm run smoke:demo-browser && npm run readiness:testnet:example && npm run pack:check && npm run docs:check && npm run secrets:scan
+npm test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp && npm run smoke:demo-browser && npm run readiness:testnet:example && npm run pack:check && npm run smoke:package-install && npm run docs:check && npm run secrets:scan
 ```
 
 `grant:check` remains as a compatibility alias for grant-reviewer workflows.

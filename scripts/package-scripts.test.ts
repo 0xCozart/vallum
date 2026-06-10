@@ -51,7 +51,7 @@ test("testnet demo execute script builds before submitting a live transaction", 
 test("root local verification includes deterministic secret scan after package checks", () => {
   const localVerify = packageJson.scripts?.["verify:local"] ?? "";
 
-  assert.match(localVerify, /npm run pack:check && npm run docs:check && npm run secrets:scan/);
+  assert.match(localVerify, /npm run pack:check && npm run smoke:package-install && npm run docs:check && npm run secrets:scan/);
   assert.equal(packageJson.scripts?.["grant:check"], "npm run verify:local");
   assert.equal(packageJson.scripts?.["secrets:scan"], "tsx scripts/scan-secrets.ts");
 });
@@ -88,6 +88,11 @@ test("root build and package dry-run cover every public package workspace", () =
 test("package publish dry-run is opt-in and not part of local verification", () => {
   assert.equal(packageJson.scripts?.["publish:dry-run"], "npm run build && tsx scripts/package-publish-dry-run.ts");
   assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /npm run publish:dry-run/);
+});
+
+test("package install smoke is wired after package dry-runs in local verification", () => {
+  assert.equal(packageJson.scripts?.["smoke:package-install"], "npm run build && tsx scripts/smoke-package-install.ts");
+  assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run pack:check && npm run smoke:package-install/);
 });
 
 test("agent escrow smoke is wired into local verification", () => {

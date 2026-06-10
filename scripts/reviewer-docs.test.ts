@@ -45,7 +45,7 @@ test("milestone proof reflects the current verified local surface", async () => 
   assert.doesNotMatch(proof, /tests 97\s+pass 97/s);
   assert.doesNotMatch(proof, /tests 98\s+pass 98/s);
   assert.match(proof, /npm run verify:local/);
-  assert.match(proof, /npm test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp && npm run smoke:demo-browser && npm run readiness:testnet:example && npm run pack:check && npm run docs:check && npm run secrets:scan/);
+  assert.match(proof, /npm test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp && npm run smoke:demo-browser && npm run readiness:testnet:example && npm run pack:check && npm run smoke:package-install && npm run docs:check && npm run secrets:scan/);
   assert.match(proof, /local policy simulation endpoint/);
   assert.match(proof, /sanitized gateway decision events/);
   assert.match(proof, /in-memory local usage read model/);

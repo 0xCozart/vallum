@@ -70,6 +70,21 @@ gate must not be treated as proof of npm account ownership, package-name
 availability, 2FA readiness, provenance signing, registry authorization, or
 successful real publication.
 
+`npm run smoke:package-install` adds a deterministic local installability gate:
+
+- builds every workspace first;
+- packs every non-private package under `packages/*` into a temporary
+  directory;
+- installs those local tarballs together into a fresh temporary consumer
+  project with lifecycle scripts, audit, funding prompts, and package-lock
+  writes disabled;
+- imports each public package root entrypoint from the temporary consumer.
+
+This proves the current local tarball bundle can be installed and imported
+together. It does not prove npm registry installability, package-name
+availability, account ownership, provenance, install behavior for partial
+package sets, or downstream application compatibility.
+
 ## Explicit Non-Claims
 
 No package is claimed as published to npm today.

@@ -60,6 +60,7 @@ It also includes the first Agentic GasKit implementation slices:
 - package namespace and release metadata strategy for the current
   `@iota-gaskit/*` prerelease line
 - opt-in package publish dry-run gate for public workspace packages
+- local package install smoke for packed public workspace tarballs
 - device access safety gate that blocks physical-device implementation and
   limits any future proof to virtual or simulated resources until a separate
   approved safety design exists
@@ -103,6 +104,8 @@ roadmap unless later slices implement and verify them.
   `scripts/smoke-marketplace-read-model.ts`
 - Package release strategy: `docs/agentic-gaskit/package-release-strategy.md`,
   `scripts/package-publish-dry-run.ts`,
+  `scripts/smoke-package-install.ts`,
+  `scripts/package-install-smoke.test.ts`,
   `scripts/package-publish-dry-run.test.ts`,
   `scripts/package-publish.test.ts`, `scripts/package-scripts.test.ts`
 - Device access safety gate:
@@ -201,6 +204,7 @@ Safe local checks:
 - `npm run smoke:a2a-http`
 - `npm run smoke:a2a-local-server`
 - `npm run smoke:marketplace-read-model`
+- `npm run smoke:package-install`
 - `npm run proof:live-status`
 - `npm run secrets:scan`
 
