@@ -325,6 +325,8 @@ export function linkIotaReceiptState(receipt: EscrowReceipt, state: LinkedReceip
   };
 }
 
+export * from "./x402Receipt.js";
+
 function requireVerifier(receipt: EscrowReceipt, verifierId: string): void {
   if (receipt.escrow.verifierId !== verifierId) {
     throw new ReceiptTransitionError("UNAUTHORIZED_VERIFIER", "Only the configured verifier can release escrow.");

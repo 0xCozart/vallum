@@ -60,11 +60,13 @@ test("docs site check is wired into local verification", () => {
   assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run docs:check/);
 });
 
-test("registry and contract metadata packages are built and included in package dry-runs", () => {
+test("registry, contract metadata, and standards packages are built and included in package dry-runs", () => {
   assert.match(packageJson.scripts?.["build"] ?? "", /npm run build -w @iota-gaskit\/registry/);
   assert.match(packageJson.scripts?.["pack:check"] ?? "", /-w @iota-gaskit\/registry/);
   assert.match(packageJson.scripts?.["build"] ?? "", /npm run build -w @iota-gaskit\/contracts-metadata/);
   assert.match(packageJson.scripts?.["pack:check"] ?? "", /-w @iota-gaskit\/contracts-metadata/);
+  assert.match(packageJson.scripts?.["build"] ?? "", /npm run build -w @iota-gaskit\/standards/);
+  assert.match(packageJson.scripts?.["pack:check"] ?? "", /-w @iota-gaskit\/standards/);
 });
 
 test("agent escrow smoke is wired into local verification", () => {
