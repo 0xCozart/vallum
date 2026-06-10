@@ -16,5 +16,8 @@ local proof as live IOTA testnet, production marketplace, public scoring,
 public A2A discovery, production key management, or provider-verification
 proof.
 
+As of the latest update, Slice 4.8 is the newest completed implementation
+slice: a local A2A loopback server smoke proof. It is still local proof only.
+
 Do not use the old Slice 4.5 A2A task/message goal as the active objective.
 That slice was previously completed and locally verified.

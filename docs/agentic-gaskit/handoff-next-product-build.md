@@ -8,8 +8,8 @@ Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 3.1,
-3.2, 3.3, 3.4, 3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, and 5.1 are
-implemented or reviewed and locally verified.
+3.2, 3.3, 3.4, 3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, and 5.1
+are implemented or reviewed and locally verified.
 Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
 `docs/marketplace-readiness.md` before choosing the next slice. Do not start
 production marketplace implementation unless the user explicitly approves the
@@ -246,6 +246,13 @@ Recent commits to know:
   required-key mismatches, unsupported algorithms, malformed signatures, missing
   signatures, stale signatures, not-yet-valid signatures, blank key ids,
   invalid JWKS URLs, invalid signature times, and private public-card metadata.
+- Slice 4.8 A2A local loopback server smoke is implemented in
+  `packages/standards` and `examples/a2a-local-server`.
+- Slice 4.8 tests prove the local A2A handler can run behind a real
+  loopback-only HTTP server with signed Agent Card discovery, trusted-key
+  verification, bearer-authenticated task routes, send/get/list/cancel flow,
+  default artifact hiding, explicit unsupported streaming, non-loopback bind
+  refusal by default, oversized body handling, and safe output redaction.
 - Slice 5.1 marketplace readiness review exists at
   `docs/marketplace-readiness.md`. It concludes that marketplace
   requirements/design work is justified only inside local/mock proof, while
@@ -255,22 +262,22 @@ Recent commits to know:
 - `docs/agentic-gaskit/external-api-notes.md` was refreshed on 2026-06-10 for
   current IOTA Names GraphQL, IOTA Identity DID/VC, x402 v2, AP2 v0.2
   mandate/receipt, A2A Agent Card, A2A signed-card, and A2A task/message
-  assumptions.
+  assumptions, including the local A2A loopback server proof boundary.
 - Root build, test, typecheck, package dry-run, docs, smokes, readiness example,
   contract tests, and secret scan include the accounts, manifest, MCP,
   registry, contracts metadata, receipts, escrow/receipt/pay-per-call contract
   surfaces, x402/AP2/A2A standards bridges, agent escrow demo smoke, paid
   MCP-style tool smoke, data-license smoke, service-bounty smoke,
   reputation-receipt smoke, subscription smoke, A2A well-known smoke, A2A
-  signed-card smoke, A2A task/message smoke, and A2A HTTP boundary smoke.
+  signed-card smoke, A2A task/message smoke, A2A HTTP boundary smoke, and A2A
+  local server smoke.
 
 ## What Is Not Complete
 
 - Public signed Agent Card hosting, production Agent Card key management, live
   A2A discovery proof, live public A2A server operation beyond the local
-  HTTP-shaped handler, streaming/push notification support, external A2A
-  conformance proof, and production A2A authentication decisions are not
-  implemented.
+  loopback smoke, streaming/push notification support, external A2A conformance
+  proof, and production A2A authentication decisions are not implemented.
 - Live IOTA Names/Identity proof, full verifiable credential validation beyond
   local/mock bounded cache behavior, live standards-bridge proof, and expanded
   contract workflows beyond local escrow/receipt/pay-per-call/data-license/
@@ -2097,6 +2104,110 @@ Next recommended slice:
   Agent Card design/proof, live IOTA Names/Identity proof, read-only
   marketplace access-control/dispute-evidence proof, or another local contract
   workflow.
+
+## Completed Slice 4.8
+
+Implemented local/mock A2A loopback server smoke proof.
+
+Implementation commit:
+
+- `a40b62f` (`feat: add local a2a node server smoke`)
+
+Primary docs and gates used:
+
+- `docs/agentic-gaskit/full-roadmap-execution-goal.md` Packet D A2A Live
+  Discovery, Server, Auth, And Conformance.
+- `docs/agentic-gaskit/execution-slices.md` Slice 4.8 A2A Local Loopback
+  Server Smoke.
+- `docs/agentic-gaskit/verification-hardening.md` Phase 4 A2A bridge gate and
+  secret/redaction gates.
+- `docs/agentic-gaskit/handoff-next-product-build.md` Slice 4.7 next-step
+  recommendation.
+
+Code and docs added or changed:
+
+- `examples/a2a-local-server/`
+- `packages/standards/src/a2aNodeServer.ts`
+- `packages/standards/src/a2aNodeServer.test.ts`
+- `packages/standards/src/index.ts`
+- `scripts/smoke-a2a-local-server.ts`
+- `package.json`
+- `scripts/package-scripts.test.ts`
+- `README.md`
+- `docs/CODEBASE_MAP.md`
+- `docs/overview.md`
+- `docs/marketplace-readiness.md`
+- `docs/agentic-gaskit/execution-slices.md`
+- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+
+Focused commands already run:
+
+```bash
+node --import tsx --test packages/standards/src/a2aNodeServer.test.ts packages/standards/src/a2aHttp.test.ts packages/standards/src/a2aTask.test.ts
+node --import tsx --test scripts/package-scripts.test.ts examples/a2a-local-server/a2a-local-server-demo.test.ts
+npm run smoke:a2a-local-server
+npm run docs:check
+npm run secrets:scan
+npm test
+npm run typecheck
+npm run verify:local
+git diff --check
+```
+
+Focused evidence:
+
+- Baseline `npm run typecheck` failed in the draft state because the example
+  carried a private server wrapper with a missing `HttpJsonResponse` type and a
+  nullable address guard. The implementation moved server lifecycle into the
+  standards helper and fixed the example.
+- Focused standards tests pass for the exported Node server helper, loopback
+  host default, explicit non-loopback opt-in guard, real HTTP Agent Card
+  discovery, bearer auth denial, authorized message send, task read/list/cancel,
+  default artifact hiding, explicit artifact opt-in, unsupported streaming
+  `501`, malformed body handling, oversized body `413`, safe JSON errors, and
+  response redaction.
+- Focused A2A local server demo test passes for signed Agent Card discovery
+  over real HTTP, trusted-key signature verification, bearer auth denial,
+  authorized message send, task read/list/cancel, default artifact hiding,
+  unsupported streaming `501`, and redacted formatted output.
+- Package-script wiring test passes and proves `smoke:a2a-local-server` is
+  included in `npm run verify:local`.
+- `npm run smoke:a2a-local-server` passes and reports loopback binding,
+  Agent Card status `200`, signature verification `true`, unauthorized status
+  `401`, task status `TASK_STATE_WORKING`, hidden artifacts `true`, list count
+  `1`, canceled status `TASK_STATE_CANCELED`, streaming status `501`, and no
+  secret-looking output leak.
+- `npm run docs:check` passes after Slice 4.8 changes.
+- `npm run secrets:scan` passes after Slice 4.8 changes with 283 checked
+  tracked/staged/untracked text files and 0 findings.
+- `npm test` passes with 316 TypeScript tests.
+- `npm run typecheck` passes.
+- `npm run verify:local` passes locally with 316 TypeScript tests, 33 Move
+  tests, typecheck, local gateway smoke, demo dApp smoke, browser smoke, agent
+  escrow smoke, paid MCP tool smoke, data-license smoke, service-bounty smoke,
+  reputation-receipt smoke, subscription smoke, A2A well-known smoke, A2A
+  signed-card smoke, A2A task/message smoke, A2A HTTP boundary smoke, A2A
+  local server smoke, testnet readiness example, package dry-runs, docs check,
+  and secret scan.
+- `git diff --check` passes.
+
+Boundaries and non-claims:
+
+- This is a loopback-only server smoke. It does not publish an Agent Card or
+  operate a live public A2A server.
+- Agent Card signing uses deterministic local key material for proof only. It
+  does not define production JWKS hosting, key rotation, revocation, or provider
+  verification.
+- Streaming and push notifications remain unsupported.
+- External A2A conformance and live discovery remain unproven.
+- No IOTA testnet or mainnet operation was performed by this slice.
+
+Next recommended slice:
+
+- Continue Packet D with external A2A conformance-blocker documentation, public
+  hosting/key-management design, or switch to Packet C live IOTA Names/Identity
+  proof if operator credentials/endpoints are configured.
 
 ## Completed Slice 4.7
 

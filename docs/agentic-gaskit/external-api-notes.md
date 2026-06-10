@@ -453,6 +453,17 @@ Current planning assumptions:
   trusted-key verification for local Agent Cards only. It does not publish
   public JWKS hosting, production key rotation/revocation policy, external
   conformance proof, live public discovery, or production provider trust.
+- On 2026-06-10, Slice 4.8 rechecked the current A2A specification and core
+  concepts pages. The current docs still describe an A2A Server as an HTTP
+  endpoint, Agent Cards as discovery metadata for endpoint/auth/capabilities,
+  request/response polling for non-streaming task interaction, optional SSE
+  streaming, push notifications, and authentication credentials passed through
+  HTTP headers outside the A2A message body. Slice 4.8 implements a
+  loopback-only Node HTTP server helper and smoke proof around the existing
+  local handler. It keeps streaming and push unsupported, requires bearer auth
+  for task routes, refuses non-loopback binds by default, and does not prove
+  public hosting, live discovery, production key management, or external
+  conformance.
 
 Implementation checks:
 

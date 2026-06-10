@@ -44,12 +44,14 @@ It also includes the first Agentic GasKit implementation slices:
 - local A2A task/message operation helpers and smoke proof
 - local A2A HTTP-shaped handler and smoke proof for public discovery plus
   bearer-authenticated task routes
+- local A2A loopback HTTP server smoke proof for signed discovery and
+  authenticated task routes
 - pure profile capability policy check
 - contract template metadata registry consumed by agent policy allow-lists
 
 The remaining Agentic GasKit direction is documented under
 `docs/agentic-gaskit/`. Live IOTA Names/Identity proof, public signed A2A
-discovery, live A2A server/conformance proof, device-access contract workflows,
+discovery, external A2A conformance proof, device-access contract workflows,
 production custody, production subscription operations, and live deployment
 proof remain roadmap unless later slices implement and verify them.
 
@@ -107,6 +109,11 @@ proof remain roadmap unless later slices implement and verify them.
   `scripts/smoke-a2a-task-message.ts`
 - A2A HTTP boundary demo: `examples/a2a-http/`,
   `scripts/smoke-a2a-http.ts`
+- A2A local server demo: `examples/a2a-local-server/`,
+  `packages/standards/src/a2aNodeServer.ts`,
+  `scripts/smoke-a2a-local-server.ts`
+- A2A Node loopback server helper:
+  `packages/standards/src/a2aNodeServer.ts`
 - Docs site: `apps/docs-site/`
 - Examples: `examples/node-backend/`, `examples/nextjs-api-route/`,
   `examples/policies/`
@@ -131,8 +138,8 @@ Do not create all of these at once. Add them through vertical slices:
 
 - gateway extensions for agent manifests and capabilities
 - registry live adapters
-- public signed Agent Card hosting, live A2A server/conformance proof, and
-  live standards-compatible discovery
+- public signed Agent Card hosting, external A2A conformance proof, and live
+  standards-compatible discovery
 - expanded contract packages beyond pay-per-call, data-license, service-bounty,
   reputation receipt, and subscription, including device access workflows
 
@@ -155,6 +162,7 @@ Safe local checks:
 - `npm run smoke:a2a-signed-card`
 - `npm run smoke:a2a-task-message`
 - `npm run smoke:a2a-http`
+- `npm run smoke:a2a-local-server`
 - `npm run secrets:scan`
 
 Full local proof:

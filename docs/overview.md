@@ -21,8 +21,9 @@ contract-template metadata registry consumed by agent policy allow-lists. It
 also includes local standards bridge proof for x402, AP2, and A2A Agent Card
 discovery response generation. Live testnet proof still requires operator-owned
 local credentials. Local/mock A2A helpers now model send-message, get-task,
-list-tasks, cancel-task, and an HTTP-shaped boundary with bearer-authenticated
-task routes without operating a public A2A server.
+list-tasks, cancel-task, an HTTP-shaped boundary, and a loopback HTTP server
+smoke with signed discovery plus bearer-authenticated task routes without
+operating a public A2A server.
 
 If terms like gas, sponsor wallet, package ID, or IOTA Gas Station are new, start with [IOTA and GasKit Basics](concepts.md).
 
@@ -89,7 +90,7 @@ The official Gas Station is the sponsorship engine. GasKit is the app integratio
 | Agent escrow demo | Local demo shows one agent hiring another, gateway approval, verifier release, receipt output, and over-budget policy denial without live IOTA calls. | [Agent Escrow Demo](demo-agent-escrow.md) |
 | Paid MCP-style tool demo | Local demo returns a paid result only after gateway approval, mock payment confirmation, and receipt submission; denial and failed payment withhold paid results. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
 | Agent profiles | Local `@iota-gaskit/registry` schema validation, fixture resolution, mock-tested IOTA Names/Identity adapter interfaces, and bounded identity verification cache helpers cover required fields, expired/revoked states, unsupported versions, secret-field rejection, SDK resolution, capability policy checks, and stale identity evidence fail-closed behavior. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
-| A2A bridge | Local Agent Card mapping, signed-card verification helpers, `/.well-known/agent-card.json` response helpers, local/mock task/message operation helpers, and a local HTTP-shaped handler expose sanitized profile and task metadata with bearer-authenticated task routes, without live public discovery, streaming, push notifications, production key management, or external conformance proof. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
+| A2A bridge | Local Agent Card mapping, signed-card verification helpers, `/.well-known/agent-card.json` response helpers, local/mock task/message operation helpers, a local HTTP-shaped handler, and a loopback HTTP server smoke expose sanitized profile and task metadata with bearer-authenticated task routes, without live public discovery, streaming, push notifications, production key management, or external conformance proof. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
 | Agent roadmap | PRDs, execution slices, module specs, and hardening gates have been migrated into this fork. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
 | Beginner concepts | Plain-English explanations of IOTA, sponsored gas, GasKit roles, and common terms. | [IOTA and GasKit Basics](concepts.md) |
 | Code examples | Backend SDK calls, Next.js route shape, browser caller shape, curl requests, and policy YAML. | [Code Examples](examples.md) |

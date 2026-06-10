@@ -27,9 +27,13 @@ Current surface:
   manifest/policy metadata and log-safe redaction.
 - Local HTTP-shaped A2A handler for public Agent Card discovery and
   bearer-authenticated task send/get/list/cancel routes.
+- Loopback-only Node HTTP server helper for deterministic local A2A discovery
+  and task route smoke proof, with explicit unsafe opt-in required for
+  non-loopback binds.
 
 This package does not operate a production x402 facilitator, replace AP2, hold
 payment credentials, sign payment payloads, submit live settlement
-transactions, operate a live public A2A task/message server, stream or push A2A
-updates, prove external A2A conformance or live A2A discovery, provide
-production Agent Card key management, or replace the A2A protocol.
+transactions, operate a live public A2A task/message server, publish public A2A
+discovery, stream or push A2A updates, prove external A2A conformance or live
+A2A discovery, provide production Agent Card key management, or replace the A2A
+protocol.

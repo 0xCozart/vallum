@@ -1124,6 +1124,66 @@ Escalation triggers:
   external A2A conformance, live provider verification, or production A2A
   authentication decisions.
 
+## Slice 4.8: A2A Local Loopback Server Smoke
+
+User-visible outcome:
+Agentic GasKit can run the local A2A discovery and task/message handler behind
+a real loopback HTTP server, proving local server semantics over network
+requests without claiming public hosting, live discovery, or external
+conformance.
+
+Likely files:
+
+- `packages/standards/src/a2aNodeServer.ts`
+- `packages/standards/src/a2aNodeServer.test.ts`
+- `packages/standards/src/index.ts`
+- `examples/a2a-local-server/`
+- `scripts/smoke-a2a-local-server.ts`
+- `package.json`
+- `scripts/package-scripts.test.ts`
+
+Acceptance criteria:
+
+- The exported local Node server helper starts a loopback-only HTTP server on
+  an ephemeral port by default and refuses non-loopback hosts unless explicitly
+  opted in.
+- `GET /.well-known/agent-card.json` works over HTTP and returns a signed Agent
+  Card that verifies with a trusted local public key.
+- Task/message routes require bearer authentication and fail closed without it.
+- Authorized HTTP calls can send a message, get a task, list tasks, and cancel
+  a task using the existing local A2A task store.
+- Default task reads omit artifacts unless explicitly requested.
+- Unsupported streaming remains explicit with a `501` response.
+- Malformed and oversized request bodies return safe JSON errors.
+- Smoke output does not expose bearer tokens, private prompts, signer refs,
+  wallet internals, payment credentials, or private keys.
+- Local smoke is wired into `npm run verify:local`.
+- This slice does not claim public hosting, live A2A discovery, external A2A
+  conformance, streaming support, push notification support, production Agent
+  Card key management, or production A2A authentication.
+
+Verification:
+
+- Standards package Node server tests.
+- Local A2A loopback server demo test.
+- Package-script wiring test.
+- Local A2A loopback server smoke.
+- `npm run verify:local`.
+
+Dependencies:
+Slices 4.6 and 4.7.
+
+Risk:
+Medium to high. A local loopback server can be mistaken for a public A2A server
+unless public hosting, key distribution, live discovery, and conformance
+boundaries remain explicit.
+
+Escalation triggers:
+
+- Need for public hosting, external A2A client conformance, production JWKS
+  hosting, key rotation policy, live discovery, streaming, push notifications,
+  or production A2A authentication decisions.
+
 ## Slice 5.1: Marketplace Readiness Gate
 
 User-visible outcome:
