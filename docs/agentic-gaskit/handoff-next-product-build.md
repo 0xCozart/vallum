@@ -2371,7 +2371,7 @@ Implemented Live Proof Status Report.
 
 Implementation commit:
 
-- Pending final commit.
+- `2ccfe26` feat: add live proof status report
 
 This slice adds `npm run proof:live-status`, a non-networked status command
 that reports which live/testnet proof paths are ready to run and which are
