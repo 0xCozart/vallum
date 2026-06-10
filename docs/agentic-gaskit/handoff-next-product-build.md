@@ -7,8 +7,8 @@ Last updated: 2026-06-10.
 Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
-Slices 1.0, 1.1, 1.2, 1.3, and 1.4 are implemented and locally verified. The
-immediate target is Slice 1.5: MCP Sponsorship Tools. Use
+Slices 1.0, 1.1, 1.2, 1.3, 1.4, and 1.5 are implemented and locally verified.
+The immediate target is Slice 1.6: Escrow And Receipt MVP. Use
 `docs/agentic-gaskit/execution-entry.md` as the entry doc, then continue
 through `docs/agentic-gaskit/execution-slices.md`.
 
@@ -77,12 +77,17 @@ Recent commits to know:
 - Slice 1.4 tests prove SDK calls submit manifests to the mock gateway, return
   typed approved and denied results, and use the gateway sponsorship route
   rather than reserve/execute or direct IOTA calls.
+- Slice 1.5 MCP sponsorship tools are implemented in `packages/mcp-server`.
+- Slice 1.5 tests prove `iota.request_sponsored_transaction` and
+  `iota.open_escrow` route through the SDK/gateway, invalid inputs return typed
+  MCP tool errors, gateway denials return structured errors, and MCP tools post
+  only to the sponsorship gateway route.
 - Root build, test, typecheck, package dry-run, docs, smokes, readiness example,
   and secret scan include the accounts and manifest packages.
 
 ## What Is Not Complete
 
-- MCP/A2A tools are not implemented.
+- A2A tools are not implemented.
 - Registry, receipts, and contract workflows are not implemented.
 - Package namespace strategy is still open.
 - Production custody, KMS, and recovery/export are not designed or implemented.
@@ -506,6 +511,97 @@ Next recommended slice:
 
 - Slice 1.5 MCP Sponsorship Tools.
 
+## Completed Slice 1.5
+
+Implemented MCP sponsorship tools in `packages/mcp-server`.
+
+This slice adds MCP-shaped tool descriptors and a local callable server facade
+for `iota.request_sponsored_transaction` and `iota.open_escrow`. Both tools
+validate an Agent Transaction Manifest, call the SDK `IotaAgent`, and therefore
+route through the policy gateway sponsorship endpoint.
+
+Acceptance is defined in:
+
+- `docs/agentic-gaskit/prds/phase-1-sponsored-policy-mvp.md`
+- `docs/agentic-gaskit/execution-slices.md` Slice 1.5
+- `docs/agentic-gaskit/module-specs.md` `packages/mcp-server`
+- `docs/agentic-gaskit/verification-hardening.md` MCP verification matrix
+
+Changed files:
+
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+- `package.json`
+- `package-lock.json`
+- `packages/mcp-server/README.md`
+- `packages/mcp-server/package.json`
+- `packages/mcp-server/src/index.ts`
+- `packages/mcp-server/src/server.ts`
+- `packages/mcp-server/src/tools.ts`
+- `packages/mcp-server/src/tools.test.ts`
+- `packages/mcp-server/tsconfig.build.json`
+
+Commands run:
+
+```bash
+git status --short --branch
+npm view @modelcontextprotocol/sdk version --json
+npm view @modelcontextprotocol/sdk exports --json
+npm run docs:check
+npm run secrets:scan
+npm test
+npm run typecheck
+node --import tsx --test packages/mcp-server/src/tools.test.ts
+node --import tsx --test packages/policy-gateway/src/server.test.ts packages/sdk/src/client.test.ts packages/mcp-server/src/tools.test.ts
+npm install --package-lock-only
+npm run verify:local
+git diff --check
+```
+
+Verification result:
+
+- Baseline before editing passed: docs check, secret scan, `npm test`, and
+  `npm run typecheck`.
+- Focused MCP tool tests passed: 5 tests.
+- Focused mock gateway plus SDK plus MCP tests passed: 22 tests.
+- `npm run typecheck` passed.
+- `npm run verify:local` passed with 170 tests, typecheck, local gateway smoke,
+  demo dApp smoke, browser wrapper smoke, readiness example, package dry-run,
+  docs check, and secret scan.
+
+Hardening notes:
+
+- `packages/mcp-server` imports SDK and manifest packages only; it does not
+  import IOTA SDK, Gas Station clients, or gateway reserve/execute paths.
+- Tool calls validate manifests with `@iota-gaskit/manifest` before calling
+  SDK.
+- `iota.request_sponsored_transaction` and `iota.open_escrow` both call
+  `IotaAgent.requestSponsoredAction`.
+- Denied gateway decisions become structured MCP tool errors with reason codes.
+- Tool results do not expose raw transaction bytes, user signatures, signer
+  references, sponsor credentials, bearer tokens, app API keys, or private
+  prompt text.
+- The package exposes a local callable facade and MCP-shaped tool descriptors.
+  It does not yet claim full stdio or Streamable HTTP transport
+  interoperability.
+- MCP external refresh checked current official TypeScript SDK docs and npm:
+  `@modelcontextprotocol/sdk` reports `1.29.0`. Transport integration was
+  intentionally deferred to keep this slice centered on tool validation and
+  SDK/gateway routing.
+- Apex manifest helper remains unusable because the current
+  `apex.workflow.json` lacks required mode definitions and
+  `manifest.defaultDir`, so Slice 1.5 scope was recorded locally under ignored
+  `tmp/apex-workflow/` and this slice does not claim Apex verification.
+
+Known unproven claims:
+
+- Full MCP stdio or Streamable HTTP transport wiring is not implemented.
+- A2A tools, registry, idempotent sponsorship storage, receipts, escrow
+  contracts, and live execution remain future slices.
+
+Next recommended slice:
+
+- Slice 1.6 Escrow And Receipt MVP.
+
 ## Guardrails
 
 - Do not expose seeds, mnemonics, private keys, raw keypairs, raw transaction
@@ -530,7 +626,8 @@ npm test
 npm run typecheck
 ```
 
-For the MCP sponsorship tools slice, add focused MCP tool tests first and finish
+For the escrow and receipt MVP slice, add focused contract/receipt tests first
+and finish
 with:
 
 ```bash
