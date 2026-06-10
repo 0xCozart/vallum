@@ -2254,7 +2254,7 @@ Implemented Device Access Lease Safety Gate.
 
 Implementation commit:
 
-- Pending final commit.
+- `b773f9e` docs: add device access safety gate
 
 This slice explicitly blocks physical device access and records that any future
 device-access proof must start with virtual or simulated resources only. It is
