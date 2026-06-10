@@ -10,7 +10,7 @@ Continue actual Agentic GasKit product implementation in
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5,
 2.6, 2.7, 2.8,
 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8,
-5.1, 5.2, and 6.1 are implemented, reviewed, locally verified, or explicitly
+5.1, 5.2, 6.1, and 6.2 are implemented, reviewed, locally verified, or explicitly
 deferred with a verified hardening gate.
 Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
 `docs/marketplace-readiness.md` before choosing the next slice. Do not start
@@ -29,6 +29,7 @@ new scope and its unresolved gates.
 
 Recent commits to know:
 
+- `7ed27b1` feat: add package publish dry-run gate
 - `45bf716` feat: add iota identity live proof smoke
 - `9f10bad` feat: harden identity verification cache
 - `faddf2f` feat: add subscription workflow
@@ -3616,3 +3617,101 @@ Next safe slice:
   `npm run readiness:testnet`, `npm run smoke:iota-names-live`, or
   `npm run smoke:iota-identity-live`; or continue with the next roadmap slice
   that does not require live credentials.
+
+## Completed Slice 6.2: Package Publish Dry-Run Gate
+
+Implementation commit: `7ed27b1` (`feat: add package publish dry-run gate`).
+
+What changed:
+
+- Added `npm run publish:dry-run` as an opt-in release-operator command.
+- Added `scripts/package-publish-dry-run.ts`, which enumerates all non-private
+  `packages/*` workspaces and invokes `npm publish --dry-run --tag next
+  --access public` with explicit `-w` package names.
+- Added `scripts/package-publish-dry-run.test.ts` to prove public package
+  enumeration, private app exclusion, dry-run argument construction, and runner
+  behavior without real publication flags.
+- Extended package metadata/script tests to keep the command opt-in, excluded
+  from `npm run verify:local`, and the only root package publication command.
+- Updated package release docs, execution slices, README, overview, codebase
+  map, active goal, full roadmap goal, and external API notes.
+
+Important boundary:
+
+- This is a dry-run release rehearsal, not npm publication.
+- The command may print npm's normal dry-run login warning. That warning is
+  acceptable and reinforces that this does not prove npm account ownership,
+  package-name availability, 2FA readiness, provenance signing, registry
+  authorization, or successful real publication.
+- No npm token, OTP, provenance signing, package transfer, namespace rename, or
+  real `npm publish` was run.
+
+Commands run:
+
+```bash
+npm run proof:live-status
+npm run docs:check
+npm run secrets:scan
+npm test
+npm run typecheck
+node --import tsx --test scripts/package-publish-dry-run.test.ts scripts/package-publish.test.ts scripts/package-scripts.test.ts
+npm run publish:dry-run
+node --import tsx --test scripts/reviewer-docs.test.ts scripts/package-publish-dry-run.test.ts scripts/package-publish.test.ts scripts/package-scripts.test.ts
+npm run verify:local
+git diff --check
+```
+
+Verification result:
+
+- `npm run proof:live-status` passed and reported these exact blockers:
+  `TESTNET_ENV_FILE_MISSING`, `IOTA_NAMES_LIVE_CONFIG_MISSING`,
+  `IOTA_IDENTITY_LIVE_CONFIG_MISSING`, and `VC_TRUST_POLICY_CONFIG_MISSING`.
+- Baseline before editing passed: docs check, secret scan, `npm test`, and
+  `npm run typecheck`.
+- Focused package dry-run tests passed with 41 tests.
+- `npm run publish:dry-run` passed. It built the repo and dry-ran npm
+  publishing for 11 public workspaces with `tag=next` and public access. It did
+  not publish packages.
+- Reviewer/docs plus package dry-run focused tests passed with 55 tests after
+  README command-shape wording was fixed.
+- `npm run docs:check` passed: 31 HTML pages from 30 Markdown sources.
+- `npm run secrets:scan` passed: 301 tracked/staged/untracked text files,
+  findings 0.
+- `npm run typecheck` passed.
+- `npm run verify:local` passed with 362 TypeScript tests, 33 Move tests,
+  typecheck, local gateway smoke, demo dApp smoke, browser smoke, agent escrow
+  smoke, paid MCP tool smoke, data-license smoke, service-bounty smoke,
+  reputation-receipt smoke, subscription smoke, A2A well-known smoke, A2A
+  signed-card smoke, A2A task/message smoke, A2A HTTP smoke, A2A local server
+  smoke, marketplace read-model smoke, testnet readiness example, package
+  dry-runs, docs check, and secret scan.
+- `git diff --check` passed.
+
+Hardening notes:
+
+- The helper prints package names and dry-run mode only; it does not print or
+  accept npm tokens, OTPs, or credentials.
+- Private app workspaces remain excluded.
+- `npm run verify:local` keeps the existing `pack:check` gate but does not run
+  `publish:dry-run`, preserving the release dry-run as an explicit operator
+  action.
+- Official npm CLI publish docs were checked on 2026-06-10 and referenced in
+  `docs/agentic-gaskit/external-api-notes.md`.
+
+Known unproven claims:
+
+- No package is published to npm.
+- No npm account ownership, namespace ownership, package-name availability,
+  package install from registry, 2FA, provenance, registry authorization, or
+  rollback plan is proven.
+- No package namespace rename to `@agentic-gaskit/*` was performed.
+- No live IOTA, Gas Station, IOTA Names, IOTA Identity, payment facilitator,
+  public A2A hosting, production marketplace, custody, or provider
+  verification behavior was changed.
+
+Next safe slice:
+
+- Continue with a non-live roadmap slice that improves installability or
+  operator usability; or provide operator-owned local configuration to run one
+  live gate: `npm run readiness:testnet`, `npm run smoke:iota-names-live`, or
+  `npm run smoke:iota-identity-live`.
