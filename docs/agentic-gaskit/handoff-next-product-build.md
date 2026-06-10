@@ -10,8 +10,8 @@ Continue actual Agentic GasKit product implementation in
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5,
 2.6, 2.7, 2.8,
 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8,
-5.1, 5.2, 6.1, 6.2, and 6.3 are implemented, reviewed, locally verified, or
-explicitly deferred with a verified hardening gate.
+5.1, 5.2, 6.1, 6.2, 6.3, and 7.1 are implemented, reviewed, locally
+verified, or explicitly deferred with a verified hardening gate.
 Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
 `docs/marketplace-readiness.md` before choosing the next slice. Do not start
 production marketplace implementation unless the user explicitly approves the
@@ -29,6 +29,7 @@ new scope and its unresolved gates.
 
 Recent commits to know:
 
+- `69d55eb` feat: add product status proof gate
 - `6d9e64f` feat: add package install smoke
 - `7ed27b1` feat: add package publish dry-run gate
 - `45bf716` feat: add iota identity live proof smoke
@@ -3815,3 +3816,120 @@ Next safe slice:
   readiness; or provide operator-owned local configuration to run one live gate:
   `npm run readiness:testnet`, `npm run smoke:iota-names-live`, or
   `npm run smoke:iota-identity-live`.
+
+## Completed Slice 7.1: Product Status Proof Gate
+
+Implementation commit: `69d55eb` (`feat: add product status proof gate`).
+
+What changed:
+
+- Added `npm run proof:product-status` as a non-networked product
+  claim-boundary audit.
+- Added `scripts/check-product-status.ts`, which checks root local
+  verification/package proof wiring, reuses the existing live proof status
+  checks, and reports production-only blockers without contacting live services.
+- Added `scripts/product-status.test.ts` to prove local proof gate reporting,
+  ready-vs-blocked live status mapping without endpoint contact, missing local
+  verification command detection, publish dry-run opt-in enforcement, and
+  output redaction for configured endpoint/path/credential-like values.
+- Wired `npm run proof:product-status` into `npm run verify:local` after the
+  local package install smoke and before docs/secret checks.
+- Added `docs/agentic-gaskit/product-status.md` and hosted docs-site wiring.
+- Updated active goal, full roadmap goal, execution slices, codebase map,
+  README, overview, quickstart, reviewer walkthrough, milestone proof, and
+  regression tests.
+
+Important boundary:
+
+- Product status proof is an audit/reporting gate, not a final product
+  completion claim.
+- The command exits successfully when it can produce the report, even while
+  `complete=false`.
+- It does not run live IOTA commands, contact IOTA Names or Identity endpoints,
+  publish npm packages, run payment providers, operate public A2A endpoints,
+  approve production marketplace work, add custody/KMS, or replace the device
+  safety gate.
+
+Commands run:
+
+```bash
+npm run docs:check
+npm run secrets:scan
+npm test
+npm run typecheck
+node --import tsx --test scripts/product-status.test.ts scripts/live-proof-status.test.ts scripts/package-scripts.test.ts scripts/reviewer-docs.test.ts
+npm run proof:product-status
+node --import tsx --test scripts/product-status.test.ts scripts/package-scripts.test.ts scripts/reviewer-docs.test.ts
+npm run readiness:testnet
+npm run verify:local
+git diff --check
+```
+
+Verification result:
+
+- Baseline before editing passed: docs check, secret scan, `npm test`, and
+  `npm run typecheck`.
+- Focused product-status/live-status/package-script/reviewer-doc tests passed
+  with 60 tests.
+- `npm run proof:product-status` passed and reported:
+  `localProofOk=true`, `complete=false`,
+  `LOCAL_VERIFY_SURFACE_CONFIGURED`,
+  `PACKAGE_RELEASE_GATES_CONFIGURED`,
+  `TESTNET_ENV_FILE_MISSING`,
+  `IOTA_NAMES_LIVE_CONFIG_MISSING`,
+  `IOTA_IDENTITY_LIVE_CONFIG_MISSING`,
+  `VC_TRUST_POLICY_CONFIG_MISSING`,
+  `NPM_PUBLICATION_UNRUN`,
+  `PUBLIC_A2A_HOSTING_UNPROVEN`,
+  `LIVE_PAYMENT_PROVIDER_UNPROVEN`,
+  `PRODUCTION_MARKETPLACE_BLOCKED`,
+  `PRODUCTION_CUSTODY_OUT_OF_SCOPE`, and
+  `DEVICE_ACCESS_SAFETY_DEFERRED`.
+- `npm run docs:check` passed: 32 HTML pages from 31 Markdown sources.
+- `npm run secrets:scan` passed: 306 tracked/staged/untracked text files,
+  findings 0.
+- `npm run typecheck` passed.
+- `npm test` passed with 372 TypeScript tests.
+- `npm run readiness:testnet` built successfully and then failed closed as
+  expected because `.env` is absent: `Readiness env file not found: .env`.
+  No live IOTA service was contacted.
+- `npm run verify:local` passed with 372 TypeScript tests, 33 Move tests,
+  typecheck, local gateway smoke, demo dApp smoke, browser smoke, agent escrow
+  smoke, paid MCP tool smoke, data-license smoke, service-bounty smoke,
+  reputation-receipt smoke, subscription smoke, A2A well-known smoke, A2A
+  signed-card smoke, A2A task/message smoke, A2A HTTP smoke, A2A local server
+  smoke, marketplace read-model smoke, testnet readiness example, package
+  dry-runs, package install smoke, product-status proof, docs check, and
+  secret scan.
+- `git diff --check` passed.
+
+Hardening notes:
+
+- `proof:product-status` reuses `checkLiveProofStatus`; it only reports
+  ready/blocked configuration status and does not call configured endpoints.
+- Output does not print configured endpoint URLs, profile paths, local
+  credential-like values, npm tokens, or OTPs.
+- Real `npm publish` remains unwired; `publish:dry-run` remains opt-in and
+  excluded from `verify:local`.
+- The command keeps production marketplace, payment, custody, public A2A
+  hosting, and physical device access as explicit blockers.
+- Apex profile still has `setup.reviewNeeded: true`; this slice does not claim
+  Apex verification.
+
+Known unproven claims:
+
+- `complete=false` remains the correct product status.
+- No `.env` exists, so configured IOTA testnet readiness is blocked.
+- No configured live IOTA Names, IOTA Identity, or VC proof passed.
+- No package is published to npm and no registry install/provenance/account
+  ownership proof exists.
+- No public A2A hosting, external conformance proof, live payment/provider
+  settlement, production marketplace, provider verification, custody/KMS,
+  recovery export, or physical device access proof exists.
+
+Next safe slice:
+
+- Provide operator-owned local `.env` plus IOTA Names/Identity/VC configuration
+  and run the relevant live gates; or continue Packet H with a final
+  launch-readiness evidence matrix that maps every completed slice to source,
+  tests, smokes, blocker status, and commits.
