@@ -17,7 +17,7 @@ Execution entry:
 
 Immediate product slice:
 
-- Slice 3.2: Pay-Per-Call Tool Contract after Slice 3.1 is committed
+- Slice 4.1: x402 Mapping after Slice 3.2 is committed
 
 ## Intent Read
 
@@ -62,9 +62,10 @@ verified Agentic slices for accounts, manifests, mock policy sponsorship,
 SDK/MCP routing, receipts, escrow/receipt Move state contracts, and the local
 agent-to-agent escrow demo. The current slices add local Agent Profile schema
 validation, local fixture resolution, SDK resolver access, capability policy
-checks, and mock-tested IOTA Names/Identity adapter interfaces. The next gaps
-are pay-per-call and data-license contract workflows, A2A protocol tools,
-standards bridges, expanded contracts, live IOTA Names/Identity proof, and live
+checks, mock-tested IOTA Names/Identity adapter interfaces, a local
+contract-template metadata registry, and a local pay-per-call tool workflow.
+The next gaps are standards bridges, data-license and expanded contract
+workflows, A2A protocol tools, live IOTA Names/Identity proof, and live
 deployment proof when explicitly in scope.
 
 Desired outcome:
@@ -188,13 +189,13 @@ Run this loop for every slice.
 
 ## Current Slice Acceptance
 
-Slice 3.2 is complete only when:
+Slice 4.1 is complete only when:
 
-- Pay-per-call contract tests pass.
-- Tool result is delivered only after policy/payment/receipt path succeeds.
-- Failed payment does not return paid result.
-- SDK or example integration keeps value-bearing flow behind policy gateway and
-  receipt state.
+- x402 payment requirement fixtures map to Agentic GasKit manifests.
+- Unsupported x402 protocol versions fail closed.
+- Receipt mapping/redaction tests cover external payment metadata.
+- Mock facilitator integration stays local and does not use production payment
+  credentials.
 - Existing GasKit tests and safety checks still pass, or any failure is
   explained as a pre-existing/blocking condition with exact evidence.
 
@@ -231,5 +232,5 @@ sed -n '1,220p' docs/agentic-gaskit/verification-hardening.md
 ```
 
 Then create the next slice scope record/manifest, run the baseline evals, add
-focused tests, and implement Slice 3.2 unless the handoff names a different
+focused tests, and implement Slice 4.1 unless the handoff names a different
 immediate target.

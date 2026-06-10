@@ -184,6 +184,7 @@ packages/
 contracts/
   escrow_v1/              # Local Move escrow state contract
   receipt_v1/             # Local Move receipt state contract
+  pay_per_call_v1/         # Local Move paid tool-call state contract
 deploy/
   docker-compose/         # Local deployment templates
   gas-station/            # Safe Gas Station config templates
@@ -205,6 +206,7 @@ docs/
   testnet-readiness.md
 examples/
   agent-escrow/           # Local agent-to-agent escrow demo
+  paid-mcp-tool/           # Local paid MCP-style tool demo
   nextjs-api-route/
   node-backend/
   policies/
@@ -258,7 +260,7 @@ Current tests cover:
 ### `@iota-gaskit/contracts-metadata`
 
 Versioned contract template metadata registry for Agentic GasKit policy
-allowlists. The local registry currently covers escrow and receipt template
+allowlists. The local registry currently covers escrow, receipt, and pay-per-call template
 metadata and pure checks for approved template/version, unknown package, and
 mismatched version decisions. It does not deploy contracts or prove live package
 addresses.
@@ -272,6 +274,9 @@ Current SDK supports request construction for:
 - `simulatePolicy()`
 - `reserveGas()`
 - `executeSponsoredTransaction()`
+- `requestSponsoredAction()`
+- `openEscrow()`
+- `callPaidTool()`
 
 It also includes typed error classes for auth, policy, and malformed-response failures.
 

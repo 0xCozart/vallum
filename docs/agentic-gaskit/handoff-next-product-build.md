@@ -7,9 +7,9 @@ Last updated: 2026-06-10.
 Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
-Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, and 3.1 are
-implemented and locally verified. The immediate target is Slice 3.2:
-Pay-Per-Call Tool Contract. Use
+Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 3.1, and 3.2
+are implemented and locally verified. The immediate target is Slice 4.1: x402
+Mapping. Use
 `docs/agentic-gaskit/execution-entry.md` as the entry doc, then continue
 through `docs/agentic-gaskit/execution-slices.md`.
 
@@ -129,19 +129,26 @@ Recent commits to know:
   raw packages are denied when a template allow-list is configured, mismatched
   template versions are denied, and legacy package/function allow-list behavior
   remains compatible.
+- Slice 3.2 Pay-Per-Call Tool Contract is implemented with local
+  `contracts/pay_per_call_v1`, SDK `callPaidTool`, pay-per-call receipt state,
+  template metadata, and `examples/paid-mcp-tool`.
+- Slice 3.2 tests prove the paid tool result is returned only after gateway
+  policy approval, mock payment confirmation, and receipt submission; policy
+  denial, failed payment, thrown payment confirmation, thrown tool invocation,
+  blank proof fields, and malformed runtime proof fields withhold paid results.
 - `docs/agentic-gaskit/external-api-notes.md` was refreshed on 2026-06-10 for
   current IOTA Names GraphQL and IOTA Identity DID/VC assumptions.
 - Root build, test, typecheck, package dry-run, docs, smokes, readiness example,
   contract tests, and secret scan include the accounts, manifest, MCP,
-  registry, contracts metadata, receipts, escrow/receipt contract surfaces, and
-  agent escrow demo smoke.
+  registry, contracts metadata, receipts, escrow/receipt/pay-per-call contract
+  surfaces, agent escrow demo smoke, and paid MCP-style tool smoke.
 
 ## What Is Not Complete
 
 - A2A protocol tools and standards-compatible discovery are not implemented.
 - Live IOTA Names/Identity proof, full verifiable credential validation, A2A
-  mapping, and expanded contract workflows beyond local escrow/receipt metadata
-  are not implemented.
+  mapping, standards bridges, and expanded contract workflows beyond local
+  escrow/receipt/pay-per-call metadata are not implemented.
 - Slice 2.3 is locally verified only. Localnet/testnet deployment smoke has not
   run, and the demo/escrow contract does not custody real funds.
 - Package namespace strategy is still open.
@@ -1202,7 +1209,7 @@ Known unproven claims:
 
 Next recommended slice:
 
-- Slice 3.2 Pay-Per-Call Tool Contract.
+- Slice 4.1 x402 Mapping.
 
 ## Slice 3.1 Completion Evidence
 
@@ -1280,6 +1287,78 @@ Known unproven claims:
   formal smart-contract audit, or IOTA Gas Station call was run for Slice 3.1.
 - The default template package ids are local metadata fixtures for policy tests,
   not deployed address claims.
+
+## Slice 3.2 Completion Evidence
+
+Committed slice:
+
+- Pending commit in this session: `feat: add pay per call tool flow`.
+
+Files changed:
+
+- `contracts/pay_per_call_v1/Move.toml`
+- `contracts/pay_per_call_v1/sources/pay_per_call.move`
+- `contracts/pay_per_call_v1/tests/pay_per_call_tests.move`
+- `examples/paid-mcp-tool/README.md`
+- `examples/paid-mcp-tool/paid-mcp-tool-demo.test.ts`
+- `examples/paid-mcp-tool/paid-mcp-tool-demo.ts`
+- `packages/contracts-metadata/src/index.ts`
+- `packages/contracts-metadata/src/registry.test.ts`
+- `packages/receipts/src/index.ts`
+- `packages/receipts/src/receipts.test.ts`
+- `packages/sdk/src/contracts/payPerCall.test.ts`
+- `packages/sdk/src/contracts/payPerCall.ts`
+- `packages/sdk/src/index.ts`
+- `scripts/package-scripts.test.ts`
+- `scripts/run-move-tests.ts`
+- `scripts/smoke-paid-mcp-tool.ts`
+- `package.json`
+- `README.md`
+- `docs/CODEBASE_MAP.md`
+- `docs/overview.md`
+- `docs/agentic-gaskit/codex-active-goal.md`
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+- `docs/agentic-gaskit/module-specs.md`
+- `tmp/apex-workflow/pay-per-call-slice-3-2-scope.md`
+
+Commands run:
+
+```bash
+git status --short --branch
+npm run docs:check
+npm run secrets:scan
+npm test
+npm run typecheck
+node --import tsx --test packages/sdk/src/contracts/payPerCall.test.ts examples/paid-mcp-tool/paid-mcp-tool-demo.test.ts
+npm run contracts:test
+npm run build -w @iota-gaskit/receipts && npm run build -w @iota-gaskit/contracts-metadata && npm run build -w @iota-gaskit/sdk && node --import tsx --test packages/sdk/src/contracts/payPerCall.test.ts examples/paid-mcp-tool/paid-mcp-tool-demo.test.ts packages/contracts-metadata/src/registry.test.ts packages/receipts/src/receipts.test.ts scripts/package-scripts.test.ts
+npm test
+npm run typecheck
+```
+
+Evidence so far:
+
+- Baseline `npm run docs:check`, `npm run secrets:scan`, `npm test`, and
+  `npm run typecheck` passed before implementation.
+- Focused red state failed because `payPerCall.js` and
+  `paid-mcp-tool-demo.js` did not exist.
+- `npm run contracts:test` now runs escrow, receipt, and pay-per-call Move
+  packages.
+- Pay-per-call Move tests pass for create/deliver, unauthorized delivery,
+  double delivery denial, refund, and delivery-after-refund denial.
+- Focused SDK/example/metadata/receipt/script tests pass after hardening:
+  policy denial, failed payment, thrown payment confirmation, thrown tool
+  invocation, blank evidence, and malformed runtime evidence all withhold paid
+  results.
+- Mid-slice `npm test` passed with 219 tests and `npm run typecheck` passed.
+
+Known unproven claims:
+
+- No real external payment rail, live MCP server, localnet/testnet/mainnet
+  deployment, package-address proof, formal smart-contract audit, or IOTA Gas
+  Station call was run for Slice 3.2.
+- The pay-per-call package id is local metadata fixture data for policy tests,
+  not a deployed address claim.
 
 ## Guardrails
 

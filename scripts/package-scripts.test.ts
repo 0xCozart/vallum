@@ -72,6 +72,11 @@ test("agent escrow smoke is wired into local verification", () => {
   assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run smoke:agent-escrow/);
 });
 
+test("paid MCP tool smoke is wired into local verification", () => {
+  assert.equal(packageJson.scripts?.["smoke:paid-mcp-tool"], "npm run build && tsx scripts/smoke-paid-mcp-tool.ts");
+  assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run smoke:paid-mcp-tool/);
+});
+
 test("Move contract tests are wired into local verification", () => {
   assert.equal(packageJson.scripts?.["contracts:test"], "tsx scripts/run-move-tests.ts");
   assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run contracts:test/);

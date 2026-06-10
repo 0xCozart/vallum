@@ -38,6 +38,25 @@ export interface EscrowReceipt {
   readonly iotaReceipt?: LinkedReceiptState;
 }
 
+export interface PayPerCallReceipt {
+  readonly receiptId: string;
+  readonly manifestId: string;
+  readonly idempotencyKey: string;
+  readonly agentId: string;
+  readonly ownerId: string;
+  readonly providerId: string;
+  readonly toolName: string;
+  readonly status: ReceiptStatus;
+  readonly amount: ReceiptAmount;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly sponsorshipId?: string;
+  readonly transactionDigest?: string;
+  readonly resultHash?: string;
+  readonly failureReason?: string;
+  readonly events: readonly ReceiptEvent[];
+}
+
 export interface EscrowState {
   readonly status: EscrowStatus;
   readonly providerId: string;
@@ -52,6 +71,7 @@ export interface LinkedReceiptState {
 export interface ReceiptEvent {
   readonly type:
     | "escrow_created"
+    | "pay_per_call_created"
     | "approved"
     | "denied"
     | "sponsored"
@@ -73,6 +93,18 @@ export interface CreateEscrowReceiptInput {
   readonly ownerId: string;
   readonly providerId: string;
   readonly verifierId: string;
+  readonly amount: ReceiptAmount;
+  readonly createdAt: Date;
+}
+
+export interface CreatePayPerCallReceiptInput {
+  readonly receiptId: string;
+  readonly manifestId: string;
+  readonly idempotencyKey: string;
+  readonly agentId: string;
+  readonly ownerId: string;
+  readonly providerId: string;
+  readonly toolName: string;
   readonly amount: ReceiptAmount;
   readonly createdAt: Date;
 }
@@ -112,9 +144,35 @@ export function createEscrowReceipt(input: CreateEscrowReceiptInput): EscrowRece
   };
 }
 
+export function createPayPerCallReceipt(input: CreatePayPerCallReceiptInput): PayPerCallReceipt {
+  const at = input.createdAt.toISOString();
+  return {
+    receiptId: input.receiptId,
+    manifestId: input.manifestId,
+    idempotencyKey: input.idempotencyKey,
+    agentId: input.agentId,
+    ownerId: input.ownerId,
+    providerId: input.providerId,
+    toolName: input.toolName,
+    status: "attempted",
+    amount: input.amount,
+    createdAt: at,
+    updatedAt: at,
+    events: [{ type: "pay_per_call_created", at }],
+  };
+}
+
 export function approveReceipt(receipt: EscrowReceipt, options: TransitionOptions): EscrowReceipt {
   requireReceiptStatus(receipt, ["attempted"], "approve");
   return withReceiptEvent(receipt, "approved", options.at, { status: "approved" });
+}
+
+export function approvePayPerCallReceipt(
+  receipt: PayPerCallReceipt,
+  options: TransitionOptions,
+): PayPerCallReceipt {
+  requireReceiptStatus(receipt, ["attempted"], "approve");
+  return withPayPerCallReceiptEvent(receipt, "approved", options.at, { status: "approved" });
 }
 
 export function denyReceipt(receipt: EscrowReceipt, options: TransitionOptions & { readonly reason: string }): EscrowReceipt {
@@ -124,12 +182,34 @@ export function denyReceipt(receipt: EscrowReceipt, options: TransitionOptions &
   }, options.reason);
 }
 
+export function denyPayPerCallReceipt(
+  receipt: PayPerCallReceipt,
+  options: TransitionOptions & { readonly reason: string },
+): PayPerCallReceipt {
+  requireReceiptStatus(receipt, ["attempted"], "deny");
+  return withPayPerCallReceiptEvent(receipt, "denied", options.at, {
+    status: "denied",
+    failureReason: options.reason,
+  }, options.reason);
+}
+
 export function sponsorReceipt(
   receipt: EscrowReceipt,
   options: TransitionOptions & { readonly sponsorshipId: string },
 ): EscrowReceipt {
   requireReceiptStatus(receipt, ["approved"], "sponsor");
   return withReceiptEvent(receipt, "sponsored", options.at, {
+    status: "sponsored",
+    sponsorshipId: options.sponsorshipId,
+  });
+}
+
+export function sponsorPayPerCallReceipt(
+  receipt: PayPerCallReceipt,
+  options: TransitionOptions & { readonly sponsorshipId: string },
+): PayPerCallReceipt {
+  requireReceiptStatus(receipt, ["approved"], "sponsor");
+  return withPayPerCallReceiptEvent(receipt, "sponsored", options.at, {
     status: "sponsored",
     sponsorshipId: options.sponsorshipId,
   });
@@ -146,6 +226,17 @@ export function submitReceipt(
   });
 }
 
+export function submitPayPerCallReceipt(
+  receipt: PayPerCallReceipt,
+  options: TransitionOptions & { readonly transactionDigest: string },
+): PayPerCallReceipt {
+  requireReceiptStatus(receipt, ["sponsored"], "submit");
+  return withPayPerCallReceiptEvent(receipt, "submitted", options.at, {
+    status: "submitted",
+    transactionDigest: options.transactionDigest,
+  });
+}
+
 export function completeEscrow(
   receipt: EscrowReceipt,
   options: TransitionOptions & { readonly evidenceHash: string },
@@ -156,6 +247,28 @@ export function completeEscrow(
     status: "completed",
     evidenceHash: options.evidenceHash,
   });
+}
+
+export function completePayPerCallReceipt(
+  receipt: PayPerCallReceipt,
+  options: TransitionOptions & { readonly resultHash: string },
+): PayPerCallReceipt {
+  requireReceiptStatus(receipt, ["submitted"], "complete");
+  return withPayPerCallReceiptEvent(receipt, "completed", options.at, {
+    status: "completed",
+    resultHash: options.resultHash,
+  });
+}
+
+export function failPayPerCallReceipt(
+  receipt: PayPerCallReceipt,
+  options: TransitionOptions & { readonly reason: string },
+): PayPerCallReceipt {
+  requireReceiptStatus(receipt, ["attempted", "approved", "sponsored", "submitted"], "fail");
+  return withPayPerCallReceiptEvent(receipt, "failed", options.at, {
+    status: "failed",
+    failureReason: options.reason,
+  }, options.reason);
 }
 
 export function releaseEscrow(
@@ -224,7 +337,7 @@ function requireEscrowOpen(receipt: EscrowReceipt, action: string): void {
   }
 }
 
-function requireReceiptStatus(receipt: EscrowReceipt, allowed: readonly ReceiptStatus[], action: string): void {
+function requireReceiptStatus(receipt: { readonly status: ReceiptStatus }, allowed: readonly ReceiptStatus[], action: string): void {
   if (!allowed.includes(receipt.status)) {
     throw new ReceiptTransitionError("INVALID_TRANSITION", `Cannot ${action} receipt from ${receipt.status}.`);
   }
@@ -237,6 +350,29 @@ function withReceiptEvent(
   patch: Partial<EscrowReceipt>,
   reason?: string,
 ): EscrowReceipt {
+  const timestamp = at.toISOString();
+  return {
+    ...receipt,
+    ...patch,
+    updatedAt: timestamp,
+    events: [
+      ...receipt.events,
+      {
+        type: eventType,
+        at: timestamp,
+        ...(reason ? { reason } : {}),
+      },
+    ],
+  };
+}
+
+function withPayPerCallReceiptEvent(
+  receipt: PayPerCallReceipt,
+  eventType: ReceiptEvent["type"],
+  at: Date,
+  patch: Partial<PayPerCallReceipt>,
+  reason?: string,
+): PayPerCallReceipt {
   const timestamp = at.toISOString();
   return {
     ...receipt,

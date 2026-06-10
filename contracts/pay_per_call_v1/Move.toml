@@ -1,0 +1,9 @@
+[package]
+name = "pay_per_call_v1"
+version = "0.0.1"
+edition = "2024"
+
+[dependencies]
+
+[addresses]
+pay_per_call_v1 = "0x0"

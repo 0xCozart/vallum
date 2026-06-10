@@ -4,10 +4,12 @@ import {
   createContractTemplateRegistry,
   evaluateContractTemplateAction,
   escrowContractTemplateV1,
+  payPerCallContractTemplateV1,
 } from "./index.js";
 
 const registry = createContractTemplateRegistry([
   escrowContractTemplateV1,
+  payPerCallContractTemplateV1,
 ]);
 
 test("approved template and version metadata is accepted", () => {
@@ -67,5 +69,20 @@ test("missing module for an approved template is denied", () => {
   assert.equal(decision.allowed, false);
   if (!decision.allowed) {
     assert.equal(decision.reasonCode, "CONTRACT_MODULE_NOT_REGISTERED");
+  }
+});
+
+test("pay-per-call template metadata is accepted", () => {
+  const decision = evaluateContractTemplateAction(registry, {
+    templateId: "pay_per_call_v1",
+    templateVersion: "1.0.0",
+    packageId: "0x5555555555555555555555555555555555555555555555555555555555555555",
+    module: "pay_per_call",
+    functionName: "request_call",
+  });
+
+  assert.equal(decision.allowed, true);
+  if (decision.allowed) {
+    assert.equal(decision.template.templateId, "pay_per_call_v1");
   }
 });

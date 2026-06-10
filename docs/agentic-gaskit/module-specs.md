@@ -165,6 +165,7 @@ Owns:
 - Gateway client.
 - `requestSponsoredAction`.
 - `openEscrow`.
+- `callPaidTool`.
 - `resolveAgent`.
 - Contract wrapper helpers.
 - Typed result/error objects.
@@ -365,10 +366,10 @@ Initial templates:
 
 - `escrow_v1`
 - `receipt_v1`
+- `pay_per_call_v1`
 
 Phase 3 templates:
 
-- `pay_per_call_v1`
 - `data_license_v1`
 - `service_bounty_v1`
 - `subscription_v1`

@@ -3,14 +3,20 @@ import { test } from "node:test";
 
 import {
   approveReceipt,
+  approvePayPerCallReceipt,
   completeEscrow,
+  completePayPerCallReceipt,
   createEscrowReceipt,
+  createPayPerCallReceipt,
   expireEscrow,
+  failPayPerCallReceipt,
   linkExternalPaymentState,
   linkIotaReceiptState,
   releaseEscrow,
   refundEscrow,
+  sponsorPayPerCallReceipt,
   sponsorReceipt,
+  submitPayPerCallReceipt,
   submitReceipt,
   ReceiptTransitionError,
 } from "./index.js";
@@ -120,6 +126,54 @@ test("external payment and IOTA receipt states can diverge without data loss", (
   assert.equal(receipt.status, "completed");
 });
 
+test("pay-per-call receipt advances through paid result lifecycle", () => {
+  const approved = approvePayPerCallReceipt(basePayPerCallReceipt(), { at: now });
+  const sponsored = sponsorPayPerCallReceipt(approved, {
+    at: now,
+    sponsorshipId: "mock_sponsorship_paid_call_1",
+  });
+  const submitted = submitPayPerCallReceipt(sponsored, {
+    at: now,
+    transactionDigest: "digest_paid_call_1",
+  });
+  const completed = completePayPerCallReceipt(submitted, {
+    at: now,
+    resultHash: "sha256:paid-call-result",
+  });
+
+  assert.equal(completed.status, "completed");
+  assert.equal(completed.providerId, "agent:paid-tool-provider");
+  assert.equal(completed.toolName, "premium_analysis");
+  assert.equal(completed.sponsorshipId, "mock_sponsorship_paid_call_1");
+  assert.equal(completed.transactionDigest, "digest_paid_call_1");
+  assert.equal(completed.resultHash, "sha256:paid-call-result");
+  assert.deepEqual(completed.events.map((event) => event.type), [
+    "pay_per_call_created",
+    "approved",
+    "sponsored",
+    "submitted",
+    "completed",
+  ]);
+});
+
+test("failed pay-per-call receipt cannot later complete", () => {
+  const approved = approvePayPerCallReceipt(basePayPerCallReceipt(), { at: now });
+  const failed = failPayPerCallReceipt(approved, {
+    at: now,
+    reason: "payment-failed",
+  });
+
+  assert.equal(failed.status, "failed");
+  assert.equal(failed.failureReason, "payment-failed");
+  assert.throws(
+    () => completePayPerCallReceipt(failed, {
+      at: now,
+      resultHash: "sha256:late-result",
+    }),
+    (error) => error instanceof ReceiptTransitionError && error.code === "INVALID_TRANSITION",
+  );
+});
+
 function baseEscrowReceipt() {
   return createEscrowReceipt({
     receiptId: "receipt_escrow_1",
@@ -147,5 +201,19 @@ function completedEscrowReceipt() {
   return completeEscrow(submitted, {
     at: now,
     evidenceHash: "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  });
+}
+
+function basePayPerCallReceipt() {
+  return createPayPerCallReceipt({
+    receiptId: "receipt_paid_call_1",
+    manifestId: "idem_paid_call_1",
+    idempotencyKey: "idem_paid_call_1",
+    agentId: "agent:paid-tool-buyer",
+    ownerId: "owner:paid-tool-buyer",
+    providerId: "agent:paid-tool-provider",
+    toolName: "premium_analysis",
+    amount: { amount: "3.00", asset: "USD" },
+    createdAt: now,
   });
 }

@@ -69,9 +69,23 @@ export const receiptContractTemplateV1: ContractTemplateMetadata = {
   refundDisputeBehavior: "Records external escrow outcome without independently settling funds.",
 };
 
+export const payPerCallContractTemplateV1: ContractTemplateMetadata = {
+  templateId: "pay_per_call_v1",
+  version: "1.0.0",
+  packageId: "0x5555555555555555555555555555555555555555555555555555555555555555",
+  module: "pay_per_call",
+  entryFunctions: ["request_call", "deliver", "refund"],
+  allowedActions: ["request_call", "deliver", "refund"],
+  riskCategory: "medium",
+  receiptEvents: ["pay_per_call_created", "submitted", "completed", "failed"],
+  requiredManifestFields: ["agent", "owner", "spend", "action", "counterparty", "receipt"],
+  refundDisputeBehavior: "Provider delivery after payment confirmation or refund/fail before result delivery.",
+};
+
 export const defaultContractTemplates = [
   escrowContractTemplateV1,
   receiptContractTemplateV1,
+  payPerCallContractTemplateV1,
 ] as const;
 
 export const defaultContractTemplateRegistry = createContractTemplateRegistry(defaultContractTemplates);

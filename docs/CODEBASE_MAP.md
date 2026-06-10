@@ -29,6 +29,7 @@ It also includes the first Agentic GasKit implementation slices:
 - receipt state package
 - local Move escrow and receipt state contracts
 - deterministic local agent-to-agent escrow demo
+- local Move pay-per-call state contract and paid MCP-style tool demo
 - agent profile schema package with local fixture resolver
 - mock-tested IOTA Names/Identity adapter interfaces
 - pure profile capability policy check
@@ -66,10 +67,13 @@ deployment proof remain roadmap unless later slices implement and verify them.
 - Receipts: `packages/receipts/src/`
 - Move escrow contract: `contracts/escrow_v1/`
 - Move receipt contract: `contracts/receipt_v1/`
+- Move pay-per-call contract: `contracts/pay_per_call_v1/`
 - Policy gateway service: `apps/policy-gateway-service/src/`
 - Demo dApp: `apps/demo-dapp/`
 - Agent escrow demo: `examples/agent-escrow/`, `docs/demo-agent-escrow.md`,
   `scripts/smoke-agent-escrow.ts`
+- Paid MCP-style tool demo: `examples/paid-mcp-tool/`,
+  `scripts/smoke-paid-mcp-tool.ts`
 - Docs site: `apps/docs-site/`
 - Examples: `examples/node-backend/`, `examples/nextjs-api-route/`,
   `examples/policies/`
@@ -96,8 +100,7 @@ Do not create all of these at once. Add them through vertical slices:
 - registry live adapters
 - `packages/standards`
 - A2A protocol tools and standards-compatible discovery
-- expanded contract packages for pay-per-call, data license, and device access
-  workflows
+- expanded contract packages for data license and device access workflows
 
 ## Verification Guidance
 

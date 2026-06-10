@@ -11,10 +11,10 @@ checks policy before spending gas, and records sanitized usage events.
 The implemented foundation is GasKit plus the first Agentic GasKit slices: SDK,
 policy gateway, local service, examples, deployment docs, observability
 foundations, account/signer-reference primitives, manifests, mock agent
-sponsorship, MCP tool facade, receipts, local escrow/receipt Move contracts, and
-a deterministic local agent-to-agent escrow demo. It now also includes the
-first local Agent Profile schema validator, local fixture resolver, and pure
-capability policy check, plus mock-tested IOTA Names and IOTA Identity adapter
+sponsorship, MCP tool facade, receipts, local escrow/receipt/pay-per-call Move
+contracts, and local agent escrow plus paid MCP-style tool demos. It now also
+includes the first local Agent Profile schema validator, local fixture resolver,
+pure capability policy check, mock-tested IOTA Names and IOTA Identity adapter
 interfaces, and a local contract-template metadata registry consumed by agent
 policy allow-lists. Live testnet proof still requires operator-owned local
 credentials.
@@ -80,8 +80,9 @@ The official Gas Station is the sponsorship engine. GasKit is the app integratio
 | Agent wallets | Signer-reference-first account/wallet safety model and local package implementation exist. | [Account And Wallet Safety](agentic-gaskit/account-wallet-safety.md) |
 | Agent manifests and policy | Manifest validation, pure agent action policy, and mock sponsorship gateway are implemented locally. | [Architecture](architecture.md) |
 | Agent MCP tools | Local MCP-shaped sponsorship tools route through the SDK and policy gateway. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
-| Receipts and contracts | Local receipt state package, non-custodial Move escrow/receipt state contracts, and contract-template metadata allow-list checks are implemented and covered by local tests. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
+| Receipts and contracts | Local receipt state package, non-custodial Move escrow/receipt/pay-per-call state contracts, and contract-template metadata allow-list checks are implemented and covered by local tests. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
 | Agent escrow demo | Local demo shows one agent hiring another, gateway approval, verifier release, receipt output, and over-budget policy denial without live IOTA calls. | [Agent Escrow Demo](demo-agent-escrow.md) |
+| Paid MCP-style tool demo | Local demo returns a paid result only after gateway approval, mock payment confirmation, and receipt submission; denial and failed payment withhold paid results. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
 | Agent profiles | Local `@iota-gaskit/registry` schema validation, fixture resolution, and mock-tested IOTA Names/Identity adapter interfaces cover required fields, expired/revoked states, unsupported versions, secret-field rejection, SDK resolution, and capability policy checks. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
 | Agent roadmap | PRDs, execution slices, module specs, and hardening gates have been migrated into this fork. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
 | Beginner concepts | Plain-English explanations of IOTA, sponsored gas, GasKit roles, and common terms. | [IOTA and GasKit Basics](concepts.md) |
@@ -100,8 +101,8 @@ These are not complete production claims yet:
 - signer adapter storage beyond documented safety model;
 - A2A protocol tools and standards-compatible discovery;
 - live registry proof, full verifiable credential validation, and cache policy;
-- expanded contract workflow packages beyond the escrow/receipt MVP and
-  metadata allow-listing;
+- expanded contract workflow packages beyond the escrow/receipt/pay-per-call
+  MVP and metadata allow-listing;
 - full dashboard UI;
 - production-grade durable usage storage;
 - production monitoring and alerting templates;
