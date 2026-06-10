@@ -101,6 +101,12 @@ export default {
           description: "SDK calls, backend routes, browser caller shape, curl requests, and policy YAML."
         },
         {
+          title: "Agent Escrow Demo",
+          source: "docs/demo-agent-escrow.md",
+          slug: "agent-escrow-demo",
+          description: "Local agent-to-agent escrow demo with approved release and policy denial paths."
+        },
+        {
           title: "Agent Guide",
           source: "docs/agent-guide.md",
           slug: "agent-guide",

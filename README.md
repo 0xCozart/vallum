@@ -75,10 +75,11 @@ policy gateway, TypeScript SDK, local demo flows, integration examples,
 deployment templates, security docs, observability foundations, and documented
 IOTA testnet sponsored-execution evidence.
 
-The Agentic GasKit direction is now documented in `docs/agentic-gaskit/`, but
-agent wallet/account packages, manifest packages, MCP tools, registry surfaces,
-and contract workflows are still planned implementation work unless a later
-slice proves otherwise.
+It also contains the first Agentic GasKit implementation slices:
+signer-reference-first account primitives, transaction manifests, pure agent
+policy evaluation, a local mock sponsorship gateway, SDK sponsored actions,
+MCP-shaped sponsorship tools, receipt state, local Move escrow/receipt state
+contracts, and a deterministic local agent-to-agent escrow demo.
 
 Some production surfaces remain planned roadmap work, including the full
 dashboard UI, production persistence, production monitoring, package
@@ -99,6 +100,8 @@ The repo currently includes:
 - architecture diagram and architecture docs;
 - threat model and production hardening docs;
 - reviewer checklist and demo script.
+- agent escrow demo showing gateway approval, verifier release, receipt output,
+  and over-budget policy denial without live IOTA calls.
 
 ## Current proof status
 
@@ -109,16 +112,18 @@ npm install
 npm run verify:local
 ```
 
-Latest local verification:
+Latest local verification and prior live proof:
 
-- `npm test`: 132 deterministic package/app/script/example/reviewer-doc/usage-store/operator-usage/readiness/package-publish/live-execute compatibility tests passed locally after the latest documentation and API cleanup.
+- `npm test`: 179 deterministic TypeScript tests passed locally after Slice 1.7.
+- `npm run contracts:test`: 8 Move escrow/receipt contract tests passed locally.
 - `npm run typecheck`: passed locally.
 - `npm run smoke:local`: deterministic local gateway smoke passed locally, including policy simulation, sanitized event, local usage read-model, file-backed usage event-store replay, and authenticated local operator usage API checks.
 - `npm run smoke:demo-dapp`: deterministic local demo dApp smoke passed locally.
 - `npm run smoke:demo-browser`: deterministic local browser-wrapper smoke passed locally.
+- `npm run smoke:agent-escrow`: deterministic local agent-to-agent escrow smoke passed locally.
 - `npm run readiness:testnet:example`: deterministic example testnet-readiness preflight passed locally.
 - `npm run pack:check`: workspace package dry-runs completed locally.
-- `npm run execute:testnet-demo`: real sponsored IOTA testnet execute succeeded through the local policy gateway and Gas Station; public digest `2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H`.
+- Prior `npm run execute:testnet-demo`: real sponsored IOTA testnet execute succeeded through the local policy gateway and Gas Station; public digest `2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H`.
 - secret-oriented scan over tracked project files is wired into `npm run secrets:scan` and `npm run verify:local`.
 
 See `docs/testnet-attempts.md` and `docs/reviewer-walkthrough.md` for exact evidence.
@@ -164,6 +169,13 @@ packages/
   sdk/                    # TypeScript SDK scaffold
   policy-gateway/         # Policy decision engine scaffold
   shared-types/           # Shared policy/request/response types
+  accounts/               # Agent account and signer-reference primitives
+  manifest/               # Agent transaction manifest schema and validation
+  mcp-server/             # MCP-shaped sponsorship tool facade
+  receipts/               # Receipt and escrow state machine
+contracts/
+  escrow_v1/              # Local Move escrow state contract
+  receipt_v1/             # Local Move receipt state contract
 deploy/
   docker-compose/         # Local deployment templates
   gas-station/            # Safe Gas Station config templates
@@ -184,6 +196,7 @@ docs/
   threat-model.md
   testnet-readiness.md
 examples/
+  agent-escrow/           # Local agent-to-agent escrow demo
   nextjs-api-route/
   node-backend/
   policies/

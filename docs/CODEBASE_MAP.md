@@ -28,11 +28,12 @@ It also includes the first Agentic GasKit implementation slices:
 - MCP sponsorship tool facade
 - receipt state package
 - local Move escrow and receipt state contracts
+- deterministic local agent-to-agent escrow demo
 
 The remaining Agentic GasKit direction is documented under
-`docs/agentic-gaskit/`. A2A tools, registry surfaces, standards bridges,
-expanded contract workflows, production custody, and live deployment proof
-remain roadmap unless later slices implement and verify them.
+`docs/agentic-gaskit/`. A2A protocol tools, registry surfaces, standards
+bridges, expanded contract workflows, production custody, and live deployment
+proof remain roadmap unless later slices implement and verify them.
 
 ## Start Here
 
@@ -60,6 +61,8 @@ remain roadmap unless later slices implement and verify them.
 - Move receipt contract: `contracts/receipt_v1/`
 - Policy gateway service: `apps/policy-gateway-service/src/`
 - Demo dApp: `apps/demo-dapp/`
+- Agent escrow demo: `examples/agent-escrow/`, `docs/demo-agent-escrow.md`,
+  `scripts/smoke-agent-escrow.ts`
 - Docs site: `apps/docs-site/`
 - Examples: `examples/node-backend/`, `examples/nextjs-api-route/`,
   `examples/policies/`
@@ -85,7 +88,7 @@ Do not create all of these at once. Add them through vertical slices:
 - gateway extensions for agent manifests and capabilities
 - `packages/registry`
 - `packages/standards`
-- A2A tools and agent-to-agent demos
+- A2A protocol tools and standards-compatible discovery
 - expanded contract packages for pay-per-call, data license, and device access
   workflows
 
@@ -99,6 +102,7 @@ Safe local checks:
 - `npm run contracts:test`
 - `npm run typecheck`
 - `npm run smoke:local`
+- `npm run smoke:agent-escrow`
 - `npm run secrets:scan`
 
 Full local proof:

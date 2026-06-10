@@ -11,8 +11,9 @@ checks policy before spending gas, and records sanitized usage events.
 The implemented foundation is GasKit plus the first Agentic GasKit slices: SDK,
 policy gateway, local service, examples, deployment docs, observability
 foundations, account/signer-reference primitives, manifests, mock agent
-sponsorship, MCP tool facade, receipts, and local escrow/receipt Move contracts.
-Live testnet proof still requires operator-owned local credentials.
+sponsorship, MCP tool facade, receipts, local escrow/receipt Move contracts, and
+a deterministic local agent-to-agent escrow demo. Live testnet proof still
+requires operator-owned local credentials.
 
 If terms like gas, sponsor wallet, package ID, or IOTA Gas Station are new, start with [IOTA and GasKit Basics](concepts.md).
 
@@ -76,11 +77,12 @@ The official Gas Station is the sponsorship engine. GasKit is the app integratio
 | Agent manifests and policy | Manifest validation, pure agent action policy, and mock sponsorship gateway are implemented locally. | [Architecture](architecture.md) |
 | Agent MCP tools | Local MCP-shaped sponsorship tools route through the SDK and policy gateway. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
 | Receipts and contracts | Local receipt state package plus non-custodial Move escrow/receipt state contracts are implemented and covered by local tests. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
+| Agent escrow demo | Local demo shows one agent hiring another, gateway approval, verifier release, receipt output, and over-budget policy denial without live IOTA calls. | [Agent Escrow Demo](demo-agent-escrow.md) |
 | Agent roadmap | PRDs, execution slices, module specs, and hardening gates have been migrated into this fork. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
 | Beginner concepts | Plain-English explanations of IOTA, sponsored gas, GasKit roles, and common terms. | [IOTA and GasKit Basics](concepts.md) |
 | Code examples | Backend SDK calls, Next.js route shape, browser caller shape, curl requests, and policy YAML. | [Code Examples](examples.md) |
 | Agent workflow | Repo-local Codex skill for agents that need to navigate, develop, verify, or integrate GasKit safely. | [Agent Guide](agent-guide.md) |
-| Local verification | Tests, typecheck, local gateway smoke, demo dApp smoke, package dry-runs, and secret scan run without live IOTA services. | [Quickstart](quickstart.md) |
+| Local verification | Tests, typecheck, local gateway smoke, demo dApp smoke, agent escrow smoke, package dry-runs, contract tests, and secret scan run without live IOTA services. | [Quickstart](quickstart.md) |
 | Policy gateway | App auth, allowlists, quotas, wallet denial, simulation, reserve proxying, execute proxying, and safe errors are implemented for local proof. | [Policy Gateway](policy.md) |
 | SDK | Backend client helpers cover policy simulation, reserve, execute, typed errors, and malformed-response handling. | [TypeScript SDK](sdk.md) |
 | Usage visibility | Sanitized decision events, in-memory usage snapshots, JSONL replay, and a local authenticated operator usage API exist as foundations. | [Observability](observability.md) |
@@ -91,7 +93,7 @@ The official Gas Station is the sponsorship engine. GasKit is the app integratio
 These are not complete production claims yet:
 
 - signer adapter storage beyond documented safety model;
-- A2A agent tools;
+- A2A protocol tools and standards-compatible discovery;
 - identity/registry package;
 - expanded contract workflow packages beyond the escrow/receipt MVP;
 - full dashboard UI;

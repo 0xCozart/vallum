@@ -17,7 +17,7 @@ Execution entry:
 
 Immediate product slice:
 
-- Slice 1.7: Agent-To-Agent Escrow Demo
+- Slice 2.1: Agent Profile Schema after Slice 1.7 is committed
 
 ## Intent Read
 
@@ -59,10 +59,10 @@ GasKit sponsorship behavior incorrectly.
 Current problem:
 The repository contains the existing GasKit sponsorship toolkit plus locally
 verified Agentic slices for accounts, manifests, mock policy sponsorship,
-SDK/MCP routing, receipts, and escrow/receipt Move state contracts. The next
-gaps are agent-to-agent demo flow, A2A tools, registry surfaces, standards
-bridges, expanded contracts, and live deployment proof when explicitly in
-scope.
+SDK/MCP routing, receipts, escrow/receipt Move state contracts, and the local
+agent-to-agent escrow demo. The next gaps are agent profile/registry surfaces,
+A2A protocol tools, standards bridges, expanded contracts, and live deployment
+proof when explicitly in scope.
 
 Desired outcome:
 Codex repeatedly implements one vertical slice, proves it with focused and
@@ -80,7 +80,7 @@ In scope:
 
 - Start from the latest handoff and `docs/agentic-gaskit/execution-entry.md`.
 - Verify the existing foundation before editing.
-- Implement Slice 1.0 first unless a baseline gate is broken.
+- Continue from the latest completed slice unless a baseline gate is broken.
 - Continue through `docs/agentic-gaskit/execution-slices.md` in dependency order.
 - Use tests before implementation where feasible.
 - Add negative and redaction tests for every security boundary.
@@ -132,7 +132,7 @@ Run this loop for every slice.
 
 3. Baseline eval
    - Run the lightest baseline checks needed for the slice.
-   - For the current account slice, start with:
+   - For a broad product slice, start with:
 
      ```bash
      npm run docs:check
@@ -143,9 +143,8 @@ Run this loop for every slice.
 
 4. Test-first eval
    - Add failing tests for the behavior before implementation where feasible.
-   - For Slice 1.0, tests must cover signer-reference creation, no secret
-     material in returned values, signer refs not authorizing by themselves,
-     revoked/disabled status behavior, recovery/export denial, and redaction.
+   - Tests should cover both approved behavior and denial/redaction behavior for
+     any security, policy, wallet, receipt, payment, or gateway boundary.
 
 5. Implement
    - Make the smallest vertical change that produces the slice outcome.
@@ -154,7 +153,8 @@ Run this loop for every slice.
 
 6. Focused eval
    - Run the narrowest tests for touched files first.
-   - For Slice 1.0, prefer focused account/package tests before full repo proof.
+   - Prefer focused package, script, example, or docs tests before full repo
+     proof.
 
 7. Broad eval
    - Broaden to checks required by touched surfaces.
@@ -183,24 +183,20 @@ Run this loop for every slice.
    - Update the continuation handoff when the slice changes what the next agent
      must know.
 
-## First Slice Acceptance
+## Current Slice Acceptance
 
-Slice 1.0 is complete only when:
+Slice 1.7 is complete only when:
 
-- `packages/accounts` exists and exposes the account/wallet manager contract.
-- Agent wallet creation returns address, wallet id, signer reference, status,
-  and allowed scopes.
-- Returned values do not include seed, mnemonic, private key, raw keypair, raw
-  transaction bytes, user signatures, sponsor keys, app API keys, or bearer
-  tokens.
-- Wallet creation requires owner/agent context.
-- Signer references are opaque scoped handles and cannot authorize signing or
-  sponsorship by possession alone.
-- Revoked or disabled wallet state cannot sign.
-- Recovery/export is explicit and denied or unsupported for autonomous agent
-  runtime flows.
-- Logs/errors redact signer refs and secret-looking fixture values where they
-  could leak.
+- `examples/agent-escrow/` provides a runnable local demo.
+- The demo shows one agent hiring another through SDK/gateway sponsorship.
+- The approved path advances receipt state through submitted, completed, and
+  released.
+- The denied path returns a structured policy denial without reserving or
+  releasing escrow.
+- Receipt/log output omits API keys, signer references, raw transaction bytes,
+  user signatures, and secret-looking values.
+- `npm run smoke:agent-escrow` is documented and wired into
+  `npm run verify:local`.
 - Existing GasKit tests and safety checks still pass, or any failure is
   explained as a pre-existing/blocking condition with exact evidence.
 
@@ -236,5 +232,6 @@ sed -n '1,190p' docs/agentic-gaskit/execution-slices.md
 sed -n '1,220p' docs/agentic-gaskit/verification-hardening.md
 ```
 
-Then create the Slice 1.0 scope record/manifest, run the baseline evals, add
-focused account tests, and implement `packages/accounts`.
+Then create the next slice scope record/manifest, run the baseline evals, add
+focused tests, and implement Slice 2.1 unless the handoff names a different
+immediate target.

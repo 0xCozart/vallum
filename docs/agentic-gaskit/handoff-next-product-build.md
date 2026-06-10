@@ -7,8 +7,8 @@ Last updated: 2026-06-10.
 Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
-Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, and 1.6 are implemented and locally
-verified. The immediate target is Slice 1.7: Agent-To-Agent Escrow Demo. Use
+Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, and 1.7 are implemented and locally
+verified. The immediate target is Slice 2.1: Agent Profile Schema. Use
 `docs/agentic-gaskit/execution-entry.md` as the entry doc, then continue
 through `docs/agentic-gaskit/execution-slices.md`.
 
@@ -96,16 +96,22 @@ Recent commits to know:
   and `contracts/receipt_v1`.
 - Slice 1.6 Move tests prove escrow create/release/refund, double-release
   denial, unauthorized verifier denial, and receipt lifecycle status updates.
+- Slice 1.7 agent-to-agent escrow demo is implemented in
+  `examples/agent-escrow`.
+- Slice 1.7 demo proves a local requester agent opens escrow through the SDK
+  and mock gateway, the provider completes work, the verifier releases escrow,
+  receipt/log output is sanitized, and an over-budget manifest returns
+  structured denial.
 - Root build, test, typecheck, package dry-run, docs, smokes, readiness example,
   contract tests, and secret scan include the accounts, manifest, MCP,
-  receipts, and escrow/receipt contract surfaces.
+  receipts, escrow/receipt contract surfaces, and agent escrow demo smoke.
 
 ## What Is Not Complete
 
-- A2A tools are not implemented.
+- A2A protocol tools and standards-compatible discovery are not implemented.
 - Registry and expanded contract workflows are not implemented.
-- Slice 1.6 is locally verified only. Localnet/testnet deployment smoke has not
-  run, and the escrow contract does not custody real funds.
+- Slice 1.7 is locally verified only. Localnet/testnet deployment smoke has not
+  run, and the demo/escrow contract does not custody real funds.
 - Package namespace strategy is still open.
 - Production custody, KMS, and recovery/export are not designed or implemented.
 
@@ -760,6 +766,91 @@ Next recommended slice:
 
 - Slice 1.7 Agent-To-Agent Escrow Demo.
 
+## Completed Slice 1.7
+
+Implemented the deterministic local agent-to-agent escrow demo.
+
+The demo stays local/mock. It does not contact IOTA RPC, IOTA Gas Station,
+testnet, mainnet, paid APIs, or custody funds.
+
+Acceptance is defined in:
+
+- `docs/agentic-gaskit/execution-slices.md` Slice 1.7
+- `docs/agentic-gaskit/codex-active-goal.md` Current Slice Acceptance
+
+Changed files:
+
+- `README.md`
+- `apps/docs-site/docs.config.mjs`
+- `docs/CODEBASE_MAP.md`
+- `docs/demo-agent-escrow.md`
+- `docs/overview.md`
+- `docs/agentic-gaskit/codex-active-goal.md`
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+- `examples/agent-escrow/README.md`
+- `examples/agent-escrow/agent-escrow-demo.test.ts`
+- `examples/agent-escrow/agent-escrow-demo.ts`
+- `package.json`
+- `scripts/package-scripts.test.ts`
+- `scripts/smoke-agent-escrow.ts`
+
+Commands run:
+
+```bash
+git status --short --branch
+node --import tsx --test examples/agent-escrow/agent-escrow-demo.test.ts
+npm run smoke:agent-escrow
+node --import tsx --test examples/agent-escrow/agent-escrow-demo.test.ts scripts/package-scripts.test.ts
+npm run docs:check
+node --import tsx --test examples/agent-escrow/agent-escrow-demo.test.ts scripts/package-scripts.test.ts scripts/reviewer-docs.test.ts
+npm run verify:local
+git diff --check
+```
+
+Verification result:
+
+- Initial demo test failed before implementation because
+  `examples/agent-escrow/agent-escrow-demo.js` did not exist.
+- Focused demo test passed after implementation.
+- `npm run smoke:agent-escrow` passed and printed approved release plus
+  over-budget denial output.
+- Focused demo plus package-script tests passed.
+- `npm run docs:check` passed after adding the hosted docs page.
+- Focused demo, package-script, and reviewer-doc tests passed with 29 tests.
+- `npm run verify:local` passed with 179 TypeScript tests, 8 Move contract
+  tests, typecheck, local gateway smoke, demo dApp smoke, browser wrapper smoke,
+  agent escrow smoke, readiness example, package dry-run, docs check, and
+  secret scan.
+- Secret scan checked 180 tracked/staged/untracked text files with 0 findings.
+- `git diff --check` passed.
+
+Hardening notes:
+
+- The approved path calls `openEscrow`, which routes through the SDK and mock
+  sponsorship gateway instead of direct reserve/execute or raw transaction
+  paths.
+- The denied path uses an over-budget manifest and returns
+  `GAS_BUDGET_TOO_HIGH` with denied receipt state.
+- Formatted output omits API keys, signer references, raw transaction bytes,
+  user signatures, and secret-looking fields.
+- The smoke is wired into `npm run verify:local` so future broad proof includes
+  the local agent escrow demo.
+- Apex manifest helper remains unusable because the current
+  `apex.workflow.json` lacks required mode definitions and
+  `manifest.defaultDir`, so Slice 1.7 scope was recorded locally under
+  ignored `tmp/apex-workflow/` and this work does not claim Apex verification.
+
+Known unproven claims:
+
+- No live IOTA, Gas Station, localnet/testnet deployment, real custody, payment
+  settlement, verifier oracle, or published package ID behavior exists in this
+  demo.
+- A2A protocol tools and registry/profile discovery remain future slices.
+
+Next recommended slice:
+
+- Slice 2.1 Agent Profile Schema.
+
 ## Guardrails
 
 - Do not expose seeds, mnemonics, private keys, raw keypairs, raw transaction
@@ -784,11 +875,11 @@ npm test
 npm run typecheck
 ```
 
-For Slice 1.7, keep the demo local/mock unless the user explicitly asks for live
-testnet work. Start with the baseline above plus:
+For Slice 2.1, keep profile/schema work local unless the user explicitly asks
+for live testnet work. Start with the baseline above plus:
 
 ```bash
-npm run contracts:test
+node --import tsx --test packages/*/src/*.test.ts
 ```
 
 Finish with:
