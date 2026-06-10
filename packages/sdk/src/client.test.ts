@@ -1,6 +1,149 @@
 import assert from "node:assert/strict";
+import { once } from "node:events";
+import type { AddressInfo } from "node:net";
 import { test } from "node:test";
-import { createGasKitClient, GasKitAuthError, GasKitError, GasKitPolicyError } from "./index.js";
+import { validManifestFixture } from "@iota-gaskit/manifest";
+import { createAgentMockGatewayServer, type AgentActionPolicy } from "@iota-gaskit/policy-gateway";
+import {
+  createGasKitClient,
+  GasKitAuthError,
+  GasKitError,
+  GasKitPolicyError,
+  IotaAgent,
+  requestSponsoredAction,
+} from "./index.js";
+
+const agentActionPolicy: AgentActionPolicy = {
+  knownAgents: ["agent:quote-bot"],
+  maxGasBudget: 50_000_000,
+  allowedContracts: [{
+    packageId: "0x2222222222222222222222222222222222222222222222222222222222222222",
+    module: "escrow",
+    functionName: "open_escrow",
+  }],
+  allowedCounterparties: ["provider:quote-service"],
+  requireSimulation: true,
+};
+
+const agentGatewayNow = new Date("2026-06-10T12:00:00.000Z");
+
+test("requestSponsoredAction submits a manifest to the mock gateway and returns approval", async () => {
+  const server = createAgentMockGatewayServer({
+    policy: agentActionPolicy,
+    now: () => agentGatewayNow,
+    mockGasStation: {
+      reserve: async () => ({ sponsorshipId: "mock_sponsorship_sdk_1" }),
+    },
+  });
+
+  try {
+    const client = createGasKitClient({
+      baseUrl: await listen(server),
+      apiKey: "test-key",
+    });
+
+    const result = await client.requestSponsoredAction({
+      manifest: validManifestFixture(),
+    });
+
+    assert.deepEqual(result, {
+      approved: true,
+      decision: { allowed: true },
+      mockSponsorshipId: "mock_sponsorship_sdk_1",
+    });
+  } finally {
+    await close(server);
+  }
+});
+
+test("requestSponsoredAction returns gateway denial as typed data", async () => {
+  const server = createAgentMockGatewayServer({
+    policy: agentActionPolicy,
+    now: () => agentGatewayNow,
+  });
+
+  try {
+    const client = createGasKitClient({
+      baseUrl: await listen(server),
+      apiKey: "test-key",
+    });
+
+    const result = await client.requestSponsoredAction({
+      manifest: {
+        ...validManifestFixture(),
+        spend: { maxGasBudget: 50_000_001 },
+      },
+    });
+
+    assert.deepEqual(result, {
+      approved: false,
+      decision: {
+        allowed: false,
+        reasonCode: "GAS_BUDGET_TOO_HIGH",
+        message: "Manifest gas budget exceeds policy.",
+      },
+    });
+  } finally {
+    await close(server);
+  }
+});
+
+test("requestSponsoredAction posts only to the gateway sponsorship route", async () => {
+  const calls: Array<{ url: string; init: RequestInit }> = [];
+  const manifest = validManifestFixture();
+
+  const result = await requestSponsoredAction({
+    baseUrl: "https://api.example.test///",
+    apiKey: "test-key",
+    manifest,
+    fetchImpl: async (url, init) => {
+      calls.push({ url: String(url), init: init ?? {} });
+      return new Response(JSON.stringify({
+        approved: true,
+        decision: { allowed: true },
+        mockSponsorshipId: "mock_sponsorship_sdk_2",
+      }), { status: 200, headers: { "Content-Type": "application/json" } });
+    },
+  });
+
+  assert.deepEqual(result, {
+    approved: true,
+    decision: { allowed: true },
+    mockSponsorshipId: "mock_sponsorship_sdk_2",
+  });
+  assert.equal(calls[0].url, "https://api.example.test/v1/agent/sponsorships");
+  assert.equal((calls[0].init.headers as Record<string, string>).Authorization, "Bearer test-key");
+  assert.deepEqual(JSON.parse(String(calls[0].init.body)), { manifest });
+});
+
+test("IotaAgent exposes requestSponsoredAction through the gateway", async () => {
+  const server = createAgentMockGatewayServer({
+    policy: agentActionPolicy,
+    now: () => agentGatewayNow,
+    mockGasStation: {
+      reserve: async () => ({ sponsorshipId: "mock_sponsorship_agent_1" }),
+    },
+  });
+
+  try {
+    const agent = new IotaAgent({
+      gatewayBaseUrl: await listen(server),
+      apiKey: "test-key",
+    });
+
+    const result = await agent.requestSponsoredAction({
+      manifest: validManifestFixture(),
+    });
+
+    assert.deepEqual(result, {
+      approved: true,
+      decision: { allowed: true },
+      mockSponsorshipId: "mock_sponsorship_agent_1",
+    });
+  } finally {
+    await close(server);
+  }
+});
 
 test("reserveGas constructs the expected request", async () => {
   const calls: Array<{ url: string; init: RequestInit }> = [];
@@ -210,3 +353,15 @@ test("policy rejection throws GasKitPolicyError", async () => {
     (error) => error instanceof GasKitPolicyError && error.reasonCode === "PACKAGE_NOT_ALLOWED",
   );
 });
+
+async function listen(server: ReturnType<typeof createAgentMockGatewayServer>): Promise<string> {
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  const address = server.address() as AddressInfo;
+  return `http://127.0.0.1:${address.port}`;
+}
+
+async function close(server: ReturnType<typeof createAgentMockGatewayServer>): Promise<void> {
+  server.close();
+  await once(server, "close");
+}

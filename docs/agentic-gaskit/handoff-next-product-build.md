@@ -7,8 +7,8 @@ Last updated: 2026-06-10.
 Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
-Slices 1.0, 1.1, 1.2, and 1.3 are implemented and locally verified. The
-immediate target is Slice 1.4: SDK sponsored action. Use
+Slices 1.0, 1.1, 1.2, 1.3, and 1.4 are implemented and locally verified. The
+immediate target is Slice 1.5: MCP Sponsorship Tools. Use
 `docs/agentic-gaskit/execution-entry.md` as the entry doc, then continue
 through `docs/agentic-gaskit/execution-slices.md`.
 
@@ -72,12 +72,16 @@ Recent commits to know:
   codes without reserving sponsorship, redacted events omit prompt-like and
   secret-like request fields, and event sink failures do not affect request
   handling.
+- Slice 1.4 SDK sponsored action is implemented in `packages/sdk` with
+  `requestSponsoredAction` and `IotaAgent`.
+- Slice 1.4 tests prove SDK calls submit manifests to the mock gateway, return
+  typed approved and denied results, and use the gateway sponsorship route
+  rather than reserve/execute or direct IOTA calls.
 - Root build, test, typecheck, package dry-run, docs, smokes, readiness example,
   and secret scan include the accounts and manifest packages.
 
 ## What Is Not Complete
 
-- SDK sponsored action helper is not implemented.
 - MCP/A2A tools are not implemented.
 - Registry, receipts, and contract workflows are not implemented.
 - Package namespace strategy is still open.
@@ -423,6 +427,85 @@ Next recommended slice:
 
 - Slice 1.4 SDK Sponsored Action in `packages/sdk`.
 
+## Completed Slice 1.4
+
+Implemented SDK sponsored action support in `packages/sdk`.
+
+This slice adds a developer-facing `requestSponsoredAction` helper and an
+`IotaAgent` wrapper. Both submit `{ manifest }` to the Slice 1.3 gateway route
+`/v1/agent/sponsorships` and return typed approved or denied results.
+
+Acceptance is defined in:
+
+- `docs/agentic-gaskit/prds/phase-1-sponsored-policy-mvp.md`
+- `docs/agentic-gaskit/execution-slices.md` Slice 1.4
+- `docs/agentic-gaskit/module-specs.md` `packages/sdk`
+- `docs/agentic-gaskit/verification-hardening.md` SDK verification matrix
+
+Changed files:
+
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+- `package-lock.json`
+- `packages/sdk/package.json`
+- `packages/sdk/src/IotaAgent.ts`
+- `packages/sdk/src/client.ts`
+- `packages/sdk/src/client.test.ts`
+- `packages/sdk/src/index.ts`
+- `packages/sdk/src/requestSponsoredAction.ts`
+- `packages/sdk/src/types.ts`
+
+Commands run:
+
+```bash
+git status --short --branch
+npm run docs:check
+npm run secrets:scan
+npm test
+npm run typecheck
+node --import tsx --test packages/sdk/src/client.test.ts
+node --import tsx --test packages/policy-gateway/src/server.test.ts packages/sdk/src/client.test.ts
+npm install --package-lock-only
+npm run verify:local
+git diff --check
+```
+
+Verification result:
+
+- Baseline before editing passed: docs check, secret scan, `npm test`, and
+  `npm run typecheck`.
+- Focused SDK tests passed: 14 tests.
+- Focused mock gateway plus SDK tests passed: 18 tests.
+- `npm run typecheck` passed.
+- `npm run verify:local` passed with 165 tests, typecheck, local gateway smoke,
+  demo dApp smoke, browser wrapper smoke, readiness example, package dry-run,
+  docs check, and secret scan.
+
+Hardening notes:
+
+- `requestSponsoredAction` posts only to `/v1/agent/sponsorships`.
+- The sponsored-action SDK path does not call live IOTA, Gas Station, SDK
+  reserve/execute, MCP, custody, signing, or payment systems.
+- Denied gateway decisions are returned as typed data instead of being
+  converted into direct execution attempts.
+- SDK results expose approved/denied decision data and mock sponsorship ids,
+  not raw transaction bytes, user signatures, signer references, sponsor
+  credentials, or gateway internals.
+- Existing SDK reserve, execute, and policy simulation behavior was preserved.
+- Apex manifest helper remains unusable because the current
+  `apex.workflow.json` lacks required mode definitions and
+  `manifest.defaultDir`, so Slice 1.4 scope was recorded locally under ignored
+  `tmp/apex-workflow/` and this slice does not claim Apex verification.
+
+Known unproven claims:
+
+- MCP/A2A tools cannot yet call the SDK/gateway.
+- `openEscrow`, idempotent sponsorship storage, receipts, escrow contracts, and
+  live execution remain future slices.
+
+Next recommended slice:
+
+- Slice 1.5 MCP Sponsorship Tools.
+
 ## Guardrails
 
 - Do not expose seeds, mnemonics, private keys, raw keypairs, raw transaction
@@ -447,7 +530,7 @@ npm test
 npm run typecheck
 ```
 
-For the SDK sponsored action slice, add focused SDK tests first and finish
+For the MCP sponsorship tools slice, add focused MCP tool tests first and finish
 with:
 
 ```bash

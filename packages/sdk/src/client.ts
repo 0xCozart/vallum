@@ -2,6 +2,7 @@ import { POLICY_REASON_CODES } from "@iota-gaskit/shared-types";
 import type { PolicyReasonCode } from "@iota-gaskit/shared-types";
 
 import { GasKitAuthError, GasKitError, GasKitPolicyError } from "./errors.js";
+import { requestSponsoredAction as requestSponsoredActionThroughGateway } from "./requestSponsoredAction.js";
 import type {
   ExecuteSponsoredTransactionRequest,
   ExecuteSponsoredTransactionResponse,
@@ -10,6 +11,8 @@ import type {
   PolicySimulationResponse,
   ReserveGasRequest,
   ReserveGasResponse,
+  SponsoredActionRequest,
+  SponsoredActionResult,
 } from "./types.js";
 
 type JsonRecord = Record<string, unknown>;
@@ -86,6 +89,15 @@ export function createGasKitClient(options: GasKitClientOptions) {
   }
 
   return {
+    async requestSponsoredAction(request: SponsoredActionRequest): Promise<SponsoredActionResult> {
+      return requestSponsoredActionThroughGateway({
+        baseUrl,
+        apiKey: options.apiKey,
+        fetchImpl,
+        manifest: request.manifest,
+      });
+    },
+
     async simulatePolicy(request: PolicySimulationRequest): Promise<PolicySimulationResponse> {
       const json = await post<unknown>("/v1/policy/simulate", {
         gas_budget: request.gasBudget,
