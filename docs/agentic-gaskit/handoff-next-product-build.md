@@ -1475,7 +1475,7 @@ registry adapter.
 
 Implementation commit:
 
-- Pending final commit.
+- `70fd691` feat: add marketplace evidence read model
 
 This slice does not run automatically during local verification. It is a
 configured live smoke path for operator-owned IOTA Names endpoints and
@@ -2037,7 +2037,7 @@ model.
 
 Implementation commit:
 
-- Pending final commit.
+- `70fd691` feat: add marketplace evidence read model
 
 This slice stays local. It does not create a production marketplace UI/API,
 provider onboarding, public search, live settlement, custody, staking, bonding,
