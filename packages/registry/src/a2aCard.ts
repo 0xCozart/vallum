@@ -1,4 +1,10 @@
 import {
+  sign as cryptoSign,
+  verify as cryptoVerify,
+  type KeyLike,
+} from "node:crypto";
+
+import {
   validateAgentProfile,
   type AgentProfile,
   type AgentProfileCapability,
@@ -89,6 +95,14 @@ export interface A2AAgentSkill {
   readonly securityRequirements?: readonly A2ASecurityRequirement[];
 }
 
+export type A2AAgentCardSignatureAlgorithm = "EdDSA";
+
+export interface A2AAgentCardSignature {
+  readonly protected: string;
+  readonly signature: string;
+  readonly header?: Record<string, unknown>;
+}
+
 export interface A2AAgentCard {
   readonly name: string;
   readonly description: string;
@@ -103,7 +117,12 @@ export interface A2AAgentCard {
   readonly defaultOutputModes: readonly string[];
   readonly skills: readonly A2AAgentSkill[];
   readonly iconUrl?: string;
+  readonly signatures?: readonly A2AAgentCardSignature[];
 }
+
+export type SignedA2AAgentCard = A2AAgentCard & {
+  readonly signatures: readonly A2AAgentCardSignature[];
+};
 
 export type A2AAgentCardErrorCode =
   | AgentProfileValidationErrorCode
@@ -111,6 +130,13 @@ export type A2AAgentCardErrorCode =
   | "A2A_ENDPOINT_INVALID"
   | "UNSUPPORTED_A2A_PROTOCOL_VERSION"
   | "A2A_SECURITY_SCHEME_INVALID"
+  | "A2A_SIGNATURE_ALGORITHM_UNSUPPORTED"
+  | "A2A_SIGNATURE_INVALID"
+  | "A2A_SIGNATURE_KEY_NOT_TRUSTED"
+  | "A2A_SIGNATURE_MALFORMED"
+  | "A2A_SIGNATURE_MISSING"
+  | "A2A_SIGNATURE_EXPIRED"
+  | "A2A_SIGNATURE_NOT_YET_VALID"
   | "PRIVATE_PROFILE_FIELD_NOT_ALLOWED";
 
 export class A2AAgentCardError extends Error {
@@ -144,7 +170,45 @@ export interface CreateA2AAgentCardOptions {
   readonly capabilities?: Partial<Omit<A2AAgentCapabilities, "extensions">> & {
     readonly extensions?: readonly A2AAgentExtension[];
   };
+  readonly signature?: SignA2AAgentCardOptions;
 }
+
+export interface SignA2AAgentCardOptions {
+  readonly keyId: string;
+  readonly privateKey: KeyLike;
+  readonly algorithm?: A2AAgentCardSignatureAlgorithm;
+  readonly jwksUrl?: string;
+  readonly signedAt?: Date;
+  readonly notBefore?: Date;
+  readonly expiresAt?: Date;
+}
+
+export interface VerifyA2AAgentCardSignatureOptions {
+  readonly trustedKeys: Record<string, KeyLike | undefined>;
+  readonly now?: Date;
+  readonly requiredKeyId?: string;
+}
+
+export type A2AAgentCardSignatureVerification =
+  | {
+      readonly ok: true;
+      readonly keyId: string;
+      readonly algorithm: A2AAgentCardSignatureAlgorithm;
+    }
+  | {
+      readonly ok: false;
+      readonly code: Extract<
+        A2AAgentCardErrorCode,
+        | "A2A_SIGNATURE_ALGORITHM_UNSUPPORTED"
+        | "A2A_SIGNATURE_INVALID"
+        | "A2A_SIGNATURE_KEY_NOT_TRUSTED"
+        | "A2A_SIGNATURE_MALFORMED"
+        | "A2A_SIGNATURE_MISSING"
+        | "A2A_SIGNATURE_EXPIRED"
+        | "A2A_SIGNATURE_NOT_YET_VALID"
+      >;
+      readonly message: string;
+    };
 
 export function createA2AAgentCardFromProfile(
   value: unknown,
@@ -212,7 +276,128 @@ export function createA2AAgentCardFromProfile(
     ...(options.iconUrl ? { iconUrl: options.iconUrl } : {}),
   };
   assertNoPrivateProfileFields(card);
-  return card;
+  return options.signature ? signA2AAgentCard(card, options.signature) : card;
+}
+
+export function signA2AAgentCard(
+  card: A2AAgentCard,
+  options: SignA2AAgentCardOptions,
+): SignedA2AAgentCard {
+  const algorithm = options.algorithm ?? "EdDSA";
+  if (algorithm !== "EdDSA") {
+    throw new A2AAgentCardError(
+      "A2A_SIGNATURE_ALGORITHM_UNSUPPORTED",
+      "A2A Agent Card signature algorithm is unsupported.",
+      "$.signatures",
+    );
+  }
+  const keyId = options.keyId.trim();
+  if (keyId === "") {
+    throw new A2AAgentCardError("A2A_SIGNATURE_INVALID", "A2A Agent Card signature key id is required.", "$.signatures");
+  }
+  if (options.jwksUrl && !isHttpsUrl(options.jwksUrl)) {
+    throw new A2AAgentCardError("A2A_SIGNATURE_INVALID", "A2A Agent Card JWKS URL must be HTTPS.", "$.signatures");
+  }
+
+  assertNoPrivateProfileFields(card);
+  const protectedHeader = {
+    alg: algorithm,
+    typ: "JOSE",
+    kid: keyId,
+    ...(options.jwksUrl ? { jku: options.jwksUrl } : {}),
+    ...(options.signedAt ? { iat: isoDate(options.signedAt, "$.signatures.iat") } : {}),
+    ...(options.notBefore ? { nbf: isoDate(options.notBefore, "$.signatures.nbf") } : {}),
+    ...(options.expiresAt ? { exp: isoDate(options.expiresAt, "$.signatures.exp") } : {}),
+  };
+  const protectedHeaderEncoded = base64UrlJson(protectedHeader);
+  const payloadEncoded = base64Url(canonicalizeA2AAgentCard(card));
+  const signingInput = Buffer.from(`${protectedHeaderEncoded}.${payloadEncoded}`, "ascii");
+  const signature = cryptoSign(null, signingInput, options.privateKey);
+
+  return {
+    ...card,
+    signatures: [
+      ...(card.signatures ?? []),
+      {
+        protected: protectedHeaderEncoded,
+        signature: signature.toString("base64url"),
+      },
+    ],
+  };
+}
+
+export function verifyA2AAgentCardSignature(
+  card: A2AAgentCard,
+  options: VerifyA2AAgentCardSignatureOptions,
+): A2AAgentCardSignatureVerification {
+  if (!card.signatures || card.signatures.length === 0) {
+    return signatureFailure("A2A_SIGNATURE_MISSING", "A2A Agent Card does not include a signature.");
+  }
+
+  let firstFailure: A2AAgentCardSignatureVerification | undefined;
+  for (const signature of card.signatures) {
+    const protectedHeader = parseProtectedHeader(signature.protected);
+    if (!protectedHeader) {
+      firstFailure ??= signatureFailure("A2A_SIGNATURE_MALFORMED", "A2A Agent Card signature is malformed.");
+      continue;
+    }
+    if (protectedHeader.alg !== "EdDSA") {
+      firstFailure ??= signatureFailure(
+        "A2A_SIGNATURE_ALGORITHM_UNSUPPORTED",
+        "A2A Agent Card signature algorithm is unsupported.",
+      );
+      continue;
+    }
+    if (protectedHeader.typ !== undefined && protectedHeader.typ !== "JOSE") {
+      firstFailure ??= signatureFailure("A2A_SIGNATURE_MALFORMED", "A2A Agent Card signature is malformed.");
+      continue;
+    }
+    if (typeof protectedHeader.kid !== "string" || protectedHeader.kid.trim() === "") {
+      firstFailure ??= signatureFailure("A2A_SIGNATURE_MALFORMED", "A2A Agent Card signature is malformed.");
+      continue;
+    }
+    if (options.requiredKeyId && protectedHeader.kid !== options.requiredKeyId) {
+      firstFailure ??= signatureFailure("A2A_SIGNATURE_KEY_NOT_TRUSTED", "A2A Agent Card signing key is not trusted.");
+      continue;
+    }
+    const temporalFailure = validateSignatureTime(protectedHeader, options.now ?? new Date());
+    if (temporalFailure) {
+      firstFailure ??= temporalFailure;
+      continue;
+    }
+    const trustedKey = options.trustedKeys[protectedHeader.kid];
+    if (!trustedKey) {
+      firstFailure ??= signatureFailure("A2A_SIGNATURE_KEY_NOT_TRUSTED", "A2A Agent Card signing key is not trusted.");
+      continue;
+    }
+    if (!isBase64Url(signature.signature)) {
+      firstFailure ??= signatureFailure("A2A_SIGNATURE_MALFORMED", "A2A Agent Card signature is malformed.");
+      continue;
+    }
+
+    const payloadEncoded = base64Url(canonicalizeA2AAgentCard(card));
+    const signingInput = Buffer.from(`${signature.protected}.${payloadEncoded}`, "ascii");
+    const verified = cryptoVerify(
+      null,
+      signingInput,
+      trustedKey,
+      Buffer.from(signature.signature, "base64url"),
+    );
+    if (verified) {
+      return {
+        ok: true,
+        keyId: protectedHeader.kid,
+        algorithm: protectedHeader.alg,
+      };
+    }
+    firstFailure ??= signatureFailure("A2A_SIGNATURE_INVALID", "A2A Agent Card signature verification failed.");
+  }
+
+  return firstFailure ?? signatureFailure("A2A_SIGNATURE_INVALID", "A2A Agent Card signature verification failed.");
+}
+
+export function canonicalizeA2AAgentCard(card: A2AAgentCard): string {
+  return JSON.stringify(canonicalizeValue(card, "$", true));
 }
 
 function resolveA2AEndpoint(profile: AgentProfile, optionEndpointUrl?: string): string {
@@ -373,10 +558,126 @@ function isHttpUrl(value: string): boolean {
   }
 }
 
+function isHttpsUrl(value: string): boolean {
+  try {
+    return new URL(value).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
 function isPrivateProfileField(key: string): boolean {
   return /^(seed|mnemonic|privateKey|private_key|rawKeypair|raw_keypair|rawTransactionBytes|raw_transaction_bytes|userSignature|user_signature|sponsorKey|sponsor_key|appApiKey|app_api_key|bearerToken|bearer_token|paymentCredential|payment_credential|signerSecret|signer_secret|signerRef|signer_ref|walletId|wallet_id|rotatedToWalletId|rotated_to_wallet_id|credentialRefs|credential_refs|revocation|metadata)$/i.test(key);
+}
+
+function base64Url(value: string): string {
+  return Buffer.from(value, "utf8").toString("base64url");
+}
+
+function base64UrlJson(value: Record<string, unknown>): string {
+  return base64Url(JSON.stringify(value));
+}
+
+function parseProtectedHeader(value: string): {
+  readonly alg: string;
+  readonly typ?: string;
+  readonly kid?: string;
+  readonly iat?: string;
+  readonly nbf?: string;
+  readonly exp?: string;
+} | undefined {
+  if (!isBase64Url(value)) return undefined;
+  try {
+    const parsed = JSON.parse(Buffer.from(value, "base64url").toString("utf8")) as unknown;
+    if (!isRecord(parsed) || typeof parsed.alg !== "string") return undefined;
+    return {
+      alg: parsed.alg,
+      ...(typeof parsed.typ === "string" ? { typ: parsed.typ } : {}),
+      ...(typeof parsed.kid === "string" ? { kid: parsed.kid } : {}),
+      ...(typeof parsed.iat === "string" ? { iat: parsed.iat } : {}),
+      ...(typeof parsed.nbf === "string" ? { nbf: parsed.nbf } : {}),
+      ...(typeof parsed.exp === "string" ? { exp: parsed.exp } : {}),
+    };
+  } catch {
+    return undefined;
+  }
+}
+
+function validateSignatureTime(
+  protectedHeader: { readonly nbf?: string; readonly exp?: string },
+  now: Date,
+): A2AAgentCardSignatureVerification | undefined {
+  const nowMs = now.getTime();
+  if (!Number.isFinite(nowMs)) {
+    return signatureFailure("A2A_SIGNATURE_MALFORMED", "A2A Agent Card signature is malformed.");
+  }
+  if (protectedHeader.nbf !== undefined) {
+    const notBeforeMs = Date.parse(protectedHeader.nbf);
+    if (!Number.isFinite(notBeforeMs)) {
+      return signatureFailure("A2A_SIGNATURE_MALFORMED", "A2A Agent Card signature is malformed.");
+    }
+    if (nowMs < notBeforeMs) {
+      return signatureFailure("A2A_SIGNATURE_NOT_YET_VALID", "A2A Agent Card signature is not yet valid.");
+    }
+  }
+  if (protectedHeader.exp !== undefined) {
+    const expiresMs = Date.parse(protectedHeader.exp);
+    if (!Number.isFinite(expiresMs)) {
+      return signatureFailure("A2A_SIGNATURE_MALFORMED", "A2A Agent Card signature is malformed.");
+    }
+    if (nowMs >= expiresMs) {
+      return signatureFailure("A2A_SIGNATURE_EXPIRED", "A2A Agent Card signature is expired.");
+    }
+  }
+  return undefined;
+}
+
+function isoDate(value: Date, path: string): string {
+  const time = value.getTime();
+  if (!Number.isFinite(time)) {
+    throw new A2AAgentCardError("A2A_SIGNATURE_INVALID", "A2A Agent Card signature time is invalid.", path);
+  }
+  return value.toISOString();
+}
+
+function isBase64Url(value: string): boolean {
+  return /^[A-Za-z0-9_-]+$/.test(value);
+}
+
+function signatureFailure(
+  code: Exclude<A2AAgentCardSignatureVerification, { ok: true }>["code"],
+  message: string,
+): A2AAgentCardSignatureVerification {
+  return { ok: false, code, message };
+}
+
+function canonicalizeValue(value: unknown, path: string, isRoot = false): unknown {
+  if (value === null || typeof value === "string" || typeof value === "boolean") return value;
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) {
+      throw new A2AAgentCardError("A2A_SIGNATURE_INVALID", "A2A Agent Card contains a non-finite number.", path);
+    }
+    return value;
+  }
+  if (typeof value === "bigint" || typeof value === "function" || typeof value === "symbol") {
+    throw new A2AAgentCardError("A2A_SIGNATURE_INVALID", "A2A Agent Card contains non-JSON data.", path);
+  }
+  if (Array.isArray(value)) {
+    return value.map((child, index) => canonicalizeValue(child, `${path}[${index}]`));
+  }
+  if (!isRecord(value)) return value;
+
+  return Object.keys(value)
+    .sort()
+    .reduce<Record<string, unknown>>((canonical, key) => {
+      if (isRoot && key === "signatures") return canonical;
+      const child = value[key];
+      if (child === undefined) return canonical;
+      canonical[key] = canonicalizeValue(child, `${path}.${key}`);
+      return canonical;
+    }, {});
 }

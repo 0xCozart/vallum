@@ -1069,6 +1069,61 @@ Escalation triggers:
   external A2A client conformance, live discovery, or production agent
   authentication decisions.
 
+## Slice 4.7: A2A Signed Agent Card Local Proof
+
+User-visible outcome:
+Agentic GasKit can sign and verify local A2A Agent Cards using a current
+A2A-shaped JWS signature envelope and canonicalized payload, without claiming
+live public discovery or production provider trust.
+
+Likely files:
+
+- `packages/registry/src/a2aCard.ts`
+- `packages/registry/src/a2aCard.test.ts`
+- `packages/registry/src/a2aWellKnown.test.ts`
+- `packages/standards/src/a2a.ts`
+- `examples/a2a-signed-card/`
+- `scripts/smoke-a2a-signed-card.ts`
+- `package.json`
+- `scripts/package-scripts.test.ts`
+
+Acceptance criteria:
+
+- Signing uses a JWS protected header with `alg`, `typ`, and `kid`, signs the
+  canonical Agent Card payload, and excludes the `signatures` field from the
+  signed payload.
+- Verification succeeds only with a trusted matching public key and fails
+  closed for tampered cards, wrong keys, required-key mismatches, unsupported
+  algorithms, malformed protected headers, missing signatures, and stale or
+  not-yet-valid signatures.
+- Well-known response helpers can serve signed cards through existing options.
+- Signing rejects blank key ids, invalid JWKS URLs, invalid signature times, and
+  private metadata in public Agent Cards.
+- Local smoke is wired into `npm run verify:local`.
+- This slice does not claim public hosting, external A2A conformance, live
+  discovery, production authentication, production provider verification, or
+  production key management.
+
+Verification:
+
+- Registry unit tests.
+- Local A2A signed-card smoke.
+- `npm run verify:local`.
+
+Dependencies:
+Slice 4.6.
+
+Risk:
+Medium to high. Signatures can be mistaken for public trust or production key
+management if key distribution, revocation, hosting, and external conformance
+boundaries are not explicit.
+
+Escalation triggers:
+
+- Need for production JWKS hosting, key rotation policy, public discovery,
+  external A2A conformance, live provider verification, or production A2A
+  authentication decisions.
+
 ## Slice 5.1: Marketplace Readiness Gate
 
 User-visible outcome:

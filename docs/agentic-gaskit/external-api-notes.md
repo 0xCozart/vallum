@@ -444,6 +444,15 @@ Current planning assumptions:
   bearer-authenticated non-streaming task routes only. It explicitly returns
   unsupported for streaming and push-notification routes and does not prove
   public hosting, signed Agent Cards, external conformance, or live discovery.
+- On 2026-06-10, Slice 4.7 rechecked the current A2A specification and
+  generated protocol definition for Agent Card signatures. The current spec
+  defines `AgentCardSignature` as JWS-style fields: base64url protected header,
+  base64url signature, and optional unprotected header. The signing process
+  excludes the `signatures` field and canonicalizes the Agent Card payload
+  before signing. Slice 4.7 implements local EdDSA JWS-style signing and
+  trusted-key verification for local Agent Cards only. It does not publish
+  public JWKS hosting, production key rotation/revocation policy, external
+  conformance proof, live public discovery, or production provider trust.
 
 Implementation checks:
 

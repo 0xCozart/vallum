@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { generateKeyPairSync } from "node:crypto";
 import { test } from "node:test";
 
 import {
@@ -7,6 +8,7 @@ import {
   createA2AAgentCardWellKnownResponse,
   handleA2AAgentCardWellKnownRequest,
   validAgentProfileFixture,
+  verifyA2AAgentCardSignature,
 } from "./index.js";
 
 function activeA2AProfile() {
@@ -56,6 +58,25 @@ test("A2A well-known response JSON omits private profile and wallet fields", () 
   assert.doesNotMatch(response.json, /revocation/);
   assert.doesNotMatch(response.json, /privateNote/);
   assert.doesNotMatch(response.json, /0x1111111111111111111111111111111111111111111111111111111111111111/);
+});
+
+test("A2A well-known helper can serve a signed Agent Card without leaking private fields", () => {
+  const { privateKey, publicKey } = generateKeyPairSync("ed25519");
+  const response = createA2AAgentCardWellKnownResponse(activeA2AProfile(), {
+    now: new Date("2026-06-10T12:00:00.000Z"),
+    signature: {
+      keyId: "agent-card-key-1",
+      privateKey,
+    },
+  });
+  const verification = verifyA2AAgentCardSignature(response.body, {
+    trustedKeys: { "agent-card-key-1": publicKey },
+  });
+
+  assert.equal(response.status, 200);
+  assert.equal(response.body.signatures?.length, 1);
+  assert.equal(verification.ok, true);
+  assert.doesNotMatch(response.json, /private prompt|signer_ref|walletId|credential:|payment-secret/i);
 });
 
 test("A2A well-known helper denies non-GET methods and legacy discovery paths", () => {

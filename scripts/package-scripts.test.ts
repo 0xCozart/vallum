@@ -104,6 +104,11 @@ test("A2A well-known smoke is wired into local verification", () => {
   assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run smoke:a2a-well-known/);
 });
 
+test("A2A signed Agent Card smoke is wired into local verification", () => {
+  assert.equal(packageJson.scripts?.["smoke:a2a-signed-card"], "npm run build && tsx scripts/smoke-a2a-signed-card.ts");
+  assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run smoke:a2a-signed-card/);
+});
+
 test("A2A task/message smoke is wired into local verification", () => {
   assert.equal(packageJson.scripts?.["smoke:a2a-task-message"], "npm run build && tsx scripts/smoke-a2a-task-message.ts");
   assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run smoke:a2a-task-message/);

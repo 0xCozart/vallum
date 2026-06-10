@@ -40,6 +40,7 @@ It also includes the first Agentic GasKit implementation slices:
   refresh behavior
 - local A2A Agent Card mapping from Agent Profiles
 - local A2A Agent Card well-known serving helper and smoke proof
+- local A2A Agent Card JWS signing and trusted-key verification smoke proof
 - local A2A task/message operation helpers and smoke proof
 - local A2A HTTP-shaped handler and smoke proof for public discovery plus
   bearer-authenticated task routes
@@ -47,7 +48,7 @@ It also includes the first Agentic GasKit implementation slices:
 - contract template metadata registry consumed by agent policy allow-lists
 
 The remaining Agentic GasKit direction is documented under
-`docs/agentic-gaskit/`. Live IOTA Names/Identity proof, signed/public A2A
+`docs/agentic-gaskit/`. Live IOTA Names/Identity proof, public signed A2A
 discovery, live A2A server/conformance proof, device-access contract workflows,
 production custody, production subscription operations, and live deployment
 proof remain roadmap unless later slices implement and verify them.
@@ -100,6 +101,8 @@ proof remain roadmap unless later slices implement and verify them.
   `scripts/smoke-subscription.ts`
 - A2A well-known demo: `examples/a2a-well-known/`,
   `scripts/smoke-a2a-well-known.ts`
+- A2A signed-card demo: `examples/a2a-signed-card/`,
+  `scripts/smoke-a2a-signed-card.ts`
 - A2A task/message demo: `examples/a2a-task-message/`,
   `scripts/smoke-a2a-task-message.ts`
 - A2A HTTP boundary demo: `examples/a2a-http/`,
@@ -128,8 +131,8 @@ Do not create all of these at once. Add them through vertical slices:
 
 - gateway extensions for agent manifests and capabilities
 - registry live adapters
-- signed public Agent Cards, live A2A server/conformance proof, and live
-  standards-compatible discovery
+- public signed Agent Card hosting, live A2A server/conformance proof, and
+  live standards-compatible discovery
 - expanded contract packages beyond pay-per-call, data-license, service-bounty,
   reputation receipt, and subscription, including device access workflows
 
@@ -149,6 +152,7 @@ Safe local checks:
 - `npm run smoke:reputation-receipt`
 - `npm run smoke:subscription`
 - `npm run smoke:a2a-well-known`
+- `npm run smoke:a2a-signed-card`
 - `npm run smoke:a2a-task-message`
 - `npm run smoke:a2a-http`
 - `npm run secrets:scan`

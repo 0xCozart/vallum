@@ -89,7 +89,7 @@ The official Gas Station is the sponsorship engine. GasKit is the app integratio
 | Agent escrow demo | Local demo shows one agent hiring another, gateway approval, verifier release, receipt output, and over-budget policy denial without live IOTA calls. | [Agent Escrow Demo](demo-agent-escrow.md) |
 | Paid MCP-style tool demo | Local demo returns a paid result only after gateway approval, mock payment confirmation, and receipt submission; denial and failed payment withhold paid results. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
 | Agent profiles | Local `@iota-gaskit/registry` schema validation, fixture resolution, mock-tested IOTA Names/Identity adapter interfaces, and bounded identity verification cache helpers cover required fields, expired/revoked states, unsupported versions, secret-field rejection, SDK resolution, capability policy checks, and stale identity evidence fail-closed behavior. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
-| A2A bridge | Local Agent Card mapping, `/.well-known/agent-card.json` response helpers, local/mock task/message operation helpers, and a local HTTP-shaped handler expose sanitized profile and task metadata with bearer-authenticated task routes, without live public discovery, streaming, push notifications, or external conformance proof. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
+| A2A bridge | Local Agent Card mapping, signed-card verification helpers, `/.well-known/agent-card.json` response helpers, local/mock task/message operation helpers, and a local HTTP-shaped handler expose sanitized profile and task metadata with bearer-authenticated task routes, without live public discovery, streaming, push notifications, production key management, or external conformance proof. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
 | Agent roadmap | PRDs, execution slices, module specs, and hardening gates have been migrated into this fork. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
 | Beginner concepts | Plain-English explanations of IOTA, sponsored gas, GasKit roles, and common terms. | [IOTA and GasKit Basics](concepts.md) |
 | Code examples | Backend SDK calls, Next.js route shape, browser caller shape, curl requests, and policy YAML. | [Code Examples](examples.md) |
@@ -105,9 +105,9 @@ The official Gas Station is the sponsorship engine. GasKit is the app integratio
 These are not complete production claims yet:
 
 - signer adapter storage beyond documented safety model;
-- signed public Agent Cards, live A2A task/message server operation, streaming,
-  push notifications, external conformance proof, and live standards-compatible
-  discovery;
+- public Agent Card hosting, production Agent Card key management, live A2A
+  task/message server operation, streaming, push notifications, external
+  conformance proof, and live standards-compatible discovery;
 - live registry proof and full verifiable credential validation beyond the
   local bounded cache policy;
 - expanded contract workflow packages beyond the escrow/receipt/pay-per-call/

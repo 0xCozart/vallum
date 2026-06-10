@@ -18,6 +18,8 @@ Current surface:
 - A2A public-card hardening that fails closed for revoked/expired profiles,
   unsupported local protocol versions, malformed auth declarations, and private
   profile fields in public metadata.
+- A2A Agent Card JWS signing and trusted-key verification helpers for local
+  signed-card proof.
 - A2A well-known response helpers for serving local Agent Cards at the
   canonical `/.well-known/agent-card.json` path.
 - Local/mock A2A task and message operation helpers for send-message,
@@ -29,5 +31,5 @@ Current surface:
 This package does not operate a production x402 facilitator, replace AP2, hold
 payment credentials, sign payment payloads, submit live settlement
 transactions, operate a live public A2A task/message server, stream or push A2A
-updates, sign public Agent Cards, prove external A2A conformance or live A2A
-discovery, or replace the A2A protocol.
+updates, prove external A2A conformance or live A2A discovery, provide
+production Agent Card key management, or replace the A2A protocol.

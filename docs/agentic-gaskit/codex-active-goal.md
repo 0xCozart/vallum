@@ -11,9 +11,10 @@ current handoff through an actual local/testnet-verifiable Agentic GasKit
 product.
 
 Start with the current handoff state. The latest continuation evidence records
-Slice 3.5 Reputation Receipt Workflow as locally verified; do not treat that
-local proof as live IOTA testnet, production marketplace, public scoring, or
-provider-verification proof.
+the most recent completed slice and its local verification status; do not treat
+local proof as live IOTA testnet, production marketplace, public scoring,
+public A2A discovery, production key management, or provider-verification
+proof.
 
 Do not use the old Slice 4.5 A2A task/message goal as the active objective.
 That slice was previously completed and locally verified.

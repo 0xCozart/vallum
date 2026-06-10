@@ -8,7 +8,7 @@ Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 3.1,
-3.2, 3.3, 3.4, 3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, and 5.1 are
+3.2, 3.3, 3.4, 3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, and 5.1 are
 implemented or reviewed and locally verified.
 Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
 `docs/marketplace-readiness.md` before choosing the next slice. Do not start
@@ -238,6 +238,14 @@ Recent commits to know:
   notification routes are explicitly unsupported, and safe errors do not echo
   bearer tokens, private prompts, signer refs, wallet internals, or payment
   credentials.
+- Slice 4.7 A2A signed Agent Card local proof is implemented in
+  `packages/registry` and exported through `packages/standards`.
+- Slice 4.7 tests prove local Agent Cards can carry A2A JWS-style signatures
+  over canonical unsigned card payloads; verification succeeds only with a
+  trusted matching public key and fails closed for tampered cards, wrong keys,
+  required-key mismatches, unsupported algorithms, malformed signatures, missing
+  signatures, stale signatures, not-yet-valid signatures, blank key ids,
+  invalid JWKS URLs, invalid signature times, and private public-card metadata.
 - Slice 5.1 marketplace readiness review exists at
   `docs/marketplace-readiness.md`. It concludes that marketplace
   requirements/design work is justified only inside local/mock proof, while
@@ -246,21 +254,23 @@ Recent commits to know:
   blocked.
 - `docs/agentic-gaskit/external-api-notes.md` was refreshed on 2026-06-10 for
   current IOTA Names GraphQL, IOTA Identity DID/VC, x402 v2, AP2 v0.2
-  mandate/receipt, A2A Agent Card, and A2A task/message assumptions.
+  mandate/receipt, A2A Agent Card, A2A signed-card, and A2A task/message
+  assumptions.
 - Root build, test, typecheck, package dry-run, docs, smokes, readiness example,
   contract tests, and secret scan include the accounts, manifest, MCP,
   registry, contracts metadata, receipts, escrow/receipt/pay-per-call contract
   surfaces, x402/AP2/A2A standards bridges, agent escrow demo smoke, paid
   MCP-style tool smoke, data-license smoke, service-bounty smoke,
   reputation-receipt smoke, subscription smoke, A2A well-known smoke, A2A
-  task/message smoke, and A2A HTTP boundary smoke.
+  signed-card smoke, A2A task/message smoke, and A2A HTTP boundary smoke.
 
 ## What Is Not Complete
 
-- Signed public Agent Cards, live A2A discovery proof, live public A2A server
-  operation beyond the local HTTP-shaped handler, streaming/push notification
-  support, external A2A conformance proof, and production A2A authentication
-  decisions are not implemented.
+- Public signed Agent Card hosting, production Agent Card key management, live
+  A2A discovery proof, live public A2A server operation beyond the local
+  HTTP-shaped handler, streaming/push notification support, external A2A
+  conformance proof, and production A2A authentication decisions are not
+  implemented.
 - Live IOTA Names/Identity proof, full verifiable credential validation beyond
   local/mock bounded cache behavior, live standards-bridge proof, and expanded
   contract workflows beyond local escrow/receipt/pay-per-call/data-license/
@@ -2087,6 +2097,127 @@ Next recommended slice:
   Agent Card design/proof, live IOTA Names/Identity proof, read-only
   marketplace access-control/dispute-evidence proof, or another local contract
   workflow.
+
+## Completed Slice 4.7
+
+Implemented local/mock A2A signed Agent Card proof.
+
+Implementation commit:
+
+- Pending commit in current working tree.
+
+Slice and PRD coverage:
+
+- `docs/agentic-gaskit/execution-slices.md` Slice 4.7 A2A Signed Agent Card
+  Local Proof.
+- `docs/agentic-gaskit/prds/phase-4-standards-bridges.md`.
+- `docs/agentic-gaskit/verification-hardening.md` Phase 4 A2A bridge gate and
+  log privacy invariants.
+- `docs/agentic-gaskit/external-api-notes.md` current A2A Agent Card signing
+  assumptions.
+
+Changed files:
+
+- `examples/a2a-signed-card/`
+- `packages/registry/src/a2aCard.ts`
+- `packages/registry/src/a2aCard.test.ts`
+- `packages/registry/src/a2aWellKnown.test.ts`
+- `packages/registry/README.md`
+- `packages/standards/src/a2a.ts`
+- `packages/standards/README.md`
+- `scripts/smoke-a2a-signed-card.ts`
+- `scripts/package-scripts.test.ts`
+- `package.json`
+- continuation and public docs
+
+Commands run:
+
+```bash
+git status --short --branch
+npm run docs:check
+npm run secrets:scan
+npm test
+npm run typecheck
+node --import tsx --test packages/registry/src/a2aCard.test.ts packages/registry/src/a2aWellKnown.test.ts
+node --import tsx --test packages/registry/src/a2aCard.test.ts packages/registry/src/a2aWellKnown.test.ts examples/a2a-signed-card/a2a-signed-card-demo.test.ts scripts/package-scripts.test.ts
+npm run smoke:a2a-signed-card
+git diff --check
+npm run readiness:testnet
+npm run verify:local
+```
+
+Evidence:
+
+- Baseline `npm run docs:check`, `npm run secrets:scan`, `npm test`, and
+  `npm run typecheck` passed before implementation.
+- Red focused signed-card tests failed before implementation because
+  `canonicalizeA2AAgentCard`, `signA2AAgentCard`, and
+  `verifyA2AAgentCardSignature` were not exported yet.
+- Focused registry tests pass for local EdDSA JWS Agent Card signing, JWS
+  protected header fields, canonical unsigned payload stability,
+  `signatures` exclusion from canonicalization, trusted-key verification,
+  tamper denial, wrong-key denial, required-key mismatch denial, unsupported
+  algorithm denial, malformed protected-header denial, stale/not-yet-valid
+  signature denial, blank key-id denial, invalid JWKS URL denial, invalid
+  signature-time denial, and private public-card metadata denial.
+- Focused well-known tests pass for serving signed Agent Cards through existing
+  response options without leaking private profile fields.
+- `npm run smoke:a2a-signed-card` passes and reports signature count 1,
+  protected header `EdDSA`/`JOSE`/`agent-card-key-1`, JWKS URL and expiry
+  presence, `verificationOk=true`, tamper denial
+  `A2A_SIGNATURE_INVALID`, expiry denial `A2A_SIGNATURE_EXPIRED`, unsigned
+  denial `A2A_SIGNATURE_MISSING`, and no signer ref, wallet id, credential
+  ref, or private key exposure.
+- `node --import tsx --test scripts/package-scripts.test.ts` passes and proves
+  the smoke is wired into `npm run verify:local`.
+- `npm test` passes with 311 TypeScript tests.
+- `npm run typecheck` passes.
+- `npm run docs:check` passes after documentation updates.
+- `npm run secrets:scan` passes after Slice 4.7 changes with 277 checked
+  tracked/staged/untracked text files and 0 findings.
+- `git diff --check` passes.
+- `npm run readiness:testnet` builds and stops before live testnet proof because
+  this checkout has no `.env` configured.
+- `npm run verify:local` passes locally with 311 TypeScript tests, 33 Move
+  tests, typecheck, local gateway smoke, demo dApp smoke, browser wrapper
+  smoke, agent escrow smoke, paid MCP tool smoke, data-license smoke,
+  service-bounty smoke, reputation-receipt smoke, subscription smoke, A2A
+  well-known smoke, A2A signed-card smoke, A2A task/message smoke, A2A HTTP
+  smoke, testnet readiness example, package dry-runs, docs check, and secret
+  scan.
+
+Hardening notes:
+
+- Signing is an explicit local option on Agent Card generation and well-known
+  response helpers; unsigned cards remain supported for local-only flows.
+- The signed payload excludes `signatures`, so added or rotated signatures do
+  not create a circular payload.
+- Verification uses a caller-provided trusted key map and optional required key
+  id; it does not fetch remote JWKS, trust arbitrary `kid` values, or perform
+  production provider verification.
+- Temporal `nbf`/`exp` checks fail closed for stale or not-yet-valid
+  signatures, but Slice 4.7 does not define production key rotation or
+  revocation policy.
+- Public card private-field scanning still runs before signing, so signatures
+  cannot legitimize leaked signer refs, wallet internals, credential refs,
+  revocation refs, payment credentials, or metadata.
+
+Known unproven claims:
+
+- No public Agent Card hosting, production JWKS hosting, production key
+  rotation/revocation, external A2A conformance, live A2A discovery, live public
+  A2A server, streaming, push notification, production authentication, live IOTA
+  RPC, IOTA Gas Station, localnet/testnet/mainnet deployment, production
+  marketplace/provider workflow, custody, or live payment settlement was
+  implemented by Slice 4.7.
+- The signed-card work proves deterministic local signing and trusted-key
+  verification behavior only.
+
+Next recommended slice:
+
+- Continue Packet D with external A2A conformance-blocker documentation or
+  local public-server smoke, or switch to Packet C live IOTA Names/Identity
+  proof if operator credentials/endpoints are configured.
 
 ## Completed Slice 4.6
 
