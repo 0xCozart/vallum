@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "profile": "agentic-gaskit",
+  "setup": {
+    "reviewNeeded": true,
+    "inferredPaths": [
+      "docs/agentic-gaskit/migration-plan.md",
+      "docs/CODEBASE_MAP.md",
+      "README.md"
+    ],
+    "operatorCautions": [
+      "Do not run live testnet commands without explicit operator intent.",
+      "Do not expose sponsor keys, app API keys, bearer tokens, seeds, mnemonics, private keys, raw transaction bytes, or user signatures.",
+      "Treat signer references as scoped handles, not bearer credentials."
+    ]
+  },
+  "authority": {
+    "executionTruth": [
+      "docs/agentic-gaskit/migration-plan.md",
+      "docs/CODEBASE_MAP.md",
+      "docs/milestone-0-proof.md",
+      "docs/reviewer-walkthrough.md",
+      "docs/agentic-gaskit/verification-hardening.md"
+    ]
+  }
+}

@@ -1,6 +1,6 @@
 export default {
-  title: "IOTA GasKit Docs",
-  description: "Self-hostable documentation for deploying, securing, monitoring, and integrating IOTA gas-sponsored transactions.",
+  title: "Agentic GasKit Docs",
+  description: "Self-hostable documentation for IOTA gas sponsorship plus agent-safe wallets, manifests, policy controls, receipts, and integrations.",
   repositoryUrl: "https://github.com/0xCozart/iota-gaskit",
   sections: [
     {
@@ -29,6 +29,41 @@ export default {
           source: "docs/reviewer-walkthrough.md",
           slug: "reviewer-walkthrough",
           description: "A reproducible path for reviewers to inspect deterministic proof."
+        }
+      ]
+    },
+    {
+      label: "Agentic Direction",
+      pages: [
+        {
+          title: "Migration Plan",
+          source: "docs/agentic-gaskit/migration-plan.md",
+          slug: "agentic-migration-plan",
+          description: "Canonical migration plan for the Agentic GasKit fork, docs, package decisions, and verification gates."
+        },
+        {
+          title: "Agentic Roadmap",
+          source: "docs/agentic-gaskit/roadmap.md",
+          slug: "agentic-roadmap",
+          description: "End-to-end roadmap for agent wallets, manifests, policy, identity, contracts, receipts, and standards bridges."
+        },
+        {
+          title: "Account And Wallet Safety",
+          source: "docs/agentic-gaskit/account-wallet-safety.md",
+          slug: "agentic-wallet-safety",
+          description: "Signer-reference-first safety model for agent-created wallets and recovery boundaries."
+        },
+        {
+          title: "Execution Slices",
+          source: "docs/agentic-gaskit/execution-slices.md",
+          slug: "agentic-execution-slices",
+          description: "Vertical implementation packets and acceptance criteria for the Agentic GasKit buildout."
+        },
+        {
+          title: "Verification Hardening",
+          source: "docs/agentic-gaskit/verification-hardening.md",
+          slug: "agentic-verification-hardening",
+          description: "Risk register, verification matrix, and hardening gates for agentic sponsored execution."
         }
       ]
     },

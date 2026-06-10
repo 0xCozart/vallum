@@ -1,24 +1,41 @@
-# IOTA GasKit
+# Agentic GasKit
 
-IOTA GasKit is a self-hostable toolkit for teams that want to pay IOTA transaction fees for their users.
+Agentic GasKit is the next direction for IOTA GasKit: a self-hostable toolkit
+for teams that want to pay IOTA transaction fees for users and give agents a
+safe execution stack.
 
-The short version: users still approve their own transactions, but the app can cover the small network fee. GasKit helps the app do that safely by keeping sponsor secrets server-side, checking policy before spending gas, and recording sanitized usage events.
+The short version: users and agents can request useful IOTA actions without
+managing gas up front, while the operator keeps sponsor secrets server-side,
+checks policy before spending gas, and records sanitized usage events.
+
+The current implemented foundation is still GasKit: SDK, policy gateway, local
+service, examples, deployment docs, observability foundations, and testnet
+sponsorship proof. The agent-specific layer is being migrated into this fork in
+documented slices.
 
 If terms like gas, sponsor wallet, package ID, or IOTA Gas Station are new, start with [IOTA and GasKit Basics](concepts.md).
 
 ## Why This Exists
 
-Gas sponsorship removes a common onboarding problem: users should not need to find testnet tokens, buy IOTA, or understand fee mechanics before trying an app.
+Gas sponsorship removes a common onboarding problem: users and agents should
+not need to find testnet tokens, buy IOTA, or understand fee mechanics before
+trying an app or executing a bounded task.
 
-The hard part is not paying the fee once. The hard part is paying fees safely over time. A sponsor wallet can spend real funds on Mainnet, so operators need controls:
+The hard part is not paying the fee once. The hard part is paying fees safely
+over time. A sponsor wallet can spend real funds on Mainnet, so operators need
+controls:
 
 - which apps are allowed to request sponsorship;
+- which agents are allowed to request sponsored execution;
+- which signer references and wallet scopes are valid;
 - which wallets can use the sponsor;
 - which Move packages and functions may be sponsored;
 - how much gas an app or wallet can use;
 - what happened when a request was allowed or rejected.
 
-GasKit packages those controls into an SDK, policy gateway, local service, examples, docs, and verification scripts.
+Agentic GasKit keeps those controls and extends them with agent manifests,
+wallet/account references, identity/profile checks, receipts, contract
+workflows, MCP/A2A surfaces, and standards-compatible payment bridges.
 
 ## Relationship to IOTA Gas Station
 
@@ -53,6 +70,9 @@ The official Gas Station is the sponsorship engine. GasKit is the app integratio
 
 | Area | Current status | Start here |
 | --- | --- | --- |
+| Agentic migration | The fork direction, migrated planning docs, code-slice gates, and remote/package decisions are documented. | [Agentic Migration Plan](agentic-gaskit/migration-plan.md) |
+| Agent wallets | Signer-reference-first account/wallet safety model is documented; package implementation is still roadmap. | [Account And Wallet Safety](agentic-gaskit/account-wallet-safety.md) |
+| Agent roadmap | PRDs, execution slices, module specs, and hardening gates have been migrated into this fork. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
 | Beginner concepts | Plain-English explanations of IOTA, sponsored gas, GasKit roles, and common terms. | [IOTA and GasKit Basics](concepts.md) |
 | Code examples | Backend SDK calls, Next.js route shape, browser caller shape, curl requests, and policy YAML. | [Code Examples](examples.md) |
 | Agent workflow | Repo-local Codex skill for agents that need to navigate, develop, verify, or integrate GasKit safely. | [Agent Guide](agent-guide.md) |
@@ -66,6 +86,12 @@ The official Gas Station is the sponsorship engine. GasKit is the app integratio
 
 These are not complete production claims yet:
 
+- agent account/wallet package;
+- signer adapter storage beyond documented safety model;
+- agent transaction manifest package;
+- MCP/A2A agent tools;
+- identity/registry package;
+- receipt and contract workflow packages;
 - full dashboard UI;
 - production-grade durable usage storage;
 - production monitoring and alerting templates;
@@ -77,14 +103,25 @@ These are not complete production claims yet:
 ## Recommended First Path
 
 1. Read [IOTA and GasKit Basics](concepts.md) if sponsored gas or IOTA terms are unfamiliar.
-2. Read [Architecture](architecture.md) to understand why the gateway, SDK, and policy layers are separate.
-3. Copy the safe backend and route patterns from [Code Examples](examples.md).
-4. Use [Agent Guide](agent-guide.md) when handing work to an AI coding agent.
-5. Run the deterministic local checks in [Quickstart](quickstart.md).
-6. Read [Best Practices](best-practices.md) before adding live credentials.
-7. Review [Testnet Readiness](testnet-readiness.md) before a live sponsored transaction attempt.
-8. Use [Deployment](deployment.md) and [Production Hardening](production-hardening.md) when moving beyond local proof.
+2. Read [Agentic Migration Plan](agentic-gaskit/migration-plan.md) before
+   changing repo branding, package names, wallet behavior, or agent surfaces.
+3. Read [Account And Wallet Safety](agentic-gaskit/account-wallet-safety.md)
+   before adding any wallet/account API.
+4. Read [Architecture](architecture.md) to understand why the gateway, SDK, and policy layers are separate.
+5. Copy the safe backend and route patterns from [Code Examples](examples.md).
+6. Use [Agent Guide](agent-guide.md) when handing work to an AI coding agent.
+7. Run the deterministic local checks in [Quickstart](quickstart.md).
+8. Read [Best Practices](best-practices.md) before adding live credentials.
+9. Review [Testnet Readiness](testnet-readiness.md) before a live sponsored transaction attempt.
+10. Use [Deployment](deployment.md) and [Production Hardening](production-hardening.md) when moving beyond local proof.
 
 ## Safety Boundary
 
-Treat the sponsor wallet as a funded operational asset. Every sponsored path should be authenticated, allowlisted, budgeted, observable, and secret-free in logs. Use `simulatePolicy()` when possible, and keep browser code behind same-origin backend routes that own GasKit app credentials.
+Treat the sponsor wallet as a funded operational asset. Every sponsored path
+should be authenticated, allowlisted, budgeted, observable, and secret-free in
+logs. Use `simulatePolicy()` when possible, and keep browser code behind
+same-origin backend routes that own GasKit app credentials.
+
+Agent-created wallets must be signer-reference-first. Normal APIs return
+addresses and scoped signer references, not seeds, mnemonics, private keys, or
+raw keypairs. A signer reference is not bearer authorization.

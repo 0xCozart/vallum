@@ -2,7 +2,10 @@
 
 This page is for readers who are new to IOTA, sponsored gas, or GasKit. You do not need to understand every blockchain detail before using the project. The useful mental model is simple:
 
-GasKit helps an app pay IOTA network fees for its users, while giving the app operator controls over who gets sponsored, how much they can spend, and what can be executed.
+GasKit helps an app pay IOTA network fees for its users, while giving the app
+operator controls over who gets sponsored, how much they can spend, and what can
+be executed. Agentic GasKit extends that model to agents by adding signer
+references, manifests, receipts, and policy-scoped execution.
 
 ## The Problem in Plain English
 
@@ -96,6 +99,8 @@ This shape is more cautious than calling IOTA Gas Station directly from a fronte
 | --- | --- |
 | dApp | An application that uses a blockchain or public ledger as part of its backend. |
 | Wallet | The user's signing tool. It proves the user approved a transaction. |
+| Agent wallet | A wallet created for an agent workflow. Agentic GasKit should expose it through a scoped signer reference, not raw seed material. |
+| Signer reference | An opaque handle to a signing capability. It is not bearer authorization by itself. |
 | Gas | The network fee required to execute a transaction. |
 | Sponsor wallet | The wallet funded by the operator to pay sponsored gas. |
 | Gas Station | The service that provides sponsor-owned gas and signs the sponsorship side. |
@@ -114,6 +119,8 @@ This shape is more cautious than calling IOTA Gas Station directly from a fronte
 - It is not a replacement for the official IOTA Gas Station.
 - It is not a wallet.
 - It does not custody user assets.
+- It does not expose raw agent wallet seeds as a normal API.
+- It does not treat signer references as standalone authorization.
 - It does not make network fees disappear; it moves fee payment to the sponsor.
 - It does not make a raw public sponsor wallet safe by itself; operators still need policy, limits, monitoring, and secret hygiene.
 - It is not yet a complete production managed service.

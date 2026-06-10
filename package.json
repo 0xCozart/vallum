@@ -1,8 +1,8 @@
 {
-  "name": "iota-gaskit",
+  "name": "agentic-gaskit",
   "version": "0.0.0-prerelease",
   "private": true,
-  "description": "Open-source toolkit for deploying, securing, monitoring, and integrating IOTA gas-sponsored transactions.",
+  "description": "Open-source toolkit for IOTA gas sponsorship plus agent-safe wallets, manifests, policy controls, receipts, and integrations.",
   "license": "Apache-2.0",
   "type": "module",
   "workspaces": [

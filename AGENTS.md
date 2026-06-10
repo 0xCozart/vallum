@@ -3,7 +3,8 @@
 <!-- apex-workflow:start -->
 ## Apex Workflow Harness
 
-Use `$apex-workflow` for meaningful execution in this repo.
+Use `$apex-workflow` for meaningful execution in this repo only after an
+`apex.workflow.json` profile exists.
 
 - Profile: `apex.workflow.json`
 - Review `setup.reviewNeeded`, `setup.inferredPaths`, and `operatorCautions` before the first implementation slice.
@@ -15,5 +16,11 @@ Use `$apex-workflow` for meaningful execution in this repo.
 ```bash
 node /home/sacred/code/apex-workflow/scripts/init-harness.mjs --target=. --yes --force
 ```
+
+Current migration note: this Agentic GasKit fork was created before an Apex
+profile was present in the source repo. Read
+`docs/agentic-gaskit/migration-plan.md` before broad changes. If the Apex
+profile is still absent, do not claim Apex verification; either initialize it in
+a dedicated setup slice or proceed with the repo-local npm/docs checks.
 
 <!-- apex-workflow:end -->

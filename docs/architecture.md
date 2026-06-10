@@ -1,6 +1,14 @@
 # Architecture
 
-GasKit is intentionally split into small layers. The goal is to let an app sponsor IOTA gas without putting sponsor-wallet risk directly into frontend code or one-off backend glue.
+GasKit is intentionally split into small layers. The current implemented goal
+is to let an app sponsor IOTA gas without putting sponsor-wallet risk directly
+into frontend code or one-off backend glue.
+
+Agentic GasKit keeps that foundation and adds a planned agent layer: account
+creation through signer references, transaction manifests, identity/profile
+checks, MCP/A2A tool surfaces, receipts, and contract workflows. Those additions
+must route through the same policy and sponsor-wallet boundaries instead of
+bypassing them.
 
 The plain-English shape is:
 
@@ -10,6 +18,17 @@ User action
   -> GasKit SDK or Policy Gateway
   -> official IOTA Gas Station
   -> IOTA network
+```
+
+Planned agent flow:
+
+```text
+Agent action
+  -> MCP/A2A adapter or agent SDK
+  -> Agent manifest + signer reference
+  -> GasKit policy gateway
+  -> official IOTA Gas Station / IOTA contracts
+  -> receipt and audit event
 ```
 
 The app backend owns the user experience. GasKit owns app-level sponsorship checks. IOTA Gas Station owns sponsor gas reservation and sponsored execution. IOTA owns final transaction validation.
@@ -82,6 +101,7 @@ flowchart LR
 | GasKit to Gas Station | The sponsor wallet can spend funded gas. | Apply allowlists, budgets, wallet controls, and bounded errors before proxying. |
 | GasKit to logs/events | Observability is useful, but raw payloads can leak secrets. | Emit allowlisted sanitized fields only. |
 | Local proof to live testnet | Local checks should be repeatable without funded credentials. | Keep live testnet commands separate from `verify:local`. |
+| Agent runtime to signer | Agent runtimes should not receive raw seed/private-key material. | Return scoped signer references and require owner/agent context plus policy. |
 
 ## Why Not Call IOTA Gas Station Directly?
 

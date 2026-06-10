@@ -7,6 +7,17 @@ Grant category: Open-Source Development
 License target: Apache-2.0 for application code; documentation may use permissive documentation terms where appropriate
 Primary repo: `iota-gaskit`
 
+Agentic direction note, 2026-06-10:
+This PRD captures the original GasKit sponsorship toolkit. The current fork is
+being redirected toward Agentic GasKit: the existing Gas Station sponsorship
+foundation plus agent accounts, signer references, transaction manifests,
+identity/profile checks, contracts, receipts, MCP/A2A surfaces, and
+standards-compatible payment bridges. Use
+`docs/agentic-gaskit/migration-plan.md` and
+`docs/agentic-gaskit/roadmap.md` for the new implementation direction. Do not
+interpret this historical PRD as a claim that agent-specific packages are
+already implemented.
+
 ## 1. Executive Summary
 
 IOTA GasKit is an open-source infrastructure toolkit that helps IOTA dApp builders deploy, configure, monitor, and operate sponsored-transaction gas stations without rebuilding production tooling from scratch.

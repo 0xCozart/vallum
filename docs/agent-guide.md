@@ -1,15 +1,26 @@
 # Agent Guide
 
-GasKit now ships a repo-local Codex skill at `skills/iota-gaskit/SKILL.md`.
+Agentic GasKit now ships a repo-local Codex skill at
+`skills/iota-gaskit/SKILL.md`.
 
-Use it when an agent needs to navigate the repo, make SDK or gateway changes, improve docs, run verification, review secret boundaries, or integrate GasKit into another app.
+Use it when an agent needs to navigate the repo, make SDK or gateway changes,
+improve docs, run verification, review secret boundaries, integrate GasKit into
+another app, or add the new agent-facing surfaces.
+
+Before broad work, read
+[`docs/agentic-gaskit/migration-plan.md`](agentic-gaskit/migration-plan.md).
+That file is the current authority for repo ownership, branding, migrated docs,
+package namespace decisions, and the wallet/custody boundary.
 
 ## What the Skill Teaches
 
 - where product, architecture, examples, SDK, policy, gateway, observability, readiness, and docs-site files live;
-- how to choose the right Apex workflow mode for GasKit work;
+- how to preserve existing GasKit sponsorship behavior while extending the
+  fork toward Agentic GasKit;
 - which commands are local-only and which commands may touch live testnet services;
 - how to keep sponsor-wallet, app-key, and upstream bearer-token boundaries intact;
+- how to avoid exposing agent wallet seeds, mnemonics, private keys, raw
+  transaction bytes, or signer refs as bearer credentials;
 - which verification commands prove docs, SDK, gateway, local smoke, readiness, typecheck, and secret hygiene.
 
 ## When to Invoke It
@@ -21,6 +32,9 @@ Use `$iota-gaskit` for prompts like:
 - "change policy gateway behavior";
 - "debug testnet readiness";
 - "integrate GasKit into a Next.js backend";
+- "add an agent account or signer-reference API";
+- "add an MCP tool for sponsored execution";
+- "migrate package names or docs into the Agentic GasKit direction";
 - "check whether sponsor secrets are safe";
 - "run the local proof path";
 - "prepare a new agent to work in this repo."
@@ -31,4 +45,10 @@ The skill is not an MCP server and does not expose live tools. It gives agents t
 
 ## Safety Rule
 
-Local checks do not prove live sponsored execution. Live commands such as `npm run execute:testnet-demo` must only be run when the operator explicitly asks and local testnet credentials are configured.
+Local checks do not prove live sponsored execution. Live commands such as
+`npm run execute:testnet-demo` must only be run when the operator explicitly
+asks and local testnet credentials are configured.
+
+Agent wallet convenience is a security boundary. Agents may create wallets
+through approved SDK/CLI/API paths, but normal APIs must return addresses and
+scoped signer references, not raw seed or private-key material.

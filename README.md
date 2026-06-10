@@ -1,26 +1,46 @@
-# IOTA GasKit
+# Agentic GasKit
 
-**Open-source infrastructure toolkit for gas-sponsored IOTA transactions.**
+**IOTA-native infrastructure for agent-safe sponsored execution.**
 
-[![Toolkit](https://img.shields.io/badge/IOTA-GasKit-5eead4?style=for-the-badge)](#iota-gaskit)
+[![Toolkit](https://img.shields.io/badge/IOTA-Agentic%20GasKit-5eead4?style=for-the-badge)](#agentic-gaskit)
 [![External showcase](https://img.shields.io/badge/showcase-ProofDrop-6366f1?style=for-the-badge)](https://proofdrop.xyz)
 [![License](https://img.shields.io/badge/license-Apache--2.0-f8fafc?style=for-the-badge)](LICENSE)
 
-IOTA GasKit helps IOTA builders deploy, secure, monitor, and integrate sponsored-transaction infrastructure around the official IOTA Gas Station component.
+Agentic GasKit is the next direction for IOTA GasKit: the existing
+self-hostable Gas Station toolkit plus agent wallets, signer references,
+transaction manifests, policy controls, receipts, contract workflows, MCP/A2A
+surfaces, and standards-compatible payments.
 
-It is designed for teams building IOTA dApps, enterprise workflows, identity products, notarization systems, RWA/product-passport apps, supply-chain tools, games, wallets, and hackathon demos where users should not need to acquire IOTA tokens before experiencing product value.
+It is designed for teams building IOTA dApps, agent workflows, enterprise
+automation, identity products, notarization systems, RWA/product-passport apps,
+supply-chain tools, games, wallets, and demos where users or agents should not
+need to acquire IOTA tokens before experiencing product value.
 
 > **Open-source scope:** this repository is the self-hostable toolkit. A future managed service may offer hosting, support, SLAs, and enterprise onboarding, but the core project remains independently deployable, inspectable, forkable, licensed open source, and useful without hosted GasKit.
 
+## Migration status
+
+This fork was created from `https://github.com/0xCozart/iota-gaskit` to move
+the Agentic GasKit direction into the actual GasKit codebase instead of keeping
+the implementation plan in `/home/sacred/code/agents`.
+
+Start with [`docs/agentic-gaskit/migration-plan.md`](docs/agentic-gaskit/migration-plan.md)
+before changing package names, wallet behavior, MCP tools, gateway policy, or
+remote publishing. Existing GasKit sponsorship behavior remains the foundation;
+agent-specific behavior should be added in vertical slices.
+
 ## One-line pitch
 
-IOTA GasKit is the missing production-readiness layer around IOTA Gas Station: deployment templates, policy controls, quotas, app keys, SDK wrappers, dashboard visibility, observability, and hardening docs.
+Agentic GasKit gives AI agents a safe IOTA execution stack: sponsored gas,
+policy controls, signer references, manifests, receipts, contracts, and
+operator visibility.
 
-## Why GasKit exists
+## Why GasKit Exists
 
 The official IOTA Gas Station component solves the core sponsored-transaction primitive: an application can sponsor gas fees for its users.
 
-Production teams still need the surrounding operator and developer layer:
+Production teams and agent operators still need the surrounding developer,
+operator, and safety layer:
 
 - repeatable local and testnet deployment flows;
 - app-level credentials and sponsorship budgets;
@@ -32,15 +52,30 @@ Production teams still need the surrounding operator and developer layer:
 - dashboard views for app keys, usage, health, and errors;
 - sponsor-wallet, Redis, reverse-proxy, and KMS hardening guidance;
 - reproducible demos and documentation;
+- agent-created wallets represented by scoped signer references instead of raw
+  seeds;
+- manifest, receipt, identity, and contract rails for agent actions;
 - a real IOTA testnet sponsored execute script with documented public transaction digest evidence.
 
-GasKit packages those pieces into a reusable open-source toolkit so every IOTA builder does not have to recreate the same safety and operations layer.
+GasKit packages those pieces into a reusable open-source toolkit so every IOTA
+builder or agent developer does not have to recreate the same safety and
+operations layer.
 
-## What is in this repo now
+## What Is In This Repo Now
 
-This repository contains the open-source GasKit toolkit: a tested policy gateway, TypeScript SDK, local demo flows, integration examples, deployment templates, security docs, observability foundations, and documented IOTA testnet sponsored-execution evidence.
+This repository currently contains the open-source GasKit toolkit: a tested
+policy gateway, TypeScript SDK, local demo flows, integration examples,
+deployment templates, security docs, observability foundations, and documented
+IOTA testnet sponsored-execution evidence.
 
-Some production surfaces remain planned roadmap work, including the full dashboard UI, production persistence, production monitoring, package publication, and final demo assets.
+The Agentic GasKit direction is now documented in `docs/agentic-gaskit/`, but
+agent wallet/account packages, manifest packages, MCP tools, registry surfaces,
+and contract workflows are still planned implementation work unless a later
+slice proves otherwise.
+
+Some production surfaces remain planned roadmap work, including the full
+dashboard UI, production persistence, production monitoring, package
+publication, final demo assets, and all production custody/KMS behavior.
 
 The repo currently includes:
 
@@ -126,6 +161,7 @@ deploy/
   docker-compose/         # Local deployment templates
   gas-station/            # Safe Gas Station config templates
 docs/
+  agentic-gaskit/          # Agentic migration plan, roadmap, PRDs, wallet safety, and slices
   architecture.md
   demo-script.md
   deployment.md
@@ -149,6 +185,11 @@ examples/
 ## Packages
 
 The monorepo root is marked `private` to prevent accidental publication of the workspace root. The workspace packages are not claimed as published yet. Package release remains roadmap work; today the repo provides package READMEs, public prerelease publish metadata (`access=public`, `tag=next`), map-free packed artifacts, and local `npm pack --dry-run` verification for publishable packages.
+
+Package Publication remains a roadmap gate. Do not treat the Agentic GasKit fork
+or any future namespace rename as package-publication-ready until dry-run pack
+checks, import examples, README package names, lockfiles, and npm registry
+credentials are reviewed in a dedicated release slice.
 
 Dry-run package checks:
 
@@ -216,21 +257,31 @@ Recommended static-host settings:
 
 ## Agent access: start here
 
-AI coding agents should start with the repo-local GasKit skill:
+AI coding agents should start with the migration plan and repo-local GasKit
+skill:
+
+```txt
+docs/agentic-gaskit/migration-plan.md
+```
 
 ```txt
 skills/iota-gaskit/SKILL.md
 ```
 
-That skill is the fastest way to find the source map, Apex workflow expectations, safe verification ladder, and sponsor-gas boundaries for this repo. It tells agents where to start for SDK work, policy-gateway changes, testnet readiness, docs, examples, security, and hosted-docs updates.
+The skill is the fastest way to find the source map, safe verification ladder,
+and sponsor-gas boundaries for this repo. The migration plan tells agents how
+the Agentic GasKit fork should evolve without duplicating or weakening existing
+GasKit sponsorship safety.
 
 Recommended agent startup:
 
 1. Read `AGENTS.md`.
-2. Read `apex.workflow.json`.
+2. Read `docs/agentic-gaskit/migration-plan.md`.
 3. Read `skills/iota-gaskit/SKILL.md`.
-4. For architecture/product context, read `docs/architecture.md`, `docs/overview.md`, and `README.md`.
-5. Check `git status --short --branch` and preserve unrelated dirty work.
+4. If `apex.workflow.json` exists, read it. If it does not, do not pretend Apex
+   is configured.
+5. For architecture/product context, read `docs/architecture.md`, `docs/overview.md`, and `README.md`.
+6. Check `git status --short --branch` and preserve unrelated dirty work.
 
 Useful skill entry points:
 

@@ -1,0 +1,717 @@
+# Executable Vertical Work Packets
+
+Last updated: 2026-06-09.
+
+Use these packets as the implementation queue. Each packet should be completed,
+verified, and handed off before moving to the next unless the dependency graph
+requires a small supporting change.
+
+Global slice rules:
+
+- Start each slice by reading the owning PRD, `docs/agentic-gaskit/module-specs.md`,
+  `docs/agentic-gaskit/verification-hardening.md`, and `docs/agentic-gaskit/planning-structure-audit.md`.
+- Run `git status --short --branch` before editing and preserve unrelated work.
+- Refresh `docs/agentic-gaskit/external-api-notes.md` before any slice that touches IOTA,
+  MCP, x402, AP2, A2A, package names, adapter interfaces, or protocol fields.
+- Complete one user/operator-visible outcome per slice.
+- End each slice with commands run, manual checks, evidence, risks, and commit
+  hash in the handoff.
+- Make a structured commit per completed slice unless the user explicitly asks
+  not to commit.
+
+## Slice 0.1: Repo Scaffold
+
+User-visible outcome:
+A clean checkout has install, lint, typecheck, test, and docs commands.
+
+Likely files:
+
+- `package.json`
+- workspace config
+- `.gitignore`
+- `README.md`
+- `.env.example`
+- `packages/*`
+- `contracts/*`
+
+Acceptance criteria:
+
+- Install works.
+- Test script runs at least one starter test.
+- Typecheck script runs.
+- No secret values are committed.
+- Git repository is initialized on the chosen default branch.
+- Baseline planning commit exists before implementation commits.
+
+Verification:
+
+- install command
+- lint command
+- typecheck command
+- unit test command
+- `git status --short --branch`
+- `git log --oneline --decorate -n 5`
+
+Dependencies:
+None.
+
+Risk:
+Medium. Wrong scaffold choices create churn.
+
+Escalation triggers:
+
+- Official IOTA tooling requires a different repo structure.
+- Contract tests cannot run under the selected workspace layout.
+
+## Slice 0.2: External API Refresh Notes
+
+User-visible outcome:
+Implementation agents know the current official API shape before coding against
+IOTA or external standards.
+
+Likely files:
+
+- `docs/agentic-gaskit/external-api-notes.md`
+- `README.md`
+
+Acceptance criteria:
+
+- Notes include current official links and exact implementation assumptions for
+  Gas Station, TS SDK, Move tests, Names, Identity, MCP, x402, AP2, and A2A.
+- Unknowns are labeled as blockers or follow-ups.
+
+Verification:
+
+- Manual review against official docs.
+
+Dependencies:
+None. Run the scaffold-critical parts before Slice 0.1 if package names,
+tooling, localnet commands, or adapter interfaces could change scaffold
+choices. Complete the full refresh before any Phase 1 slice begins unless the
+user explicitly accepts a documented blocker.
+
+Risk:
+Medium. Protocol docs change over time.
+
+Escalation triggers:
+
+- Official docs contradict phase PRD assumptions.
+
+## Slice 0.3: Existing IOTA GasKit Integration Map
+
+User-visible outcome:
+Future implementation agents know which existing IOTA GasKit surfaces to reuse
+instead of rebuilding sponsorship infrastructure in this repo.
+
+Likely files:
+
+- `docs/CODEBASE_MAP.md`
+- `docs/agentic-gaskit/roadmap.md`
+- `docs/agentic-gaskit/account-wallet-safety.md`
+- `docs/agentic-gaskit/external-api-notes.md`
+
+Acceptance criteria:
+
+- The current fork documents existing GasKit sponsorship behavior as the
+  foundation.
+- Reusable existing surfaces are named: SDK, policy gateway, Gas Station
+  boundary, app credentials, quotas, observability, testnet readiness,
+  sponsor-wallet safety, and secret hygiene.
+- Agentic GasKit-specific surfaces are separated: manifests, agent wallets,
+  profiles, MCP/A2A, contracts, receipts, and standards bridges.
+- Any duplicated gateway/SDK behavior requires an explicit migration or adapter
+  reason.
+
+Verification:
+
+- Bounded read of existing GasKit README, product docs, security docs, and
+  local skill.
+- `git status --short --branch` in this fork, preserving unrelated dirty work.
+- Docs check.
+
+Dependencies:
+Slices 0.1 and 0.2.
+
+Risk:
+Medium. Without this slice, agents may rebuild the wrong product.
+
+Escalation triggers:
+
+- User decides to replace this fork with a different remote or branch strategy.
+- Existing GasKit APIs are incompatible with the agent-layer requirements.
+
+## Slice 1.0: Agent Account And Wallet Manager Contract
+
+User-visible outcome:
+Agents can create wallets in mock/local mode, but receive signer references
+rather than seeds or raw private keys.
+
+Likely files:
+
+- `packages/accounts/`
+- `packages/sdk/src/accounts/`
+- `packages/mcp-server/src/tools.ts`
+- `packages/registry/src/profileSchema.ts`
+- `docs/agentic-gaskit/account-wallet-safety.md`
+
+Acceptance criteria:
+
+- Agent wallet creation returns address, wallet id, signer reference, status,
+  and allowed scopes.
+- Returned values do not include seed, mnemonic, private key, or raw keypair.
+- Wallet creation requires authenticated owner/agent context and rate limits.
+- Signer references are opaque handles and cannot be accepted as standalone
+  authorization for signing or sponsorship.
+- Recovery/export is explicit and unavailable to autonomous agent runtimes by
+  default.
+- Agent-created wallets can be bound to profile metadata.
+- SDK/MCP value-bearing use still routes through policy gateway.
+- Humans/operators can fund agent wallets directly or through GasKit-controlled
+  sponsorship without granting unrestricted signing authority.
+
+Verification:
+
+- Unit tests for in-memory wallet creation.
+- Redaction tests for secret-looking fixture values.
+- SDK/MCP tests proving signer refs are passed, not raw secrets.
+- Negative tests proving possession of a signer ref without the matching
+  owner/agent context does not authorize signing.
+- Policy integration tests proving signer refs do not bypass gateway.
+
+Dependencies:
+Slice 0.3.
+
+Risk:
+High. Wallet management can accidentally become a custody or secret-exposure
+surface.
+
+Escalation triggers:
+
+- Need for production KMS, custody, or mainnet signer operation.
+- Any requirement to expose raw seeds outside explicit recovery workflows.
+
+## Slice 1.1: Manifest Schema
+
+User-visible outcome:
+Every agent action can be represented as a versioned signed intent before
+policy or chain execution.
+
+Likely files:
+
+- `packages/manifest/src/schema.ts`
+- `packages/manifest/src/validate.ts`
+- `packages/manifest/test/fixtures.ts`
+
+Acceptance criteria:
+
+- Valid manifest fixture passes.
+- Missing agent, counterparty, expiry, max spend, action, or idempotency key
+  fails.
+- Expired manifest fails.
+- Unsupported schema version fails closed.
+
+Verification:
+
+- Unit tests.
+- Typecheck.
+
+Dependencies:
+Slices 0.1, 0.2, and 0.3. Slice 1.0 can run before or alongside this if wallet
+references are included in the manifest.
+
+Risk:
+Low.
+
+Escalation triggers:
+
+- AP2 mandate compatibility requires changing core manifest semantics.
+
+## Slice 1.2: Pure Policy Evaluator
+
+User-visible outcome:
+Operators can deterministically approve or deny an action before sponsorship.
+
+Likely files:
+
+- `packages/policy-gateway/src/evaluatePolicy.ts`
+- `packages/policy-gateway/src/policySchema.ts`
+- `packages/policy-gateway/test/evaluatePolicy.test.ts`
+
+Acceptance criteria:
+
+- Known valid action is approved.
+- Unknown agent denied.
+- Missing manifest denied.
+- Expired manifest denied.
+- Over-budget action denied.
+- Disallowed contract/action denied.
+- Unauthorized counterparty denied.
+- Missing simulation denied when required.
+- Human approval required above threshold.
+
+Verification:
+
+- Unit tests covering allow/deny matrix.
+
+Dependencies:
+Slice 1.1.
+
+Risk:
+High. This is a security boundary.
+
+Escalation triggers:
+
+- Any rule depends on LLM judgment.
+- Any fallback allows unknown actions.
+
+## Slice 1.3: Gateway Mock Mode
+
+User-visible outcome:
+Agents can submit sponsorship requests to a local gateway and receive policy
+decisions without live IOTA dependencies.
+
+Likely files:
+
+- `packages/policy-gateway/src/server.ts`
+- `packages/policy-gateway/src/routes.ts`
+- `packages/policy-gateway/src/mockGasStationAdapter.ts`
+
+Acceptance criteria:
+
+- Gateway starts locally.
+- Valid request returns approved decision and mock sponsorship id.
+- Denied request returns reason code.
+- Logs are redacted.
+
+Verification:
+
+- Integration tests.
+- Manual curl or script.
+
+Dependencies:
+Slice 1.2.
+
+Risk:
+Medium.
+
+Escalation triggers:
+
+- Gateway stores secrets or full prompt content in logs.
+
+## Slice 1.4: SDK Sponsored Action
+
+User-visible outcome:
+Developer can call an SDK method instead of manually constructing gateway
+requests.
+
+Likely files:
+
+- `packages/sdk/src/IotaAgent.ts`
+- `packages/sdk/src/requestSponsoredAction.ts`
+- `packages/sdk/test/`
+
+Acceptance criteria:
+
+- SDK submits manifest to gateway.
+- SDK returns typed approved/denied result.
+- SDK does not bypass gateway.
+
+Verification:
+
+- SDK integration tests against mock gateway.
+
+Dependencies:
+Slice 1.3.
+
+Risk:
+Medium.
+
+Escalation triggers:
+
+- SDK needs direct IOTA execution for value-bearing action before policy is
+  stable.
+
+## Slice 1.5: MCP Sponsorship Tools
+
+User-visible outcome:
+An agent runtime can request IOTA actions through MCP tools.
+
+Likely files:
+
+- `packages/mcp-server/src/tools.ts`
+- `packages/mcp-server/src/server.ts`
+- `packages/mcp-server/test/`
+
+Acceptance criteria:
+
+- `iota.request_sponsored_transaction` calls SDK/gateway.
+- `iota.open_escrow` calls SDK/gateway.
+- Invalid tool input returns typed error.
+- MCP tools cannot directly sponsor or submit transactions.
+
+Verification:
+
+- MCP server smoke test.
+- Gateway integration test.
+
+Dependencies:
+Slice 1.4.
+
+Risk:
+High. Tool bypass would break the security model.
+
+Escalation triggers:
+
+- MCP SDK API changed materially from assumptions.
+
+## Slice 1.6: Escrow And Receipt MVP
+
+User-visible outcome:
+Demo can open escrow, release on verifier approval, refund/expire, and emit
+receipt state.
+
+Likely files:
+
+- `contracts/escrow_v1/`
+- `contracts/receipt_v1/`
+- `packages/receipts/src/schema.ts`
+- `packages/sdk/src/contracts/openEscrow.ts`
+
+Acceptance criteria:
+
+- Escrow create/release/refund tests pass.
+- Double release denied.
+- Unauthorized verifier denied.
+- Receipt status updates through lifecycle.
+
+Verification:
+
+- Move tests.
+- SDK/gateway integration test in mock/localnet.
+
+Dependencies:
+Slice 1.5.
+
+Risk:
+High. Contract semantics must be precise.
+
+Escalation triggers:
+
+- Need to custody real funds.
+- Move test harness unavailable.
+
+## Slice 1.7: Agent-To-Agent Escrow Demo
+
+User-visible outcome:
+A reproducible demo shows an agent hiring another agent and releasing escrow
+after verification.
+
+Likely files:
+
+- `examples/agent-escrow/`
+- `README.md`
+- `docs/demo-agent-escrow.md`
+
+Acceptance criteria:
+
+- Demo runs from documented commands.
+- Shows approve and deny paths.
+- Shows receipt/log output.
+
+Verification:
+
+- Manual demo.
+- Scripted smoke test where practical.
+
+Dependencies:
+Slice 1.6.
+
+Risk:
+Medium.
+
+Escalation triggers:
+
+- Demo requires live mainnet or external paid APIs.
+
+## Slice 2.1: Agent Profile Schema
+
+User-visible outcome:
+Agent name/profile data is represented by a stable schema.
+
+Likely files:
+
+- `packages/registry/src/profileSchema.ts`
+- `packages/registry/test/profileSchema.test.ts`
+
+Acceptance criteria:
+
+- Valid profile passes.
+- Missing name/address/DID/capabilities/endpoints fails.
+- Revoked and expired profiles have explicit states.
+
+Verification:
+
+- Unit tests.
+
+Dependencies:
+Slice 1.2.
+
+Risk:
+Low.
+
+Escalation triggers:
+
+- Current A2A Agent Card schema requires incompatible core fields.
+
+## Slice 2.2: Resolver With Local Fixtures
+
+User-visible outcome:
+SDK can resolve a local/test profile and policy can use capabilities.
+
+Likely files:
+
+- `packages/registry/src/resolveAgent.ts`
+- `packages/sdk/src/resolveAgent.ts`
+- `packages/policy-gateway/src/capabilityCheck.ts`
+
+Acceptance criteria:
+
+- `resolveAgent` returns profile.
+- Revoked/expired profiles deny policy-gated actions.
+- Capability mismatch denies protected actions.
+
+Verification:
+
+- Unit and integration tests.
+
+Dependencies:
+Slice 2.1.
+
+Risk:
+Medium.
+
+Escalation triggers:
+
+- Live IOTA Names/Identity APIs needed to finish local behavior.
+
+## Slice 2.3: IOTA Names And Identity Adapters
+
+User-visible outcome:
+Profile resolution can use IOTA Names and Identity on localnet/testnet after API
+verification.
+
+Likely files:
+
+- `packages/registry/src/iotaNamesAdapter.ts`
+- `packages/registry/src/iotaIdentityAdapter.ts`
+- `docs/agentic-gaskit/external-api-notes.md`
+
+Acceptance criteria:
+
+- Adapter interfaces match current official APIs.
+- Mock tests pass.
+- Manual testnet resolution path documented.
+
+Verification:
+
+- Mock integration tests.
+- Manual testnet command.
+
+Dependencies:
+Slice 2.2.
+
+Risk:
+High. External APIs may change.
+
+Escalation triggers:
+
+- IOTA Names cannot store/resolve required metadata safely.
+- Identity integration requires third-party provider decisions.
+
+## Slice 3.1: Contract Metadata Registry
+
+User-visible outcome:
+Policy can allow contracts by stable template id and version rather than raw
+package addresses.
+
+Likely files:
+
+- `packages/contracts-metadata/`
+- `packages/policy-gateway/src/contractAllowList.ts`
+
+Acceptance criteria:
+
+- Approved template/version accepted.
+- Unknown package denied.
+- Mismatched version denied.
+
+Verification:
+
+- Unit tests.
+
+Dependencies:
+Slice 1.6.
+
+Risk:
+Medium.
+
+Escalation triggers:
+
+- Package upgrade semantics conflict with stable template ids.
+
+## Slice 3.2: Pay-Per-Call Tool Contract
+
+User-visible outcome:
+A paid MCP tool can require payment and issue a receipt.
+
+Likely files:
+
+- `contracts/pay_per_call_v1/`
+- `packages/sdk/src/contracts/payPerCall.ts`
+- `examples/paid-mcp-tool/`
+
+Acceptance criteria:
+
+- Pay-per-call tests pass.
+- Tool result is delivered only after policy/payment/receipt path succeeds.
+- Failed payment does not return paid result.
+
+Verification:
+
+- Move tests.
+- Integration demo.
+
+Dependencies:
+Slice 3.1.
+
+Risk:
+High.
+
+Escalation triggers:
+
+- Real external payment rail required before mock proof.
+
+## Slice 4.1: x402 Mapping
+
+User-visible outcome:
+x402 payment requirements can become Agentic GasKit manifests and receipts.
+
+Likely files:
+
+- `packages/standards/x402/`
+- `packages/manifest/src/x402Mapping.ts`
+- `packages/receipts/src/x402Receipt.ts`
+
+Acceptance criteria:
+
+- x402 requirement maps to manifest.
+- Unsupported protocol version fails closed.
+- Logs redact payment metadata.
+
+Verification:
+
+- Unit tests.
+- Mock facilitator integration.
+
+Dependencies:
+Slice 1.6.
+
+Risk:
+High. Active standard.
+
+Escalation triggers:
+
+- Need to run production facilitator or handle real payment credentials.
+
+## Slice 4.2: AP2 Mandate Mapping
+
+User-visible outcome:
+AP2-style checkout/payment mandates map to manifests and dispute evidence.
+
+Likely files:
+
+- `packages/standards/ap2/`
+- `packages/manifest/src/ap2Mapping.ts`
+- `packages/receipts/src/ap2Receipt.ts`
+
+Acceptance criteria:
+
+- Checkout and payment mandate fixtures map to manifest and receipt.
+- Trusted-surface boundary is represented.
+- Dispute evidence pointer preserved.
+
+Verification:
+
+- Unit tests.
+
+Dependencies:
+Slice 1.1.
+
+Risk:
+High.
+
+Escalation triggers:
+
+- Need for real AP2 participant credentials or production payment processors.
+
+## Slice 4.3: A2A Agent Card
+
+User-visible outcome:
+Agent profile can be exposed as an A2A-compatible discovery document.
+
+Likely files:
+
+- `packages/standards/a2a/`
+- `packages/registry/src/a2aCard.ts`
+
+Acceptance criteria:
+
+- Card generation from profile works.
+- Revoked/expired profiles do not advertise active skills.
+- Auth and endpoint fields are present.
+
+Verification:
+
+- Unit tests.
+- Manual schema check against current A2A docs.
+
+Dependencies:
+Slice 2.1.
+
+Risk:
+Medium.
+
+Escalation triggers:
+
+- Current A2A schema changes path or required fields.
+
+## Slice 5.1: Marketplace Readiness Gate
+
+User-visible outcome:
+Team can decide whether marketplace work is justified by working primitives.
+
+Likely files:
+
+- `docs/marketplace-readiness.md`
+
+Acceptance criteria:
+
+- Phases 1-4 demos pass.
+- Risks reviewed.
+- Marketplace non-goals remain explicit.
+- Compliance/security questions listed.
+
+Verification:
+
+- Manual readiness review.
+
+Dependencies:
+Phases 1-4.
+
+Risk:
+Medium.
+
+Escalation triggers:
+
+- Any real-money production use, custody, provider verification, or moderation
+  requirements.
