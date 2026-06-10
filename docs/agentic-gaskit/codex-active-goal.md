@@ -17,7 +17,7 @@ Execution entry:
 
 Immediate product slice:
 
-- Slice 5.1: Marketplace Readiness Gate after Slice 4.3 is committed
+- Slice 5.1: Marketplace Readiness Gate completion and handoff
 
 ## Intent Read
 
@@ -70,9 +70,12 @@ facilitator, plus a local AP2 closed checkout/payment mandate bridge for
 mapping mandates to manifests and dispute-linked receipts without operating
 live AP2 or production payment rails. The current slices also add local A2A
 Agent Card mapping from Agent Profiles without operating an A2A server or
-public discovery endpoint. The next gaps are marketplace readiness review,
-data-license and expanded contract workflows, live IOTA Names/Identity proof,
-and live deployment proof when explicitly in scope.
+public discovery endpoint. Slice 5.1 adds a marketplace readiness gate that
+permits marketplace requirements/design work only inside local/mock proof and
+keeps production marketplace implementation blocked. The next gaps are
+data-license and expanded contract workflows, access-control/dispute evidence
+for any marketplace-facing surface, live IOTA Names/Identity proof, and live
+deployment proof when explicitly in scope.
 
 Desired outcome:
 Codex repeatedly implements one vertical slice, proves it with focused and
@@ -210,6 +213,10 @@ Slice 5.1 is complete only when:
 - Existing GasKit tests and safety checks still pass, or any failure is
   explained as a pre-existing/blocking condition with exact evidence.
 
+Current Slice 5.1 artifact:
+
+- `docs/marketplace-readiness.md`
+
 ## Completion Standard
 
 The active goal is complete only when Agentic GasKit has advanced from the
@@ -243,5 +250,6 @@ sed -n '1,220p' docs/agentic-gaskit/verification-hardening.md
 ```
 
 Then create the next slice scope record/manifest, run the baseline evals, add
-focused tests or review checks, and implement Slice 5.1 unless the handoff
-names a different immediate target.
+focused tests or review checks, and follow the next safe target named by the
+handoff. Do not start production marketplace implementation from Slice 5.1
+alone.

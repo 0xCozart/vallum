@@ -8,10 +8,11 @@ Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 3.1, 3.2,
-4.1, 4.2, and 4.3 are implemented and locally verified. The immediate target
-is Slice 5.1: Marketplace Readiness Gate. Use
-`docs/agentic-gaskit/execution-entry.md` as the entry doc, then continue
-through `docs/agentic-gaskit/execution-slices.md`.
+4.1, 4.2, 4.3, and 5.1 are implemented or reviewed and locally verified.
+Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
+`docs/marketplace-readiness.md` before choosing the next slice. Do not start
+production marketplace implementation unless the user explicitly approves the
+new scope and its unresolved gates.
 
 ## Current State
 
@@ -162,6 +163,12 @@ Recent commits to know:
   closed; malformed auth requirements fail closed; and public card metadata
   omits credential refs, revocation refs, signer refs, wallet internals, payment
   addresses, and private profile metadata.
+- Slice 5.1 marketplace readiness review exists at
+  `docs/marketplace-readiness.md`. It concludes that marketplace
+  requirements/design work is justified only inside local/mock proof, while
+  production marketplace implementation, live provider onboarding, real-money
+  settlement, custody, staking, moderation, and provider verification remain
+  blocked.
 - `docs/agentic-gaskit/external-api-notes.md` was refreshed on 2026-06-10 for
   current IOTA Names GraphQL, IOTA Identity DID/VC, x402 v2, AP2 v0.2
   mandate/receipt, and A2A Agent Card assumptions.
@@ -182,6 +189,11 @@ Recent commits to know:
   run, and the demo/escrow contract does not custody real funds.
 - Package namespace strategy is still open.
 - Production custody, KMS, and recovery/export are not designed or implemented.
+- Marketplace app/API implementation is not started. Any future
+  marketplace-adjacent slice must stay read-only or local/mock until
+  access-control tests, dispute evidence walkthrough, live identity/name proof,
+  live payment proof, and provider verification/moderation decisions are
+  explicitly scoped.
 
 ## Suggested Skills
 
@@ -205,7 +217,8 @@ Read in this order:
 5. `docs/agentic-gaskit/module-specs.md`
 6. `docs/agentic-gaskit/execution-slices.md`
 7. `docs/agentic-gaskit/verification-hardening.md`
-8. `docs/agentic-gaskit/local-dirty-work-review.md`
+8. `docs/marketplace-readiness.md`
+9. `docs/agentic-gaskit/local-dirty-work-review.md`
 
 ## Completed Slice 1.0
 
@@ -1660,7 +1673,46 @@ Known unproven claims:
 
 Next recommended slice:
 
-- Slice 5.1 Marketplace Readiness Gate.
+- Do not start production marketplace implementation from this handoff. Choose
+  one explicit next slice from the readiness gaps, such as a read-only
+  marketplace architecture/spec slice, data-license contract workflow,
+  marketplace access-control/dispute-evidence proof, live IOTA Names/Identity
+  proof, or A2A well-known serving proof.
+
+## Completed Slice 5.1
+
+Created `docs/marketplace-readiness.md`.
+
+Slice and PRD coverage:
+
+- `docs/agentic-gaskit/execution-slices.md` Slice 5.1 Marketplace Readiness
+  Gate.
+- `docs/agentic-gaskit/prds/phase-5-marketplace.md`.
+- `docs/agentic-gaskit/verification-hardening.md` Phase 5 gate and marketplace
+  compliance/security escalation rules.
+
+Evidence:
+
+- The readiness review cites the previous Slice 4.3 full `npm run
+  verify:local` proof as local evidence for Phases 1-4 primitives.
+- The review separates local/mock proof from live IOTA testnet, production
+  payment, provider verification, custody, moderation, and public marketplace
+  proof.
+- The review lists marketplace non-goals and unresolved production gates.
+- Baseline and final docs/secret/whitespace checks were run for the docs-only
+  slice.
+- `npm test` passed with 250 TypeScript tests.
+- `npm run typecheck` passed.
+
+Known unproven claims:
+
+- No marketplace app, API, provider onboarding, search UI, access-control test,
+  dispute evidence walkthrough, data-license workflow, live payment settlement,
+  live IOTA Names/Identity proof, live A2A discovery, localnet/testnet/mainnet
+  deployment, provider verification, moderation process, custody, staking, or
+  production operation was implemented by Slice 5.1.
+- Slice 5.1 is a readiness decision. It does not approve production
+  marketplace implementation.
 
 ## Guardrails
 
@@ -1688,16 +1740,17 @@ npm test
 npm run typecheck
 ```
 
-For Slice 5.1, perform a marketplace readiness review without starting
-marketplace implementation. Start with the baseline above plus:
+For the next slice, first read the readiness gate and then select one explicit
+target. Suggested orientation commands:
 
 ```bash
-sed -n '690,730p' docs/agentic-gaskit/execution-slices.md
-sed -n '1,140p' docs/agentic-gaskit/prds/phase-5-marketplace.md
+sed -n '1,220p' docs/marketplace-readiness.md
 sed -n '1,220p' docs/agentic-gaskit/verification-hardening.md
+sed -n '1,180p' docs/agentic-gaskit/prds/phase-5-marketplace.md
 ```
 
-Finish with the lightest checks justified by docs-only review, at minimum:
+Minimum checks still depend on the selected slice. For docs-only review work,
+finish with:
 
 ```bash
 npm run docs:check

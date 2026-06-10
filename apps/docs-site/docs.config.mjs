@@ -78,6 +78,12 @@ export default {
           description: "Risk register, verification matrix, and hardening gates for agentic sponsored execution."
         },
         {
+          title: "Marketplace Readiness",
+          source: "docs/marketplace-readiness.md",
+          slug: "marketplace-readiness",
+          description: "Phase 5 readiness gate separating local marketplace design readiness from live or production marketplace proof."
+        },
+        {
           title: "Local Dirty Work Review",
           source: "docs/agentic-gaskit/local-dirty-work-review.md",
           slug: "agentic-local-dirty-work-review",
