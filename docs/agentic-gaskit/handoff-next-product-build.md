@@ -7,9 +7,10 @@ Last updated: 2026-06-10.
 Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
-Slice 1.0 is implemented and locally verified. The immediate target is Slice
-1.1: manifest schema. Use `docs/agentic-gaskit/execution-entry.md` as the entry
-doc, then continue through `docs/agentic-gaskit/execution-slices.md`.
+Slices 1.0 and 1.1 are implemented and locally verified. The immediate target
+is Slice 1.2: pure policy evaluator. Use
+`docs/agentic-gaskit/execution-entry.md` as the entry doc, then continue through
+`docs/agentic-gaskit/execution-slices.md`.
 
 ## Current State
 
@@ -50,12 +51,18 @@ Recent commits to know:
   revoked wallet states deny, local creation limits apply, recovery export is
   denied with audit metadata, profile metadata can bind to the wallet, and
   signer refs plus secret-looking fixture values are redacted.
+- Slice 1.1 manifest schema is implemented in `packages/manifest` as
+  `@iota-gaskit/manifest`.
+- Slice 1.1 tests prove a valid manifest fixture passes, missing required
+  fields fail with typed errors, expired manifests fail closed, unsupported
+  versions fail closed, malformed and oversized manifests fail, simulation and
+  receipt requirements are explicit, and top-level or nested secret-bearing
+  fields are rejected.
 - Root build, test, typecheck, package dry-run, docs, smokes, readiness example,
-  and secret scan include the accounts package.
+  and secret scan include the accounts and manifest packages.
 
 ## What Is Not Complete
 
-- Manifest package is not implemented.
 - Agent-aware policy extensions are not implemented.
 - MCP/A2A tools are not implemented.
 - Registry, receipts, and contract workflows are not implemented.
@@ -161,7 +168,88 @@ Known unproven claims:
 
 Next recommended slice:
 
-- Slice 1.1 Manifest Schema in `packages/manifest`.
+- Slice 1.1 Manifest Schema in `packages/manifest`, completed below.
+
+## Completed Slice 1.1
+
+Implemented `packages/manifest` with tests.
+
+Used the conservative package name `@iota-gaskit/manifest` until a dedicated
+namespace migration slice is approved.
+
+Acceptance is defined in:
+
+- `docs/agentic-gaskit/prds/phase-1-sponsored-policy-mvp.md`
+- `docs/agentic-gaskit/execution-slices.md` Slice 1.1
+- `docs/agentic-gaskit/module-specs.md` `packages/manifest`
+- `docs/agentic-gaskit/verification-hardening.md` Manifest verification matrix
+
+Changed files:
+
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+- `package.json`
+- `package-lock.json`
+- `packages/manifest/README.md`
+- `packages/manifest/package.json`
+- `packages/manifest/src/fixtures.ts`
+- `packages/manifest/src/index.ts`
+- `packages/manifest/src/manifest.test.ts`
+- `packages/manifest/src/schema.ts`
+- `packages/manifest/src/validate.ts`
+- `packages/manifest/tsconfig.build.json`
+- generated ignored `packages/manifest/dist/`
+
+Commands run:
+
+```bash
+git status --short --branch
+npm run docs:check
+npm run secrets:scan
+npm test
+npm run typecheck
+node --import tsx --test packages/manifest/src/manifest.test.ts
+npm install --package-lock-only
+npm run verify:local
+git diff --check
+```
+
+Verification result:
+
+- Baseline before editing passed: docs check, secret scan, `npm test`, and
+  `npm run typecheck`.
+- Focused manifest tests passed: 7 tests.
+- `npm test` passed with 146 tests.
+- `npm run typecheck` passed.
+- `npm run verify:local` passed, including local gateway smoke, demo dApp
+  smoke, browser wrapper smoke, readiness example, package dry-run, docs check,
+  and secret scan.
+- `git diff --check` passed.
+
+Hardening notes:
+
+- Manifest validation fails closed on unsupported schema versions before policy
+  or chain execution.
+- Validator rejects top-level and nested secret-bearing fields such as private
+  keys, raw transaction bytes, user signatures, bearer tokens, app API keys, and
+  payment credentials.
+- Manifest package does not make policy decisions, execute chain operations, or
+  call IOTA/Gas Station.
+- No live testnet commands were run.
+- Apex manifest helper remains unusable because the current
+  `apex.workflow.json` lacks required mode definitions and
+  `manifest.defaultDir`, so Slice 1.1 scope was recorded locally under ignored
+  `tmp/apex-workflow/` and this slice does not claim Apex verification.
+
+Known unproven claims:
+
+- Manifest signing, SDK submission, MCP tooling, gateway policy integration,
+  idempotent sponsorship, receipts, and simulation binding beyond schema fields
+  are not implemented yet.
+- AP2/x402/A2A mapping helpers remain Phase 4 work.
+
+Next recommended slice:
+
+- Slice 1.2 Pure Policy Evaluator in `packages/policy-gateway`.
 
 ## Guardrails
 
@@ -187,7 +275,7 @@ npm test
 npm run typecheck
 ```
 
-For the account package slice, add focused tests first and finish with:
+For the policy evaluator slice, add focused tests first and finish with:
 
 ```bash
 npm run verify:local
