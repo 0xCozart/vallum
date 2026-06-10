@@ -27,7 +27,7 @@ new scope and its unresolved gates.
 
 Recent commits to know:
 
-- `dbc4884` feat: harden identity verification cache
+- `9f10bad` feat: harden identity verification cache
 - `faddf2f` feat: add subscription workflow
 - `0de44a1` feat: add reputation receipt workflow
 - `2a72b62` feat: add a2a agent card mapping
@@ -1329,7 +1329,7 @@ resolved-profile capability policy denial handling.
 
 Implementation commit:
 
-- `dbc4884` feat: harden identity verification cache
+- `9f10bad` feat: harden identity verification cache
 
 This slice stays local by default. It does not call live IOTA Names, IOTA
 Identity, IOTA RPC, IOTA Gas Station, localnet, testnet, mainnet, paid APIs, or
