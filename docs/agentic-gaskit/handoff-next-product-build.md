@@ -7,9 +7,9 @@ Last updated: 2026-06-10.
 Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
-Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, and 2.3 are
-implemented and locally verified. The immediate target is Slice 3.1: Contract
-Metadata Registry. Use
+Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, and 3.1 are
+implemented and locally verified. The immediate target is Slice 3.2:
+Pay-Per-Call Tool Contract. Use
 `docs/agentic-gaskit/execution-entry.md` as the entry doc, then continue
 through `docs/agentic-gaskit/execution-slices.md`.
 
@@ -123,18 +123,25 @@ Recent commits to know:
   `packages/registry` with mock DID and credential tests for agent/owner DID
   resolution, credential reference validation, DID mismatch failure, and revoked
   credential denial.
+- Slice 3.1 Contract Metadata Registry is implemented in
+  `packages/contracts-metadata` as `@iota-gaskit/contracts-metadata`.
+- Slice 3.1 tests prove approved template/version metadata is accepted, unknown
+  raw packages are denied when a template allow-list is configured, mismatched
+  template versions are denied, and legacy package/function allow-list behavior
+  remains compatible.
 - `docs/agentic-gaskit/external-api-notes.md` was refreshed on 2026-06-10 for
   current IOTA Names GraphQL and IOTA Identity DID/VC assumptions.
 - Root build, test, typecheck, package dry-run, docs, smokes, readiness example,
   contract tests, and secret scan include the accounts, manifest, MCP,
-  registry, receipts, escrow/receipt contract surfaces, and agent escrow demo
-  smoke.
+  registry, contracts metadata, receipts, escrow/receipt contract surfaces, and
+  agent escrow demo smoke.
 
 ## What Is Not Complete
 
 - A2A protocol tools and standards-compatible discovery are not implemented.
 - Live IOTA Names/Identity proof, full verifiable credential validation, A2A
-  mapping, and expanded contract workflows are not implemented.
+  mapping, and expanded contract workflows beyond local escrow/receipt metadata
+  are not implemented.
 - Slice 2.3 is locally verified only. Localnet/testnet deployment smoke has not
   run, and the demo/escrow contract does not custody real funds.
 - Package namespace strategy is still open.
@@ -1195,7 +1202,84 @@ Known unproven claims:
 
 Next recommended slice:
 
-- Slice 3.1 Contract Metadata Registry.
+- Slice 3.2 Pay-Per-Call Tool Contract.
+
+## Slice 3.1 Completion Evidence
+
+Committed slice:
+
+- `df125ff feat: add contract metadata registry`
+
+Files changed:
+
+- `packages/contracts-metadata/README.md`
+- `packages/contracts-metadata/package.json`
+- `packages/contracts-metadata/src/index.ts`
+- `packages/contracts-metadata/src/registry.test.ts`
+- `packages/contracts-metadata/tsconfig.build.json`
+- `packages/manifest/src/fixtures.ts`
+- `packages/manifest/src/schema.ts`
+- `packages/manifest/src/validate.ts`
+- `packages/policy-gateway/package.json`
+- `packages/policy-gateway/src/contractAllowList.ts`
+- `packages/policy-gateway/src/contractAllowList.test.ts`
+- `packages/policy-gateway/src/evaluatePolicy.ts`
+- `packages/policy-gateway/src/index.ts`
+- `packages/policy-gateway/src/policySchema.ts`
+- `scripts/package-scripts.test.ts`
+- `package.json`
+- `package-lock.json`
+- `README.md`
+- `docs/CODEBASE_MAP.md`
+- `docs/overview.md`
+- `docs/agentic-gaskit/codex-active-goal.md`
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+- `docs/agentic-gaskit/module-specs.md`
+- `tmp/apex-workflow/contract-metadata-slice-3-1-scope.md`
+
+Commands run:
+
+```bash
+git status --short --branch
+npm run docs:check
+npm run secrets:scan
+node --import tsx --test packages/policy-gateway/src/*.test.ts
+npm test
+npm run typecheck
+node --import tsx --test packages/contracts-metadata/src/*.test.ts packages/policy-gateway/src/contractAllowList.test.ts
+npm install --ignore-scripts
+npm run build -w @iota-gaskit/contracts-metadata
+node --import tsx --test packages/contracts-metadata/src/*.test.ts packages/policy-gateway/src/contractAllowList.test.ts packages/policy-gateway/src/evaluatePolicy.test.ts packages/manifest/src/*.test.ts
+node --import tsx --test scripts/package-scripts.test.ts packages/contracts-metadata/src/*.test.ts packages/policy-gateway/src/contractAllowList.test.ts
+npm run build -w @iota-gaskit/contracts-metadata && node --import tsx --test packages/contracts-metadata/src/*.test.ts packages/policy-gateway/src/contractAllowList.test.ts packages/policy-gateway/src/evaluatePolicy.test.ts packages/manifest/src/*.test.ts scripts/package-scripts.test.ts
+npm run verify:local
+git diff --check
+```
+
+Evidence:
+
+- Baseline `npm test` passed with 204 tests before implementation.
+- Baseline `npm run typecheck`, `npm run docs:check`, and
+  `npm run secrets:scan` passed before implementation.
+- Focused red state failed because `packages/contracts-metadata/src/index.js`
+  did not exist and template policy still denied approved metadata.
+- Focused green state passed 25 metadata, manifest, and policy tests after
+  implementation, then 43 hardening-focused tests after tightening module
+  matching and incomplete metadata denial.
+- Mid-slice `npm test` passed with 211 tests and `npm run typecheck` passed.
+- Script/package wiring test now covers `@iota-gaskit/contracts-metadata`.
+- Final `npm run verify:local` passed with 214 TypeScript tests, 8 Move tests
+  across escrow/receipt contracts, local gateway smoke, demo dApp smoke,
+  browser wrapper smoke, agent escrow smoke, readiness example, package
+  dry-runs, docs check, and secret scan.
+- `git diff --check` passed before the implementation commit.
+
+Known unproven claims:
+
+- No live localnet/testnet/mainnet contract deployment, package-address proof,
+  formal smart-contract audit, or IOTA Gas Station call was run for Slice 3.1.
+- The default template package ids are local metadata fixtures for policy tests,
+  not deployed address claims.
 
 ## Guardrails
 
