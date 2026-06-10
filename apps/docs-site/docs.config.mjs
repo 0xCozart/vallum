@@ -64,6 +64,12 @@ export default {
           source: "docs/agentic-gaskit/verification-hardening.md",
           slug: "agentic-verification-hardening",
           description: "Risk register, verification matrix, and hardening gates for agentic sponsored execution."
+        },
+        {
+          title: "Local Dirty Work Review",
+          source: "docs/agentic-gaskit/local-dirty-work-review.md",
+          slug: "agentic-local-dirty-work-review",
+          description: "Review of dirty source GasKit worktree changes and migration decisions for the Agentic fork."
         }
       ]
     },

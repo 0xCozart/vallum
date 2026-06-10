@@ -9,7 +9,14 @@ export interface LocalDemoEnv {
   GASKIT_DEMO_APP_KEY?: string;
 }
 
-export async function runLocalDemoFromEnv(env: LocalDemoEnv = process.env): Promise<string> {
+function readLocalDemoEnv(): LocalDemoEnv {
+  return {
+    GASKIT_GATEWAY_URL: process.env.GASKIT_GATEWAY_URL,
+    GASKIT_DEMO_APP_KEY: process.env.GASKIT_DEMO_APP_KEY,
+  };
+}
+
+export async function runLocalDemoFromEnv(env: LocalDemoEnv = readLocalDemoEnv()): Promise<string> {
   const baseUrl = env.GASKIT_GATEWAY_URL ?? "http://127.0.0.1:8787";
   const apiKey = env.GASKIT_DEMO_APP_KEY ?? "local-dev-demo-key";
   const client = createGasKitClient({ baseUrl, apiKey });

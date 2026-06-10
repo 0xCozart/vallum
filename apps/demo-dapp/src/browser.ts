@@ -20,6 +20,16 @@ export interface DemoBrowserEnv {
   PORT?: string;
 }
 
+function readDemoBrowserEnv(): DemoBrowserEnv {
+  return {
+    GASKIT_GATEWAY_URL: process.env.GASKIT_GATEWAY_URL,
+    GASKIT_DEMO_APP_KEY: process.env.GASKIT_DEMO_APP_KEY,
+    GASKIT_DEMO_DAPP_HOST: process.env.GASKIT_DEMO_DAPP_HOST,
+    GASKIT_DEMO_DAPP_PORT: process.env.GASKIT_DEMO_DAPP_PORT,
+    PORT: process.env.PORT,
+  };
+}
+
 function writeJson(response: ServerResponse, status: number, body: unknown, headers: Record<string, string> = {}): void {
   response.writeHead(status, {
     "content-type": "application/json; charset=utf-8",
@@ -288,7 +298,7 @@ export function createDemoBrowserServer(options: DemoBrowserServerOptions = {}):
   });
 }
 
-export async function startDemoBrowserServerFromEnv(env: DemoBrowserEnv = process.env): Promise<Server> {
+export async function startDemoBrowserServerFromEnv(env: DemoBrowserEnv = readDemoBrowserEnv()): Promise<Server> {
   const host = env.GASKIT_DEMO_DAPP_HOST ?? "127.0.0.1";
   if (!isLoopbackHost(host)) {
     throw new Error("GASKIT_DEMO_DAPP_HOST must be loopback-only for the local demo browser wrapper.");
