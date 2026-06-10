@@ -102,6 +102,12 @@ export default {
           description: "Non-networked live/testnet proof status command, blocker codes, and safe next commands."
         },
         {
+          title: "Product Status Proof",
+          source: "docs/agentic-gaskit/product-status.md",
+          slug: "agentic-product-status",
+          description: "Non-networked product evidence audit that separates local proof from live, production, publication, and safety blockers."
+        },
+        {
           title: "Local Dirty Work Review",
           source: "docs/agentic-gaskit/local-dirty-work-review.md",
           slug: "agentic-local-dirty-work-review",

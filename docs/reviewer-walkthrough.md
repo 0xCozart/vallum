@@ -102,6 +102,7 @@ npm run smoke:demo-dapp
 npm run smoke:demo-browser
 npm run readiness:testnet:example
 npm run pack:check
+npm run proof:product-status
 npm run secrets:scan
 ```
 
@@ -114,6 +115,9 @@ Expected current result:
 - local demo dApp CLI and browser-wrapper smokes pass using loopback-only calls without external network, live IOTA RPC, or official Gas Station calls;
 - example testnet-readiness preflight validates placeholders without reading real secrets;
 - package dry-runs complete for publishable workspace packages;
+- product-status proof reports local verification and package gates separately
+  from live/testnet, publication, marketplace, custody, A2A hosting, payment,
+  and device-safety blockers;
 - tracked-file secret scan passes.
 
 Important source and test files:

@@ -1699,3 +1699,65 @@ Escalation triggers:
 - Any request to install packages from the npm registry.
 - Any external consumer compatibility guarantee, package provenance decision,
   real publish, package rename, or registry ownership check.
+
+## Slice 7.1: Product Status Proof Gate
+
+User-visible outcome:
+Operators and future agents have one non-networked command that reports the
+current Agentic GasKit product evidence boundary: local proof gates configured,
+live/testnet gates ready or blocked, and production-only claims still blocked
+or safety-gated.
+
+Likely files:
+
+- `scripts/check-product-status.ts`
+- `scripts/product-status.test.ts`
+- `scripts/package-scripts.test.ts`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
+- `docs/agentic-gaskit/codex-active-goal.md`
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+- `package.json`
+
+Acceptance criteria:
+
+- `npm run proof:product-status` builds first and exits successfully after
+  producing a report.
+- The command does not contact IOTA services, run live proof endpoints, publish
+  packages, run payment providers, or operate public A2A endpoints.
+- The report includes `complete=false` while live/testnet, publication,
+  marketplace, custody, A2A hosting, payment, or device-safety blockers remain.
+- The report reuses the existing live proof status checks without printing
+  endpoint, credential, profile path, or secret-like configured values.
+- Local verification and package release gates are checked mechanically from
+  root script wiring.
+- Real publish and live proof commands remain opt-in.
+- `npm run verify:local` includes the product-status gate after local package
+  install smoke and before docs/secret checks.
+- Docs explain that product-status proof is an audit boundary, not product
+  completion.
+
+Verification:
+
+- Focused product-status tests.
+- Package-script wiring tests.
+- Reviewer-docs regression tests.
+- `npm run proof:product-status`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:local`.
+
+Dependencies:
+Slice 6.3.
+
+Risk:
+Medium. A status report can be mistaken for product completion unless
+`complete=false`, blocker codes, and non-claims remain explicit.
+
+Escalation triggers:
+
+- Any request to turn product status into a live proof run.
+- Any request to mark production marketplace, payment, custody, package
+  publication, public A2A hosting, or physical device access as complete
+  without dedicated live/operator-approved proof.

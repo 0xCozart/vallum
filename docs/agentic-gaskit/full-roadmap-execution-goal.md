@@ -65,7 +65,9 @@ Confirmed current state:
   boundary, a loopback A2A server smoke, and a local read-only marketplace
   evidence package, plus a conservative package namespace/release metadata
   strategy and publish dry-run gate for the current `@iota-gaskit/*`
-  prerelease line.
+  prerelease line, plus a non-networked product-status proof gate that reports
+  local proof, live/testnet readiness, package publication, A2A hosting,
+  payment, marketplace, custody, and device-safety claim boundaries.
 - `docs/agentic-gaskit/handoff-next-product-build.md` says Slices 1.0, 1.1,
   1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.3,
   3.4, 3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 5.1, and 5.2 are
@@ -572,8 +574,11 @@ provider-verification obligations.
 ### Packet H: Final Product E2E And Launch-Readiness Audit
 
 Outcome:
-Prove the product as an integrated local/testnet Agentic GasKit system and
-separate actual proof from blocked production claims.
+In progress. Slice 7.1 adds a non-networked product-status proof gate that
+reports local proof gates, live/testnet readiness, and production blockers in
+one machine-checkable command. It does not replace configured live/testnet
+proof or final launch-readiness review; it prevents local proof from being
+overclaimed as product completion.
 
 Acceptance criteria:
 
@@ -582,6 +587,9 @@ Acceptance criteria:
   configured, on IOTA testnet.
 - Handoff maps every roadmap phase to source files, tests, smokes, manual
   checks, live/testnet evidence, risks, and commit hashes.
+- Product status command reports `complete=false` while any live/testnet,
+  publication, marketplace, custody, public A2A hosting, payment, or device
+  safety blocker remains.
 - Production, custody, mainnet, real payment, provider verification, and
   marketplace launch claims are either proven with explicit approval or labeled
   blocked.
@@ -590,6 +598,7 @@ Verification:
 
 - `npm run verify:local`
 - `npm run readiness:testnet`
+- `npm run proof:product-status`
 - Relevant IOTA testnet commands with local credentials, if available.
 - `git diff --check`
 - Final hardening audit against verification and planning docs.
@@ -619,6 +628,9 @@ blocked with owner-facing rationale:
 - Marketplace/operator product work has access-control and dispute-evidence
   proof before exposing logs, receipts, provider claims, or purchase actions.
 - `npm run verify:local` and `git diff --check` pass from the final state.
+- `npm run proof:product-status` reports the final product claim boundary and
+  does not hide live/testnet, package publication, public A2A hosting,
+  marketplace, custody, payment, or device-safety blockers.
 - IOTA testnet readiness and any relevant testnet proof have been run where
   local credentials/config exist, or the blocker is recorded exactly.
 - Every completed slice has a handoff with commands, manual checks, evidence,

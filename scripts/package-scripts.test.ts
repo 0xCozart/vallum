@@ -51,7 +51,10 @@ test("testnet demo execute script builds before submitting a live transaction", 
 test("root local verification includes deterministic secret scan after package checks", () => {
   const localVerify = packageJson.scripts?.["verify:local"] ?? "";
 
-  assert.match(localVerify, /npm run pack:check && npm run smoke:package-install && npm run docs:check && npm run secrets:scan/);
+  assert.match(
+    localVerify,
+    /npm run pack:check && npm run smoke:package-install && npm run proof:product-status && npm run docs:check && npm run secrets:scan/,
+  );
   assert.equal(packageJson.scripts?.["grant:check"], "npm run verify:local");
   assert.equal(packageJson.scripts?.["secrets:scan"], "tsx scripts/scan-secrets.ts");
 });
@@ -183,6 +186,17 @@ test("live proof status is non-networked and not part of local verification", ()
     "npm run build && tsx scripts/check-live-proof-status.ts",
   );
   assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /npm run proof:live-status/);
+});
+
+test("product status is non-networked and wired into local verification", () => {
+  assert.equal(
+    packageJson.scripts?.["proof:product-status"],
+    "npm run build && tsx scripts/check-product-status.ts",
+  );
+  assert.match(
+    packageJson.scripts?.["verify:local"] ?? "",
+    /npm run smoke:package-install && npm run proof:product-status && npm run docs:check/,
+  );
 });
 
 test("Move contract tests are wired into local verification", () => {

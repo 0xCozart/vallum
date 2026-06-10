@@ -55,6 +55,9 @@ It also includes the first Agentic GasKit implementation slices:
   blocker path
 - non-networked live proof status command for testnet, IOTA Names, IOTA
   Identity, and VC blocker reporting
+- non-networked product status proof command for local proof, live/testnet,
+  package publication, A2A hosting, payment, marketplace, custody, and device
+  safety claim boundaries
 - local read-only marketplace evidence package with provider labels, policy
   compatibility, receipt access control, and dispute evidence bundle smoke
 - package namespace and release metadata strategy for the current
@@ -113,6 +116,8 @@ roadmap unless later slices implement and verify them.
   `scripts/roadmap-safety.test.ts`
 - Live proof status: `docs/agentic-gaskit/live-proof-status.md`,
   `scripts/check-live-proof-status.ts`, `scripts/live-proof-status.test.ts`
+- Product status proof: `docs/agentic-gaskit/product-status.md`,
+  `scripts/check-product-status.ts`, `scripts/product-status.test.ts`
 - IOTA Identity live smoke:
   `scripts/smoke-iota-identity-live.ts`,
   `scripts/iota-identity-live-smoke.test.ts`
@@ -206,6 +211,7 @@ Safe local checks:
 - `npm run smoke:marketplace-read-model`
 - `npm run smoke:package-install`
 - `npm run proof:live-status`
+- `npm run proof:product-status`
 - `npm run secrets:scan`
 
 Full local proof:

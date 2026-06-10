@@ -132,7 +132,7 @@ npm run verify:local
 
 Latest local verification and prior live proof:
 
-- `npm test`: 333 deterministic TypeScript tests passed locally after Slice 6.1.
+- `npm test`: 372 deterministic TypeScript tests passed locally after Slice 7.1.
 - `npm run contracts:test`: 33 Move escrow/receipt/pay-per-call/data-license/service-bounty/reputation-receipt/subscription contract tests passed locally.
 - `npm run typecheck`: passed locally.
 - `npm run smoke:local`: deterministic local gateway smoke passed locally, including policy simulation, sanitized event, local usage read-model, file-backed usage event-store replay, and authenticated local operator usage API checks.
@@ -158,12 +158,17 @@ Latest local verification and prior live proof:
 - `npm run pack:check`: workspace package dry-runs completed locally.
 - `npm run smoke:package-install`: deterministic local tarball install/import
   smoke passed for 11 public workspace packages.
+- `npm run proof:product-status`: deterministic non-networked product-status
+  audit reports local proof gates separately from live, production,
+  publication, marketplace, custody, A2A hosting, payment, and device-safety
+  blockers.
 - `npm run publish:dry-run`: opt-in npm publish dry-run completed locally for
   public workspaces; no package was published.
 - Prior `npm run execute:testnet-demo`: real sponsored IOTA testnet execute succeeded through the local policy gateway and Gas Station; public digest `2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H`.
 - secret-oriented scan over tracked project files is wired into `npm run secrets:scan` and `npm run verify:local`.
 
-See `docs/testnet-attempts.md` and `docs/reviewer-walkthrough.md` for exact evidence.
+See `docs/testnet-attempts.md`, `docs/agentic-gaskit/product-status.md`, and
+`docs/reviewer-walkthrough.md` for exact evidence.
 
 ## External showcase dApps
 
