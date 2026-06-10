@@ -38,6 +38,9 @@ It also includes the first Agentic GasKit implementation slices:
 - mock-tested IOTA Names/Identity adapter interfaces
 - bounded local IOTA Identity verification cache helpers with fail-closed stale
   refresh behavior
+- local fail-closed IOTA Identity VC trust-policy evaluator for trusted
+  issuers, verification methods, credential types, revocation status, expiry,
+  max credential age, and cache-policy binding
 - local A2A Agent Card mapping from Agent Profiles
 - local A2A Agent Card well-known serving helper and smoke proof
 - local A2A Agent Card JWS signing and trusted-key verification smoke proof
@@ -63,10 +66,12 @@ It also includes the first Agentic GasKit implementation slices:
 The remaining Agentic GasKit direction is documented under
 `docs/agentic-gaskit/`. A configured IOTA Names live smoke path exists, but
 actual live proof still requires an operator-provided endpoint/name/address and
-a passing run. Live IOTA Identity proof, public signed A2A discovery, external
-A2A conformance proof, device-access contract workflows, production custody,
-production subscription operations, and live deployment proof remain roadmap
-unless later slices implement and verify them.
+a passing run. Live IOTA Identity proof still requires a live resolver and
+credential-validation command plus operator-provided trust-policy config.
+Public signed A2A discovery, external A2A conformance proof, device-access
+contract workflows, production custody, production subscription operations, and
+live deployment proof remain roadmap unless later slices implement and verify
+them.
 
 ## Start Here
 

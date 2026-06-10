@@ -59,6 +59,7 @@ Confirmed current state:
   receipts, local Move contracts, local contract workflows, registry/profile
   schema, mock IOTA Names/Identity adapters, an opt-in IOTA Names live
   resolution smoke, bounded local IOTA Identity verification cache helpers,
+  local VC trust-policy evaluation,
   x402/AP2/A2A mappings, local A2A well-known serving, local A2A signed-card
   verification, local A2A task/message helpers, a local A2A HTTP-shaped
   boundary, a loopback A2A server smoke, and a local read-only marketplace
@@ -87,6 +88,13 @@ Confirmed current state:
 - Slice 2.6 adds a non-networked live proof status command. It reports current
   testnet/IOTA Names/IOTA Identity/VC proof readiness or blockers without
   contacting live services or printing configured values.
+- Slice 2.7 adds a local fail-closed VC trust-policy evaluator for IOTA
+  Identity credential evidence. It defines trusted issuer DIDs, allowed
+  verification methods, required credential types, accepted revocation status
+  mechanisms, max credential age, expiry handling, and cache-policy binding.
+  It is still local/mock evidence; live IOTA Identity proof remains blocked
+  until an operator-configured live resolver and credential validator command
+  exists and passes.
 
 Confirmed remaining gaps:
 
@@ -94,8 +102,8 @@ Confirmed remaining gaps:
   discovery proof, live public A2A server operation beyond the local loopback
   smoke, streaming/push notification support, external A2A conformance proof,
   and production A2A authentication decisions.
-- Configured live IOTA Names proof, live IOTA Identity proof, full verifiable
-  credential validation beyond local/mock cache behavior, and live
+- Configured live IOTA Names proof, live IOTA Identity proof, live verifiable
+  credential validation beyond local/mock trust-policy behavior, and live
   standards-bridge proof.
 - Testnet/localnet deployment proof for relevant Move contracts and demos.
 - Expanded Phase 3 contract workflows beyond the implemented escrow, receipt,
@@ -394,10 +402,12 @@ bounded cache behavior for successful DID and credential evidence, including
 fail-closed stale refresh and revoked-credential detection after TTL expiry.
 Slice 2.5 adds an opt-in IOTA Names GraphQL smoke and exact missing-config
 blocker path. Slice 2.6 adds a non-networked status report for current live
-proof readiness and blockers. Configured live IOTA Names proof, live IOTA
-Identity proof, and full VC validation remain unproven unless
-operator-provided configuration is present and the relevant live command
-passes.
+proof readiness and blockers. Slice 2.7 adds local/mock VC trust-policy
+evaluation for trusted issuers, verification methods, revocation status,
+credential type, expiry, max-age, and cache-policy binding. Configured live
+IOTA Names proof, live IOTA Identity proof, and live VC validation remain
+unproven unless operator-provided configuration is present and the relevant
+live command passes.
 
 Acceptance criteria:
 

@@ -5,13 +5,26 @@ import {
   createIotaIdentityVerifiedResolver,
   createInMemoryIotaIdentityVerificationCache,
   createLocalAgentResolver,
+  evaluateIotaIdentityCredentialTrustPolicy,
   verifyAgentProfileIdentity,
   validAgentProfileFixture,
   type IotaIdentityCredentialValidator,
+  type IotaIdentityCredentialEvidence,
   type IotaIdentityDidResolver,
+  type IotaIdentityVcTrustPolicy,
 } from "./index.js";
 
 const now = new Date("2026-06-10T12:00:00.000Z");
+const trustedIssuerDid = "did:iota:issuer:agent-registry";
+const trustedVerificationMethod = `${trustedIssuerDid}#agent-capability-key-1`;
+const trustPolicy: IotaIdentityVcTrustPolicy = {
+  trustedIssuerDids: [trustedIssuerDid],
+  allowedVerificationMethods: ["#agent-capability-key-1"],
+  requiredCredentialTypes: ["VerifiableCredential", "AgentCapabilityCredential"],
+  acceptedCredentialStatusTypes: ["RevocationBitmap2022", "StatusList2021"],
+  requireCredentialStatus: true,
+  maxCredentialAgeMs: 7 * 24 * 60 * 60 * 1000,
+};
 
 test("verifyAgentProfileIdentity resolves agent and owner DIDs and validates credential refs", async () => {
   const profile = validAgentProfileFixture();
@@ -101,6 +114,225 @@ test("IOTA Identity verified resolver fails closed when credential validation th
       code: "PROFILE_UNVERIFIABLE",
       message: "IOTA Identity credential validation failed.",
       name: profile.name,
+    },
+  });
+});
+
+test("IOTA Identity trust policy accepts trusted issuer verification method type status and freshness", () => {
+  const decision = evaluateIotaIdentityCredentialTrustPolicy({
+    issuerDid: trustedIssuerDid,
+    verificationMethod: trustedVerificationMethod,
+    credentialTypes: ["VerifiableCredential", "AgentCapabilityCredential"],
+    credentialStatus: {
+      id: `${trustedIssuerDid}#revocation-bitmap?index=42`,
+      type: "RevocationBitmap2022",
+      revoked: false,
+    },
+    issuedAt: "2026-06-09T12:00:00.000Z",
+    expiresAt: "2026-06-11T12:00:00.000Z",
+  }, trustPolicy, now);
+
+  assert.deepEqual(decision, { ok: true });
+});
+
+test("IOTA Identity trust policy fails closed on untrusted or uncontrolled verification methods", () => {
+  const untrustedIssuer = evaluateIotaIdentityCredentialTrustPolicy({
+    issuerDid: "did:iota:issuer:unknown",
+    verificationMethod: "did:iota:issuer:unknown#agent-capability-key-1",
+    credentialTypes: ["VerifiableCredential", "AgentCapabilityCredential"],
+    credentialStatus: { type: "RevocationBitmap2022", revoked: false },
+    issuedAt: "2026-06-09T12:00:00.000Z",
+  }, trustPolicy, now);
+
+  const wrongMethod = evaluateIotaIdentityCredentialTrustPolicy({
+    issuerDid: trustedIssuerDid,
+    verificationMethod: `${trustedIssuerDid}#other-key`,
+    credentialTypes: ["VerifiableCredential", "AgentCapabilityCredential"],
+    credentialStatus: { type: "RevocationBitmap2022", revoked: false },
+    issuedAt: "2026-06-09T12:00:00.000Z",
+  }, trustPolicy, now);
+
+  const uncontrolledMethod = evaluateIotaIdentityCredentialTrustPolicy({
+    issuerDid: trustedIssuerDid,
+    verificationMethod: "did:iota:issuer:other#agent-capability-key-1",
+    credentialTypes: ["VerifiableCredential", "AgentCapabilityCredential"],
+    credentialStatus: { type: "RevocationBitmap2022", revoked: false },
+    issuedAt: "2026-06-09T12:00:00.000Z",
+  }, trustPolicy, now);
+
+  assert.deepEqual(untrustedIssuer, {
+    ok: false,
+    code: "CREDENTIAL_UNVERIFIABLE",
+    message: "Credential evidence was not issued by a trusted DID.",
+  });
+  assert.deepEqual(wrongMethod, {
+    ok: false,
+    code: "CREDENTIAL_UNVERIFIABLE",
+    message: "Credential evidence was not signed with an allowed verification method.",
+  });
+  assert.deepEqual(uncontrolledMethod, wrongMethod);
+});
+
+test("IOTA Identity trust policy fails closed on missing type and unsupported status", () => {
+  const missingType = evaluateIotaIdentityCredentialTrustPolicy({
+    issuerDid: trustedIssuerDid,
+    verificationMethod: trustedVerificationMethod,
+    credentialTypes: ["VerifiableCredential"],
+    credentialStatus: { type: "RevocationBitmap2022", revoked: false },
+    issuedAt: "2026-06-09T12:00:00.000Z",
+  }, trustPolicy, now);
+
+  const unsupportedStatus = evaluateIotaIdentityCredentialTrustPolicy({
+    issuerDid: trustedIssuerDid,
+    verificationMethod: trustedVerificationMethod,
+    credentialTypes: ["VerifiableCredential", "AgentCapabilityCredential"],
+    credentialStatus: { type: "UnknownStatus2026", revoked: false },
+    issuedAt: "2026-06-09T12:00:00.000Z",
+  }, trustPolicy, now);
+
+  const missingStatus = evaluateIotaIdentityCredentialTrustPolicy({
+    issuerDid: trustedIssuerDid,
+    verificationMethod: trustedVerificationMethod,
+    credentialTypes: ["VerifiableCredential", "AgentCapabilityCredential"],
+    issuedAt: "2026-06-09T12:00:00.000Z",
+  }, trustPolicy, now);
+
+  assert.deepEqual(missingType, {
+    ok: false,
+    code: "CREDENTIAL_UNVERIFIABLE",
+    message: "Credential evidence is missing a required credential type.",
+  });
+  assert.deepEqual(unsupportedStatus, {
+    ok: false,
+    code: "CREDENTIAL_UNVERIFIABLE",
+    message: "Credential evidence uses an unsupported credential status type.",
+  });
+  assert.deepEqual(missingStatus, {
+    ok: false,
+    code: "CREDENTIAL_UNVERIFIABLE",
+    message: "Credential evidence is missing required revocation status evidence.",
+  });
+});
+
+test("IOTA Identity trust policy maps revoked expired and stale credentials to profile failures", async () => {
+  const profile = validAgentProfileFixture();
+  const revoked = await verifyAgentProfileIdentity(profile, {
+    didResolver: didResolverFor(profile.agentDid, profile.ownerDid),
+    credentialValidator: credentialValidatorWithEvidence({
+      credentialStatus: { type: "RevocationBitmap2022", revoked: true },
+      issuedAt: "2026-06-09T12:00:00.000Z",
+    }),
+    trustPolicy,
+    now: () => now,
+  });
+  const expired = await verifyAgentProfileIdentity(profile, {
+    didResolver: didResolverFor(profile.agentDid, profile.ownerDid),
+    credentialValidator: credentialValidatorWithEvidence({
+      issuedAt: "2026-06-09T12:00:00.000Z",
+      expiresAt: "2026-06-10T11:59:59.999Z",
+    }),
+    trustPolicy,
+    now: () => now,
+  });
+  const stale = await verifyAgentProfileIdentity(profile, {
+    didResolver: didResolverFor(profile.agentDid, profile.ownerDid),
+    credentialValidator: credentialValidatorWithEvidence({
+      issuedAt: "2026-06-01T12:00:00.000Z",
+    }),
+    trustPolicy,
+    now: () => now,
+  });
+
+  assert.deepEqual(revoked, {
+    ok: false,
+    error: {
+      code: "PROFILE_REVOKED",
+      message: "Credential evidence is revoked by trust-policy evidence.",
+    },
+  });
+  assert.deepEqual(expired, {
+    ok: false,
+    error: {
+      code: "PROFILE_EXPIRED",
+      message: "Credential evidence is expired.",
+    },
+  });
+  assert.deepEqual(stale, {
+    ok: false,
+    error: {
+      code: "PROFILE_EXPIRED",
+      message: "Credential evidence exceeds trust-policy max credential age.",
+    },
+  });
+});
+
+test("IOTA Identity verification fails closed when trust policy lacks validator evidence", async () => {
+  const profile = validAgentProfileFixture();
+  const noValidator = await verifyAgentProfileIdentity(profile, {
+    didResolver: didResolverFor(profile.agentDid, profile.ownerDid),
+    trustPolicy,
+    now: () => now,
+  });
+  const missingEvidence = await verifyAgentProfileIdentity(profile, {
+    didResolver: didResolverFor(profile.agentDid, profile.ownerDid),
+    credentialValidator: credentialValidator([]),
+    trustPolicy,
+    now: () => now,
+  });
+
+  assert.deepEqual(noValidator, {
+    ok: false,
+    error: {
+      code: "PROFILE_UNVERIFIABLE",
+      message: "IOTA Identity credential validator is required by trust policy.",
+    },
+  });
+  assert.deepEqual(missingEvidence, {
+    ok: false,
+    error: {
+      code: "PROFILE_UNVERIFIABLE",
+      message: "Credential evidence is missing trust-policy evidence.",
+    },
+  });
+});
+
+test("IOTA Identity verification cache keys include trust policy inputs", async () => {
+  const profile = validAgentProfileFixture();
+  const cache = createInMemoryIotaIdentityVerificationCache();
+  const permissivePolicy: IotaIdentityVcTrustPolicy = {
+    ...trustPolicy,
+    requiredCredentialTypes: ["VerifiableCredential"],
+  };
+  const strictPolicy: IotaIdentityVcTrustPolicy = {
+    ...trustPolicy,
+    requiredCredentialTypes: ["VerifiableCredential", "AgentCapabilityCredential", "LiveRegistryCredential"],
+  };
+  const baseOptions = {
+    didResolver: didResolverFor(profile.agentDid, profile.ownerDid),
+    credentialValidator: credentialValidatorWithEvidence({
+      credentialTypes: ["VerifiableCredential", "AgentCapabilityCredential"],
+      issuedAt: "2026-06-09T12:00:00.000Z",
+    }),
+    verificationCache: cache,
+    cacheTtlMs: 60_000,
+    now: () => now,
+  };
+
+  const cachedUnderPermissivePolicy = await verifyAgentProfileIdentity(profile, {
+    ...baseOptions,
+    trustPolicy: permissivePolicy,
+  });
+  const strictResult = await verifyAgentProfileIdentity(profile, {
+    ...baseOptions,
+    trustPolicy: strictPolicy,
+  });
+
+  assert.equal(cachedUnderPermissivePolicy.ok, true);
+  assert.deepEqual(strictResult, {
+    ok: false,
+    error: {
+      code: "PROFILE_UNVERIFIABLE",
+      message: "Credential evidence is missing a required credential type.",
     },
   });
 });
@@ -280,6 +512,27 @@ function credentialValidator(observed: string[]): IotaIdentityCredentialValidato
     async validateCredentialRef(credentialRef) {
       observed.push(credentialRef);
       return { ok: true };
+    },
+  };
+}
+
+function credentialValidatorWithEvidence(
+  overrides: Partial<IotaIdentityCredentialEvidence>,
+): IotaIdentityCredentialValidator {
+  return {
+    async validateCredentialRef() {
+      return {
+        ok: true,
+        evidence: {
+          issuerDid: trustedIssuerDid,
+          verificationMethod: trustedVerificationMethod,
+          credentialTypes: ["VerifiableCredential", "AgentCapabilityCredential"],
+          credentialStatus: { type: "RevocationBitmap2022", revoked: false },
+          issuedAt: "2026-06-09T12:00:00.000Z",
+          expiresAt: "2026-06-11T12:00:00.000Z",
+          ...overrides,
+        },
+      };
     },
   };
 }

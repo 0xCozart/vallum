@@ -68,12 +68,37 @@ export interface IotaIdentityCredentialValidationContext {
 export type IotaIdentityCredentialValidationResult =
   | {
       readonly ok: true;
+      readonly evidence?: IotaIdentityCredentialEvidence;
     }
   | {
       readonly ok: false;
       readonly code: "CREDENTIAL_REVOKED" | "CREDENTIAL_EXPIRED" | "CREDENTIAL_UNVERIFIABLE";
       readonly message: string;
     };
+
+export interface IotaIdentityCredentialEvidence {
+  readonly issuerDid: string;
+  readonly verificationMethod: string;
+  readonly credentialTypes?: readonly string[];
+  readonly credentialStatus?: IotaIdentityCredentialStatusEvidence;
+  readonly issuedAt?: string;
+  readonly expiresAt?: string;
+}
+
+export interface IotaIdentityCredentialStatusEvidence {
+  readonly id?: string;
+  readonly type: string;
+  readonly revoked?: boolean;
+}
+
+export interface IotaIdentityVcTrustPolicy {
+  readonly trustedIssuerDids: readonly string[];
+  readonly allowedVerificationMethods: readonly string[];
+  readonly requiredCredentialTypes?: readonly string[];
+  readonly acceptedCredentialStatusTypes?: readonly string[];
+  readonly requireCredentialStatus?: boolean;
+  readonly maxCredentialAgeMs?: number;
+}
 
 export interface IotaIdentityCredentialValidator {
   /**
@@ -90,6 +115,7 @@ export interface IotaIdentityCredentialValidator {
 export interface IotaIdentityVerificationOptions {
   readonly didResolver: IotaIdentityDidResolver;
   readonly credentialValidator?: IotaIdentityCredentialValidator;
+  readonly trustPolicy?: IotaIdentityVcTrustPolicy;
   readonly verificationCache?: IotaIdentityVerificationCache;
   readonly cacheTtlMs?: number;
   readonly forceRefresh?: boolean;
@@ -125,7 +151,7 @@ export async function verifyAgentProfileIdentity(
   options: IotaIdentityVerificationOptions,
 ): Promise<IotaIdentityVerificationResult> {
   const now = options.now?.() ?? new Date();
-  const cacheKey = identityVerificationCacheKey(profile);
+  const cacheKey = identityVerificationCacheKey(profile, options.trustPolicy);
   if (options.forceRefresh) options.verificationCache?.delete?.(cacheKey);
   const cached = readFreshIdentityCache(options, cacheKey, now);
   if (cached) return withoutCacheMetadata(cached);
@@ -143,6 +169,9 @@ export async function verifyAgentProfileIdentity(
   }
 
   const credentialRefs = profileCredentialRefs(profile);
+  if (options.trustPolicy && !options.credentialValidator && credentialRefs.length > 0) {
+    return failIdentity("PROFILE_UNVERIFIABLE", "IOTA Identity credential validator is required by trust policy.");
+  }
   if (options.credentialValidator) {
     for (const credentialRef of credentialRefs) {
       let credential: IotaIdentityCredentialValidationResult;
@@ -158,6 +187,10 @@ export async function verifyAgentProfileIdentity(
       if (!credential.ok) {
         return failIdentity(credentialErrorToIdentityCode(credential.code), credential.message);
       }
+      const trusted = evaluateIotaIdentityCredentialTrustPolicy(credential.evidence, options.trustPolicy, now);
+      if (!trusted.ok) {
+        return failIdentity(credentialErrorToIdentityCode(trusted.code), trusted.message);
+      }
     }
   }
 
@@ -169,6 +202,78 @@ export async function verifyAgentProfileIdentity(
   };
   writeIdentityCache(options, cacheKey, verified, now);
   return verified;
+}
+
+export function evaluateIotaIdentityCredentialTrustPolicy(
+  evidence: IotaIdentityCredentialEvidence | undefined,
+  policy: IotaIdentityVcTrustPolicy | undefined,
+  now: Date = new Date(),
+): IotaIdentityCredentialValidationResult {
+  if (!policy) return { ok: true };
+  const policyShape = validateTrustPolicyShape(policy);
+  if (!policyShape.ok) return policyShape;
+  if (!evidence) {
+    return unverifiable("Credential evidence is missing trust-policy evidence.");
+  }
+  if (!policy.trustedIssuerDids.includes(evidence.issuerDid)) {
+    return unverifiable("Credential evidence was not issued by a trusted DID.");
+  }
+  if (!isVerificationMethodAllowed(evidence.issuerDid, evidence.verificationMethod, policy.allowedVerificationMethods)) {
+    return unverifiable("Credential evidence was not signed with an allowed verification method.");
+  }
+  for (const requiredType of policy.requiredCredentialTypes ?? []) {
+    if (!evidence.credentialTypes?.includes(requiredType)) {
+      return unverifiable("Credential evidence is missing a required credential type.");
+    }
+  }
+
+  if (policy.requireCredentialStatus && !evidence.credentialStatus) {
+    return unverifiable("Credential evidence is missing required revocation status evidence.");
+  }
+  if (evidence.credentialStatus) {
+    if (evidence.credentialStatus.revoked) {
+      return {
+        ok: false,
+        code: "CREDENTIAL_REVOKED",
+        message: "Credential evidence is revoked by trust-policy evidence.",
+      };
+    }
+    if (
+      policy.acceptedCredentialStatusTypes
+      && !policy.acceptedCredentialStatusTypes.includes(evidence.credentialStatus.type)
+    ) {
+      return unverifiable("Credential evidence uses an unsupported credential status type.");
+    }
+  }
+
+  const expiresAt = parseOptionalTimestamp(evidence.expiresAt);
+  if (expiresAt === "invalid") return unverifiable("Credential evidence has an invalid expiry timestamp.");
+  if (expiresAt && expiresAt.getTime() <= now.getTime()) {
+    return {
+      ok: false,
+      code: "CREDENTIAL_EXPIRED",
+      message: "Credential evidence is expired.",
+    };
+  }
+
+  if (policy.maxCredentialAgeMs !== undefined) {
+    const issuedAt = parseOptionalTimestamp(evidence.issuedAt);
+    if (issuedAt === "invalid" || !issuedAt) {
+      return unverifiable("Credential evidence is missing valid issuance evidence required by trust policy.");
+    }
+    if (issuedAt.getTime() > now.getTime()) {
+      return unverifiable("Credential evidence has a future issuance timestamp.");
+    }
+    if (now.getTime() - issuedAt.getTime() > policy.maxCredentialAgeMs) {
+      return {
+        ok: false,
+        code: "CREDENTIAL_EXPIRED",
+        message: "Credential evidence exceeds trust-policy max credential age.",
+      };
+    }
+  }
+
+  return { ok: true };
 }
 
 function readFreshIdentityCache(
@@ -219,7 +324,7 @@ function isCacheEnabled(options: IotaIdentityVerificationOptions): boolean {
   );
 }
 
-function identityVerificationCacheKey(profile: AgentProfile): string {
+function identityVerificationCacheKey(profile: AgentProfile, trustPolicy?: IotaIdentityVcTrustPolicy): string {
   return JSON.stringify({
     version: profile.version,
     name: profile.name,
@@ -233,6 +338,7 @@ function identityVerificationCacheKey(profile: AgentProfile): string {
       revokedAt: profile.revocation.revokedAt ?? "",
     },
     credentialRefs: profileCredentialRefs(profile),
+    trustPolicy: trustPolicyCacheKey(trustPolicy),
   });
 }
 
@@ -292,6 +398,73 @@ function credentialErrorToIdentityCode(
   if (code === "CREDENTIAL_REVOKED") return "PROFILE_REVOKED";
   if (code === "CREDENTIAL_EXPIRED") return "PROFILE_EXPIRED";
   return "PROFILE_UNVERIFIABLE";
+}
+
+function validateTrustPolicyShape(policy: IotaIdentityVcTrustPolicy): IotaIdentityCredentialValidationResult {
+  if (
+    policy.trustedIssuerDids.length === 0
+    || !policy.trustedIssuerDids.every((issuerDid) => issuerDid.startsWith("did:iota:"))
+  ) {
+    return unverifiable("IOTA Identity trust policy has no trusted issuers.");
+  }
+  if (
+    policy.allowedVerificationMethods.length === 0
+    || !policy.allowedVerificationMethods.every((method) => method.startsWith("did:iota:") || method.startsWith("#"))
+  ) {
+    return unverifiable("IOTA Identity trust policy has no allowed verification methods.");
+  }
+  if (policy.requiredCredentialTypes?.some((credentialType) => credentialType.trim() === "")) {
+    return unverifiable("IOTA Identity trust policy has an invalid credential type requirement.");
+  }
+  if (policy.acceptedCredentialStatusTypes?.some((statusType) => statusType.trim() === "")) {
+    return unverifiable("IOTA Identity trust policy has an invalid credential status type.");
+  }
+  if (
+    policy.maxCredentialAgeMs !== undefined
+    && (!Number.isFinite(policy.maxCredentialAgeMs) || policy.maxCredentialAgeMs <= 0)
+  ) {
+    return unverifiable("IOTA Identity trust policy has an invalid max credential age.");
+  }
+  return { ok: true };
+}
+
+function isVerificationMethodAllowed(
+  issuerDid: string,
+  verificationMethod: string,
+  allowedVerificationMethods: readonly string[],
+): boolean {
+  if (!verificationMethod.startsWith(`${issuerDid}#`)) return false;
+  return allowedVerificationMethods.some((allowed) => {
+    if (allowed === verificationMethod) return true;
+    return allowed.startsWith("#") && `${issuerDid}${allowed}` === verificationMethod;
+  });
+}
+
+function parseOptionalTimestamp(value: string | undefined): Date | "invalid" | undefined {
+  if (value === undefined) return undefined;
+  const timestamp = Date.parse(value);
+  if (Number.isNaN(timestamp)) return "invalid";
+  return new Date(timestamp);
+}
+
+function trustPolicyCacheKey(policy: IotaIdentityVcTrustPolicy | undefined): unknown {
+  if (!policy) return null;
+  return {
+    trustedIssuerDids: [...policy.trustedIssuerDids].sort(),
+    allowedVerificationMethods: [...policy.allowedVerificationMethods].sort(),
+    requiredCredentialTypes: [...(policy.requiredCredentialTypes ?? [])].sort(),
+    acceptedCredentialStatusTypes: [...(policy.acceptedCredentialStatusTypes ?? [])].sort(),
+    requireCredentialStatus: Boolean(policy.requireCredentialStatus),
+    maxCredentialAgeMs: policy.maxCredentialAgeMs ?? null,
+  };
+}
+
+function unverifiable(message: string): IotaIdentityCredentialValidationResult {
+  return {
+    ok: false,
+    code: "CREDENTIAL_UNVERIFIABLE",
+    message,
+  };
 }
 
 function identityErrorToResolveCode(code: IotaIdentityVerificationErrorCode): ResolveAgentErrorCode {

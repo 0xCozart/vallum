@@ -36,6 +36,19 @@ const IOTA_NAMES_REQUIRED_ENV = [
   "IOTA_NAMES_EXPECTED_ADDRESS",
 ] as const;
 
+const VC_TRUST_POLICY_REQUIRED_ENV = [
+  "IOTA_IDENTITY_TRUSTED_ISSUER_DIDS",
+  "IOTA_IDENTITY_ALLOWED_VERIFICATION_METHODS",
+  "IOTA_IDENTITY_REQUIRED_CREDENTIAL_TYPES",
+  "IOTA_IDENTITY_ACCEPTED_STATUS_TYPES",
+  "IOTA_IDENTITY_CACHE_TTL_MS",
+] as const;
+
+const VC_TRUST_POLICY_STATUS_TYPES = new Set([
+  "RevocationBitmap2022",
+  "StatusList2021",
+  "StatusList2021Entry",
+]);
 const LIVE_TESTNET_ENV_FILE = ".env";
 
 export async function checkLiveProofStatus(
@@ -55,13 +68,7 @@ export async function checkLiveProofStatus(
       message: "No live IOTA Identity DID or credential validation command is implemented yet.",
       next: "Implement a live Identity proof slice with trusted resolver, issuer, verification method, revocation, and cache policy configuration.",
     },
-    {
-      id: "vc-validation-live",
-      status: "blocked",
-      code: "VC_TRUST_POLICY_UNDEFINED",
-      message: "Full VC validation is blocked until trusted issuers, verification methods, revocation handling, and stale-cache behavior are configured.",
-      next: "Define the trusted issuer and revocation policy before accepting live VC proof for policy-gated actions.",
-    },
+    checkVcTrustPolicyStatus(mergeEnv(fileEnv, env)),
   ];
 
   return {
@@ -165,6 +172,59 @@ function checkIotaNamesStatus(env: Record<string, string | undefined>): LiveProo
   };
 }
 
+function checkVcTrustPolicyStatus(env: Record<string, string | undefined>): LiveProofCheck {
+  const missing = VC_TRUST_POLICY_REQUIRED_ENV.filter((key) => !readEnv(env, key));
+  if (missing.length > 0) {
+    return {
+      id: "vc-validation-live",
+      status: "blocked",
+      code: "VC_TRUST_POLICY_CONFIG_MISSING",
+      missing,
+      message: "Local VC trust-policy evaluation exists, but live proof requires operator-provided trusted issuer, verification method, credential type, revocation status, and cache TTL configuration.",
+      next: "Set the missing IOTA Identity trust-policy variables outside committed files before accepting live VC proof for policy-gated actions.",
+    };
+  }
+
+  if (!hasOnlyDidList(env, "IOTA_IDENTITY_TRUSTED_ISSUER_DIDS")) {
+    return invalidVcTrustPolicyStatus("Trusted issuer configuration must contain only DID values.");
+  }
+  if (!hasOnlyVerificationMethodList(env, "IOTA_IDENTITY_ALLOWED_VERIFICATION_METHODS")) {
+    return invalidVcTrustPolicyStatus("Allowed verification methods must be DID URLs or issuer-local fragments.");
+  }
+  if (!hasOnlyNonEmptyList(env, "IOTA_IDENTITY_REQUIRED_CREDENTIAL_TYPES")) {
+    return invalidVcTrustPolicyStatus("Required credential types must be a non-empty comma-separated list.");
+  }
+  const statusTypes = readListEnv(env, "IOTA_IDENTITY_ACCEPTED_STATUS_TYPES");
+  if (
+    statusTypes.length === 0
+    || !statusTypes.every((statusType) => VC_TRUST_POLICY_STATUS_TYPES.has(statusType))
+  ) {
+    return invalidVcTrustPolicyStatus("Accepted credential status types must be supported revocation mechanisms.");
+  }
+  const ttlMs = Number(readEnv(env, "IOTA_IDENTITY_CACHE_TTL_MS"));
+  if (!Number.isSafeInteger(ttlMs) || ttlMs <= 0) {
+    return invalidVcTrustPolicyStatus("Credential cache TTL must be a positive integer in milliseconds.");
+  }
+
+  return {
+    id: "vc-validation-live",
+    status: "ready",
+    code: "VC_TRUST_POLICY_CONFIG_PRESENT",
+    message: "Live VC trust-policy configuration is present for the local fail-closed evaluator.",
+    next: "Use this configuration when implementing and running the live IOTA Identity credential proof command.",
+  };
+}
+
+function invalidVcTrustPolicyStatus(message: string): LiveProofCheck {
+  return {
+    id: "vc-validation-live",
+    status: "blocked",
+    code: "VC_TRUST_POLICY_CONFIG_INVALID",
+    message,
+    next: "Fix the trust-policy variable shape without committing or printing live credential values.",
+  };
+}
+
 function mergeEnv(
   fileEnv: Record<string, string | undefined>,
   processEnv: NodeJS.ProcessEnv | Record<string, string | undefined>,
@@ -188,6 +248,27 @@ async function loadOptionalEnvFile(envFile: string, cwd: string): Promise<Record
 function readEnv(env: Record<string, string | undefined>, key: string): string | undefined {
   const value = env[key];
   return value && value.trim() !== "" ? value.trim() : undefined;
+}
+
+function readListEnv(env: Record<string, string | undefined>, key: string): readonly string[] {
+  return (readEnv(env, key) ?? "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
+function hasOnlyNonEmptyList(env: Record<string, string | undefined>, key: string): boolean {
+  return readListEnv(env, key).length > 0;
+}
+
+function hasOnlyDidList(env: Record<string, string | undefined>, key: string): boolean {
+  const values = readListEnv(env, key);
+  return values.length > 0 && values.every((value) => value.startsWith("did:iota:"));
+}
+
+function hasOnlyVerificationMethodList(env: Record<string, string | undefined>, key: string): boolean {
+  const values = readListEnv(env, key);
+  return values.length > 0 && values.every((value) => value.startsWith("did:iota:") || value.startsWith("#"));
 }
 
 function isSafeGraphQLEndpoint(endpoint: string): boolean {

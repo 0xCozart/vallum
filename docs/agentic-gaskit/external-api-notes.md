@@ -129,6 +129,15 @@ Current planning assumptions:
   those current DID-resolution and credential-validation shapes. It does not
   import `@iota/identity-wasm`, create live identities, validate live
   credential JWTs, or run localnet/testnet Identity commands.
+- On 2026-06-10, Slice 2.7 rechecked the official VC and revocation docs. The
+  docs still describe issuers signing credentials with DID-controlled public
+  verification material, off-chain credential storage/transmission, validation
+  through issuer public-key lookup, and revocation through `credentialStatus`,
+  `RevocationBitmap2022`, `StatusList2021`, or verification-method removal.
+  Slice 2.7 therefore keeps live SDK behavior behind injected validator
+  evidence and adds only local fail-closed trust-policy evaluation for trusted
+  issuers, verification methods, credential types, revocation status, expiry,
+  max age, and cache-policy binding.
 
 Implementation checks:
 

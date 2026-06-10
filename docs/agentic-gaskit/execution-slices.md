@@ -678,6 +678,61 @@ Escalation triggers:
 - Live Identity/VC proof requires issuer trust, resolver configuration, or
   revocation decisions not represented in local config.
 
+## Slice 2.7: Identity VC Trust Policy
+
+User-visible outcome:
+Operators have a local fail-closed VC trust-policy evaluator that can be wired
+to an injected IOTA Identity credential validator before any policy-gated
+action accepts credential evidence.
+
+Likely files:
+
+- `packages/registry/src/iotaIdentityAdapter.ts`
+- `packages/registry/src/iotaIdentityAdapter.test.ts`
+- `scripts/check-live-proof-status.ts`
+- `scripts/live-proof-status.test.ts`
+- `docs/agentic-gaskit/live-proof-status.md`
+
+Acceptance criteria:
+
+- Credential validation can require trusted issuer DIDs.
+- Credential validation can require allowed verification methods controlled by
+  the trusted issuer.
+- Credential validation can require credential types and accepted revocation
+  status mechanisms.
+- Revoked, expired, stale, unsupported-status, missing-evidence, and
+  missing-validator paths fail closed.
+- Identity verification cache keys include trust-policy inputs so evidence
+  gathered under a weaker policy cannot satisfy a stronger policy.
+- `npm run proof:live-status` reports exact missing or invalid live
+  trust-policy configuration instead of saying the local VC policy is undefined.
+- No live IOTA Identity SDK import, live DID resolution, live credential
+  validation command, Gas Station request, or testnet transaction is added.
+
+Verification:
+
+- Focused registry identity adapter tests.
+- Focused live proof status tests.
+- `npm run proof:live-status`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:local`.
+
+Dependencies:
+Slice 2.6.
+
+Risk:
+High. A local trust-policy evaluator must not be mistaken for live issuer
+verification, live revocation lookup, or production provider verification.
+
+Escalation triggers:
+
+- Product needs live credential JWT parsing, issuer DID resolution, or
+  revocation lookup.
+- Operator wants to accept live policy-gated actions from VC evidence.
+- Trust policy values need to be managed as production config or rotated.
+
 ## Slice 3.1: Contract Metadata Registry
 
 User-visible outcome:

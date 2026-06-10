@@ -22,12 +22,61 @@ test("live proof status reports exact blockers without secret values", async () 
         ["testnet-readiness", "blocked", "TESTNET_ENV_FILE_MISSING"],
         ["iota-names-live", "blocked", "IOTA_NAMES_LIVE_CONFIG_MISSING"],
         ["iota-identity-live", "blocked", "IOTA_IDENTITY_LIVE_PROOF_UNIMPLEMENTED"],
-        ["vc-validation-live", "blocked", "VC_TRUST_POLICY_UNDEFINED"],
+        ["vc-validation-live", "blocked", "VC_TRUST_POLICY_CONFIG_MISSING"],
       ],
     );
     assert.match(formatted, /IOTA_NAMES_GRAPHQL_URL/);
+    assert.match(formatted, /IOTA_IDENTITY_TRUSTED_ISSUER_DIDS/);
     assert.match(formatted, /\.env/);
     assert.doesNotMatch(formatted, /private|mnemonic|bearer|token|secret|iotaprivkey|local-secret/i);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("live proof status validates VC trust policy config without printing values", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  try {
+    const report = await checkLiveProofStatus({
+      cwd,
+      env: {
+        IOTA_IDENTITY_TRUSTED_ISSUER_DIDS: "did:iota:issuer:agent-registry",
+        IOTA_IDENTITY_ALLOWED_VERIFICATION_METHODS: "#agent-capability-key-1",
+        IOTA_IDENTITY_REQUIRED_CREDENTIAL_TYPES: "VerifiableCredential,AgentCapabilityCredential",
+        IOTA_IDENTITY_ACCEPTED_STATUS_TYPES: "RevocationBitmap2022,StatusList2021Entry",
+        IOTA_IDENTITY_CACHE_TTL_MS: "60000",
+      },
+    });
+    const formatted = formatLiveProofStatusReport(report);
+    const vc = report.checks.find((check) => check.id === "vc-validation-live");
+
+    assert.equal(vc?.status, "ready");
+    assert.equal(vc?.code, "VC_TRUST_POLICY_CONFIG_PRESENT");
+    assert.doesNotMatch(formatted, /agent-registry|agent-capability-key-1/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("live proof status blocks malformed VC trust policy config without printing values", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  try {
+    const report = await checkLiveProofStatus({
+      cwd,
+      env: {
+        IOTA_IDENTITY_TRUSTED_ISSUER_DIDS: "issuer-without-did-prefix",
+        IOTA_IDENTITY_ALLOWED_VERIFICATION_METHODS: "#agent-capability-key-1",
+        IOTA_IDENTITY_REQUIRED_CREDENTIAL_TYPES: "VerifiableCredential,AgentCapabilityCredential",
+        IOTA_IDENTITY_ACCEPTED_STATUS_TYPES: "UnknownStatus2026",
+        IOTA_IDENTITY_CACHE_TTL_MS: "-1",
+      },
+    });
+    const formatted = formatLiveProofStatusReport(report);
+    const vc = report.checks.find((check) => check.id === "vc-validation-live");
+
+    assert.equal(vc?.status, "blocked");
+    assert.equal(vc?.code, "VC_TRUST_POLICY_CONFIG_INVALID");
+    assert.doesNotMatch(formatted, /issuer-without-did-prefix|UnknownStatus2026|agent-capability-key-1/);
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }

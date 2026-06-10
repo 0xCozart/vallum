@@ -17,7 +17,7 @@ local subscription state, and local agent escrow plus paid MCP-style tool demos.
 includes the first local Agent Profile schema validator, local fixture resolver,
 pure capability policy check, mock-tested IOTA Names and IOTA Identity adapter
 interfaces, an opt-in IOTA Names live resolution smoke, bounded local IOTA
-Identity verification cache helpers, and a local
+Identity verification cache helpers, local VC trust-policy evaluation, and a local
 contract-template metadata registry consumed by agent policy allow-lists. It
 also includes local standards bridge proof for x402, AP2, and A2A Agent Card
 discovery response generation. Live testnet proof still requires operator-owned
@@ -116,8 +116,8 @@ These are not complete production claims yet:
 - public Agent Card hosting, production Agent Card key management, live A2A
   task/message server operation, streaming, push notifications, external
   conformance proof, and live standards-compatible discovery;
-- configured live IOTA Names proof, live IOTA Identity proof, and full
-  verifiable credential validation beyond the local bounded cache policy;
+- configured live IOTA Names proof, live IOTA Identity proof, and live
+  verifiable credential validation beyond the local trust-policy evaluator;
 - expanded contract workflow packages beyond the escrow/receipt/pay-per-call/
   data-license/service-bounty/reputation-receipt/subscription MVP and metadata
   allow-listing, including device access workflows;

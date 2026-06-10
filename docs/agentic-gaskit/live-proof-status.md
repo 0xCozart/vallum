@@ -22,13 +22,13 @@ and next commands. It never prints configured secret values or endpoint values.
 ## Current Local Status
 
 On the current machine, no `.env` file is present and the IOTA Names live smoke
-environment variables are unset. The correct proof state is therefore blocked,
-not failed live proof:
+environment variables plus live VC trust-policy variables are unset. The
+correct proof state is therefore blocked, not failed live proof:
 
 - `TESTNET_ENV_FILE_MISSING`
 - `IOTA_NAMES_LIVE_CONFIG_MISSING`
 - `IOTA_IDENTITY_LIVE_PROOF_UNIMPLEMENTED`
-- `VC_TRUST_POLICY_UNDEFINED`
+- `VC_TRUST_POLICY_CONFIG_MISSING`
 
 ## What The Command Proves
 
@@ -38,8 +38,11 @@ not failed live proof:
   GraphQL endpoint, or the exact missing variables are listed
 - live IOTA Identity proof remains blocked until a dedicated live resolver and
   credential-validation slice exists
-- full VC validation remains blocked until trusted issuers, verification
-  methods, revocation handling, cache TTL, and stale behavior are configured
+- local VC trust-policy evaluation exists for trusted issuers, verification
+  methods, credential types, supported revocation status mechanisms, credential
+  expiry, max credential age, and cache-policy binding
+- live VC validation remains blocked until the trust-policy variables are
+  configured and a dedicated live credential-validation command exists
 
 ## What It Does Not Prove
 
@@ -61,6 +64,20 @@ files:
 npm run readiness:testnet
 npm run smoke:iota-names-live
 ```
+
+Live VC trust-policy readiness uses these non-secret variable names:
+
+```bash
+IOTA_IDENTITY_TRUSTED_ISSUER_DIDS=did:iota:...
+IOTA_IDENTITY_ALLOWED_VERIFICATION_METHODS=#key-1
+IOTA_IDENTITY_REQUIRED_CREDENTIAL_TYPES=VerifiableCredential,AgentCapabilityCredential
+IOTA_IDENTITY_ACCEPTED_STATUS_TYPES=RevocationBitmap2022,StatusList2021Entry
+IOTA_IDENTITY_CACHE_TTL_MS=60000
+```
+
+Those values are configuration readiness only. They do not prove live DID
+resolution, JWT credential signature validation, or revocation lookup until a
+later live Identity proof command uses them and passes.
 
 `npm run execute:testnet-demo` contacts live IOTA services and can spend
 sponsored testnet gas. Run it only with explicit operator intent and
