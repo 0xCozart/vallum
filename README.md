@@ -79,7 +79,8 @@ It also contains the first Agentic GasKit implementation slices:
 signer-reference-first account primitives, transaction manifests, pure agent
 policy evaluation, a local mock sponsorship gateway, SDK sponsored actions,
 MCP-shaped sponsorship tools, receipt state, local Move escrow/receipt state
-contracts, and a deterministic local agent-to-agent escrow demo.
+contracts, a deterministic local agent-to-agent escrow demo, and local Agent
+Profile schema validation.
 
 Some production surfaces remain planned roadmap work, including the full
 dashboard UI, production persistence, production monitoring, package
@@ -99,9 +100,11 @@ The repo currently includes:
 - policy YAML example;
 - architecture diagram and architecture docs;
 - threat model and production hardening docs;
-- reviewer checklist and demo script.
+- reviewer checklist and demo script;
 - agent escrow demo showing gateway approval, verifier release, receipt output,
-  and over-budget policy denial without live IOTA calls.
+  and over-budget policy denial without live IOTA calls;
+- agent profile schema validation for required fields, revoked/expired states,
+  unsupported versions, and secret-field rejection.
 
 ## Current proof status
 
@@ -114,7 +117,7 @@ npm run verify:local
 
 Latest local verification and prior live proof:
 
-- `npm test`: 179 deterministic TypeScript tests passed locally after Slice 1.7.
+- `npm test`: 185 deterministic TypeScript tests passed locally after Slice 2.1.
 - `npm run contracts:test`: 8 Move escrow/receipt contract tests passed locally.
 - `npm run typecheck`: passed locally.
 - `npm run smoke:local`: deterministic local gateway smoke passed locally, including policy simulation, sanitized event, local usage read-model, file-backed usage event-store replay, and authenticated local operator usage API checks.
@@ -171,6 +174,7 @@ packages/
   shared-types/           # Shared policy/request/response types
   accounts/               # Agent account and signer-reference primitives
   manifest/               # Agent transaction manifest schema and validation
+  registry/               # Agent Profile schema and validation
   mcp-server/             # MCP-shaped sponsorship tool facade
   receipts/               # Receipt and escrow state machine
 contracts/

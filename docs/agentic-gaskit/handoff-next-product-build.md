@@ -7,8 +7,9 @@ Last updated: 2026-06-10.
 Continue actual Agentic GasKit product implementation in
 `/home/sacred/code/agentic-gaskit`.
 
-Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, and 1.7 are implemented and locally
-verified. The immediate target is Slice 2.1: Agent Profile Schema. Use
+Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, and 2.1 are implemented and
+locally verified. The immediate target is Slice 2.2: Resolver With Local
+Fixtures. Use
 `docs/agentic-gaskit/execution-entry.md` as the entry doc, then continue
 through `docs/agentic-gaskit/execution-slices.md`.
 
@@ -102,15 +103,23 @@ Recent commits to know:
   and mock gateway, the provider completes work, the verifier releases escrow,
   receipt/log output is sanitized, and an over-budget manifest returns
   structured denial.
+- Slice 2.1 Agent Profile schema is implemented in `packages/registry` as
+  `@iota-gaskit/registry`.
+- Slice 2.1 tests prove a valid profile passes, missing name/address/DID/
+  capabilities/endpoints fail with typed errors, revoked and expired profiles
+  have explicit states, unsupported/malformed profiles fail closed, and
+  secret-bearing profile fields are rejected.
 - Root build, test, typecheck, package dry-run, docs, smokes, readiness example,
   contract tests, and secret scan include the accounts, manifest, MCP,
-  receipts, escrow/receipt contract surfaces, and agent escrow demo smoke.
+  registry, receipts, escrow/receipt contract surfaces, and agent escrow demo
+  smoke.
 
 ## What Is Not Complete
 
 - A2A protocol tools and standards-compatible discovery are not implemented.
-- Registry and expanded contract workflows are not implemented.
-- Slice 1.7 is locally verified only. Localnet/testnet deployment smoke has not
+- Profile resolver, live IOTA Names/Identity adapters, capability policy
+  integration, and expanded contract workflows are not implemented.
+- Slice 2.1 is locally verified only. Localnet/testnet deployment smoke has not
   run, and the demo/escrow contract does not custody real funds.
 - Package namespace strategy is still open.
 - Production custody, KMS, and recovery/export are not designed or implemented.
@@ -851,6 +860,107 @@ Next recommended slice:
 
 - Slice 2.1 Agent Profile Schema.
 
+## Completed Slice 2.1
+
+Implemented the local Agent Profile schema package.
+
+The package is schema/validation only. It does not resolve live IOTA Names,
+validate IOTA Identity credentials, generate A2A Agent Cards, call IOTA RPC, or
+contact testnet/mainnet services.
+
+Acceptance is defined in:
+
+- `docs/agentic-gaskit/execution-slices.md` Slice 2.1
+- `docs/agentic-gaskit/prds/phase-2-identity-registry.md`
+- `docs/agentic-gaskit/module-specs.md` `packages/registry`
+- `docs/agentic-gaskit/verification-hardening.md` Registry row
+
+Changed files:
+
+- `README.md`
+- `docs/CODEBASE_MAP.md`
+- `docs/overview.md`
+- `docs/agentic-gaskit/codex-active-goal.md`
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+- `package.json`
+- `package-lock.json`
+- `packages/registry/README.md`
+- `packages/registry/package.json`
+- `packages/registry/src/index.ts`
+- `packages/registry/src/profileSchema.test.ts`
+- `packages/registry/src/profileSchema.ts`
+- `packages/registry/tsconfig.build.json`
+- `scripts/package-scripts.test.ts`
+
+Commands run:
+
+```bash
+git status --short --branch
+npm run docs:check
+npm run secrets:scan
+npm test
+npm run typecheck
+node --import tsx --test packages/registry/src/profileSchema.test.ts
+npm run build -w @iota-gaskit/registry
+node --import tsx --test packages/registry/src/profileSchema.test.ts scripts/package-scripts.test.ts
+npm install --package-lock-only
+npm test
+npm run verify:local
+npm run secrets:scan
+node --import tsx --test packages/registry/src/profileSchema.test.ts
+git diff --check
+```
+
+Verification result:
+
+- Baseline before editing passed: docs check, secret scan, `npm test` with 179
+  TypeScript tests, and `npm run typecheck`.
+- Initial focused profile-schema test failed before implementation because
+  `packages/registry/src/index.js` did not exist.
+- Focused registry schema tests passed with 5 tests.
+- Focused registry schema plus package-script tests passed with 20 tests.
+- `npm run build -w @iota-gaskit/registry` passed.
+- `npm install --package-lock-only` completed with 0 vulnerabilities.
+- `npm test` passed with 185 TypeScript tests after wiring the registry package.
+- Initial `npm run verify:local` reached the final secret scan but failed
+  because registry test fixture assignments used secret-like key names with
+  non-fixture sentinel values.
+- After changing those test values to explicit fixture sentinels, focused
+  registry tests and `npm run secrets:scan` passed.
+- Hardening found that secret-field rejection did not traverse object arrays.
+  A focused regression test first failed for `$.capabilities[0].rawKeypair`,
+  then passed after the validator was changed to recurse through arrays.
+- Fresh `npm run verify:local` passed with 185 TypeScript tests, 8 Move
+  contract tests, typecheck, local gateway smoke, demo dApp smoke, browser
+  wrapper smoke, agent escrow smoke, readiness example, package dry-run
+  including `@iota-gaskit/registry`, docs check, and secret scan.
+- Secret scan checked 186 tracked/staged/untracked text files with 0 findings.
+- `git diff --check` passed.
+
+Hardening notes:
+
+- The schema rejects secret-bearing fields including private keys, mnemonics,
+  raw keypairs, raw transaction bytes, user signatures, sponsor keys, app API
+  keys, bearer tokens, payment credentials, and signer secrets.
+- Revoked and expired profiles are explicit validation failures with typed
+  status.
+- The registry package does not perform live resolution, policy decisions,
+  signing, custody, payment settlement, or gateway sponsorship.
+- Apex manifest helper remains unusable because the current
+  `apex.workflow.json` lacks required mode definitions and
+  `manifest.defaultDir`, so Slice 2.1 scope was recorded locally under ignored
+  `tmp/apex-workflow/` and this work does not claim Apex verification.
+
+Known unproven claims:
+
+- No local fixture resolver, IOTA Names adapter, IOTA Identity adapter,
+  capability policy integration, A2A Agent Card mapping, dashboard profile
+  view, or live testnet/manual resolution path exists yet.
+
+Next recommended slice:
+
+- Slice 2.2 Resolver With Local Fixtures.
+
 ## Guardrails
 
 - Do not expose seeds, mnemonics, private keys, raw keypairs, raw transaction
@@ -875,11 +985,11 @@ npm test
 npm run typecheck
 ```
 
-For Slice 2.1, keep profile/schema work local unless the user explicitly asks
-for live testnet work. Start with the baseline above plus:
+For Slice 2.2, keep resolver work local unless the user explicitly asks for live
+testnet work. Start with the baseline above plus:
 
 ```bash
-node --import tsx --test packages/*/src/*.test.ts
+node --import tsx --test packages/registry/src/profileSchema.test.ts
 ```
 
 Finish with:

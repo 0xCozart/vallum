@@ -17,7 +17,7 @@ Execution entry:
 
 Immediate product slice:
 
-- Slice 2.1: Agent Profile Schema after Slice 1.7 is committed
+- Slice 2.2: Resolver With Local Fixtures after Slice 2.1 is committed
 
 ## Intent Read
 
@@ -60,9 +60,10 @@ Current problem:
 The repository contains the existing GasKit sponsorship toolkit plus locally
 verified Agentic slices for accounts, manifests, mock policy sponsorship,
 SDK/MCP routing, receipts, escrow/receipt Move state contracts, and the local
-agent-to-agent escrow demo. The next gaps are agent profile/registry surfaces,
-A2A protocol tools, standards bridges, expanded contracts, and live deployment
-proof when explicitly in scope.
+agent-to-agent escrow demo. The current slice adds local Agent Profile schema
+validation; the next gaps are local profile resolution, capability policy
+consumption, A2A protocol tools, standards bridges, expanded contracts, and live
+deployment proof when explicitly in scope.
 
 Desired outcome:
 Codex repeatedly implements one vertical slice, proves it with focused and
@@ -185,18 +186,15 @@ Run this loop for every slice.
 
 ## Current Slice Acceptance
 
-Slice 1.7 is complete only when:
+Slice 2.1 is complete only when:
 
-- `examples/agent-escrow/` provides a runnable local demo.
-- The demo shows one agent hiring another through SDK/gateway sponsorship.
-- The approved path advances receipt state through submitted, completed, and
-  released.
-- The denied path returns a structured policy denial without reserving or
-  releasing escrow.
-- Receipt/log output omits API keys, signer references, raw transaction bytes,
-  user signatures, and secret-looking values.
-- `npm run smoke:agent-escrow` is documented and wired into
-  `npm run verify:local`.
+- `packages/registry` exists as `@iota-gaskit/registry`.
+- Valid Agent Profile fixtures pass validation.
+- Missing name, address, DID, capabilities, and endpoints fail with typed
+  errors.
+- Revoked and expired profiles produce explicit states.
+- Unsupported versions, malformed input, and secret-bearing fields fail closed.
+- The registry package is built and included in package dry-runs.
 - Existing GasKit tests and safety checks still pass, or any failure is
   explained as a pre-existing/blocking condition with exact evidence.
 
@@ -233,5 +231,5 @@ sed -n '1,220p' docs/agentic-gaskit/verification-hardening.md
 ```
 
 Then create the next slice scope record/manifest, run the baseline evals, add
-focused tests, and implement Slice 2.1 unless the handoff names a different
+focused tests, and implement Slice 2.2 unless the handoff names a different
 immediate target.
