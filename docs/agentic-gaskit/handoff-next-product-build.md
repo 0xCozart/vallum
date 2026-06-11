@@ -10,7 +10,7 @@ Continue actual Agentic GasKit product implementation in
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5,
 2.6, 2.7, 2.8,
 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9,
-5.1, 5.2, 6.1, 6.2, 6.3, 7.1, 7.2, 7.3, and 7.4 are implemented, reviewed, locally
+5.1, 5.2, 6.1, 6.2, 6.3, 7.1, 7.2, 7.3, 7.4, and 7.5 are implemented, reviewed, locally
 verified, or explicitly deferred with a verified hardening gate.
 Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
 `docs/marketplace-readiness.md` before choosing the next slice. Do not start
@@ -29,6 +29,7 @@ new scope and its unresolved gates.
 
 Recent commits to know:
 
+- `9e9908b` feat: add verification profile gate
 - `3f166cf` feat: add a2a public readiness gate
 - `6902a53` feat: add testnet digest proof gate
 - `6ea9306` feat: add operator live gate runbook
@@ -4147,6 +4148,112 @@ Known unproven claims:
 
 - No `.env` exists, so configured IOTA testnet readiness remains blocked.
 - No configured live IOTA Names, IOTA Identity, or VC trust-policy proof passed.
+- No package is published to npm and no registry install/provenance/account
+  ownership proof exists.
+- No public A2A hosting, external conformance proof, live payment/provider
+  settlement, production marketplace, provider verification, custody/KMS,
+  recovery export, or physical device access proof exists.
+
+Next safe slice:
+
+- Provide operator-owned local `.env` plus IOTA Names/Identity/VC configuration
+  and run one explicitly approved live gate; or choose a dedicated
+  operator-approved release, public A2A, payment/provider, marketplace,
+  custody, or device-safety design slice before claiming launch readiness.
+
+## Completed Slice 7.5: Verification Profile Speed Gate
+
+Implementation commit: `9e9908b` (`feat: add verification profile gate`).
+
+What changed:
+
+- Added `npm run verify:fast` as a bounded deterministic iteration profile.
+- Added `npm run proof:verification-profiles` as a non-networked profile audit.
+- Added `scripts/check-verification-profiles.ts` and
+  `scripts/verification-profiles.test.ts`.
+- Wired the profile audit into `npm run verify:local` after A2A public
+  readiness and before product-status.
+- Updated product-status and launch-readiness evidence so the profile audit is
+  part of the final product-status area.
+- Added `docs/agentic-gaskit/verification-profiles.md` and docs-site
+  navigation.
+- Updated active goal, full roadmap goal, execution slices, codebase map,
+  product-status docs, launch-readiness docs, operator-gate docs, README,
+  overview, quickstart, reviewer walkthrough, milestone proof, package-script
+  tests, product-status tests, launch-readiness tests, and reviewer-doc tests.
+
+Important boundary:
+
+- `npm run verify:fast` is an iteration command, not release or launch proof by
+  itself.
+- `npm run grant:check` still points to `npm run verify:local`.
+- The full local gate still includes TypeScript tests, Move tests, typecheck,
+  product smokes, A2A smokes, marketplace smoke, testnet readiness example,
+  digest proof, package dry-runs, package install smoke, A2A public readiness,
+  verification-profile audit, product-status, launch-readiness, operator
+  gates, docs check, and secret scan.
+- The fast profile excludes Move tests, product smokes, package dry-runs,
+  publish dry-runs, live testnet lookup, live IOTA Names/Identity smokes,
+  payment/provider commands, public A2A hosting, marketplace production, and
+  physical-device commands.
+
+Commands run:
+
+```bash
+node --import tsx --test scripts/verification-profiles.test.ts scripts/package-scripts.test.ts scripts/product-status.test.ts scripts/launch-readiness.test.ts scripts/reviewer-docs.test.ts
+npm run proof:verification-profiles
+npm run docs:check
+npm run secrets:scan
+npm run verify:fast
+npm run typecheck
+npm run verify:local
+git diff --check
+```
+
+Verification result:
+
+- Focused verification-profile/package/product/launch/reviewer-doc tests passed
+  with 64 tests.
+- `npm run proof:verification-profiles` passed with `fastProfileOk=true` and
+  `fullGatePreserved=true`.
+- `npm run verify:fast` passed. It ran the workspace build, 397 TypeScript
+  tests, docs check, secret scan, product-status proof, launch-readiness proof,
+  and operator-gates proof.
+- `npm run docs:check` passed: 37 HTML pages from 36 Markdown sources.
+- `npm run secrets:scan` passed: 321 tracked/staged/untracked text files,
+  findings 0.
+- `npm run typecheck` passed.
+- `npm run verify:local` passed with 397 TypeScript tests, 33 Move tests,
+  typecheck, local gateway smoke, demo dApp smoke, browser smoke, agent escrow
+  smoke, paid MCP tool smoke, data-license smoke, service-bounty smoke,
+  reputation-receipt smoke, subscription smoke, A2A well-known smoke, A2A
+  signed-card smoke, A2A task/message smoke, A2A HTTP smoke, A2A local server
+  smoke, marketplace read-model smoke, testnet readiness example, digest proof,
+  package dry-runs, package install smoke, A2A public readiness proof,
+  verification-profile proof, product-status proof, launch-readiness proof,
+  operator-gates proof, docs check, and secret scan.
+- `git diff --check` passed.
+
+Hardening notes:
+
+- The profile audit fails closed if `verify:fast` is missing required bounded
+  checks or includes heavy/live/release commands.
+- The profile audit fails closed if `verify:local` drops any full-gate evidence
+  command or includes opt-in live/release commands.
+- The profile audit fails closed if `grant:check` points to `verify:fast`
+  instead of `verify:local`.
+- This slice answers the test-volume friction by adding a faster profile
+  without deleting safety-critical negative tests.
+- Apex profile still has `setup.reviewNeeded: true`; this slice does not claim
+  Apex verification.
+
+Known unproven claims:
+
+- The fast profile is not a substitute for full release, reviewer, handoff, or
+  launch proof.
+- No new live IOTA testnet command was run in this slice.
+- No sponsor credentials or private `.env` values were used.
+- No configured IOTA Names, IOTA Identity, or VC trust-policy proof passed.
 - No package is published to npm and no registry install/provenance/account
   ownership proof exists.
 - No public A2A hosting, external conformance proof, live payment/provider
