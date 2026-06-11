@@ -12,6 +12,22 @@ Validate that the public example still documents placeholders and all required k
 npm run readiness:testnet:example
 ```
 
+Check that the previously documented public IOTA testnet digest evidence is
+still present in repo docs without contacting IOTA RPC:
+
+```bash
+npm run proof:testnet-digest
+```
+
+Optionally perform a read-only testnet lookup of that public digest:
+
+```bash
+npm run proof:testnet-digest:live
+```
+
+The live digest lookup does not reserve gas, execute transactions, sign
+transactions, or use sponsor credentials.
+
 Validate your local `.env` before trying a real testnet-sponsored transaction:
 
 ```bash

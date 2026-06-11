@@ -55,6 +55,8 @@ It also includes the first Agentic GasKit implementation slices:
   blocker path
 - non-networked live proof status command for testnet, IOTA Names, IOTA
   Identity, and VC blocker reporting
+- non-networked testnet digest proof for documented public IOTA testnet
+  evidence, plus an opt-in read-only live lookup command
 - non-networked product status proof command for local proof, live/testnet,
   package publication, A2A hosting, payment, marketplace, custody, and device
   safety claim boundaries
@@ -121,6 +123,9 @@ roadmap unless later slices implement and verify them.
   `scripts/roadmap-safety.test.ts`
 - Live proof status: `docs/agentic-gaskit/live-proof-status.md`,
   `scripts/check-live-proof-status.ts`, `scripts/live-proof-status.test.ts`
+- Testnet digest proof: `docs/agentic-gaskit/testnet-digest-proof.md`,
+  `scripts/check-testnet-digest-proof.ts`,
+  `scripts/testnet-digest-proof.test.ts`
 - Product status proof: `docs/agentic-gaskit/product-status.md`,
   `scripts/check-product-status.ts`, `scripts/product-status.test.ts`
 - Launch readiness evidence:
@@ -223,6 +228,7 @@ Safe local checks:
 - `npm run smoke:marketplace-read-model`
 - `npm run smoke:package-install`
 - `npm run proof:live-status`
+- `npm run proof:testnet-digest`
 - `npm run proof:product-status`
 - `npm run proof:launch-readiness`
 - `npm run proof:operator-gates`
@@ -234,6 +240,9 @@ Full local proof:
 
 Opt-in configured/live checks:
 
+- `npm run proof:testnet-digest:live` performs a read-only IOTA testnet lookup
+  for the documented public transaction digest; it does not spend gas or use
+  sponsor credentials
 - `npm run smoke:iota-names-live` only when an operator provides
   `IOTA_NAMES_GRAPHQL_URL`, `IOTA_NAMES_NAME`, and
   `IOTA_NAMES_EXPECTED_ADDRESS`; this is not part of `npm run verify:local`

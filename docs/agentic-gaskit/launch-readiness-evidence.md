@@ -34,7 +34,7 @@ operator-approved proof.
 
 | Area | Current claim | Status boundary |
 | --- | --- | --- |
-| Phase 1 sponsored policy MVP | Local signer-reference wallets, manifests, policy-gated sponsorship, MCP tools, escrow, and receipts are proven by local tests and smokes. | Local proof only until configured testnet execution is run. |
+| Phase 1 sponsored policy MVP | Local signer-reference wallets, manifests, policy-gated sponsorship, MCP tools, escrow, receipts, and documented public testnet digest evidence are proven by local checks. | Local proof plus documented prior testnet digest only; new sponsored execution still requires configured operator credentials. |
 | Phase 2 identity and VC | Profiles, local resolvers, mock Names/Identity adapters, cache behavior, and VC trust policy are locally proven. | Blocked on configured testnet readiness, IOTA Names, IOTA Identity, and VC proof. |
 | Phase 3 contract workflows | Escrow, receipt, pay-per-call, data-license, service-bounty, reputation-receipt, and subscription workflows are locally proven. | Physical device access remains safety-gated. |
 | Phase 4 standards bridges | x402, AP2, and A2A mappings are locally proven with fail-closed behavior. | Blocked on live payment/provider proof, public A2A hosting, and external conformance. |
@@ -58,6 +58,8 @@ Use the matrix with:
 ```bash
 npm run proof:product-status
 npm run proof:live-status
+npm run proof:testnet-digest
+npm run proof:testnet-digest:live
 npm run proof:operator-gates
 npm run readiness:testnet
 npm run verify:local

@@ -48,12 +48,28 @@ test("testnet demo execute script builds before submitting a live transaction", 
   );
 });
 
+test("testnet digest proof has offline and opt-in live commands", () => {
+  assert.equal(
+    packageJson.scripts?.["proof:testnet-digest"],
+    "npm run build && tsx scripts/check-testnet-digest-proof.ts",
+  );
+  assert.equal(
+    packageJson.scripts?.["proof:testnet-digest:live"],
+    "npm run build && tsx scripts/check-testnet-digest-proof.ts --live",
+  );
+  assert.match(
+    packageJson.scripts?.["verify:local"] ?? "",
+    /npm run readiness:testnet:example && npm run proof:testnet-digest && npm run pack:check/,
+  );
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /npm run proof:testnet-digest:live/);
+});
+
 test("root local verification includes deterministic secret scan after package checks", () => {
   const localVerify = packageJson.scripts?.["verify:local"] ?? "";
 
   assert.match(
     localVerify,
-    /npm run pack:check && npm run smoke:package-install && npm run proof:product-status && npm run proof:launch-readiness && npm run proof:operator-gates && npm run docs:check && npm run secrets:scan/,
+    /npm run readiness:testnet:example && npm run proof:testnet-digest && npm run pack:check && npm run smoke:package-install && npm run proof:product-status && npm run proof:launch-readiness && npm run proof:operator-gates && npm run docs:check && npm run secrets:scan/,
   );
   assert.equal(packageJson.scripts?.["grant:check"], "npm run verify:local");
   assert.equal(packageJson.scripts?.["secrets:scan"], "tsx scripts/scan-secrets.ts");

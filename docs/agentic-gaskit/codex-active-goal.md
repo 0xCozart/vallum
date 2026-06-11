@@ -16,17 +16,15 @@ local proof as live IOTA testnet, production marketplace, public scoring,
 public A2A discovery, production key management, or provider-verification
 proof.
 
-As of the latest completed update, Slice 7.2 is complete: a non-networked
-launch-readiness evidence matrix. It maps major roadmap areas to source
-evidence, local commands, blocker codes, and next gates while keeping
-`launchReady=false` until live/operator-approved blockers are proven or
-explicitly accepted as out of scope.
+As of the latest completed update, Slice 7.3 is complete: a non-networked
+operator live-gate runbook. It classifies the remaining live/testnet,
+publication, public A2A, payment, marketplace, custody, and safety gates before
+any live command is executed.
 
-The current continuation is Slice 7.3: a non-networked operator live-gate
-runbook. It should classify the remaining live/testnet, publication, public
-A2A, payment, marketplace, custody, and safety gates as blocked by config,
-ready to run locally, approval-required, production-blocked, or
-safety-deferred before any live command is executed.
+The current continuation is Slice 7.4: a testnet digest proof gate. It should
+check documented public IOTA testnet digest evidence locally, provide an
+opt-in read-only IOTA testnet lookup, and keep new sponsored transaction
+execution behind configured operator credentials and explicit intent.
 
 Do not use the old Slice 4.5 A2A task/message goal as the active objective.
 That slice was previously completed and locally verified.

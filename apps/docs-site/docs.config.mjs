@@ -102,6 +102,12 @@ export default {
           description: "Non-networked live/testnet proof status command, blocker codes, and safe next commands."
         },
         {
+          title: "Testnet Digest Proof",
+          source: "docs/agentic-gaskit/testnet-digest-proof.md",
+          slug: "agentic-testnet-digest-proof",
+          description: "Non-networked documented digest check plus opt-in read-only IOTA testnet lookup for public transaction evidence."
+        },
+        {
           title: "Product Status Proof",
           source: "docs/agentic-gaskit/product-status.md",
           slug: "agentic-product-status",

@@ -1906,3 +1906,85 @@ Escalation triggers:
 - Any request to run configured live endpoint, npm publication, payment,
   public A2A, marketplace, custody, or device commands without explicit
   operator intent and a dedicated proof slice.
+
+## Slice 7.4: Testnet Digest Proof Gate
+
+User-visible outcome:
+Reviewers and future agents have one deterministic local command proving that
+the repo's documented successful IOTA testnet digest is present in the public
+evidence docs, plus a separate opt-in read-only IOTA testnet lookup command.
+The slice strengthens testnet evidence without requiring sponsor credentials,
+private `.env` values, gas reservation, signing, or transaction execution.
+
+Likely files:
+
+- `scripts/check-testnet-digest-proof.ts`
+- `scripts/testnet-digest-proof.test.ts`
+- `scripts/check-product-status.ts`
+- `scripts/check-launch-readiness.ts`
+- `scripts/package-scripts.test.ts`
+- `scripts/reviewer-docs.test.ts`
+- `docs/agentic-gaskit/testnet-digest-proof.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
+- `docs/agentic-gaskit/codex-active-goal.md`
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+- `docs/testnet-readiness.md`
+- `docs/milestone-0-proof.md`
+- `docs/reviewer-walkthrough.md`
+- `docs/quickstart.md`
+- `docs/overview.md`
+- `docs/CODEBASE_MAP.md`
+- `README.md`
+- `apps/docs-site/docs.config.mjs`
+- `package.json`
+
+Acceptance criteria:
+
+- `npm run proof:testnet-digest` builds first and exits successfully after
+  checking local docs only.
+- The local command verifies that the documented public testnet digest appears
+  in required reviewer evidence docs.
+- `npm run proof:testnet-digest:live` is available as an opt-in read-only IOTA
+  testnet lookup for that digest.
+- The live lookup command does not sign, sponsor, reserve gas, execute
+  transactions, use sponsor credentials, or print secret-like values.
+- `npm run verify:local` includes only the non-networked digest proof command,
+  not the opt-in live lookup.
+- Product-status, launch-readiness, operator-gate, reviewer, quickstart, and
+  overview docs distinguish documented digest proof from new sponsored testnet
+  execution.
+- Live lookup failures record an exact RPC/testnet blocker without invalidating
+  local proof unless required local digest docs are missing.
+
+Verification:
+
+- Focused testnet digest proof tests.
+- Product-status tests.
+- Launch-readiness tests.
+- Package-script wiring tests.
+- Reviewer-docs regression tests.
+- `npm run proof:testnet-digest`.
+- `npm run proof:testnet-digest:live` when intentionally checking read-only
+  testnet RPC reachability.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:local`.
+
+Dependencies:
+Slices 7.1-7.3 and the prior documented successful testnet digest evidence.
+
+Risk:
+Medium. Read-only testnet lookup can be mistaken for fresh sponsored execution
+unless command names, docs, and launch-readiness blockers keep the boundary
+explicit.
+
+Escalation triggers:
+
+- Any request to put the live lookup in `verify:local`.
+- Any request to treat a successful digest lookup as proof of current sponsor
+  credentials, production custody, package publication, marketplace launch, or
+  fresh transaction execution.

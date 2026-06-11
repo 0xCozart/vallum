@@ -52,6 +52,7 @@ const LOCAL_VERIFY_REQUIRED_PARTS = [
   "npm run smoke:a2a-local-server",
   "npm run smoke:marketplace-read-model",
   "npm run readiness:testnet:example",
+  "npm run proof:testnet-digest",
   "npm run pack:check",
   "npm run smoke:package-install",
   "npm run proof:product-status",

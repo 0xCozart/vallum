@@ -38,7 +38,8 @@ function literalPattern(value: string): RegExp {
 test("milestone proof reflects the current verified local surface", async () => {
   const [proof, readme] = await Promise.all([readDoc("docs/milestone-0-proof.md"), readDoc("README.md")]);
 
-  assert.match(proof, /tests 381\s+pass 381\s+fail 0/s);
+  assert.match(proof, /tests 387\s+pass 387\s+fail 0/s);
+  assert.doesNotMatch(proof, /tests 381\s+pass 381/s);
   assert.doesNotMatch(proof, /tests 376\s+pass 376/s);
   assert.doesNotMatch(proof, /tests 372\s+pass 372/s);
   assert.doesNotMatch(proof, /tests 132\s+pass 132/s);
@@ -48,7 +49,7 @@ test("milestone proof reflects the current verified local surface", async () => 
   assert.doesNotMatch(proof, /tests 97\s+pass 97/s);
   assert.doesNotMatch(proof, /tests 98\s+pass 98/s);
   assert.match(proof, /npm run verify:local/);
-  assert.match(proof, /npm test && npm run contracts:test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp && npm run smoke:demo-browser && npm run smoke:agent-escrow && npm run smoke:paid-mcp-tool && npm run smoke:data-license && npm run smoke:service-bounty && npm run smoke:reputation-receipt && npm run smoke:subscription && npm run smoke:a2a-well-known && npm run smoke:a2a-signed-card && npm run smoke:a2a-task-message && npm run smoke:a2a-http && npm run smoke:a2a-local-server && npm run smoke:marketplace-read-model && npm run readiness:testnet:example && npm run pack:check && npm run smoke:package-install && npm run proof:product-status && npm run proof:launch-readiness && npm run proof:operator-gates && npm run docs:check && npm run secrets:scan/);
+  assert.match(proof, /npm test && npm run contracts:test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp && npm run smoke:demo-browser && npm run smoke:agent-escrow && npm run smoke:paid-mcp-tool && npm run smoke:data-license && npm run smoke:service-bounty && npm run smoke:reputation-receipt && npm run smoke:subscription && npm run smoke:a2a-well-known && npm run smoke:a2a-signed-card && npm run smoke:a2a-task-message && npm run smoke:a2a-http && npm run smoke:a2a-local-server && npm run smoke:marketplace-read-model && npm run readiness:testnet:example && npm run proof:testnet-digest && npm run pack:check && npm run smoke:package-install && npm run proof:product-status && npm run proof:launch-readiness && npm run proof:operator-gates && npm run docs:check && npm run secrets:scan/);
   assert.match(proof, /local policy simulation endpoint/);
   assert.match(proof, /sanitized gateway decision events/);
   assert.match(proof, /in-memory local usage read model/);
@@ -93,6 +94,7 @@ test("docs hosting source list includes best-practices and reviewer paths", asyn
     "docs/examples.md",
     "docs/agent-guide.md",
     "docs/reviewer-walkthrough.md",
+    "docs/agentic-gaskit/testnet-digest-proof.md",
     "docs/agentic-gaskit/product-status.md",
     "docs/agentic-gaskit/launch-readiness-evidence.md",
     "docs/agentic-gaskit/operator-live-gates.md",

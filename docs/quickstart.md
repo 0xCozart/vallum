@@ -14,6 +14,7 @@ npm run smoke:local
 npm run smoke:demo-dapp
 npm run smoke:demo-browser
 npm run readiness:testnet:example
+npm run proof:testnet-digest
 npm run proof:product-status
 npm run proof:launch-readiness
 npm run proof:operator-gates

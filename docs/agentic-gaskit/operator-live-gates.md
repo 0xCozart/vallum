@@ -62,6 +62,8 @@ Use this report with the other proof gates:
 ```bash
 npm run proof:product-status
 npm run proof:launch-readiness
+npm run proof:testnet-digest
+npm run proof:testnet-digest:live
 npm run proof:operator-gates
 npm run readiness:testnet
 ```

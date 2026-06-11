@@ -31,6 +31,8 @@ dispute evidence bundle redaction without operating a production marketplace.
 The product-status proof gate now reports local verification, live/testnet
 readiness, publication, marketplace, custody, A2A hosting, payment, and device
 safety claim boundaries without contacting live services.
+The testnet digest proof checks documented public testnet transaction evidence
+locally and provides a separate opt-in read-only IOTA testnet lookup.
 The launch-readiness evidence matrix maps each major roadmap area to source
 evidence, local commands, blocker codes, and next gates.
 The operator live-gate report classifies which remaining gates are blocked by
@@ -103,6 +105,7 @@ The official Gas Station is the sponsorship engine. GasKit is the app integratio
 | Paid MCP-style tool demo | Local demo returns a paid result only after gateway approval, mock payment confirmation, and receipt submission; denial and failed payment withhold paid results. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
 | Agent profiles | Local `@iota-gaskit/registry` schema validation, fixture resolution, mock-tested IOTA Names/Identity adapter interfaces, an opt-in IOTA Names live resolution smoke, and bounded identity verification cache helpers cover required fields, expired/revoked states, unsupported versions, secret-field rejection, SDK resolution, capability policy checks, and stale identity evidence fail-closed behavior. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
 | Live proof status | `npm run proof:live-status` reports testnet, IOTA Names, IOTA Identity, and VC proof readiness or blockers without contacting live services or printing configured values. | [Live Proof Status](agentic-gaskit/live-proof-status.md) |
+| Testnet digest proof | `npm run proof:testnet-digest` checks documented public IOTA testnet digest evidence locally; `npm run proof:testnet-digest:live` performs an opt-in read-only lookup. | [Testnet Digest Proof](agentic-gaskit/testnet-digest-proof.md) |
 | Product status proof | `npm run proof:product-status` reports the current product evidence boundary: local proof configured, live/testnet gates ready or blocked, and production-only claims still blocked or safety-gated. | [Product Status Proof](agentic-gaskit/product-status.md) |
 | Launch readiness evidence | `npm run proof:launch-readiness` maps roadmap areas to evidence paths, local commands, blocker codes, and safe next gates without contacting live services. | [Launch Readiness Evidence](agentic-gaskit/launch-readiness-evidence.md) |
 | Operator live gates | `npm run proof:operator-gates` classifies remaining live/testnet, publication, public A2A, payment, marketplace, custody, and safety gates before execution. | [Operator Live Gates](agentic-gaskit/operator-live-gates.md) |

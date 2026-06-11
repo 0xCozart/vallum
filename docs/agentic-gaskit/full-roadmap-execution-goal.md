@@ -72,6 +72,11 @@ Confirmed current state:
   source evidence, local commands, blocker codes, and next gates, plus a
   non-networked operator live-gate runbook that classifies config blockers,
   approval-required live commands, production blockers, and safety deferrals.
+  Slice 7.4 adds a non-networked public testnet digest proof gate that checks
+  the documented successful IOTA testnet digest is present in reviewer evidence
+  docs, plus a separate opt-in read-only IOTA testnet lookup command that does
+  not sign, sponsor, reserve gas, execute transactions, or use operator
+  credentials.
 - `docs/agentic-gaskit/handoff-next-product-build.md` says Slices 1.0, 1.1,
   1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.3,
   3.4, 3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 5.1, and 5.2 are
@@ -587,7 +592,9 @@ launch-readiness evidence matrix that maps each major roadmap area to source
 evidence, local proof commands, blocker codes, and next gates. Slice 7.3 adds
 a non-networked operator live-gate runbook that converts those blockers into
 run-ready, config-blocked, approval-required, production-blocked, and
-safety-deferred execution gates.
+safety-deferred execution gates. Slice 7.4 adds a public testnet digest proof
+gate: local verification checks documented digest evidence, while the optional
+live command performs a read-only transaction lookup against IOTA testnet.
 
 Acceptance criteria:
 
@@ -606,6 +613,9 @@ Acceptance criteria:
 - Operator live-gate command reports which gates are blocked by configuration,
   ready for non-networked local checks, require explicit live/operator
   approval, remain production-blocked, or are safety-deferred.
+- Testnet digest proof reports documented public IOTA testnet transaction
+  evidence locally, and its opt-in live lookup remains read-only without gas
+  spend, sponsor credentials, signing, or transaction execution.
 - Production, custody, mainnet, real payment, provider verification, and
   marketplace launch claims are either proven with explicit approval or labeled
   blocked.
@@ -617,6 +627,9 @@ Verification:
 - `npm run proof:product-status`
 - `npm run proof:launch-readiness`
 - `npm run proof:operator-gates`
+- `npm run proof:testnet-digest`
+- `npm run proof:testnet-digest:live` when read-only IOTA testnet RPC lookup is
+  intentionally being checked.
 - Relevant IOTA testnet commands with local credentials, if available.
 - `git diff --check`
 - Final hardening audit against verification and planning docs.
@@ -655,6 +668,10 @@ blocked with owner-facing rationale:
 - `npm run proof:operator-gates` classifies remaining live/testnet,
   publication, public A2A, payment, marketplace, custody, and safety gates
   without hiding required operator approval or external-service contact.
+- `npm run proof:testnet-digest` verifies documented public IOTA testnet digest
+  evidence locally without network access, and any `proof:testnet-digest:live`
+  result is recorded as read-only lookup evidence or an exact RPC/blocker
+  reason.
 - IOTA testnet readiness and any relevant testnet proof have been run where
   local credentials/config exist, or the blocker is recorded exactly.
 - Every completed slice has a handoff with commands, manual checks, evidence,

@@ -101,6 +101,7 @@ npm run smoke:local
 npm run smoke:demo-dapp
 npm run smoke:demo-browser
 npm run readiness:testnet:example
+npm run proof:testnet-digest
 npm run pack:check
 npm run proof:product-status
 npm run proof:launch-readiness
@@ -116,6 +117,8 @@ Expected current result:
 - local policy gateway smoke passes against an in-process mock upstream;
 - local demo dApp CLI and browser-wrapper smokes pass using loopback-only calls without external network, live IOTA RPC, or official Gas Station calls;
 - example testnet-readiness preflight validates placeholders without reading real secrets;
+- testnet digest proof confirms the documented public digest evidence is present
+  without contacting IOTA RPC;
 - package dry-runs complete for publishable workspace packages;
 - product-status proof reports local verification and package gates separately
   from live/testnet, publication, marketplace, custody, A2A hosting, payment,

@@ -75,6 +75,8 @@ async function writeEvidenceTree(cwd: string): Promise<void> {
     "contracts/escrow_v1/Move.toml",
     "contracts/receipt_v1/Move.toml",
     "examples/agent-escrow/agent-escrow-demo.ts",
+    "docs/testnet-attempts.md",
+    "scripts/check-testnet-digest-proof.ts",
     "packages/registry/src/profileSchema.ts",
     "packages/registry/src/iotaNamesAdapter.ts",
     "packages/registry/src/iotaIdentityAdapter.ts",
