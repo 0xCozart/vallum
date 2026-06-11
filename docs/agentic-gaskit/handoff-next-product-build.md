@@ -10,7 +10,7 @@ Continue actual Agentic GasKit product implementation in
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5,
 2.6, 2.7, 2.8,
 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8,
-5.1, 5.2, 6.1, 6.2, 6.3, 7.1, 7.2, and 7.3 are implemented, reviewed, locally
+5.1, 5.2, 6.1, 6.2, 6.3, 7.1, 7.2, 7.3, and 7.4 are implemented, reviewed, locally
 verified, or explicitly deferred with a verified hardening gate.
 Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
 `docs/marketplace-readiness.md` before choosing the next slice. Do not start
@@ -29,6 +29,7 @@ new scope and its unresolved gates.
 
 Recent commits to know:
 
+- `6902a53` feat: add testnet digest proof gate
 - `6ea9306` feat: add operator live gate runbook
 - `9635c7d` feat: add launch readiness evidence matrix
 - `69d55eb` feat: add product status proof gate
@@ -4145,6 +4146,113 @@ Known unproven claims:
 
 - No `.env` exists, so configured IOTA testnet readiness remains blocked.
 - No configured live IOTA Names, IOTA Identity, or VC trust-policy proof passed.
+- No package is published to npm and no registry install/provenance/account
+  ownership proof exists.
+- No public A2A hosting, external conformance proof, live payment/provider
+  settlement, production marketplace, provider verification, custody/KMS,
+  recovery export, or physical device access proof exists.
+
+Next safe slice:
+
+- Provide operator-owned local `.env` plus IOTA Names/Identity/VC configuration
+  and run one explicitly approved live gate; or choose a dedicated
+  operator-approved release, public A2A, payment/provider, marketplace,
+  custody, or device-safety design slice before claiming launch readiness.
+
+## Completed Slice 7.4: Testnet Digest Proof Gate
+
+Implementation commit: `6902a53` (`feat: add testnet digest proof gate`).
+
+What changed:
+
+- Added `npm run proof:testnet-digest` as a deterministic non-networked proof
+  command that checks documented public IOTA testnet digest evidence in local
+  reviewer docs.
+- Added `npm run proof:testnet-digest:live` as a separate opt-in read-only
+  IOTA testnet lookup for the documented digest.
+- Added `scripts/check-testnet-digest-proof.ts` and
+  `scripts/testnet-digest-proof.test.ts`.
+- Wired the non-networked digest proof into `npm run verify:local` after
+  `readiness:testnet:example` and before package checks.
+- Updated product-status, launch-readiness, operator live gates, active goal,
+  full roadmap goal, execution slices, codebase map, docs-site navigation,
+  README, overview, quickstart, reviewer walkthrough, milestone proof, and
+  testnet readiness docs.
+
+Important boundary:
+
+- The local digest proof does not contact IOTA services.
+- The live digest proof contacts IOTA testnet RPC only for a read-only
+  transaction lookup.
+- Neither command signs, sponsors, reserves gas, executes transactions, uses
+  sponsor credentials, or proves fresh sponsored execution.
+- `npm run verify:local` includes only `npm run proof:testnet-digest`, not the
+  live lookup.
+- Product-status and launch-readiness remain not complete while `.env`,
+  IOTA Names/Identity/VC, package publication, public A2A, payment,
+  marketplace, custody, and device-safety blockers remain.
+
+Commands run:
+
+```bash
+node --import tsx --test scripts/testnet-digest-proof.test.ts scripts/product-status.test.ts scripts/launch-readiness.test.ts scripts/package-scripts.test.ts scripts/reviewer-docs.test.ts
+npm run proof:testnet-digest
+npm run docs:check
+npm run secrets:scan
+npm run typecheck
+npm test
+node --import tsx --test scripts/testnet-digest-proof.test.ts
+npm run proof:testnet-digest:live
+npm run verify:local
+git diff --check
+```
+
+Verification result:
+
+- Focused digest/product/launch/package-script/reviewer-doc tests passed with
+  63 tests.
+- `npm run proof:testnet-digest` passed with `status=documented-local`,
+  digest `2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H`,
+  `documented=true`, `liveChecked=false`, and `verified=false`.
+- Initial `npm run typecheck` found the new test fixture was missing the SDK's
+  `computationCostBurned` gas summary field; the fixture was corrected and
+  focused digest tests then passed with 5 tests.
+- `npm run proof:testnet-digest:live` passed read-only lookup against
+  `https://api.testnet.iota.cafe` with `status=verified-testnet`,
+  `effectsStatus=success`, checkpoint `210668352`, and timestamp
+  `1777961597133`.
+- `npm run docs:check` passed: 35 HTML pages from 34 Markdown sources.
+- `npm run secrets:scan` passed: 315 tracked/staged/untracked text files,
+  findings 0.
+- `npm run typecheck` passed.
+- `npm test` passed with 387 TypeScript tests.
+- `npm run verify:local` passed with 387 TypeScript tests, 33 Move tests,
+  typecheck, local gateway smoke, demo dApp smoke, browser smoke, agent escrow
+  smoke, paid MCP tool smoke, data-license smoke, service-bounty smoke,
+  reputation-receipt smoke, subscription smoke, A2A well-known smoke, A2A
+  signed-card smoke, A2A task/message smoke, A2A HTTP smoke, A2A local server
+  smoke, marketplace read-model smoke, testnet readiness example, digest proof,
+  package dry-runs, package install smoke, product-status proof,
+  launch-readiness proof, operator-gates proof, docs check, and secret scan.
+- `git diff --check` passed.
+
+Hardening notes:
+
+- The proof output prints public digest and RPC URL only; lookup exceptions are
+  converted to blocker codes and do not leak raw exception text.
+- Missing digest evidence in required local docs fails closed with
+  `TESTNET_DIGEST_DOCS_MISSING`.
+- A live lookup mismatch or non-success transaction effects fail closed with
+  `TESTNET_DIGEST_NOT_SUCCESSFUL`.
+- A live RPC/client exception fails closed with `TESTNET_DIGEST_LOOKUP_FAILED`.
+- Apex profile still has `setup.reviewNeeded: true`; this slice does not claim
+  Apex verification.
+
+Known unproven claims:
+
+- No fresh sponsored transaction was executed in this slice.
+- No sponsor credentials or private `.env` values were used.
+- No configured IOTA Names, IOTA Identity, or VC trust-policy proof passed.
 - No package is published to npm and no registry install/provenance/account
   ownership proof exists.
 - No public A2A hosting, external conformance proof, live payment/provider
