@@ -625,6 +625,15 @@ Current planning assumptions:
   persist queue state, store webhook credentials, prove public webhook
   delivery, or replace production endpoint ownership, authentication,
   observability, and conformance evidence.
+- On 2026-06-11, Slice 4.23 adds a local file-backed A2A push
+  delivery-attempt evidence store. The store appends sanitized JSONL status
+  records with config id, task id, callback URL, attempt number, observed time,
+  retry time, HTTP status, and safe error code only. It does not persist task
+  bodies, request JSON, response bodies, raw transport errors, webhook
+  credentials, signer refs, wallet internals, payment secrets, or private
+  prompt text. Public webhook workers, delivery queues, production
+  observability, production auth, endpoint ownership, and external conformance
+  remain blocked.
 
 Implementation checks:
 

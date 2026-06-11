@@ -59,8 +59,11 @@ publicReady=false
 - Local push notification callback hosts can be constrained by an exact
   allowlist before config storage or injected HTTP transport delivery.
 - Local push notification retry and delivery-attempt observability are
-  supported for explicitly injected transports with in-memory status-only
-  attempt records.
+  supported for explicitly injected transports with status-only attempt
+  records.
+- Local push notification delivery attempts can be persisted as sanitized JSONL
+  status evidence without request bodies, response bodies, webhook credentials,
+  or raw transport errors.
 - Public push notification webhook delivery remains blocked unless an operator
   supplies an existing local structured public push delivery report after a
   dedicated approved public-infrastructure proof run.
@@ -86,9 +89,9 @@ report paths, report contents, credentials, tokens, or secret-like values.
 - Production A2A task-route authentication.
 - Production extended-card access control.
 - Public streaming or webhook delivery by itself.
-- Production push delivery queues/workers, persistent observability, auth, or
-  SSRF infrastructure beyond the local callback URL admission and host
-  allowlist guards.
+- Production push delivery queues/workers, production observability, auth, or
+  SSRF infrastructure beyond the local callback URL admission, host allowlist
+  guards, and local durable attempt evidence.
 - External A2A conformance.
 - Provider verification or production trust.
 

@@ -1,4 +1,6 @@
+import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { isIP } from "node:net";
+import { dirname } from "node:path";
 
 import {
   A2A_TASK_MEDIA_TYPE,
@@ -132,6 +134,37 @@ export class LocalA2APushNotificationAttemptStore implements A2APushNotification
 
   list(): readonly A2APushNotificationDeliveryAttempt[] {
     return this.#attempts.map((attempt) => clone(attempt));
+  }
+}
+
+export class JsonlA2APushNotificationAttemptStore implements A2APushNotificationAttemptStore {
+  readonly #filePath: string;
+
+  constructor(filePath: string) {
+    if (typeof filePath !== "string" || filePath.trim() === "") {
+      throw new A2APushNotificationError("A2A_PUSH_CONFIG_INVALID", "A2A push attempt store path is required.");
+    }
+    this.#filePath = filePath;
+    mkdirSync(dirname(filePath), { recursive: true });
+  }
+
+  record(attempt: A2APushNotificationDeliveryAttempt): void {
+    appendFileSync(this.#filePath, `${JSON.stringify(sanitizePushAttempt(attempt))}\n`, "utf8");
+  }
+
+  list(): readonly A2APushNotificationDeliveryAttempt[] {
+    if (!existsSync(this.#filePath)) return [];
+    const raw = readFileSync(this.#filePath, "utf8");
+    if (raw.trim() === "") return [];
+    return raw.split(/\n/u)
+      .filter((line) => line.trim() !== "")
+      .map((line) => {
+        try {
+          return sanitizePushAttempt(JSON.parse(line) as A2APushNotificationDeliveryAttempt);
+        } catch {
+          throw new A2APushNotificationError("A2A_PUSH_CONFIG_INVALID", "A2A push attempt store JSONL is invalid.");
+        }
+      });
   }
 }
 
@@ -457,6 +490,58 @@ function publicDeliveryHeaders(headers: Record<string, string>): Record<string, 
     result[normalized] = value;
   }
   return result;
+}
+
+function sanitizePushAttempt(attempt: A2APushNotificationDeliveryAttempt): A2APushNotificationDeliveryAttempt {
+  return {
+    configId: nonEmptyAttemptString(attempt.configId, "config id"),
+    taskId: nonEmptyAttemptString(attempt.taskId, "task id"),
+    url: safeWebhookUrl(attempt.url),
+    ...(attempt.attemptNumber === undefined ? {} : { attemptNumber: positiveAttemptInteger(attempt.attemptNumber, "attempt number") }),
+    ...(attempt.observedAt === undefined ? {} : { observedAt: validAttemptIsoDate(attempt.observedAt, "observed time") }),
+    ...(attempt.nextRetryAt === undefined ? {} : { nextRetryAt: validAttemptIsoDate(attempt.nextRetryAt, "retry time") }),
+    status: validAttemptStatus(attempt.status),
+    ...(attempt.httpStatus === undefined ? {} : { httpStatus: validHttpStatus(attempt.httpStatus) }),
+    ...(attempt.errorCode === undefined ? {} : { errorCode: validAttemptErrorCode(attempt.errorCode) }),
+  };
+}
+
+function nonEmptyAttemptString(value: unknown, label: string): string {
+  if (typeof value !== "string" || value.trim() === "") {
+    throw new A2APushNotificationError("A2A_PUSH_CONFIG_INVALID", `A2A push attempt ${label} is invalid.`);
+  }
+  return value.trim();
+}
+
+function positiveAttemptInteger(value: unknown, label: string): number {
+  if (typeof value !== "number" || !Number.isInteger(value) || value <= 0) {
+    throw new A2APushNotificationError("A2A_PUSH_CONFIG_INVALID", `A2A push attempt ${label} is invalid.`);
+  }
+  return value;
+}
+
+function validHttpStatus(value: unknown): number {
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 100 || value > 599) {
+    throw new A2APushNotificationError("A2A_PUSH_CONFIG_INVALID", "A2A push attempt HTTP status is invalid.");
+  }
+  return value;
+}
+
+function validAttemptIsoDate(value: unknown, label: string): string {
+  if (typeof value !== "string" || Number.isNaN(Date.parse(value))) {
+    throw new A2APushNotificationError("A2A_PUSH_CONFIG_INVALID", `A2A push attempt ${label} is invalid.`);
+  }
+  return new Date(value).toISOString();
+}
+
+function validAttemptStatus(value: unknown): A2APushNotificationDeliveryAttempt["status"] {
+  if (value === "delivered" || value === "failed" || value === "skipped") return value;
+  throw new A2APushNotificationError("A2A_PUSH_CONFIG_INVALID", "A2A push attempt status is invalid.");
+}
+
+function validAttemptErrorCode(value: unknown): NonNullable<A2APushNotificationDeliveryAttempt["errorCode"]> {
+  if (value === "A2A_PUSH_TRANSPORT_UNCONFIGURED" || value === "A2A_PUSH_TRANSPORT_FAILED") return value;
+  throw new A2APushNotificationError("A2A_PUSH_CONFIG_INVALID", "A2A push attempt error code is invalid.");
 }
 
 function isUnsafeWebhookHost(hostname: string): boolean {

@@ -2382,6 +2382,74 @@ Escalation triggers:
   store webhook credentials, run background delivery workers, or persist
   queues in this slice.
 
+## Slice 4.23: A2A Push Durable Attempt Evidence
+
+User-visible outcome:
+Operators get local file-backed A2A push delivery-attempt evidence without
+storing task bodies, webhook credentials, response bodies, or raw transport
+errors.
+
+Likely files:
+
+- `packages/standards/src/a2aPush.ts`
+- `packages/standards/src/a2aPush.test.ts`
+- `scripts/check-a2a-public-readiness.ts`
+- `scripts/a2a-public-readiness.test.ts`
+- `scripts/check-product-status.ts`
+- `scripts/check-launch-readiness.ts`
+- `docs/agentic-gaskit/a2a-public-readiness.md`
+- `docs/agentic-gaskit/external-api-notes.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/overview.md`
+- `docs/CODEBASE_MAP.md`
+- `README.md`
+- `docs/reviewer-walkthrough.md`
+
+Acceptance criteria:
+
+- A local JSONL attempt store can append and list delivery-attempt records.
+- Durable records preserve status-only metadata: config id, task id, callback
+  URL, attempt number, observed time, retry time, HTTP status, and safe error
+  code.
+- Durable records do not include request JSON, task body/history/artifacts,
+  response bodies, raw transport errors, bearer tokens, private prompt text,
+  signer refs, wallet internals, payment secrets, or webhook credentials.
+- Unsafe callback URLs are rejected before they enter durable attempt evidence.
+- A2A public-readiness, product-status, launch-readiness, and public docs
+  classify this as local durable attempt evidence only, not public webhook
+  delivery workers, persistent delivery queues, production observability, or
+  external conformance.
+
+Verification:
+
+- Focused `packages/standards/src/a2aPush.test.ts`.
+- Focused A2A public-readiness tests.
+- Product-status tests.
+- Launch-readiness tests.
+- Operator-gate tests.
+- Reviewer-docs regression tests.
+- `npm run proof:a2a-public-readiness`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slice 4.21.
+
+Risk:
+Medium. Durable status evidence is useful operator infrastructure, but it can
+be mistaken for public delivery, worker, queue, or production observability
+proof.
+
+Escalation triggers:
+
+- Any request to persist task bodies, webhook credentials, raw transport
+  errors, response bodies, queue jobs, or request payloads in this slice.
+- Any request to run public webhooks, background workers, public A2A hosts, or
+  external conformance from this local evidence store.
+
 ## Slice 5.1: Marketplace Readiness Gate
 
 User-visible outcome:

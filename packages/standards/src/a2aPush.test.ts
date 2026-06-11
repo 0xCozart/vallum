@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { test } from "node:test";
 
 import {
+  JsonlA2APushNotificationAttemptStore,
   LocalA2APushNotificationAttemptStore,
   LocalA2APushNotificationStore,
   buildA2APushNotificationDeliveryRequest,
@@ -127,6 +131,45 @@ test("A2A push delivery retries only when configured and records safe attempt me
   assert.equal(result.attempts[1]?.nextRetryAt, undefined);
   assert.deepEqual(attemptStore.list(), result.attempts);
   assert.doesNotMatch(JSON.stringify(attemptStore.list()), /private prompt|Bearer abc|signer_ref_secret|wallet_secret|payment-secret|json|body/i);
+});
+
+test("A2A push delivery can persist sanitized attempt evidence to JSONL", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "agentic-gaskit-a2a-push-"));
+  const filePath = join(dir, "attempts.jsonl");
+  try {
+    const store = new LocalA2APushNotificationStore();
+    const attemptStore = new JsonlA2APushNotificationAttemptStore(filePath);
+    createA2APushNotificationConfig({
+      store,
+      taskId: "task-push-1",
+      now,
+      value: {
+        id: "push-1",
+        url: "https://client.example.test/a2a/push",
+      },
+    });
+
+    const result = await deliverA2APushNotifications({
+      store,
+      task: taskFixture(),
+      attemptStore,
+      maxAttempts: 2,
+      retryDelayMs: 250,
+      now: () => new Date("2026-06-11T12:00:01.000Z"),
+      transport: () => {
+        throw new Error("network down with Bearer should-not-print and private prompt");
+      },
+    });
+
+    assert.equal(result.attempts.length, 2);
+    assert.deepEqual(attemptStore.list(), result.attempts);
+    const raw = await readFile(filePath, "utf8");
+    assert.match(raw, /"status":"failed"/);
+    assert.match(raw, /"errorCode":"A2A_PUSH_TRANSPORT_FAILED"/);
+    assert.doesNotMatch(raw, /private prompt|Bearer abc|should-not-print|signer_ref_secret|wallet_secret|payment-secret|json|body|history|artifacts/i);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
 });
 
 test("A2A push delivery does not retry by default", async () => {

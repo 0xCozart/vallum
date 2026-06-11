@@ -98,6 +98,7 @@ export async function checkA2APublicReadiness(
     localPushCallbackUrlHardeningSupport(),
     localPushCallbackHostAllowlistSupport(),
     localPushRetryObservabilitySupport(),
+    localPushDurableAttemptEvidenceSupport(),
     await checkPublicPushDeliveryReport(cwd, env.A2A_PUBLIC_PUSH_DELIVERY_REPORT, {
       expectedPublicBaseUrl: env.A2A_PUBLIC_BASE_URL,
       now,
@@ -339,9 +340,20 @@ function localPushRetryObservabilitySupport(): A2APublicReadinessCheck {
     id: "local-push-retry-observability",
     status: "proven-local",
     code: "A2A_PUSH_RETRY_OBSERVABILITY_LOCAL_PROOF_CONFIGURED",
-    message: "A2A push notification retry and delivery-attempt observability are locally supported for explicitly injected transports with in-memory status-only attempt records.",
+    message: "A2A push notification retry and delivery-attempt observability are locally supported for explicitly injected transports with status-only attempt records.",
     evidence: "node --import tsx --test packages/standards/src/a2aPush.test.ts",
-    next: "Keep this as local in-memory proof only until public webhook workers, persistent queues, production observability, and external conformance evidence exist.",
+    next: "Keep this as local retry/attempt proof only until public webhook workers, persistent queues, production observability, and external conformance evidence exist.",
+  };
+}
+
+function localPushDurableAttemptEvidenceSupport(): A2APublicReadinessCheck {
+  return {
+    id: "local-push-durable-attempt-evidence",
+    status: "proven-local",
+    code: "A2A_PUSH_DURABLE_ATTEMPT_EVIDENCE_LOCAL_PROOF_CONFIGURED",
+    message: "A2A push notification delivery attempts can be persisted locally as sanitized JSONL status evidence without request bodies, response bodies, webhook credentials, or raw transport errors.",
+    evidence: "node --import tsx --test packages/standards/src/a2aPush.test.ts",
+    next: "Keep this as local durable evidence only until public webhook workers, delivery queues, production observability, authentication, and external conformance evidence exist.",
   };
 }
 
