@@ -198,7 +198,27 @@ npm run readiness:testnet
 
 The preflight does not contact IOTA RPC, a Gas Station upstream, Docker, Redis, or any hosted service. It only validates local config shape, fails closed on placeholders/local demo defaults, loads the policy config, checks a non-empty package allowlist, and keeps secret values out of output. See `docs/testnet-readiness.md`.
 
-### 10. Proxy an allowed reserve request manually
+### 10. Render and start local Gas Station config
+
+When you are ready to start a local Gas Station for testnet proof, render the
+ignored local Gas Station config from `.env`:
+
+```bash
+npm run gas-station:render-config
+```
+
+This writes `deploy/gas-station/config.local.yaml`, which contains sponsor
+signer material and must stay ignored. Then start the local Redis and Gas
+Station services on loopback:
+
+```bash
+docker compose --env-file .env -f deploy/docker-compose/docker-compose.local.yml up
+```
+
+Use `docker-compose` instead of `docker compose` if your Docker installation
+uses the standalone Compose binary.
+
+### 11. Proxy an allowed reserve request manually
 
 If you are running a local IOTA Gas Station upstream at `GAS_STATION_URL`, call:
 
@@ -220,10 +240,12 @@ The live flow requires operator-owned local credentials and a reachable IOTA Gas
 
 1. Copy `.env.example` to `.env`.
 2. Add testnet sponsor wallet values locally.
-3. Start Redis, Gas Station, policy gateway, and dashboard.
-4. Open dashboard health page.
-5. Open demo dApp.
-6. Execute sponsored testnet transaction.
-7. See usage event in dashboard.
+3. Run `npm run gas-station:render-config`.
+4. Start Redis, Gas Station, policy gateway, and dashboard.
+5. Run `npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json`.
+6. Open dashboard health page.
+7. Open demo dApp.
+8. Execute sponsored testnet transaction.
+9. See usage event in dashboard.
 
 Secrets must remain local and must never be committed.

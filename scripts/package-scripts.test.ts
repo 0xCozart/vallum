@@ -8,6 +8,7 @@ const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const packageJson = JSON.parse(await readFile(resolve(repoRoot, "package.json"), "utf8")) as {
   scripts?: Record<string, string>;
 };
+const localDockerCompose = await readFile(resolve(repoRoot, "deploy/docker-compose/docker-compose.local.yml"), "utf8");
 const tsconfig = JSON.parse(await readFile(resolve(repoRoot, "tsconfig.json"), "utf8")) as {
   include?: string[];
 };
@@ -37,6 +38,25 @@ test("gas station diagnosis script builds before probing live upstream", () => {
     "npm run build && tsx scripts/diagnose-gas-station-upstream.ts",
     "npm run diagnose:gas-station must not depend on pre-existing ignored dist artifacts",
   );
+});
+
+test("gas station config renderer builds before writing local signer config", () => {
+  const renderConfig = packageJson.scripts?.["gas-station:render-config"];
+
+  assert.equal(
+    renderConfig,
+    "npm run build && tsx scripts/render-gas-station-config.ts",
+    "npm run gas-station:render-config must not depend on pre-existing ignored dist artifacts",
+  );
+});
+
+test("local docker compose wires official Gas Station behind loopback ports", () => {
+  assert.match(localDockerCompose, /image: \$\{IOTA_GAS_STATION_IMAGE:-iotaledger\/gas-station:latest\}/);
+  assert.match(localDockerCompose, /"--config-path", "\/app\/config.yaml"/);
+  assert.match(localDockerCompose, /127\.0\.0\.1:9527:9527/);
+  assert.match(localDockerCompose, /127\.0\.0\.1:9184:9184/);
+  assert.match(localDockerCompose, /GAS_STATION_AUTH: \$\{GAS_STATION_AUTH:-\}/);
+  assert.match(localDockerCompose, /config\.local\.yaml/);
 });
 
 test("testnet demo execute script builds before submitting a live transaction", () => {

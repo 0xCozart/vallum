@@ -50,6 +50,14 @@ Latest live-read-only evidence refresh:
   unreachable. This wrote a sanitized ignored diagnostic report, did not
   reserve gas, spend gas, sign, or execute a transaction, and proof gates now
   classify `testnet-upstream` as `TESTNET_UPSTREAM_REPORT_FAILED`.
+- `npm run gas-station:render-config` now renders the ignored
+  `deploy/gas-station/config.local.yaml` from local `.env`. Shape-only
+  validation confirmed `keyBytes=33`, the testnet RPC is present, and the
+  Redis service URL is present. The compose template now starts Redis plus the
+  official `iotaledger/gas-station` container on loopback ports, but the
+  container was not started because the Docker daemon is unreachable, the
+  Docker Compose plugin is unavailable, and the standalone Docker Desktop
+  `docker-compose` shim reports WSL integration is not active in this distro.
 - Remaining live blockers still include local Gas Station availability,
   sponsor funding/current sponsored execution proof, IOTA Names config, IOTA
   Identity config, VC trust-policy config, public A2A proof, npm publication,

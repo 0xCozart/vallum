@@ -145,6 +145,12 @@ Confirmed current state:
   The latest current-machine report reaches IOTA testnet RPC but fails Gas
   Station loopback reachability, so fresh sponsored execution remains blocked
   by `TESTNET_UPSTREAM_REPORT_FAILED`.
+  Slice 7.8 adds a local Gas Station config renderer plus loopback Compose
+  template for the official `iotaledger/gas-station` container. It converts the
+  local sponsor key into the official 33-byte base64 config shape and writes
+  only ignored local config. The current machine still cannot start the
+  container because Docker daemon/Compose integration is unavailable in this
+  WSL session.
   Slice 4.10 adds local loopback A2A SSE streaming proof for
   `POST /message:stream`; Slice 4.11 adds local A2A push notification
   configuration CRUD that rejects webhook credential storage and unsafe

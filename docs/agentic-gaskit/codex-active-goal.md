@@ -67,6 +67,17 @@ unreachable. Current gate code is `TESTNET_UPSTREAM_REPORT_FAILED`. This does
 not prove a new sponsored transaction, current sponsor funding, Gas Station
 availability, IOTA Names/Identity/VC live proof, or production readiness.
 
+As of the latest local Gas Station setup refresh on 2026-06-11,
+`npm run gas-station:render-config` renders the ignored
+`deploy/gas-station/config.local.yaml` from local `.env`. Shape-only validation
+confirmed the rendered config exists, contains a 33-byte official-style local
+signer key, points at the configured IOTA testnet RPC, and uses the compose
+Redis service URL. The local Docker Compose template now includes Redis and the
+official `iotaledger/gas-station` container on loopback ports. The container
+was not started because this WSL session cannot reach the Docker daemon, the
+Docker Compose plugin is unavailable, and the standalone Docker Desktop
+`docker-compose` shim reports WSL integration is not active.
+
 The next continuation should choose the next safe roadmap slice from
 `docs/agentic-gaskit/full-roadmap-execution-goal.md` and
 `docs/agentic-gaskit/handoff-next-product-build.md`. Good next candidates are

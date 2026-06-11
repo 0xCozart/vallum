@@ -42,10 +42,19 @@ Use this path only with operator-owned testnet credentials and a reachable IOTA 
 | --- | --- | --- |
 | Example placeholders are documented | `npm run readiness:testnet:example` | Public config documentation drifted. |
 | Local secret file is shaped correctly | `npm run readiness:testnet` | Fix `.env`; do not attempt live reserve/execute. |
+| Local Gas Station config is rendered | `npm run gas-station:render-config` | Fix `.env` signer/RPC config; do not start Gas Station. |
+| Local Gas Station containers are started | `docker compose --env-file .env -f deploy/docker-compose/docker-compose.local.yml up` | Docker daemon, Compose plugin, image pull, Redis, or Gas Station startup is not ready. |
 | Upstream is reachable | `npm run diagnose:gas-station` | Gas Station URL/auth/network is not ready. |
 | Live sponsored execute is intentional | `npm run execute:testnet-demo` | Stop and inspect bounded error output before retrying. |
 
 The live execute command is intentionally excluded from `verify:local` because it contacts live services and consumes sponsored testnet gas.
+
+The local Compose template runs Redis and the official `iotaledger/gas-station`
+container with loopback-only host ports. Render
+`deploy/gas-station/config.local.yaml` first; that file contains sponsor signer
+material, is ignored by Git, and must not be printed or committed. If your
+Docker installation uses the legacy standalone binary, replace `docker compose`
+with `docker-compose` in the command above.
 
 ## Production path
 

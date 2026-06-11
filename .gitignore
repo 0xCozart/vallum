@@ -8,6 +8,7 @@ secrets.txt
 *.key
 *.p12
 *.pfx
+deploy/gas-station/config.local.yaml
 
 # Dependencies
 node_modules/

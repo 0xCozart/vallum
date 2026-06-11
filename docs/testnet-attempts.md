@@ -188,3 +188,45 @@ action is to start or point `GAS_STATION_URL` at a reachable funded Gas Station,
 rerun the diagnostic without `--skip-reserve` to produce a passing sanitized
 report, then run `npm run execute:testnet-demo` only with explicit operator
 intent.
+
+## 2026-06-11 local Gas Station config render
+
+Added a local config render step for the official Gas Station container path:
+
+```bash
+npm run gas-station:render-config
+```
+
+Sanitized render result:
+
+```text
+gasStationConfig=deploy/gas-station/config.local.yaml
+containsSponsorKey=true
+next=docker compose --env-file .env -f deploy/docker-compose/docker-compose.local.yml up
+```
+
+Shape-only local verification confirmed:
+
+```text
+configExists=true
+keyBytes=33
+hasTestnetRpc=true
+hasRedisServiceUrl=true
+```
+
+The rendered file is ignored by Git and contains sponsor signer material. It
+must not be printed or committed.
+
+Docker runtime status in this WSL session:
+
+```text
+docker version -> Cannot connect to the Docker daemon at unix:///var/run/docker.sock.
+docker compose --env-file ... -> compose plugin unavailable in this distro
+docker-compose version -> WSL Docker Desktop integration is not active
+```
+
+Outcome: local Gas Station config generation is now reproducible, but the
+container was not started in this session. The next operator action is to enable
+Docker daemon plus Compose integration for this WSL distro, start the local
+compose stack, then rerun `npm run diagnose:gas-station -- --report
+tmp/gaskit/testnet-upstream-diagnostic.json` without `--skip-reserve`.

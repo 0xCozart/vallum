@@ -76,6 +76,7 @@ files:
 
 ```bash
 npm run readiness:testnet
+npm run gas-station:render-config
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run smoke:iota-names-live
 npm run smoke:iota-identity-live

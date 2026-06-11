@@ -78,6 +78,7 @@ npm run verify:fast
 npm run proof:verification-profiles
 npm run proof:operator-gates
 npm run readiness:testnet
+npm run gas-station:render-config
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
 ```
 

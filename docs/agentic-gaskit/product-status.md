@@ -90,6 +90,7 @@ npm run verify:local
 npm run verify:fast
 npm run proof:testnet-digest
 npm run proof:testnet-digest:live
+npm run gas-station:render-config
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run proof:a2a-public-readiness
 npm run proof:verification-profiles

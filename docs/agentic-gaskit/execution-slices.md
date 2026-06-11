@@ -3439,3 +3439,71 @@ Escalation triggers:
 - Any request to commit local diagnostic reports or `.env` values.
 - Any request to treat a skipped reserve probe as fresh sponsored execution
   readiness.
+
+## Slice 7.8: Local Gas Station Config Render
+
+User-visible outcome:
+Operators have a concrete, reproducible local setup step that renders the
+official Gas Station config from ignored `.env` values and starts from a
+loopback-only Redis plus Gas Station Compose template.
+
+Likely files:
+
+- `scripts/render-gas-station-config.ts`
+- `scripts/render-gas-station-config.test.ts`
+- `scripts/package-scripts.test.ts`
+- `deploy/docker-compose/docker-compose.local.yml`
+- `deploy/gas-station/config.example.yaml`
+- `.gitignore`
+- `package.json`
+- `docs/deployment.md`
+- `docs/quickstart.md`
+- `docs/testnet-attempts.md`
+- `docs/CODEBASE_MAP.md`
+- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
+- `docs/agentic-gaskit/codex-active-goal.md`
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+
+Acceptance criteria:
+
+- `npm run gas-station:render-config` builds first and renders
+  `deploy/gas-station/config.local.yaml` from local `.env`.
+- The rendered file is ignored by Git and contains sponsor signer material
+  only in local config, not in committed docs or terminal output.
+- The renderer converts local `iotaprivkey...` values and raw base64 secret
+  keys into the 33-byte base64 local signer shape expected by the official Gas
+  Station config.
+- The renderer fails closed on placeholder keys and invalid numeric config.
+- Local Compose runs Redis plus the official `iotaledger/gas-station` image on
+  loopback-only host ports and mounts the ignored rendered config as
+  `/app/config.yaml`.
+- Docs explain the sequence: readiness, render config, start Compose, run
+  diagnostic report, then attempt sponsored execution only after passing
+  upstream proof and explicit operator intent.
+
+Verification:
+
+- Focused renderer and package-script tests.
+- `npm run build`.
+- `npm run gas-station:render-config`.
+- Shape-only rendered config check without printing key material.
+- Docker/Compose runtime check on the current machine.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+
+Dependencies:
+Slices 7.6-7.7 and local `.env` testnet-readiness setup.
+
+Risk:
+High. The rendered config contains sponsor key material and must remain ignored
+and local-only. The Compose path can be mistaken for production deployment
+unless loopback, local-only, and production-hardening boundaries remain clear.
+
+Escalation triggers:
+
+- Any request to commit `deploy/gas-station/config.local.yaml`.
+- Any request to expose Gas Station publicly or bind it off loopback without a
+  production hardening slice.
+- Any request to run `execute:testnet-demo` before Docker/Gas Station
+  diagnostics pass and explicit operator intent is present.

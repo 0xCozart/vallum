@@ -60,6 +60,7 @@ npm run proof:product-status
 npm run proof:live-status
 npm run proof:testnet-digest
 npm run proof:testnet-digest:live
+npm run gas-station:render-config
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run proof:a2a-public-readiness
 npm run verify:fast

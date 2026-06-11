@@ -99,6 +99,9 @@ It also includes the first Agentic GasKit implementation slices:
 - opt-in sanitized testnet upstream diagnostic report gate that separates
   `.env` readiness from current IOTA RPC, Gas Station reachability, and
   reserve_gas compatibility proof
+- local Gas Station config renderer and compose template for turning ignored
+  `.env` values into an ignored official-style `config.local.yaml` before
+  starting the `iotaledger/gas-station` container
 - non-networked testnet digest proof for documented public IOTA testnet
   evidence, plus an opt-in read-only live lookup command
 - non-networked product status proof command for local proof, live/testnet,
@@ -172,6 +175,9 @@ roadmap unless later slices implement and verify them.
   `scripts/check-live-proof-status.ts`, `scripts/live-proof-status.test.ts`
 - Testnet upstream diagnostics: `scripts/diagnose-gas-station-upstream.ts`,
   `scripts/testnet-upstream-report.ts`, `docs/testnet-attempts.md`
+- Local Gas Station setup: `scripts/render-gas-station-config.ts`,
+  `deploy/docker-compose/docker-compose.local.yml`,
+  `deploy/gas-station/config.example.yaml`, `docs/deployment.md`
 - Testnet digest proof: `docs/agentic-gaskit/testnet-digest-proof.md`,
   `scripts/check-testnet-digest-proof.ts`,
   `scripts/testnet-digest-proof.test.ts`

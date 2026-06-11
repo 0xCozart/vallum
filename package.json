@@ -41,6 +41,7 @@
     "proof:a2a-public-readiness": "npm run build && tsx scripts/check-a2a-public-readiness.ts",
     "proof:verification-profiles": "npm run build && tsx scripts/check-verification-profiles.ts",
     "readiness:testnet": "npm run build && tsx scripts/check-testnet-readiness.ts",
+    "gas-station:render-config": "npm run build && tsx scripts/render-gas-station-config.ts",
     "diagnose:gas-station": "npm run build && tsx scripts/diagnose-gas-station-upstream.ts",
     "execute:testnet-demo": "npm run build && tsx scripts/execute-testnet-sponsored-demo.ts",
     "readiness:testnet:example": "npm run build && tsx scripts/check-testnet-readiness.ts --env-file .env.example --expect-placeholders",
