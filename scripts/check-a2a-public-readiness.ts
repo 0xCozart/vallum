@@ -49,6 +49,7 @@ const REQUIRED_SOURCE_PATHS = [
   "packages/standards/src/a2aHttp.ts",
   "packages/standards/src/a2aNodeServer.ts",
   "packages/standards/src/a2aPush.ts",
+  "scripts/write-a2a-static-discovery-bundle.ts",
   "scripts/smoke-a2a-local-server.ts",
 ] as const;
 
@@ -65,6 +66,7 @@ export async function checkA2APublicReadiness(
     await checkLocalA2AProof(cwd, scripts),
     localPublicJwksHostingSupport(),
     localStaticDiscoveryBundleSupport(),
+    localStaticDiscoveryArtifactWriterSupport(),
     checkPublicUrl(
       "public-agent-card-url",
       env.A2A_PUBLIC_AGENT_CARD_URL,
@@ -305,6 +307,17 @@ function localStaticDiscoveryBundleSupport(): A2APublicReadinessCheck {
     message: "A2A static discovery bundles can package signed Agent Card and public JWKS JSON artifacts for canonical well-known paths using public key material only.",
     evidence: "node --import tsx --test packages/registry/src/a2aDiscoveryBundle.test.ts packages/registry/src/a2aJwks.test.ts",
     next: "Keep this as local deployable-artifact support only until an operator-approved public host serves the bundle and structured public discovery evidence is accepted.",
+  };
+}
+
+function localStaticDiscoveryArtifactWriterSupport(): A2APublicReadinessCheck {
+  return {
+    id: "local-static-discovery-artifact-writer",
+    status: "proven-local",
+    code: "A2A_STATIC_DISCOVERY_ARTIFACT_WRITER_LOCAL_PROOF_CONFIGURED",
+    message: "A2A static discovery bundles can be written as local deployable well-known JSON artifacts plus a sanitized header manifest.",
+    evidence: "npm run a2a:write-static-discovery-bundle -- --agent-card <signed-card.json> --jwks <jwks.json> --public-base-url <url> --public-jwks-url <url> --out-dir <dir>",
+    next: "Keep this as local artifact generation only until the files are hosted on an operator-approved public HTTPS endpoint and structured public discovery evidence is accepted.",
   };
 }
 

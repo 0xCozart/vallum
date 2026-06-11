@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import { generateKeyPairSync } from "node:crypto";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { test } from "node:test";
 
 import {
@@ -10,6 +13,7 @@ import {
   createA2APublicJwksResponse,
   signA2AAgentCard,
   validAgentProfileFixture,
+  writeA2APublicDiscoveryBundle,
 } from "./index.js";
 
 const now = new Date("2026-06-10T12:00:00.000Z");
@@ -164,6 +168,82 @@ test("A2A static discovery bundle rejects noncanonical paths and secret-like pub
     }),
     /public HTTPS/,
   );
+});
+
+test("A2A static discovery bundle writer creates canonical deployable artifacts", async () => {
+  const outDir = await mkdtemp(join(tmpdir(), "agentic-gaskit-a2a-static-bundle-"));
+  try {
+    const bundle = validBundle();
+    const written = await writeA2APublicDiscoveryBundle({ bundle, outDir });
+    const agentCardPath = join(outDir, ".well-known", "agent-card.json");
+    const jwksPath = join(outDir, ".well-known", "jwks.json");
+    const manifestPath = join(outDir, "a2a-discovery-bundle-manifest.json");
+
+    assert.equal(written.outDir, outDir);
+    assert.equal(written.publicBaseUrl, publicBaseUrl);
+    assert.equal(written.publicJwksUrl, publicJwksUrl);
+    assert.deepEqual(written.files.map((file) => file.sourcePath), [
+      A2A_AGENT_CARD_WELL_KNOWN_PATH,
+      A2A_JWKS_WELL_KNOWN_PATH,
+    ]);
+    assert.deepEqual(written.files.map((file) => file.path), [agentCardPath, jwksPath]);
+    assert.equal(written.manifestPath, manifestPath);
+
+    const card = JSON.parse(await readFile(agentCardPath, "utf8")) as { supportedInterfaces?: Array<{ url?: string }> };
+    const jwks = JSON.parse(await readFile(jwksPath, "utf8")) as { keys?: Array<{ kid?: string }> };
+    const manifest = JSON.parse(await readFile(manifestPath, "utf8")) as {
+      kind?: string;
+      publicBaseUrl?: string;
+      files?: Array<{ path?: string; headers?: Record<string, string> }>;
+    };
+
+    assert.equal(card.supportedInterfaces?.[0]?.url, publicBaseUrl);
+    assert.equal(jwks.keys?.[0]?.kid, "agent-card-key-1");
+    assert.equal(manifest.kind, "agentic-gaskit.a2a-static-discovery-bundle");
+    assert.equal(manifest.publicBaseUrl, publicBaseUrl);
+    assert.equal(manifest.files?.[0]?.path, A2A_AGENT_CARD_WELL_KNOWN_PATH);
+    assert.match(manifest.files?.[0]?.headers?.["content-type"] ?? "", /application\/a2a\+json/);
+    assert.doesNotMatch(
+      JSON.stringify({ card, jwks, manifest }),
+      /"d"|"p"|"q"|privateToken|secret-value|mnemonic|seed|signer_ref|wallet_|payment-secret/i,
+    );
+  } finally {
+    await rm(outDir, { recursive: true, force: true });
+  }
+});
+
+test("A2A static discovery bundle writer fails closed for unexpected or missing paths", async () => {
+  const outDir = await mkdtemp(join(tmpdir(), "agentic-gaskit-a2a-static-bundle-"));
+  try {
+    const bundle = validBundle();
+
+    await assert.rejects(
+      () => writeA2APublicDiscoveryBundle({
+        bundle: {
+          ...bundle,
+          files: [
+            { ...bundle.files[0], path: "/../agent-card.json" as never },
+            bundle.files[1],
+          ],
+        },
+        outDir,
+      }),
+      /unexpected static file path/,
+    );
+
+    await assert.rejects(
+      () => writeA2APublicDiscoveryBundle({
+        bundle: {
+          ...bundle,
+          files: [bundle.files[0], { ...bundle.files[0] }] as never,
+        },
+        outDir,
+      }),
+      /unexpected static file path/,
+    );
+  } finally {
+    await rm(outDir, { recursive: true, force: true });
+  }
 });
 
 function validBundle() {

@@ -88,9 +88,9 @@ subscription workflows, bounded local IOTA Identity verification cache helpers,
 local VC trust-policy evaluation, an opt-in IOTA Identity live proof harness,
 and local A2A well-known Agent Card response proof plus local/mock A2A
 signed Agent Card proof, local public JWKS and static discovery bundle
-helpers, task/message operation helpers, a local A2A HTTP-shaped boundary, a
-loopback HTTP server smoke proof, and a local read-only marketplace evidence
-model.
+helpers, static discovery artifact writer, task/message operation helpers, a
+local A2A HTTP-shaped boundary, a loopback HTTP server smoke proof, and a local
+read-only marketplace evidence model.
 
 Some production surfaces remain planned roadmap work, including the full
 dashboard UI, production persistence, production monitoring, package
@@ -167,13 +167,18 @@ Latest local verification and prior live proof:
 - `npm run proof:a2a-public-readiness`: deterministic non-networked A2A
   public-readiness gate reports local proof, local authenticated extended-card
   access, local public JWKS serving, local static discovery bundle generation,
-  local loopback streaming, local push notification configuration, local
-  injected push delivery, local opt-in push HTTP transport, local callback URL
-  admission hardening, callback host allowlisting, local retry/attempt
-  observability, local durable attempt evidence, local delivery queueing, a
-  local injected-transport worker, public hosting inputs, redacted public
-  discovery report classification, public push delivery structured-report
-  classification, and external conformance structured-report blockers.
+  local static discovery artifact writing, local loopback streaming, local push
+  notification configuration, local injected push delivery, local opt-in push
+  HTTP transport, local callback URL admission hardening, callback host
+  allowlisting, local retry/attempt observability, local durable attempt
+  evidence, local delivery queueing, a local injected-transport worker, public
+  hosting inputs, redacted public discovery report classification, public push
+  delivery structured-report classification, and external conformance
+  structured-report blockers.
+- `npm run a2a:write-static-discovery-bundle`: opt-in local artifact writer for
+  already-signed public Agent Card and public JWKS JSON; it writes canonical
+  `.well-known` files and a sanitized manifest but does not deploy or prove
+  public A2A hosting.
 - `npm run smoke:a2a-public-discovery`: opt-in public A2A Agent Card and JWKS
   discovery smoke exists for operator-approved public HTTPS configuration; it
   can emit a structured discovery report for readiness review, is not part of

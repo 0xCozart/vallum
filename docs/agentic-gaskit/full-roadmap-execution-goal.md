@@ -5,8 +5,8 @@ Last updated: 2026-06-11.
 ## Goal Pointer
 
 This is the active `/goal` target for continuing Agentic GasKit in
-`/home/sacred/code/agentic-gaskit` after completion of the local Slice 4.19 A2A
-Public Discovery Report Gate.
+`/home/sacred/code/agentic-gaskit` after the latest locally verified roadmap
+slices.
 
 Primary continuation sources:
 
@@ -134,7 +134,11 @@ Confirmed current state:
   local static discovery bundle generation for signed Agent Card plus public
   JWKS JSON artifacts while still deferring public hosting, endpoint ownership,
   key rotation, production key management, public discovery acceptance, and
-  external conformance.
+  external conformance. Slice 4.28 adds an opt-in local static discovery
+  artifact writer that turns already-signed public Agent Card and public JWKS
+  JSON into canonical `.well-known` files plus a sanitized manifest, while
+  still deferring public hosting, endpoint ownership, public discovery
+  acceptance, production key management, and external conformance.
   Slice 7.5 adds a fast deterministic verification profile plus a
   non-networked profile audit, so ordinary build/test/improve loops can run a
   bounded subset while `verify:local` and `grant:check` remain the full
@@ -169,7 +173,8 @@ Confirmed current state:
   Slice 4.25 adds a local injected-transport worker for one queued job; Slice
   4.26 adds local public JWKS serving support for public signing keys; Slice
   4.27 adds local static discovery bundle generation for signed Agent Card and
-  public JWKS artifacts.
+  public JWKS artifacts; Slice 4.28 adds local static discovery artifact
+  writing for canonical `.well-known` files plus a sanitized header manifest.
   Public hosting acceptance, production keys/auth, public webhook
   workers/queues, persistent production observability, and external conformance
   blockers remain.
@@ -570,9 +575,11 @@ Slice 4.14 adds local mocked opt-in push HTTP transport proof. Slice 4.25 adds
 a local injected-transport delivery worker for one sanitized queued job. Slice
 4.26 adds local public JWKS serving support for public signing keys. Slice 4.27
 adds local static discovery bundle generation for signed Agent Card and public
-JWKS JSON artifacts. These slices are not deployed public hosting, production
-key management, key rotation approval, public streaming, public push webhook
-infrastructure proof, external conformance, or live A2A discovery proof.
+JWKS JSON artifacts. Slice 4.28 adds local static discovery artifact writing
+for canonical `.well-known` files plus a sanitized header manifest. These
+slices are not deployed public hosting, production key management, key rotation
+approval, public streaming, public push webhook infrastructure proof, external
+conformance, or live A2A discovery proof.
 
 Acceptance criteria:
 
@@ -584,10 +591,11 @@ Acceptance criteria:
 - Auth requirements are explicit and fail closed.
 - Streaming, push notification configuration, injected push delivery, the
   opt-in push HTTP transport helper, local durable attempt evidence, local
-  queueing, the local injected-transport worker, local public JWKS serving, and
-  local static discovery bundle generation are implemented locally or
-  documented as unsupported capabilities; public webhook delivery
-  infrastructure remains blocked until separately implemented and verified.
+  queueing, the local injected-transport worker, local public JWKS serving,
+  local static discovery bundle generation, and local static discovery artifact
+  writing are implemented locally or documented as unsupported capabilities;
+  public webhook delivery infrastructure remains blocked until separately
+  implemented and verified.
 - External A2A conformance proof is recorded, or blocked with exact reason.
 - Public A2A readiness command reports exact local proof, config, unsupported
   capability, and external conformance blockers without printing configured

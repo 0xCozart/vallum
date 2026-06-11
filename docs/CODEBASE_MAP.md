@@ -49,6 +49,9 @@ It also includes the first Agentic GasKit implementation slices:
   Node server JWKS route support
 - local static A2A discovery bundle helper for signed Agent Card and public
   JWKS JSON artifacts at canonical well-known paths
+- local static A2A discovery artifact writer for turning already-signed public
+  Agent Card and public JWKS JSON into canonical `.well-known` files plus a
+  sanitized header manifest for static hosting review
 - local A2A Agent Card JWS signing and trusted-key verification smoke proof
 - local A2A task/message operation helpers and smoke proof
 - local A2A HTTP-shaped handler and smoke proof for public discovery plus
@@ -184,6 +187,9 @@ roadmap unless later slices implement and verify them.
 - A2A public readiness: `docs/agentic-gaskit/a2a-public-readiness.md`,
   `scripts/check-a2a-public-readiness.ts`,
   `scripts/a2a-public-readiness.test.ts`
+- A2A static discovery artifact writer:
+  `scripts/write-a2a-static-discovery-bundle.ts`,
+  `scripts/write-a2a-static-discovery-bundle.test.ts`
 - Product status proof: `docs/agentic-gaskit/product-status.md`,
   `scripts/check-product-status.ts`, `scripts/product-status.test.ts`
 - Launch readiness evidence:

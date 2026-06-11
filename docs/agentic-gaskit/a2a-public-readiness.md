@@ -8,6 +8,13 @@ material, run external conformance tools, deliver webhooks, or store webhook
 credentials. Instead, it classifies the evidence needed before local A2A proof
 can be described as public A2A interoperability.
 
+Operators can prepare static hosting inputs with
+`npm run a2a:write-static-discovery-bundle`. That command writes canonical
+local `/.well-known/agent-card.json` and `/.well-known/jwks.json` artifacts
+plus a sanitized header manifest from already-signed public JSON inputs. It
+does not sign cards, generate keys, fetch public URLs, deploy hosting, or prove
+endpoint ownership.
+
 When an operator has approved public A2A infrastructure and supplied local
 configuration, `npm run smoke:a2a-public-discovery` is the opt-in networked
 probe for public Agent Card and JWKS discovery. It is not part of local
@@ -44,6 +51,9 @@ publicReady=false
   JWKS JSON response at canonical well-known paths, with the Agent Card
   signature `jku` bound to the configured public JWKS URL and every signing key
   id present in JWKS.
+- Local static discovery bundles can be written as deployable well-known JSON
+  files plus a sanitized manifest that records content headers for static
+  hosting review.
 - The opt-in public discovery smoke exists for operator-approved public HTTPS
   Agent Card and JWKS probing, but the non-networked readiness command does not
   run it. Readiness remains blocked unless an operator supplies a structured
@@ -100,7 +110,7 @@ report paths, report contents, credentials, tokens, or secret-like values.
 - Deployed public JWKS hosting, production Agent Card key management, or key
   rotation.
 - Deployed static discovery artifacts, endpoint ownership, or public discovery
-  acceptance from local bundle generation alone.
+  acceptance from local bundle generation or local file writing alone.
 - Production A2A task-route authentication.
 - Production extended-card access control.
 - Public streaming or webhook delivery by itself.
@@ -110,6 +120,31 @@ report paths, report contents, credentials, tokens, or secret-like values.
   injected-transport worker proof.
 - External A2A conformance.
 - Provider verification or production trust.
+
+## Static Discovery Artifact Writer
+
+Run only with public JSON inputs that are safe to stage for static hosting:
+
+```bash
+npm run a2a:write-static-discovery-bundle -- \
+  --agent-card tmp/a2a/agent-card.json \
+  --jwks tmp/a2a/jwks.json \
+  --public-base-url https://agents.example/a2a \
+  --public-jwks-url https://agents.example/.well-known/jwks.json \
+  --out-dir tmp/a2a-public
+```
+
+The output directory contains:
+
+- `.well-known/agent-card.json`
+- `.well-known/jwks.json`
+- `a2a-discovery-bundle-manifest.json`
+
+The command validates the signed Agent Card/JWKS binding through the same
+static bundle rules used by the registry package and prints only local output
+paths/counts. It is still local artifact generation only; public readiness
+requires hosting the files on an operator-approved public HTTPS endpoint and
+then recording structured public discovery evidence.
 
 ## Opt-In Public Discovery Smoke
 

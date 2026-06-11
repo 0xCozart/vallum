@@ -106,6 +106,16 @@ test("A2A public discovery smoke is opt-in and excluded from local verification"
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /a2a-public-discovery/);
 });
 
+test("A2A static discovery bundle writer is opt-in and excluded from local verification", () => {
+  assert.equal(
+    packageJson.scripts?.["a2a:write-static-discovery-bundle"],
+    "npm run build && tsx scripts/write-a2a-static-discovery-bundle.ts",
+  );
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /write-static-discovery-bundle/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /write-static-discovery-bundle/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /write-static-discovery-bundle/);
+});
+
 test("verification profiles keep fast iteration separate from the full local gate", () => {
   assert.equal(
     packageJson.scripts?.["proof:verification-profiles"],

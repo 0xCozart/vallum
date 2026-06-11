@@ -2746,6 +2746,83 @@ Escalation triggers:
   claim endpoint ownership, or accept public discovery from this local bundle
   alone.
 
+## Slice 4.28: A2A Static Discovery Artifact Writer
+
+User-visible outcome:
+Operators can turn an already-signed public Agent Card and public JWKS JSON into
+canonical local static hosting artifacts, including a sanitized header manifest,
+without generating keys, signing cards, fetching public URLs, or claiming public
+hosting proof.
+
+Likely files:
+
+- `packages/registry/src/a2aDiscoveryBundle.ts`
+- `packages/registry/src/a2aDiscoveryBundle.test.ts`
+- `scripts/write-a2a-static-discovery-bundle.ts`
+- `scripts/write-a2a-static-discovery-bundle.test.ts`
+- `scripts/check-a2a-public-readiness.ts`
+- `scripts/a2a-public-readiness.test.ts`
+- `scripts/package-scripts.test.ts`
+- `package.json`
+- `docs/agentic-gaskit/a2a-public-readiness.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
+- `docs/agentic-gaskit/codex-active-goal.md`
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+- `docs/overview.md`
+- `docs/CODEBASE_MAP.md`
+- `README.md`
+
+Acceptance criteria:
+
+- The registry bundle writer writes exactly `.well-known/agent-card.json`,
+  `.well-known/jwks.json`, and `a2a-discovery-bundle-manifest.json` under an
+  operator-selected output directory.
+- The writer fails closed on missing, duplicate, or unexpected bundle paths.
+- The manifest records public base/JWKS URLs plus per-file content-type and
+  cache-control headers without raw key material, credentials, tokens, signer
+  references, private wallet fields, or response bodies beyond the sanitized
+  static JSON files.
+- The CLI reads already-signed public Agent Card JSON plus public JWKS JSON,
+  validates them through the existing static bundle helper, writes local files,
+  and prints only local output paths/counts.
+- The CLI is opt-in and excluded from `verify:fast`, `verify:local`, and
+  `grant:check`.
+- A2A public-readiness reports the artifact writer as local proof only and
+  keeps public hosting, endpoint ownership, production key management, public
+  discovery acceptance, public push delivery, and external conformance blocked
+  until operator-approved reports exist.
+
+Verification:
+
+- Focused `packages/registry/src/a2aDiscoveryBundle.test.ts`.
+- Focused `scripts/write-a2a-static-discovery-bundle.test.ts`.
+- Focused A2A public-readiness tests.
+- Focused package-script tests.
+- `npm run proof:a2a-public-readiness`.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slice 4.27.
+
+Risk:
+Medium. Local static files can be mistaken for public hosting, endpoint
+ownership, external conformance, or production key-management proof unless the
+readiness and launch gates keep those claims blocked.
+
+Escalation triggers:
+
+- Any request to generate or store production signing keys in this CLI.
+- Any request to commit generated static artifacts that contain operator-owned
+  public endpoint details before review.
+- Any request to treat generated local files as public A2A discovery proof
+  without hosting them and accepting a structured public discovery report.
+
 ## Slice 5.1: Marketplace Readiness Gate
 
 User-visible outcome:

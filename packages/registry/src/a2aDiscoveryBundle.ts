@@ -1,4 +1,6 @@
 import { isIP } from "node:net";
+import { mkdir, writeFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
 
 import {
   A2A_AGENT_CARD_WELL_KNOWN_PATH,
@@ -28,6 +30,26 @@ export interface A2APublicDiscoveryBundle {
   readonly publicBaseUrl: string;
   readonly publicJwksUrl: string;
   readonly files: readonly [A2APublicDiscoveryBundleFile, A2APublicDiscoveryBundleFile];
+}
+
+export interface WriteA2APublicDiscoveryBundleOptions {
+  readonly bundle: A2APublicDiscoveryBundle;
+  readonly outDir: string;
+  readonly manifestFileName?: string;
+}
+
+export interface WrittenA2APublicDiscoveryBundleFile {
+  readonly path: string;
+  readonly sourcePath: typeof A2A_AGENT_CARD_WELL_KNOWN_PATH | typeof A2A_JWKS_WELL_KNOWN_PATH;
+  readonly headers: Record<string, string>;
+}
+
+export interface WrittenA2APublicDiscoveryBundle {
+  readonly outDir: string;
+  readonly publicBaseUrl: string;
+  readonly publicJwksUrl: string;
+  readonly files: readonly WrittenA2APublicDiscoveryBundleFile[];
+  readonly manifestPath: string;
 }
 
 export function createA2APublicDiscoveryBundle(
@@ -68,6 +90,60 @@ export function createA2APublicDiscoveryBundle(
         json: jwks.json.endsWith("\n") ? jwks.json : `${jwks.json}\n`,
       },
     ],
+  };
+}
+
+export async function writeA2APublicDiscoveryBundle(
+  options: WriteA2APublicDiscoveryBundleOptions,
+): Promise<WrittenA2APublicDiscoveryBundle> {
+  const outDir = options.outDir.trim();
+  if (outDir === "") throw new Error("A2A public discovery bundle output directory is required.");
+
+  const expectedPaths = new Set<string>([A2A_AGENT_CARD_WELL_KNOWN_PATH, A2A_JWKS_WELL_KNOWN_PATH]);
+  const seenPaths = new Set<string>();
+  const writtenFiles: WrittenA2APublicDiscoveryBundleFile[] = [];
+
+  for (const file of options.bundle.files) {
+    if (!expectedPaths.has(file.path) || seenPaths.has(file.path)) {
+      throw new Error("A2A public discovery bundle contains an unexpected static file path.");
+    }
+    seenPaths.add(file.path);
+    const absolutePath = join(outDir, file.path.slice(1));
+    await mkdir(dirname(absolutePath), { recursive: true });
+    await writeFile(absolutePath, file.json, { encoding: "utf8", mode: 0o644 });
+    writtenFiles.push({
+      path: absolutePath,
+      sourcePath: file.path,
+      headers: { ...file.headers },
+    });
+  }
+
+  if (seenPaths.size !== expectedPaths.size) {
+    throw new Error("A2A public discovery bundle is missing required static files.");
+  }
+
+  const manifestPath = join(outDir, options.manifestFileName ?? "a2a-discovery-bundle-manifest.json");
+  await writeFile(
+    manifestPath,
+    `${JSON.stringify({
+      schemaVersion: 1,
+      kind: "agentic-gaskit.a2a-static-discovery-bundle",
+      publicBaseUrl: options.bundle.publicBaseUrl,
+      publicJwksUrl: options.bundle.publicJwksUrl,
+      files: writtenFiles.map((file) => ({
+        path: file.sourcePath,
+        headers: file.headers,
+      })),
+    }, null, 2)}\n`,
+    { encoding: "utf8", mode: 0o644 },
+  );
+
+  return {
+    outDir,
+    publicBaseUrl: options.bundle.publicBaseUrl,
+    publicJwksUrl: options.bundle.publicJwksUrl,
+    files: writtenFiles,
+    manifestPath,
   };
 }
 
