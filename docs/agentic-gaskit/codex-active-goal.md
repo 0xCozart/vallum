@@ -16,18 +16,17 @@ local proof as live IOTA testnet, production marketplace, public scoring,
 public A2A discovery, production key management, or provider-verification
 proof.
 
-As of the latest completed update, Slice 4.20 is complete: A2A push callback
-URL hardening. Local A2A push notification config and injected HTTP transport
-now reject callback URLs with query strings before storage or delivery, so
-query-token webhook patterns do not enter local config state or outbound
-transport requests. `npm run proof:a2a-public-readiness` now reports
-`A2A_PUSH_CALLBACK_URL_HARDENING_LOCAL_PROOF_CONFIGURED` as local proof. This
-does not send A2A task messages to public endpoints, post real webhook
-callbacks, run background workers, persist queues, store webhook credentials,
-run external A2A conformance, publish JWKS, prove production key rotation, or
-prove public push delivery. Public hosting acceptance, production keys/auth,
-public webhook infrastructure, live IOTA proof, and external conformance claims
-remain blocked.
+As of the latest completed update, Slice 4.21 is complete: A2A push callback
+host allowlisting. Local A2A push notification config and injected HTTP
+transport can now constrain callback URLs to an exact configured hostname
+allowlist before storage or delivery. `npm run proof:a2a-public-readiness` now
+reports `A2A_PUSH_CALLBACK_HOST_ALLOWLIST_LOCAL_PROOF_CONFIGURED` as local
+host-admission proof. This does not send A2A task messages to public endpoints,
+post real webhook callbacks, run background workers, persist queues, store
+webhook credentials, run external A2A conformance, publish JWKS, prove
+production key rotation, or prove public push delivery. Public hosting
+acceptance, production keys/auth, public webhook infrastructure, live IOTA
+proof, and external conformance claims remain blocked.
 
 The next continuation should choose the next safe roadmap slice from
 `docs/agentic-gaskit/full-roadmap-execution-goal.md` and
