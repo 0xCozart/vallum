@@ -23,12 +23,14 @@ Current surface:
   files plus a sanitized header manifest.
 - Local static A2A discovery artifact validation for generated `.well-known`
   files and manifest metadata before public hosting review.
+- Local static A2A discovery loopback host smoke support for serving validated
+  `.well-known` files with manifest-declared headers before public hosting.
 
 This package is local-first today. It does not resolve live IOTA Names,
 validate live IOTA Identity credentials, run A2A task/message operations, host
 public A2A discovery, prove external A2A conformance, provide production key
 management or key rotation, deploy static discovery artifacts to a public host,
-prove endpoint ownership, fetch public discovery endpoints, or contact
-testnet/mainnet services. The identity cache records only successful local/mock
-verification evidence and does not turn mock credentials into live credential
-validation.
+prove endpoint ownership, fetch public discovery endpoints, prove public
+hosting from local loopback serving, or contact testnet/mainnet services. The
+identity cache records only successful local/mock verification evidence and
+does not turn mock credentials into live credential validation.

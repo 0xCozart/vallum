@@ -98,6 +98,7 @@ async function writeEvidenceTree(cwd: string): Promise<void> {
     "packages/standards/src/a2aNodeServer.ts",
     "packages/standards/src/a2aPush.ts",
     "scripts/check-a2a-public-readiness.ts",
+    "scripts/smoke-a2a-static-discovery-local.ts",
     "docs/agentic-gaskit/a2a-public-readiness.md",
     "scripts/smoke-a2a-local-server.ts",
     "packages/marketplace/src/index.ts",

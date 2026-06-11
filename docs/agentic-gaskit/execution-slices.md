@@ -2906,6 +2906,88 @@ Escalation triggers:
 - Any request to store private signing keys, webhook credentials, bearer tokens,
   or private infrastructure details in the artifact manifest.
 
+## Slice 4.30: A2A Static Discovery Local Host Smoke
+
+User-visible outcome:
+Operators can smoke-test a generated local A2A static discovery directory over
+loopback before uploading it to a public host, without fetching public URLs or
+claiming public hosting proof.
+
+Likely files:
+
+- `scripts/smoke-a2a-static-discovery-local.ts`
+- `scripts/smoke-a2a-static-discovery-local.test.ts`
+- `scripts/check-a2a-public-readiness.ts`
+- `scripts/a2a-public-readiness.test.ts`
+- `scripts/package-scripts.test.ts`
+- `scripts/check-product-status.ts`
+- `scripts/check-launch-readiness.ts`
+- `scripts/launch-readiness.test.ts`
+- `package.json`
+- `docs/agentic-gaskit/a2a-public-readiness.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
+- `docs/agentic-gaskit/codex-active-goal.md`
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+- `docs/overview.md`
+- `docs/CODEBASE_MAP.md`
+- `README.md`
+
+Acceptance criteria:
+
+- The smoke command validates the generated artifact directory before serving
+  it.
+- The local server binds only to loopback hosts.
+- The server serves only `/.well-known/agent-card.json` and
+  `/.well-known/jwks.json`.
+- Served responses use manifest-declared content-type and cache-control
+  headers.
+- The command fetches the served Agent Card and JWKS over loopback and confirms
+  JSON shape and response metadata.
+- The command prints only redacted status, file count, `localOnly=true`, and
+  `publicHostingProven=false`; it does not print public URLs, key ids,
+  response bodies, credentials, local secret paths, or private material.
+- Non-loopback host attempts fail closed.
+- The command is opt-in and excluded from `verify:fast`, `verify:local`, and
+  `grant:check`.
+- A2A public-readiness reports the smoke as local host-semantics proof only and
+  keeps public hosting, endpoint ownership, public discovery acceptance,
+  production key management, public push delivery, and external conformance
+  blocked until operator-approved reports exist.
+
+Verification:
+
+- Focused `scripts/smoke-a2a-static-discovery-local.test.ts`.
+- Focused `scripts/check-a2a-static-discovery-bundle.test.ts`.
+- Focused `scripts/write-a2a-static-discovery-bundle.test.ts`.
+- Focused `packages/registry/src/a2aDiscoveryBundle.test.ts`.
+- Focused A2A public-readiness tests.
+- Focused package-script tests.
+- Product-status tests.
+- Launch-readiness tests.
+- `npm run proof:a2a-public-readiness`.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slice 4.29.
+
+Risk:
+Medium. A passing loopback smoke can be mistaken for deployed public hosting
+unless readiness gates keep public discovery and conformance blocked.
+
+Escalation triggers:
+
+- Any request to bind this smoke to a non-loopback host.
+- Any request to make local loopback serving satisfy public discovery readiness
+  by itself.
+- Any request to store private signing keys, webhook credentials, bearer
+  tokens, public endpoint secrets, or raw response bodies in the smoke output.
+
 ## Slice 5.1: Marketplace Readiness Gate
 
 User-visible outcome:

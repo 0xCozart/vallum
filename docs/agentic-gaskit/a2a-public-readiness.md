@@ -19,6 +19,12 @@ Operators can then run `npm run a2a:check-static-discovery-bundle` against the
 generated directory. That command validates the local files and manifest before
 hosting review, without fetching public URLs or proving public hosting.
 
+Operators can also run `npm run smoke:a2a-static-discovery-local` against the
+same generated directory. That command serves only the canonical static
+discovery files over loopback, applies the manifest-declared content headers,
+fetches the Agent Card and JWKS back locally, and still prints
+`publicHostingProven=false`.
+
 When an operator has approved public A2A infrastructure and supplied local
 configuration, `npm run smoke:a2a-public-discovery` is the opt-in networked
 probe for public Agent Card and JWKS discovery. It is not part of local
@@ -61,6 +67,9 @@ publicReady=false
 - Generated static discovery directories can be validated locally before
   public hosting review, including manifest metadata, canonical paths, public
   URL binding, and private-field rejection.
+- Generated static discovery directories can be served and fetched over
+  loopback with manifest-declared content headers after local artifact
+  validation.
 - The opt-in public discovery smoke exists for operator-approved public HTTPS
   Agent Card and JWKS probing, but the non-networked readiness command does not
   run it. Readiness remains blocked unless an operator supplies a structured
@@ -117,8 +126,8 @@ report paths, report contents, credentials, tokens, or secret-like values.
 - Deployed public JWKS hosting, production Agent Card key management, or key
   rotation.
 - Deployed static discovery artifacts, endpoint ownership, or public discovery
-  acceptance from local bundle generation, local file writing, or local
-  artifact validation alone.
+  acceptance from local bundle generation, local file writing, local artifact
+  validation, or local loopback serving alone.
 - Production A2A task-route authentication.
 - Production extended-card access control.
 - Public streaming or webhook delivery by itself.
@@ -167,6 +176,22 @@ The check validates local files only and prints `publicHostingProven=false`.
 Passing it means the local artifact directory is internally consistent; it is
 not endpoint ownership, public discovery, external conformance, or production
 key-management proof.
+
+Optionally smoke the generated directory over loopback before upload:
+
+```bash
+npm run smoke:a2a-static-discovery-local -- \
+  --out-dir tmp/a2a-public \
+  --expected-public-base-url https://agents.example/a2a \
+  --expected-public-jwks-url https://agents.example/.well-known/jwks.json
+```
+
+The smoke validates the artifacts first, binds an ephemeral loopback server,
+serves only `/.well-known/agent-card.json` and `/.well-known/jwks.json`, checks
+the manifest-declared content-type and cache metadata through local fetches,
+and redacts public URLs and key ids from formatted output. It is host-semantics
+proof only; public hosting still requires an operator-approved HTTPS endpoint,
+structured public discovery evidence, and external conformance review.
 
 ## Opt-In Public Discovery Smoke
 

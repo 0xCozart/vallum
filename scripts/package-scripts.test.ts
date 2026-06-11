@@ -106,7 +106,7 @@ test("A2A public discovery smoke is opt-in and excluded from local verification"
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /a2a-public-discovery/);
 });
 
-test("A2A static discovery bundle writer is opt-in and excluded from local verification", () => {
+test("A2A static discovery bundle tools are opt-in and excluded from local verification", () => {
   assert.equal(
     packageJson.scripts?.["a2a:write-static-discovery-bundle"],
     "npm run build && tsx scripts/write-a2a-static-discovery-bundle.ts",
@@ -115,12 +115,19 @@ test("A2A static discovery bundle writer is opt-in and excluded from local verif
     packageJson.scripts?.["a2a:check-static-discovery-bundle"],
     "npm run build && tsx scripts/check-a2a-static-discovery-bundle.ts",
   );
+  assert.equal(
+    packageJson.scripts?.["smoke:a2a-static-discovery-local"],
+    "npm run build && tsx scripts/smoke-a2a-static-discovery-local.ts",
+  );
   assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /write-static-discovery-bundle/);
   assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /write-static-discovery-bundle/);
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /write-static-discovery-bundle/);
   assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /check-static-discovery-bundle/);
   assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /check-static-discovery-bundle/);
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /check-static-discovery-bundle/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /a2a-static-discovery-local/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /a2a-static-discovery-local/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /a2a-static-discovery-local/);
 });
 
 test("verification profiles keep fast iteration separate from the full local gate", () => {

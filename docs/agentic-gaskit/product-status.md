@@ -13,13 +13,14 @@ surface in one machine-checkable place:
 - A2A public-readiness wiring for local proof, local authenticated extended
   Agent Card access, local public JWKS serving, local static discovery bundle
   generation, local static discovery artifact writing and validation, local
-  loopback streaming, local push notification configuration, local injected
-  push delivery, local opt-in push HTTP transport, callback URL admission
-  hardening, callback host allowlisting, local retry/attempt observability,
-  local durable attempt evidence, local delivery queueing, a local
-  injected-transport worker, public hosting inputs, redacted structured public
-  discovery report classification, redacted structured public push delivery
-  report classification, and structured external conformance blockers;
+  static discovery loopback host smoke, local loopback streaming, local push
+  notification configuration, local injected push delivery, local opt-in push
+  HTTP transport, callback URL admission hardening, callback host allowlisting,
+  local retry/attempt observability, local durable attempt evidence, local
+  delivery queueing, a local injected-transport worker, public hosting inputs,
+  redacted structured public discovery report classification, redacted
+  structured public push delivery report classification, and structured
+  external conformance blockers;
 - opt-in public A2A discovery/JWKS smoke wiring for operator-approved public
   HTTPS configuration, kept outside default local verification, with optional
   structured discovery report output;
@@ -95,6 +96,7 @@ npm run gas-station:render-config
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run a2a:write-static-discovery-bundle -- --agent-card <signed-card.json> --jwks <jwks.json> --public-base-url <url> --public-jwks-url <url> --out-dir <dir>
 npm run a2a:check-static-discovery-bundle -- --out-dir <dir> --expected-public-base-url <url> --expected-public-jwks-url <url>
+npm run smoke:a2a-static-discovery-local -- --out-dir <dir> --expected-public-base-url <url> --expected-public-jwks-url <url>
 npm run proof:a2a-public-readiness
 npm run proof:verification-profiles
 npm run proof:live-status

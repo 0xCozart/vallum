@@ -140,7 +140,10 @@ Confirmed current state:
   still deferring public hosting, endpoint ownership, public discovery
   acceptance, production key management, and external conformance. Slice 4.29
   adds an opt-in local static discovery artifact validator that checks generated
-  directories before public hosting review without fetching public URLs.
+  directories before public hosting review without fetching public URLs. Slice
+  4.30 adds an opt-in local static discovery loopback host smoke that serves
+  the validated `.well-known` files with manifest-declared headers and fetches
+  them back locally without proving public hosting.
   Slice 7.5 adds a fast deterministic verification profile plus a
   non-networked profile audit, so ordinary build/test/improve loops can run a
   bounded subset while `verify:local` and `grant:check` remain the full
@@ -178,7 +181,8 @@ Confirmed current state:
   public JWKS artifacts; Slice 4.28 adds local static discovery artifact
   writing for canonical `.well-known` files plus a sanitized header manifest;
   Slice 4.29 adds local static discovery artifact validation before public
-  hosting review.
+  hosting review; Slice 4.30 adds local static discovery loopback host
+  semantics proof before public hosting review.
   Public hosting acceptance, production keys/auth, public webhook
   workers/queues, persistent production observability, and external conformance
   blockers remain.

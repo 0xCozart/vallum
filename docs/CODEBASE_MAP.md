@@ -55,6 +55,9 @@ It also includes the first Agentic GasKit implementation slices:
 - local static A2A discovery artifact validator for checking generated
   `.well-known` files and manifest metadata before public hosting review,
   without fetching public URLs
+- local static A2A discovery loopback host smoke for serving validated
+  `.well-known` files with manifest-declared headers before public hosting
+  review, without proving public hosting
 - local A2A Agent Card JWS signing and trusted-key verification smoke proof
 - local A2A task/message operation helpers and smoke proof
 - local A2A HTTP-shaped handler and smoke proof for public discovery plus
@@ -196,6 +199,9 @@ roadmap unless later slices implement and verify them.
 - A2A static discovery artifact validator:
   `scripts/check-a2a-static-discovery-bundle.ts`,
   `scripts/check-a2a-static-discovery-bundle.test.ts`
+- A2A static discovery local host smoke:
+  `scripts/smoke-a2a-static-discovery-local.ts`,
+  `scripts/smoke-a2a-static-discovery-local.test.ts`
 - Product status proof: `docs/agentic-gaskit/product-status.md`,
   `scripts/check-product-status.ts`, `scripts/product-status.test.ts`
 - Launch readiness evidence:

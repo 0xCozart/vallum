@@ -126,14 +126,15 @@ Expected current result:
 - A2A public-readiness proof reports local A2A evidence, local loopback
   streaming proof, local authenticated extended-card access, local public JWKS
   serving, local static discovery bundle generation, local static discovery
-  artifact writing and validation, local push notification configuration,
-  local injected push delivery, local opt-in push HTTP transport, callback URL
-  admission hardening, callback host allowlisting, local retry/attempt
-  observability, local durable attempt evidence, local delivery queueing, a
-  local injected-transport worker, public hosting input blockers, redacted
-  structured public discovery report classification, redacted structured public
-  push delivery report classification, and structured external conformance
-  blockers without contacting public endpoints;
+  artifact writing and validation, local static discovery loopback host smoke,
+  local push notification configuration, local injected push delivery, local
+  opt-in push HTTP transport, callback URL admission hardening, callback host
+  allowlisting, local retry/attempt observability, local durable attempt
+  evidence, local delivery queueing, a local injected-transport worker, public
+  hosting input blockers, redacted structured public discovery report
+  classification, redacted structured public push delivery report
+  classification, and structured external conformance blockers without
+  contacting public endpoints;
 - the opt-in A2A public-discovery smoke is available for approved public HTTPS
   Agent Card/JWKS probing and can emit the structured discovery report, but is
   not part of local verification;

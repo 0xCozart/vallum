@@ -16,21 +16,20 @@ local proof as live IOTA testnet, production marketplace, public scoring,
 public A2A discovery, production key management, or provider-verification
 proof.
 
-As of the latest completed update, Slice 4.29 is complete: A2A static discovery
-artifact validator. Agentic GasKit can now validate a generated local static
-discovery directory before public hosting review, checking the manifest,
-canonical `.well-known/agent-card.json` and `.well-known/jwks.json` files,
-public URL binding, content-type metadata, signed Agent Card/JWKS consistency,
-and private-field rejection without fetching public URLs. `npm run
-proof:a2a-public-readiness` now reports
-`A2A_STATIC_DISCOVERY_ARTIFACT_VALIDATOR_LOCAL_PROOF_CONFIGURED` as local
-pre-hosting validation support. This does not sign cards, generate production
-keys, deploy public A2A hosting, prove endpoint ownership, prove production key
-rotation, accept public discovery evidence, run external A2A conformance, prove
-public push delivery, or prove live IOTA behavior. Public hosting acceptance,
-production keys/auth, public webhook infrastructure, live IOTA proof, npm
-publication, payment/provider, marketplace, custody, device-safety, and
-external conformance claims remain blocked.
+As of the latest completed update, Slice 4.30 is complete: A2A static discovery
+local host smoke. Agentic GasKit can now validate a generated local static
+discovery directory, bind a loopback-only static server, serve canonical
+`.well-known/agent-card.json` and `.well-known/jwks.json` files with
+manifest-declared headers, and fetch both files back locally before public
+hosting review. `npm run proof:a2a-public-readiness` now reports
+`A2A_STATIC_DISCOVERY_LOCAL_HOST_SMOKE_CONFIGURED` as local host-semantics
+support. This does not sign cards, generate production keys, deploy public A2A
+hosting, prove endpoint ownership, prove production key rotation, accept public
+discovery evidence, run external A2A conformance, prove public push delivery,
+or prove live IOTA behavior. Public hosting acceptance, production keys/auth,
+public webhook infrastructure, live IOTA proof, npm publication,
+payment/provider, marketplace, custody, device-safety, and external conformance
+claims remain blocked.
 
 As of the latest live-read-only refresh on 2026-06-11, the existing documented
 public IOTA testnet digest was successfully retrieved from the default IOTA
@@ -40,15 +39,12 @@ read-only RPC reachability for the documented digest only. It does not prove a
 new sponsored transaction, local `.env` readiness, current sponsor wallet
 funding, current Gas Station availability, or production readiness.
 
-As of the latest full local verification refresh on 2026-06-11, `npm run
-verify:local` passed from the current state. The full gate covered 420
-deterministic TypeScript tests, 33 Move tests, typecheck, local gateway and
-demo smokes, agent workflow smokes, local A2A smokes, marketplace read-model
-smoke, example testnet-readiness preflight, non-networked digest proof,
-package dry-runs, package install smoke for 11 packages, A2A public-readiness,
-verification-profile, product-status, launch-readiness, operator-gate, docs,
-and secret-scan checks. This is full local/reviewer evidence only; it does not
-clear live/operator blockers.
+As of the latest Slice 4.30 verification refresh on 2026-06-11, `npm run
+verify:fast` passed from the current state. The fast gate covered the workspace
+build, 440 deterministic TypeScript tests, docs check, secret scan,
+product-status, launch-readiness, and operator-gate reports. This is bounded
+iteration evidence only; it does not replace the full `npm run verify:local`
+reviewer/release gate and it does not clear live/operator blockers.
 
 As of the latest local testnet-readiness refresh on 2026-06-11, `.env` is
 populated outside Git with generated local testnet-readiness values and
