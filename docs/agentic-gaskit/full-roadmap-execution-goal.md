@@ -86,7 +86,7 @@ Confirmed current state:
   proof while keeping webhook delivery and public A2A blockers explicit. Slice
   4.12 adds local authenticated extended Agent Card proof while keeping public
   hosting, production auth, and external conformance blockers explicit. Slice
-  4.13 is adding local injected push delivery envelope proof while keeping
+  4.13 adds local injected push delivery envelope proof while keeping
   default outbound webhook calls, public hosting, production auth, public
   webhook delivery, and external conformance blockers explicit.
   Slice 7.5 adds a fast deterministic verification profile plus a

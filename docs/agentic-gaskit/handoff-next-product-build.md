@@ -9,7 +9,7 @@ Continue actual Agentic GasKit product implementation in
 
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5,
 2.6, 2.7, 2.8,
-3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 4.10, 4.11, 4.12,
+3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 4.10, 4.11, 4.12, 4.13,
 5.1, 5.2, 6.1, 6.2, 6.3, 7.1, 7.2, 7.3, 7.4, and 7.5 are implemented, reviewed, locally
 verified, or explicitly deferred with a verified hardening gate.
 Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
@@ -29,6 +29,7 @@ new scope and its unresolved gates.
 
 Recent commits to know:
 
+- `05ca63e` feat: add a2a local push delivery gate
 - `e746126` feat: add a2a extended card auth gate
 - `ded068e` feat: add a2a push config safety gate
 - `bfa6c90` docs: update active goal after a2a streaming
@@ -52,6 +53,119 @@ Recent commits to know:
 - `fe5a6ee` docs: record agentic gaskit github remote
 - `b2d9928` chore: migrate reviewed gaskit local changes
 - `3b34cef` docs: create agentic gaskit migration fork
+
+## Completed Slice 4.13: A2A Local Push Delivery Envelope Gate
+
+Implementation commit: `05ca63e` (`feat: add a2a local push delivery gate`).
+
+What changed:
+
+- Added local A2A push notification delivery envelope support through an
+  explicitly injected transport in `packages/standards/src/a2aPush.ts`.
+- Delivery builds credential-free task update requests with A2A media type and
+  protocol-version headers. It does not add an authorization header, persist
+  webhook credentials, or create a default outbound HTTP client.
+- The local A2A HTTP handler now dispatches push delivery after task state
+  changes only when both a push config store and injected transport are
+  configured.
+- Transport errors are isolated from task routes; task send/cancel responses do
+  not fail or leak transport exception text when delivery fails.
+- The A2A HTTP demo and `npm run smoke:a2a-http` now prove local push config
+  plus injected delivery with `pushDelivery.count=1`,
+  `pushDelivery.status=202`, and `logLeaksSecretMaterial=false`.
+- `npm run proof:a2a-public-readiness` now reports local injected delivery as
+  `A2A_PUSH_DELIVERY_LOCAL_PROOF_CONFIGURED` while keeping public push webhook
+  delivery blocked with `A2A_PUBLIC_PUSH_DELIVERY_PROOF_MISSING`.
+- Product-status, launch-readiness, overview, README, package docs, active
+  goal, external API notes, execution slices, codebase map, and reviewer docs
+  now distinguish local injected delivery proof from public A2A webhook
+  delivery, hosting, production auth/JWKS, and external conformance proof.
+
+Commands run:
+
+```bash
+node --import tsx --test packages/standards/src/a2aPush.test.ts packages/standards/src/a2aHttp.test.ts examples/a2a-http/a2a-http-demo.test.ts scripts/a2a-public-readiness.test.ts
+node --import tsx --test packages/standards/src/a2aPush.test.ts packages/standards/src/a2aHttp.test.ts examples/a2a-http/a2a-http-demo.test.ts scripts/a2a-public-readiness.test.ts scripts/product-status.test.ts scripts/launch-readiness.test.ts scripts/operator-live-gates.test.ts scripts/package-scripts.test.ts scripts/reviewer-docs.test.ts
+npm run smoke:a2a-http
+npm run proof:a2a-public-readiness
+npm run typecheck
+npm run docs:check
+npm run secrets:scan
+npm run verify:fast
+npm run verify:local
+git diff --check
+```
+
+Verification result:
+
+- Focused A2A tests passed with 18 tests.
+- Focused A2A/status/docs/package-script regression tests passed with 82
+  tests.
+- `npm run smoke:a2a-http` passed with public Agent Card status `200`,
+  unauthorized task status `401`, authorized send `200`, hidden artifacts true,
+  canceled status `TASK_STATE_CANCELED`, `extendedAgentCard.status=200`,
+  `extendedAgentCard.skillCount=2`, `pushConfig.status=200`,
+  `pushConfig.listCount=1`, `pushConfig.credentialRejectionStatus=400`,
+  `pushDelivery.count=1`, `pushDelivery.status=202`, and
+  `logLeaksSecretMaterial=false`.
+- `npm run proof:a2a-public-readiness` passed with `localProofOk=true`,
+  `publicReady=false`, local injected push delivery proof, public push webhook
+  delivery still blocked, missing public URL/JWKS/auth config, and missing
+  external conformance report.
+- `npm run typecheck` passed.
+- `npm run docs:check` passed: 37 HTML pages from 36 Markdown sources.
+- `npm run secrets:scan` passed: 323 tracked/staged/untracked text files,
+  findings 0.
+- `npm run verify:fast` passed, including build, 405 TypeScript tests, docs
+  check, secret scan, product-status, launch-readiness, and operator-gate
+  reports.
+- `npm run verify:local` passed with 405 TypeScript tests, 33 Move tests,
+  typecheck, local gateway smoke, demo dApp smoke, browser smoke, agent escrow
+  smoke, paid MCP tool smoke, data-license smoke, service-bounty smoke,
+  reputation-receipt smoke, subscription smoke, A2A well-known smoke, A2A
+  signed-card smoke, A2A task/message smoke, A2A HTTP smoke, A2A local server
+  smoke, marketplace read-model smoke, testnet readiness example, digest proof,
+  package dry-runs, package install smoke, A2A public-readiness proof,
+  verification-profile proof, product-status proof, launch-readiness proof,
+  operator-gates proof, docs check, and secret scan.
+- `git diff --check` passed.
+
+Hardening notes:
+
+- This is local injected push delivery proof only. It is not public webhook
+  delivery, public A2A hosting, production JWKS/key distribution, production
+  task-route auth, or external A2A conformance proof.
+- No default outbound delivery client was added; callers must inject a
+  transport explicitly.
+- Delivery requests do not include authorization headers or stored credential
+  material.
+- Public webhook delivery still needs outbound delivery infrastructure, SSRF
+  controls, retry policy, authentication design, external endpoint proof, and
+  operator approval before any interoperability claim.
+- Apex profile still has `setup.reviewNeeded: true`; this slice does not claim
+  Apex verification.
+
+Known unproven claims:
+
+- No public A2A endpoint was hosted or fetched.
+- No public push webhook delivery was attempted.
+- No production JWKS/key-distribution or production task-route auth proof
+  exists.
+- No external A2A conformance report was supplied.
+- No configured IOTA Names, IOTA Identity, or VC trust-policy proof passed.
+- No package is published to npm and no registry install/provenance/account
+  ownership proof exists.
+- No live payment/provider settlement, production marketplace, provider
+  verification, custody/KMS, recovery export, or physical device access proof
+  exists.
+
+Next safe slice:
+
+- Choose an operator-approved public A2A hosting/JWKS/auth/conformance slice, a
+  real public push webhook delivery security/infrastructure slice, or another
+  explicit live gate such as IOTA Names/Identity/VC, npm release,
+  payment/provider, marketplace, custody, or device-safety design before
+  claiming launch readiness.
 
 ## Completed Slice 4.12: A2A Authenticated Extended Agent Card Gate
 
