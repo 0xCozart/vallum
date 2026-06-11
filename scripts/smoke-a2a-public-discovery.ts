@@ -1,3 +1,5 @@
+import { mkdir, writeFile } from "node:fs/promises";
+import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 export type A2APublicDiscoverySmokeResult =
@@ -32,9 +34,23 @@ export interface A2APublicDiscoveryCheck {
   readonly message: string;
 }
 
+export interface A2APublicDiscoveryEvidenceReport {
+  readonly schemaVersion: 1;
+  readonly kind: "a2a-public-discovery";
+  readonly result: "passed";
+  readonly observedAt: string;
+  readonly publicAgentCardUrl: string;
+  readonly publicBaseUrl: string;
+  readonly publicJwksUrl: string;
+  readonly taskAuthDecision: "bearer" | "oauth2" | "mtls";
+  readonly checks: readonly string[];
+}
+
 export interface RunA2APublicDiscoverySmokeOptions {
   readonly env?: NodeJS.ProcessEnv | Record<string, string | undefined>;
   readonly fetch?: typeof fetch;
+  readonly now?: Date;
+  readonly reportPath?: string;
   readonly timeoutMs?: number;
 }
 
@@ -44,6 +60,8 @@ const REQUIRED_ENV = [
   "A2A_PUBLIC_JWKS_URL",
   "A2A_PUBLIC_TASK_AUTH_DECISION",
 ] as const;
+
+type A2APublicTaskAuthDecision = A2APublicDiscoveryEvidenceReport["taskAuthDecision"];
 
 const ALLOWED_AUTH_DECISIONS = new Set(["bearer", "oauth2", "mtls"]);
 const MAX_RESPONSE_BYTES = 64 * 1024;
@@ -61,17 +79,18 @@ export async function runA2APublicDiscoverySmoke(
   const agentCardUrl = readEnv(env, "A2A_PUBLIC_AGENT_CARD_URL");
   const publicBaseUrl = readEnv(env, "A2A_PUBLIC_BASE_URL");
   const jwksUrl = readEnv(env, "A2A_PUBLIC_JWKS_URL");
-  const taskAuthDecision = readEnv(env, "A2A_PUBLIC_TASK_AUTH_DECISION")?.toLowerCase();
-  if (!agentCardUrl || !publicBaseUrl || !jwksUrl || !taskAuthDecision) {
+  const taskAuthDecisionValue = readEnv(env, "A2A_PUBLIC_TASK_AUTH_DECISION");
+  if (!agentCardUrl || !publicBaseUrl || !jwksUrl || !taskAuthDecisionValue) {
     throw new Error("A2A public discovery missing-config invariant failed.");
   }
 
+  const taskAuthDecision = normalizeTaskAuthDecision(taskAuthDecisionValue);
   if (
     !isPublicHttpsUrl(agentCardUrl)
     || !isPublicHttpsUrl(publicBaseUrl)
     || !isPublicHttpsUrl(jwksUrl)
     || !agentCardUrl.endsWith("/.well-known/agent-card.json")
-    || !ALLOWED_AUTH_DECISIONS.has(taskAuthDecision)
+    || !taskAuthDecision
   ) {
     return blocked("A2A_PUBLIC_DISCOVERY_URL_UNSAFE", "A2A public discovery configuration must use public HTTPS URLs and a supported auth decision.");
   }
@@ -97,15 +116,30 @@ export async function runA2APublicDiscoverySmoke(
   const jwksValidation = validateJwks(jwksResult.value);
   if (!jwksValidation.ok) return jwksValidation.result;
 
-  return {
+  const checks = [
+    passed("public-config", "A2A_PUBLIC_DISCOVERY_CONFIG_SAFE", "A2A public discovery configuration is safe to probe."),
+    passed("public-agent-card", "A2A_PUBLIC_AGENT_CARD_VALID", "A2A public Agent Card matched configured discovery inputs."),
+    passed("public-jwks", "A2A_PUBLIC_JWKS_VALID", "A2A public JWKS exposed public key material only."),
+  ];
+  const result: A2APublicDiscoverySmokeResult = {
     ok: true,
     source: "a2a-public-discovery",
-    checks: [
-      passed("public-config", "A2A_PUBLIC_DISCOVERY_CONFIG_SAFE", "A2A public discovery configuration is safe to probe."),
-      passed("public-agent-card", "A2A_PUBLIC_AGENT_CARD_VALID", "A2A public Agent Card matched configured discovery inputs."),
-      passed("public-jwks", "A2A_PUBLIC_JWKS_VALID", "A2A public JWKS exposed public key material only."),
-    ],
+    checks,
   };
+  if (options.reportPath) {
+    await writeDiscoveryReport(options.reportPath, {
+      schemaVersion: 1,
+      kind: "a2a-public-discovery",
+      result: "passed",
+      observedAt: (options.now ?? new Date()).toISOString(),
+      publicAgentCardUrl: agentCardUrl,
+      publicBaseUrl,
+      publicJwksUrl: jwksUrl,
+      taskAuthDecision,
+      checks: checks.map((check) => check.id),
+    });
+  }
+  return result;
 }
 
 export function formatA2APublicDiscoverySmokeResult(result: A2APublicDiscoverySmokeResult): string {
@@ -328,6 +362,21 @@ function readEnv(env: NodeJS.ProcessEnv | Record<string, string | undefined>, ke
   return value && value.trim() !== "" ? value.trim() : undefined;
 }
 
+function normalizeTaskAuthDecision(value: string | undefined): A2APublicTaskAuthDecision | undefined {
+  const normalized = value?.toLowerCase();
+  if (!normalized || !ALLOWED_AUTH_DECISIONS.has(normalized)) return undefined;
+  return normalized as A2APublicTaskAuthDecision;
+}
+
+async function writeDiscoveryReport(
+  reportPath: string,
+  report: A2APublicDiscoveryEvidenceReport,
+): Promise<void> {
+  const resolved = isAbsolute(reportPath) ? reportPath : resolve(process.cwd(), reportPath);
+  await mkdir(dirname(resolved), { recursive: true });
+  await writeFile(resolved, `${JSON.stringify(report, null, 2)}\n`);
+}
+
 function isPublicHttpsUrl(value: string): boolean {
   try {
     const url = new URL(value);
@@ -367,7 +416,15 @@ function withTimeout(fetchImpl: typeof fetch, timeoutMs: number): typeof fetch {
 }
 
 async function main(): Promise<number> {
-  const result = await runA2APublicDiscoverySmoke();
+  const parsedArgs = parseArgs(process.argv.slice(2));
+  if (!parsedArgs.ok) {
+    console.error(formatA2APublicDiscoverySmokeResult(blocked(
+      "A2A_PUBLIC_DISCOVERY_CONFIG_MISSING",
+      parsedArgs.message,
+    )));
+    return 2;
+  }
+  const result = await runA2APublicDiscoverySmoke({ reportPath: parsedArgs.reportPath });
   const formatted = formatA2APublicDiscoverySmokeResult(result);
   if (result.ok) {
     console.log(formatted);
@@ -375,6 +432,24 @@ async function main(): Promise<number> {
   }
   console.error(formatted);
   return result.kind === "blocked" ? 2 : 1;
+}
+
+function parseArgs(args: readonly string[]): { readonly ok: true; readonly reportPath?: string } | { readonly ok: false; readonly message: string } {
+  let reportPath: string | undefined;
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg === "--report") {
+      const value = args[index + 1];
+      if (!value || value.startsWith("--")) {
+        return { ok: false, message: "A2A public discovery --report requires a local output path." };
+      }
+      reportPath = value;
+      index += 1;
+      continue;
+    }
+    return { ok: false, message: "A2A public discovery smoke only accepts --report <path>." };
+  }
+  return reportPath ? { ok: true, reportPath } : { ok: true };
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

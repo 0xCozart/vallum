@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { test } from "node:test";
 
 import {
@@ -57,24 +60,44 @@ test("A2A public discovery smoke rejects unsafe public config without printing v
 
 test("A2A public discovery smoke validates public Agent Card and JWKS through injected fetch", async () => {
   const requested: string[] = [];
-  const result = await runA2APublicDiscoverySmoke({
-    env: VALID_ENV,
-    fetch: async (input) => {
-      requested.push(String(input));
-      if (String(input).endsWith("/.well-known/agent-card.json")) return jsonResponse(validAgentCard());
-      if (String(input).endsWith("/.well-known/jwks.json")) return jsonResponse(validJwks());
-      return jsonResponse({ error: "not found" }, 404);
-    },
-  });
-  const formatted = formatA2APublicDiscoverySmokeResult(result);
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-a2a-discovery-"));
+  try {
+    const reportPath = join(cwd, "a2a-public-discovery-report.json");
+    const result = await runA2APublicDiscoverySmoke({
+      env: VALID_ENV,
+      now: new Date("2026-06-11T12:00:00.000Z"),
+      reportPath,
+      fetch: async (input) => {
+        requested.push(String(input));
+        if (String(input).endsWith("/.well-known/agent-card.json")) return jsonResponse(validAgentCard());
+        if (String(input).endsWith("/.well-known/jwks.json")) return jsonResponse(validJwks());
+        return jsonResponse({ error: "not found" }, 404);
+      },
+    });
+    const formatted = formatA2APublicDiscoverySmokeResult(result);
+    const report = JSON.parse(await readFile(reportPath, "utf8")) as Record<string, unknown>;
 
-  assert.equal(result.ok, true);
-  assert.deepEqual(requested, [
-    "https://agents.example/.well-known/agent-card.json",
-    "https://agents.example/.well-known/jwks.json",
-  ]);
-  assert.match(formatted, /A2A public discovery smoke passed/);
-  assert.doesNotMatch(formatted, /agents\.example|bearer|researcher\.demo/i);
+    assert.equal(result.ok, true);
+    assert.deepEqual(requested, [
+      "https://agents.example/.well-known/agent-card.json",
+      "https://agents.example/.well-known/jwks.json",
+    ]);
+    assert.deepEqual(report, {
+      schemaVersion: 1,
+      kind: "a2a-public-discovery",
+      result: "passed",
+      observedAt: "2026-06-11T12:00:00.000Z",
+      publicAgentCardUrl: "https://agents.example/.well-known/agent-card.json",
+      publicBaseUrl: "https://agents.example/a2a",
+      publicJwksUrl: "https://agents.example/.well-known/jwks.json",
+      taskAuthDecision: "bearer",
+      checks: ["public-config", "public-agent-card", "public-jwks"],
+    });
+    assert.match(formatted, /A2A public discovery smoke passed/);
+    assert.doesNotMatch(formatted, /agents\.example|bearer|researcher\.demo|a2a-public-discovery-report/i);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
 });
 
 test("A2A public discovery smoke fails closed on Agent Card endpoint mismatch", async () => {

@@ -14,10 +14,12 @@ surface in one machine-checkable place:
   Agent Card access, local loopback streaming, local push notification
   configuration, local injected push delivery, local opt-in push HTTP
   transport, local retry/attempt observability, public hosting inputs,
-  redacted structured public push delivery report classification, and
-  structured external conformance blockers;
+  redacted structured public discovery report classification, redacted
+  structured public push delivery report classification, and structured
+  external conformance blockers;
 - opt-in public A2A discovery/JWKS smoke wiring for operator-approved public
-  HTTPS configuration, kept outside default local verification;
+  HTTPS configuration, kept outside default local verification, with optional
+  structured discovery report output;
 - verification-profile wiring that keeps fast iteration separate from the full
   local evidence gate;
 - launch-readiness evidence matrix and operator live-gate runbook wiring;

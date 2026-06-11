@@ -599,6 +599,17 @@ Current planning assumptions:
   JWK material. It is not part of default verification and does not send A2A
   task messages, post webhooks, run external conformance tooling, prove key
   rotation, or accept launch readiness by itself.
+- On 2026-06-11, Slice 4.19 makes the public discovery/JWKS proof consumable by
+  the non-networked readiness gate. The opt-in smoke can write a structured
+  `a2a-public-discovery` report with schema version, passing result, observed
+  time, configured public Agent Card/base/JWKS URLs, task-auth decision, and
+  passed check ids. `npm run proof:a2a-public-readiness` now requires
+  `A2A_PUBLIC_DISCOVERY_REPORT` before `publicReady=true` is possible, and
+  rejects missing, absent, malformed, stale, failed, wrong-kind,
+  endpoint-mismatched, JWKS-mismatched, or auth-mismatched reports without
+  printing configured values. This still does not run public discovery from the
+  readiness command, send task messages, post webhooks, run conformance
+  tooling, prove key rotation, or accept launch readiness.
 
 Implementation checks:
 

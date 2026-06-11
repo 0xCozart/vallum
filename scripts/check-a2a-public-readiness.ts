@@ -83,6 +83,13 @@ export async function checkA2APublicReadiness(
       "A2A production JWKS URL must be HTTPS and non-loopback.",
     ),
     checkTaskAuthDecision(env.A2A_PUBLIC_TASK_AUTH_DECISION),
+    await checkPublicDiscoveryReport(cwd, env.A2A_PUBLIC_DISCOVERY_REPORT, {
+      expectedPublicAgentCardUrl: env.A2A_PUBLIC_AGENT_CARD_URL,
+      expectedPublicBaseUrl: env.A2A_PUBLIC_BASE_URL,
+      expectedPublicJwksUrl: env.A2A_PUBLIC_JWKS_URL,
+      expectedTaskAuthDecision: env.A2A_PUBLIC_TASK_AUTH_DECISION,
+      now,
+    }),
     localExtendedAgentCardSupport(),
     localStreamingSupport(),
     localPushConfigurationSupport(),
@@ -314,6 +321,63 @@ function localPushRetryObservabilitySupport(): A2APublicReadinessCheck {
   };
 }
 
+async function checkPublicDiscoveryReport(
+  cwd: string,
+  value: string | undefined,
+  options: {
+    readonly expectedPublicAgentCardUrl: string | undefined;
+    readonly expectedPublicBaseUrl: string | undefined;
+    readonly expectedPublicJwksUrl: string | undefined;
+    readonly expectedTaskAuthDecision: string | undefined;
+    readonly now: Date;
+  },
+): Promise<A2APublicReadinessCheck> {
+  if (!value || value.trim() === "") {
+    return {
+      id: "public-discovery",
+      status: "blocked-conformance",
+      code: "A2A_PUBLIC_DISCOVERY_REPORT_MISSING",
+      message: "A2A public discovery and JWKS evidence has not been supplied.",
+      evidence: "missing=A2A_PUBLIC_DISCOVERY_REPORT",
+      next: "Run npm run smoke:a2a-public-discovery -- --report <local-report-path> only after operator approval and provide the report path outside committed docs.",
+    };
+  }
+
+  const reportPath = isAbsolute(value) ? value : resolve(cwd, value);
+  const report = await readStructuredEvidenceReport(reportPath, {
+    kind: "a2a-public-discovery",
+    id: "public-discovery",
+    missingCode: "A2A_PUBLIC_DISCOVERY_REPORT_NOT_FOUND",
+    invalidCodePrefix: "A2A_PUBLIC_DISCOVERY_REPORT",
+    notFoundMessage: "A2A public discovery evidence path was configured but not found.",
+    invalidMessage: "A2A public discovery evidence is not a valid passing structured report.",
+    expectedPublicAgentCardUrl: options.expectedPublicAgentCardUrl,
+    expectedPublicBaseUrl: options.expectedPublicBaseUrl,
+    expectedPublicJwksUrl: options.expectedPublicJwksUrl,
+    expectedTaskAuthDecision: options.expectedTaskAuthDecision,
+    now: options.now,
+  });
+  if (!report.ok) {
+    return {
+      id: "public-discovery",
+      status: "blocked-conformance",
+      code: report.code,
+      message: report.message,
+      evidence: report.evidence,
+      next: report.next,
+    };
+  }
+
+  return {
+    id: "public-discovery",
+    status: "ready-approval",
+    code: "A2A_PUBLIC_DISCOVERY_REPORT_VALID",
+    message: "A2A public discovery and JWKS evidence is a passing structured report for a future approved review.",
+    evidence: "local-structured-report-valid-redacted",
+    next: "Review the report manually before accepting public discovery or JWKS claims.",
+  };
+}
+
 async function checkPublicPushDeliveryReport(
   cwd: string,
   value: string | undefined,
@@ -419,7 +483,7 @@ async function checkConformanceReport(
 }
 
 interface StructuredEvidenceValidationOptions {
-  readonly kind: "a2a-public-push-delivery" | "a2a-external-conformance";
+  readonly kind: "a2a-public-discovery" | "a2a-public-push-delivery" | "a2a-external-conformance";
   readonly id: string;
   readonly missingCode: string;
   readonly invalidCodePrefix: string;
@@ -427,6 +491,8 @@ interface StructuredEvidenceValidationOptions {
   readonly invalidMessage: string;
   readonly expectedPublicAgentCardUrl?: string;
   readonly expectedPublicBaseUrl?: string;
+  readonly expectedPublicJwksUrl?: string;
+  readonly expectedTaskAuthDecision?: string;
   readonly now: Date;
 }
 
@@ -545,6 +611,27 @@ async function readStructuredEvidenceReport(
     }
   }
 
+  if (options.expectedPublicJwksUrl && isPublicUrl(options.expectedPublicJwksUrl)) {
+    if (parsed.publicJwksUrl !== options.expectedPublicJwksUrl) {
+      return structuredEvidenceFailure(
+        `${options.invalidCodePrefix}_PUBLIC_JWKS_URL_MISMATCH`,
+        options.invalidMessage,
+        "configured-report-public-jwks-url-mismatch",
+        "Provide evidence for the same configured public JWKS URL.",
+      );
+    }
+  }
+
+  const expectedTaskAuthDecision = normalizeTaskAuthDecision(options.expectedTaskAuthDecision);
+  if (expectedTaskAuthDecision && parsed.taskAuthDecision !== expectedTaskAuthDecision) {
+    return structuredEvidenceFailure(
+      `${options.invalidCodePrefix}_TASK_AUTH_DECISION_MISMATCH`,
+      options.invalidMessage,
+      "configured-report-task-auth-decision-mismatch",
+      "Provide evidence for the same configured public task auth decision.",
+    );
+  }
+
   return { ok: true };
 }
 
@@ -578,6 +665,12 @@ function isRecentTimestamp(value: string, now: Date): boolean {
 
 function isPublicUrl(value: string): boolean {
   return parsePublicHttpsUrl(value) !== undefined;
+}
+
+function normalizeTaskAuthDecision(value: string | undefined): "bearer" | "oauth2" | "mtls" | undefined {
+  const normalized = value?.trim().toLowerCase();
+  if (!normalized || !ALLOWED_TASK_AUTH_DECISIONS.has(normalized)) return undefined;
+  return normalized as "bearer" | "oauth2" | "mtls";
 }
 
 function parsePublicHttpsUrl(value: string): URL | undefined {

@@ -2185,6 +2185,74 @@ Escalation triggers:
   credentials, follow redirects automatically, or claim external conformance
   from discovery/JWKS reachability alone.
 
+## Slice 4.19: A2A Public Discovery Report Gate
+
+User-visible outcome:
+Operators can turn an approved public discovery/JWKS smoke run into structured
+local evidence, and the public-readiness gate requires that evidence before
+`publicReady=true` is possible.
+
+Likely files:
+
+- `scripts/smoke-a2a-public-discovery.ts`
+- `scripts/a2a-public-discovery-smoke.test.ts`
+- `scripts/check-a2a-public-readiness.ts`
+- `scripts/a2a-public-readiness.test.ts`
+- `scripts/check-product-status.ts`
+- `scripts/check-launch-readiness.ts`
+- `docs/agentic-gaskit/a2a-public-readiness.md`
+- `docs/agentic-gaskit/external-api-notes.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/overview.md`
+- `docs/CODEBASE_MAP.md`
+- `README.md`
+- `docs/reviewer-walkthrough.md`
+
+Acceptance criteria:
+
+- `npm run smoke:a2a-public-discovery -- --report <path>` writes a structured
+  local report only after public Agent Card and JWKS validation passes.
+- The structured report uses `schemaVersion: 1`, kind
+  `a2a-public-discovery`, result `passed`, a recent `observedAt`, configured
+  public Agent Card/base/JWKS URLs, task-auth decision, and passed check ids.
+- `npm run proof:a2a-public-readiness` requires
+  `A2A_PUBLIC_DISCOVERY_REPORT` before `publicReady=true` is possible.
+- Missing, absent, malformed, stale, failed, wrong-kind, endpoint-mismatched,
+  JWKS-mismatched, or task-auth-mismatched discovery reports remain blocked
+  with redacted output.
+- Valid discovery reports are `ready-approval` only. They are not external A2A
+  conformance, public push delivery, production auth approval, production key
+  rotation approval, live IOTA proof, provider verification, or launch
+  readiness.
+
+Verification:
+
+- Focused public discovery smoke tests.
+- Focused A2A public-readiness tests.
+- Product-status tests.
+- Launch-readiness tests.
+- Operator-gate tests.
+- Reviewer-docs regression tests.
+- `npm run proof:a2a-public-readiness`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slice 4.18.
+
+Risk:
+Medium. This connects public network proof output to the readiness gate, so it
+must stay redacted, operator-approved, and approval-only.
+
+Escalation triggers:
+
+- Any request to make the readiness command fetch public endpoints, accept a
+  report without structured validation, treat discovery as external
+  conformance, or put public network calls in default verification.
+
 ## Slice 5.1: Marketplace Readiness Gate
 
 User-visible outcome:

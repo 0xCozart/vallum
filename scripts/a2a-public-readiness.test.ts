@@ -33,6 +33,8 @@ test("A2A public readiness reports local proof while public gates remain blocked
     assert.equal(findCheck(report, "local-push-http-transport").code, "A2A_PUSH_HTTP_TRANSPORT_LOCAL_PROOF_CONFIGURED");
     assert.equal(findCheck(report, "local-push-retry-observability").status, "proven-local");
     assert.equal(findCheck(report, "local-push-retry-observability").code, "A2A_PUSH_RETRY_OBSERVABILITY_LOCAL_PROOF_CONFIGURED");
+    assert.equal(findCheck(report, "public-discovery").status, "blocked-conformance");
+    assert.equal(findCheck(report, "public-discovery").code, "A2A_PUBLIC_DISCOVERY_REPORT_MISSING");
     assert.equal(findCheck(report, "public-push-delivery").status, "blocked-conformance");
     assert.equal(findCheck(report, "public-push-delivery").code, "A2A_PUBLIC_PUSH_DELIVERY_REPORT_MISSING");
     assert.equal(findCheck(report, "external-conformance").code, "A2A_EXTERNAL_CONFORMANCE_REPORT_MISSING");
@@ -75,6 +77,7 @@ test("A2A public readiness rejects unsafe public URLs without printing them", as
         A2A_PUBLIC_BASE_URL: "https://127.0.0.1/a2a",
         A2A_PUBLIC_JWKS_URL: "https://keys.localhost/jwks.json",
         A2A_PUBLIC_TASK_AUTH_DECISION: "query-token-secret",
+        A2A_PUBLIC_DISCOVERY_REPORT: "missing-discovery-secret-report.txt",
         A2A_PUBLIC_PUSH_DELIVERY_REPORT: "missing-push-secret-report.txt",
         A2A_EXTERNAL_CONFORMANCE_REPORT: "missing-secret-report.txt",
       },
@@ -86,11 +89,12 @@ test("A2A public readiness rejects unsafe public URLs without printing them", as
     assert.equal(findCheck(report, "public-base-url").code, "A2A_PUBLIC_BASE_URL_UNSAFE");
     assert.equal(findCheck(report, "production-jwks-url").code, "A2A_PUBLIC_JWKS_URL_UNSAFE");
     assert.equal(findCheck(report, "task-auth-decision").code, "A2A_PUBLIC_TASK_AUTH_DECISION_UNSUPPORTED");
+    assert.equal(findCheck(report, "public-discovery").code, "A2A_PUBLIC_DISCOVERY_REPORT_NOT_FOUND");
     assert.equal(findCheck(report, "public-push-delivery").code, "A2A_PUBLIC_PUSH_DELIVERY_REPORT_NOT_FOUND");
     assert.equal(findCheck(report, "external-conformance").code, "A2A_EXTERNAL_CONFORMANCE_REPORT_NOT_FOUND");
     assert.doesNotMatch(
       formatted,
-      /localhost|127\.0\.0\.1|keys\.localhost|query-token-secret|missing-push-secret-report|missing-secret-report/,
+      /localhost|127\.0\.0\.1|keys\.localhost|query-token-secret|missing-discovery-secret-report|missing-push-secret-report|missing-secret-report/,
     );
   } finally {
     await rm(cwd, { recursive: true, force: true });
@@ -129,6 +133,8 @@ test("A2A public readiness accepts redacted public config and existing conforman
     assert.equal(findCheck(report, "public-base-url").status, "ready-approval");
     assert.equal(findCheck(report, "production-jwks-url").status, "ready-approval");
     assert.equal(findCheck(report, "task-auth-decision").status, "ready-approval");
+    assert.equal(findCheck(report, "public-discovery").status, "blocked-conformance");
+    assert.equal(findCheck(report, "public-discovery").code, "A2A_PUBLIC_DISCOVERY_REPORT_MISSING");
     assert.equal(findCheck(report, "external-conformance").status, "ready-approval");
     assert.equal(findCheck(report, "external-conformance").code, "A2A_EXTERNAL_CONFORMANCE_REPORT_VALID");
     assert.equal(findCheck(report, "extended-agent-card").status, "proven-local");
@@ -148,6 +154,7 @@ test("A2A public readiness accepts redacted public config and existing conforman
 test("A2A public readiness accepts redacted public push delivery evidence after approved proof", async () => {
   const cwd = await writeA2AEvidence();
   try {
+    await writeJsonReport(join(cwd, "a2a-public-discovery-report.json"), publicDiscoveryReport());
     await writeJsonReport(join(cwd, "a2a-conformance-report.json"), {
       schemaVersion: 1,
       kind: "a2a-external-conformance",
@@ -174,6 +181,7 @@ test("A2A public readiness accepts redacted public push delivery evidence after 
         A2A_PUBLIC_BASE_URL: "https://agents.example/a2a",
         A2A_PUBLIC_JWKS_URL: "https://agents.example/.well-known/jwks.json",
         A2A_PUBLIC_TASK_AUTH_DECISION: "oauth2",
+        A2A_PUBLIC_DISCOVERY_REPORT: "a2a-public-discovery-report.json",
         A2A_PUBLIC_PUSH_DELIVERY_REPORT: "a2a-public-push-report.json",
         A2A_EXTERNAL_CONFORMANCE_REPORT: "a2a-conformance-report.json",
       },
@@ -184,10 +192,12 @@ test("A2A public readiness accepts redacted public push delivery evidence after 
     assert.equal(report.localProofOk, true);
     assert.equal(report.publicReady, true);
     assert.match(formatted, /Agentic GasKit A2A public readiness ready-for-approval/);
+    assert.equal(findCheck(report, "public-discovery").status, "ready-approval");
+    assert.equal(findCheck(report, "public-discovery").code, "A2A_PUBLIC_DISCOVERY_REPORT_VALID");
     assert.equal(findCheck(report, "public-push-delivery").status, "ready-approval");
     assert.equal(findCheck(report, "public-push-delivery").code, "A2A_PUBLIC_PUSH_DELIVERY_REPORT_VALID");
     assert.equal(findCheck(report, "external-conformance").status, "ready-approval");
-    assert.doesNotMatch(formatted, /agents\.example|a2a-public-push-report|a2a-conformance-report|oauth2/);
+    assert.doesNotMatch(formatted, /agents\.example|a2a-public-discovery-report|a2a-public-push-report|a2a-conformance-report|oauth2/);
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }
@@ -204,6 +214,10 @@ test("A2A public readiness rejects malformed or endpoint-mismatched structured r
       observedAt: NOW.toISOString(),
       publicBaseUrl: "https://other.example/a2a",
     });
+    await writeJsonReport(join(cwd, "a2a-public-discovery-report.json"), {
+      ...publicDiscoveryReport(),
+      publicJwksUrl: "https://other.example/.well-known/jwks.json",
+    });
     const report = await checkA2APublicReadiness({
       cwd,
       scripts: completeScripts(),
@@ -212,6 +226,7 @@ test("A2A public readiness rejects malformed or endpoint-mismatched structured r
         A2A_PUBLIC_BASE_URL: "https://agents.example/a2a",
         A2A_PUBLIC_JWKS_URL: "https://agents.example/.well-known/jwks.json",
         A2A_PUBLIC_TASK_AUTH_DECISION: "oauth2",
+        A2A_PUBLIC_DISCOVERY_REPORT: "a2a-public-discovery-report.json",
         A2A_PUBLIC_PUSH_DELIVERY_REPORT: "a2a-public-push-report.json",
         A2A_EXTERNAL_CONFORMANCE_REPORT: "a2a-conformance-report.json",
       },
@@ -221,11 +236,15 @@ test("A2A public readiness rejects malformed or endpoint-mismatched structured r
 
     assert.equal(report.publicReady, false);
     assert.equal(
+      findCheck(report, "public-discovery").code,
+      "A2A_PUBLIC_DISCOVERY_REPORT_PUBLIC_JWKS_URL_MISMATCH",
+    );
+    assert.equal(
       findCheck(report, "public-push-delivery").code,
       "A2A_PUBLIC_PUSH_DELIVERY_REPORT_PUBLIC_BASE_URL_MISMATCH",
     );
     assert.equal(findCheck(report, "external-conformance").code, "A2A_EXTERNAL_CONFORMANCE_REPORT_INVALID_JSON");
-    assert.doesNotMatch(formatted, /agents\.example|other\.example|a2a-public-push-report|a2a-conformance-report/);
+    assert.doesNotMatch(formatted, /agents\.example|other\.example|a2a-public-discovery-report|a2a-public-push-report|a2a-conformance-report/);
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }
@@ -295,6 +314,20 @@ async function writeA2AEvidence(): Promise<string> {
 
 async function writeJsonReport(path: string, report: Record<string, unknown>): Promise<void> {
   await writeFile(path, `${JSON.stringify(report, null, 2)}\n`);
+}
+
+function publicDiscoveryReport(): Record<string, unknown> {
+  return {
+    schemaVersion: 1,
+    kind: "a2a-public-discovery",
+    result: "passed",
+    observedAt: NOW.toISOString(),
+    publicAgentCardUrl: "https://agents.example/.well-known/agent-card.json",
+    publicBaseUrl: "https://agents.example/a2a",
+    publicJwksUrl: "https://agents.example/.well-known/jwks.json",
+    taskAuthDecision: "oauth2",
+    checks: ["public-config", "public-agent-card", "public-jwks"],
+  };
 }
 
 function completeScripts(): Record<string, string | undefined> {

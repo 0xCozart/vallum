@@ -5,8 +5,8 @@ Last updated: 2026-06-11.
 ## Goal Pointer
 
 This is the active `/goal` target for continuing Agentic GasKit in
-`/home/sacred/code/agentic-gaskit` after completion of the local Slice 4.18 A2A
-Public Discovery Proof Harness.
+`/home/sacred/code/agentic-gaskit` after completion of the local Slice 4.19 A2A
+Public Discovery Report Gate.
 
 Primary continuation sources:
 
@@ -107,7 +107,12 @@ Confirmed current state:
   discovery/JWKS smoke for operator-approved public HTTPS Agent Card and JWKS
   probing, while keeping it out of default local verification and keeping
   public hosting acceptance, production auth/key rotation, public push delivery,
-  and external conformance blockers explicit.
+  and external conformance blockers explicit. Slice 4.19 lets that opt-in
+  smoke emit a structured public discovery report and requires
+  `A2A_PUBLIC_DISCOVERY_REPORT` before A2A public readiness can become
+  `publicReady=true`, while keeping the report approval-only and separate from
+  external conformance, public push delivery, production key rotation, and
+  launch readiness.
   Slice 7.5 adds a fast deterministic verification profile plus a
   non-networked profile audit, so ordinary build/test/improve loops can run a
   bounded subset while `verify:local` and `grant:check` remain the full
@@ -121,12 +126,14 @@ Confirmed current state:
   retry/attempt observability proof; Slice 4.16 adds redacted public push
   delivery report classification for a future operator-approved review; Slice
   4.17 adds structured public push/conformance report validation for that
-  review path; Slice 4.18 adds opt-in public Agent Card/JWKS discovery proof.
+  review path; Slice 4.18 adds opt-in public Agent Card/JWKS discovery proof;
+  Slice 4.19 requires structured public discovery report evidence before
+  public-readiness approval.
   Public hosting acceptance, production keys/auth, public webhook
   workers/queues, persistent production observability, and external conformance
   blockers remain.
 - `docs/agentic-gaskit/handoff-next-product-build.md` records the latest
-  completed/deferred slice set, including Slice 4.18, with exact local
+  completed/deferred slice set, including Slice 4.19, with exact local
   verification evidence and remaining live, production, publication, custody,
   payment, A2A, marketplace, and safety blockers.
 - `docs/marketplace-readiness.md` permits marketplace requirements/design work
