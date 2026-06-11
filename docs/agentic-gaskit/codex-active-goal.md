@@ -16,20 +16,18 @@ local proof as live IOTA testnet, production marketplace, public scoring,
 public A2A discovery, production key management, or provider-verification
 proof.
 
-As of the latest completed update, Slice 4.19 is complete: an A2A public
-discovery report gate. It lets the opt-in
-`npm run smoke:a2a-public-discovery -- --report <path>` command write a
-structured local `a2a-public-discovery` report only after public Agent Card and
-JWKS validation passes. `npm run proof:a2a-public-readiness` now requires
-`A2A_PUBLIC_DISCOVERY_REPORT` before `publicReady=true` is possible, validates
-the report schema, observed time, configured public Agent Card/base/JWKS URLs,
-and task-auth decision, and keeps missing/malformed/stale/mismatched reports
-blocked with redacted output. This does not send A2A task messages, post
-webhook callbacks, run background workers, persist queues, store webhook
-credentials, run external A2A conformance, publish JWKS, prove production key
-rotation, or prove public push delivery. Public hosting acceptance, production
-keys/auth, public webhook infrastructure, live IOTA proof, and external
-conformance claims remain blocked.
+As of the latest completed update, Slice 4.20 is complete: A2A push callback
+URL hardening. Local A2A push notification config and injected HTTP transport
+now reject callback URLs with query strings before storage or delivery, so
+query-token webhook patterns do not enter local config state or outbound
+transport requests. `npm run proof:a2a-public-readiness` now reports
+`A2A_PUSH_CALLBACK_URL_HARDENING_LOCAL_PROOF_CONFIGURED` as local proof. This
+does not send A2A task messages to public endpoints, post real webhook
+callbacks, run background workers, persist queues, store webhook credentials,
+run external A2A conformance, publish JWKS, prove production key rotation, or
+prove public push delivery. Public hosting acceptance, production keys/auth,
+public webhook infrastructure, live IOTA proof, and external conformance claims
+remain blocked.
 
 The next continuation should choose the next safe roadmap slice from
 `docs/agentic-gaskit/full-roadmap-execution-goal.md` and
