@@ -2,7 +2,10 @@ import { createServer, type IncomingHttpHeaders, type IncomingMessage, type Serv
 import type { AddressInfo } from "node:net";
 
 import {
+  A2A_HTTP_SEND_MESSAGE_PATH,
+  A2A_HTTP_STREAM_MESSAGE_PATH,
   handleLocalA2AHttpRequest,
+  type A2AHttpResponseBody,
   type LocalA2AHttpHandlerOptions,
 } from "./a2aHttp.js";
 
@@ -33,6 +36,21 @@ export async function startLocalA2ANodeServer(options: LocalA2ANodeServerOptions
   const server = createServer(async (request, response) => {
     try {
       const body = await readBody(request, options.maxBodyBytes ?? DEFAULT_MAX_BODY_BYTES);
+      if (requestPathname(request.url) === A2A_HTTP_STREAM_MESSAGE_PATH) {
+        const handled = await handleLocalA2AHttpRequest({
+          method: request.method,
+          path: A2A_HTTP_SEND_MESSAGE_PATH,
+          headers: normalizeHeaders(request.headers),
+          body,
+        }, options);
+        if (handled.status !== 200) {
+          writeHandledResponse(response, handled.status, handled.headers, handled.json);
+          return;
+        }
+        writeServerSentEvents(response, [{ event: "task", data: handled.body }]);
+        return;
+      }
+
       const handled = await handleLocalA2AHttpRequest({
         method: request.method,
         path: request.url,
@@ -102,6 +120,22 @@ function writeHandledResponse(
   response.end(body);
 }
 
+function writeServerSentEvents(
+  response: ServerResponse<IncomingMessage>,
+  events: readonly { readonly event: string; readonly data: A2AHttpResponseBody }[],
+): void {
+  response.statusCode = 200;
+  response.setHeader("content-type", "text/event-stream; charset=utf-8");
+  response.setHeader("cache-control", "no-store");
+  response.setHeader("connection", "keep-alive");
+  response.setHeader("x-accel-buffering", "no");
+  for (const event of events) {
+    response.write(`event: ${event.event}\n`);
+    response.write(`data: ${JSON.stringify(event.data)}\n\n`);
+  }
+  response.end();
+}
+
 function normalizeHeaders(headers: IncomingHttpHeaders): Record<string, string | undefined> {
   const normalized: Record<string, string | undefined> = {};
   for (const [name, value] of Object.entries(headers)) {
@@ -130,6 +164,14 @@ async function readBody(request: IncomingMessage, maxBodyBytes: number): Promise
 function isLoopbackHost(host: string): boolean {
   const normalized = host.trim().toLowerCase();
   return normalized === "127.0.0.1" || normalized === "::1" || normalized === "localhost";
+}
+
+function requestPathname(url = "/"): string {
+  try {
+    return new URL(url, "http://127.0.0.1").pathname;
+  } catch {
+    return "/";
+  }
 }
 
 function isAddressInfo(value: unknown): value is AddressInfo {

@@ -11,7 +11,9 @@ A2A clients or publish a public Agent Card. It proves:
 - bearer-authenticated task/message routes;
 - local task send/get/list/cancel semantics over HTTP;
 - artifact omission on read endpoints unless explicitly requested;
-- explicit `501` behavior for unsupported streaming;
+- local SSE task events from `POST /message:stream`;
+- explicit unsupported behavior for push notification routes through the shared
+  HTTP handler;
 - safe smoke output without task auth tokens, signer refs, wallet internals,
   payment credentials, private keys, or private prompt text.
 

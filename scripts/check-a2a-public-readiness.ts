@@ -80,7 +80,7 @@ export async function checkA2APublicReadiness(
       "A2A production JWKS URL must be HTTPS and non-loopback.",
     ),
     checkTaskAuthDecision(env.A2A_PUBLIC_TASK_AUTH_DECISION),
-    unsupported("streaming", "A2A_STREAMING_UNSUPPORTED", "A2A streaming remains unsupported in the current local server."),
+    localStreamingSupport(),
     unsupported("push-notifications", "A2A_PUSH_UNSUPPORTED", "A2A push notifications remain unsupported in the current local server."),
     await checkConformanceReport(cwd, env.A2A_EXTERNAL_CONFORMANCE_REPORT),
   ];
@@ -230,6 +230,17 @@ function checkTaskAuthDecision(value: string | undefined): A2APublicReadinessChe
     message: "A2A public task route auth decision is configured for a future approved proof slice.",
     evidence: "configuration-present-redacted",
     next: "Run only in a dedicated operator-approved public A2A proof slice.",
+  };
+}
+
+function localStreamingSupport(): A2APublicReadinessCheck {
+  return {
+    id: "streaming",
+    status: "proven-local",
+    code: "A2A_STREAMING_LOCAL_PROOF_CONFIGURED",
+    message: "A2A streaming is locally supported by the loopback Node server through SSE task events.",
+    evidence: "npm run smoke:a2a-local-server",
+    next: "Keep this as local loopback streaming proof only until public hosting and external conformance evidence exists.",
   };
 }
 

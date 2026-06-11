@@ -49,11 +49,11 @@ It also includes the first Agentic GasKit implementation slices:
 - local A2A task/message operation helpers and smoke proof
 - local A2A HTTP-shaped handler and smoke proof for public discovery plus
   bearer-authenticated task routes
-- local A2A loopback HTTP server smoke proof for signed discovery and
-  authenticated task routes
+- local A2A loopback HTTP server smoke proof for signed discovery,
+  authenticated task routes, and SSE task events
 - non-networked A2A public-readiness proof for local A2A evidence, public
-  hosting inputs, production JWKS/auth decisions, unsupported streaming/push
-  capabilities, and external conformance blockers
+  hosting inputs, production JWKS/auth decisions, local loopback streaming,
+  unsupported push capability, and external conformance blockers
 - opt-in IOTA Names GraphQL live resolution smoke with an exact missing-config
   blocker path
 - non-networked live proof status command for testnet, IOTA Names, IOTA

@@ -16,8 +16,11 @@ if (result.logLeaksSecretMaterial) {
 if (!result.hiddenArtifacts) {
   throw new Error("A2A local server demo exposed artifacts on the default task read path.");
 }
-if (result.streamingStatus !== 501) {
-  throw new Error("A2A local server demo did not fail closed for unsupported streaming.");
+if (result.streamingStatus !== 200 || result.streamingEventCount < 1) {
+  throw new Error("A2A local server demo did not return local SSE streaming task events.");
+}
+if (result.streamingTaskStatus !== "TASK_STATE_WORKING") {
+  throw new Error("A2A local server demo streaming task did not reach the expected local state.");
 }
 
 console.log(formatA2ALocalServerDemoResult(result));

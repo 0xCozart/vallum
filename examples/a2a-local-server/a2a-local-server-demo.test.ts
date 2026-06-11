@@ -19,7 +19,9 @@ test("A2A local server demo proves signed discovery and authorized task flow ove
   assert.equal(result.hiddenArtifacts, true);
   assert.equal(result.listedCount, 1);
   assert.equal(result.canceledStatus, "TASK_STATE_CANCELED");
-  assert.equal(result.streamingStatus, 501);
+  assert.equal(result.streamingStatus, 200);
+  assert.equal(result.streamingEventCount, 1);
+  assert.equal(result.streamingTaskStatus, "TASK_STATE_WORKING");
   assert.equal(result.logLeaksSecretMaterial, false);
   assert.doesNotMatch(formatted, /Bearer|signer_ref|wallet_demo_secret|payment-secret|private prompt|PRIVATE KEY/i);
 });

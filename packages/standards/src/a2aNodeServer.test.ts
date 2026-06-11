@@ -18,6 +18,11 @@ import {
 const now = new Date("2026-06-10T12:00:00.000Z");
 const taskAuthToken = "local-a2a-node-server-token";
 
+interface SseEvent {
+  readonly event?: string;
+  readonly data: unknown;
+}
+
 const policy: AgentActionPolicy = {
   knownAgents: ["agent:quote-bot"],
   maxGasBudget: 50_000_000,
@@ -72,14 +77,18 @@ test("local A2A Node server serves Agent Card and authorized task routes over lo
       method: "POST",
       headers: auth,
     });
-    const streaming = await requestJson(server.baseUrl, A2A_HTTP_STREAM_MESSAGE_PATH, {
+    const streaming = await requestText(server.baseUrl, A2A_HTTP_STREAM_MESSAGE_PATH, {
       method: "POST",
       headers: auth,
       body: sendBody("msg-stream"),
     });
+    const streamingEvents = parseSseEvents(streaming.text);
+    const streamedTask = taskFrom(streamingEvents.at(-1)?.data);
 
     assert.equal(agentCard.status, 200);
     assert.match(agentCard.headers.get("content-type") ?? "", /application\/a2a\+json/);
+    assert.equal(agentCardCapabilities(agentCard.body).streaming, true);
+    assert.equal(agentCardCapabilities(agentCard.body).pushNotifications, false);
     assert.equal(unauthorized.status, 401);
     assert.equal(sent.status, 200);
     assert.equal(task.status?.state, "TASK_STATE_WORKING");
@@ -87,7 +96,11 @@ test("local A2A Node server serves Agent Card and authorized task routes over lo
     assert.match(visible.text, /node-server-draft/);
     assert.equal(taskListFrom(listed.body).length, 1);
     assert.equal(taskFrom(canceled.body).status?.state, "TASK_STATE_CANCELED");
-    assert.equal(streaming.status, 501);
+    assert.equal(streaming.status, 200);
+    assert.match(streaming.headers.get("content-type") ?? "", /text\/event-stream/);
+    assert.equal(streamingEvents.length, 1);
+    assert.equal(streamingEvents[0]?.event, "task");
+    assert.equal(streamedTask.status?.state, "TASK_STATE_WORKING");
     for (const response of [agentCard, unauthorized, sent, hidden, visible, listed, canceled, streaming]) {
       assertSafeResponse(response.text);
     }
@@ -154,6 +167,13 @@ function serverOptions() {
         ...validAgentProfileFixture().endpoints,
       ],
     },
+    agentCardOptions: {
+      now,
+      capabilities: {
+        streaming: true,
+        pushNotifications: false,
+      },
+    },
     taskAuthToken,
     taskPolicy: policy,
     now: () => now,
@@ -208,6 +228,51 @@ async function requestJson(
   };
 }
 
+async function requestText(
+  baseUrl: string,
+  path: string,
+  init: {
+    readonly method?: string;
+    readonly headers?: Record<string, string>;
+    readonly body?: unknown;
+  } = {},
+): Promise<{
+  readonly status: number;
+  readonly headers: Headers;
+  readonly text: string;
+}> {
+  const response = await fetch(`${baseUrl}${path}`, {
+    method: init.method ?? "GET",
+    headers: {
+      ...init.headers,
+      ...(init.body === undefined ? {} : { "content-type": "application/json" }),
+    },
+    body: init.body === undefined ? undefined : JSON.stringify(init.body),
+  });
+  return {
+    status: response.status,
+    headers: response.headers,
+    text: await response.text(),
+  };
+}
+
+function parseSseEvents(text: string): readonly SseEvent[] {
+  return text.trim().split(/\n\n+/)
+    .map((chunk): SseEvent | undefined => {
+      const event = chunk.split("\n")
+        .find((line) => line.startsWith("event: "))
+        ?.slice("event: ".length);
+      const data = chunk.split("\n")
+        .filter((line) => line.startsWith("data: "))
+        .map((line) => line.slice("data: ".length))
+        .join("\n");
+      return data.trim() === ""
+        ? undefined
+        : { ...(event ? { event } : {}), data: JSON.parse(data) as unknown };
+    })
+    .filter((event): event is SseEvent => event !== undefined);
+}
+
 function taskFrom(value: unknown): {
   readonly id: string;
   readonly status?: { readonly state?: string };
@@ -221,6 +286,13 @@ function taskFrom(value: unknown): {
 function taskListFrom(value: unknown): readonly unknown[] {
   if (!isRecord(value) || !Array.isArray(value.tasks)) return [];
   return value.tasks;
+}
+
+function agentCardCapabilities(value: unknown): { readonly streaming?: boolean; readonly pushNotifications?: boolean } {
+  if (!isRecord(value) || !isRecord(value.capabilities)) {
+    throw new Error("A2A local Node server did not return Agent Card capabilities.");
+  }
+  return value.capabilities;
 }
 
 function assertSafeResponse(text: string): void {

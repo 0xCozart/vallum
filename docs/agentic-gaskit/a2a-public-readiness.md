@@ -4,9 +4,9 @@
 for Agentic GasKit A2A interoperability claims.
 
 It does not fetch public Agent Cards, operate a public A2A server, publish JWKS
-material, run external conformance tools, enable streaming, or configure push
-notifications. Instead, it classifies the evidence needed before local A2A
-proof can be described as public A2A interoperability.
+material, run external conformance tools, or configure push notifications.
+Instead, it classifies the evidence needed before local A2A proof can be
+described as public A2A interoperability.
 
 Run it from the repository root:
 
@@ -33,8 +33,10 @@ publicReady=false
 - Public base URL and production JWKS URL are HTTPS and non-loopback.
 - Public task route authentication has an explicit decision: bearer, OAuth2,
   or mTLS.
-- Streaming and push notifications remain explicitly unsupported until
-  dedicated slices implement and verify them.
+- Local loopback SSE streaming proof is configured through the A2A local
+  server smoke.
+- Push notifications remain explicitly unsupported until a dedicated slice
+  implements and verifies them.
 - External conformance remains blocked unless an operator supplies a local
   report path and that file exists.
 
@@ -50,7 +52,7 @@ report paths, credentials, tokens, or secret-like values.
 - Live public Agent Card discovery.
 - Production Agent Card key management or key rotation.
 - Production A2A task-route authentication.
-- Streaming or push notification support.
+- Public streaming, push notification support, or webhook delivery.
 - External A2A conformance.
 - Provider verification or production trust.
 

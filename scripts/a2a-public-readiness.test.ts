@@ -19,7 +19,8 @@ test("A2A public readiness reports local proof while public gates remain blocked
     assert.equal(report.publicReady, false);
     assert.equal(findCheck(report, "local-a2a-proof").status, "proven-local");
     assert.equal(findCheck(report, "public-agent-card-url").code, "A2A_PUBLIC_AGENT_CARD_URL_MISSING");
-    assert.equal(findCheck(report, "streaming").status, "unsupported");
+    assert.equal(findCheck(report, "streaming").status, "proven-local");
+    assert.equal(findCheck(report, "streaming").code, "A2A_STREAMING_LOCAL_PROOF_CONFIGURED");
     assert.equal(findCheck(report, "push-notifications").status, "unsupported");
     assert.equal(findCheck(report, "external-conformance").code, "A2A_EXTERNAL_CONFORMANCE_REPORT_MISSING");
     assert.match(formatted, /Agentic GasKit A2A public readiness blocked/);
@@ -97,13 +98,13 @@ test("A2A public readiness accepts redacted public config and existing conforman
     const formatted = formatA2APublicReadinessReport(report);
 
     assert.equal(report.localProofOk, true);
-    assert.equal(report.publicReady, false, "streaming and push are still unsupported");
+    assert.equal(report.publicReady, false, "push notifications are still unsupported");
     assert.equal(findCheck(report, "public-agent-card-url").status, "ready-approval");
     assert.equal(findCheck(report, "public-base-url").status, "ready-approval");
     assert.equal(findCheck(report, "production-jwks-url").status, "ready-approval");
     assert.equal(findCheck(report, "task-auth-decision").status, "ready-approval");
     assert.equal(findCheck(report, "external-conformance").status, "ready-approval");
-    assert.equal(findCheck(report, "streaming").status, "unsupported");
+    assert.equal(findCheck(report, "streaming").status, "proven-local");
     assert.doesNotMatch(formatted, /agents\.example|a2a-conformance-report|oauth2/);
   } finally {
     await rm(cwd, { recursive: true, force: true });

@@ -16,16 +16,16 @@ local proof as live IOTA testnet, production marketplace, public scoring,
 public A2A discovery, production key management, or provider-verification
 proof.
 
-As of the latest completed update, Slice 4.9 is complete: an A2A public
-readiness gate. It classifies local A2A proof, public hosting inputs,
-production JWKS/auth decisions, unsupported streaming/push capabilities, and
-external conformance blockers without contacting public endpoints or claiming
-live A2A interoperability.
+As of the latest completed update, Slice 7.5 is complete: a verification
+profile speed gate. It adds `npm run verify:fast` and
+`npm run proof:verification-profiles` for bounded deterministic iteration while
+preserving `npm run verify:local` and `npm run grant:check` as full reviewer,
+release, handoff, and launch evidence gates.
 
-The current continuation is Slice 7.5: a verification profile speed gate. It
-should add a bounded fast deterministic profile for build/test/improve loops
-while preserving `npm run verify:local` and `npm run grant:check` as the full
-reviewer, release, handoff, and launch evidence gates.
+The current continuation is Slice 4.10: an A2A local SSE streaming gate. It
+should prove local loopback `POST /message:stream` Server-Sent Events through
+the Node server and readiness gates while preserving public A2A hosting,
+production keys/auth, push notification, and external conformance blockers.
 
 Do not use the old Slice 4.5 A2A task/message goal as the active objective.
 That slice was previously completed and locally verified.

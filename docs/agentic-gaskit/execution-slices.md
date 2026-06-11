@@ -1534,6 +1534,80 @@ Escalation triggers:
   public hosting evidence, production key distribution, auth decisions, and
   external conformance evidence.
 
+## Slice 4.10: A2A Local SSE Streaming Gate
+
+User-visible outcome:
+Agentic GasKit's local loopback A2A server can prove SSE task events from
+`POST /message:stream` while keeping public hosting, push notifications,
+production key distribution, and external conformance explicitly blocked.
+
+Likely files:
+
+- `packages/standards/src/a2aNodeServer.ts`
+- `packages/standards/src/a2aNodeServer.test.ts`
+- `examples/a2a-local-server/`
+- `scripts/smoke-a2a-local-server.ts`
+- `scripts/check-a2a-public-readiness.ts`
+- `scripts/a2a-public-readiness.test.ts`
+- `scripts/check-product-status.ts`
+- `docs/agentic-gaskit/a2a-public-readiness.md`
+- `docs/agentic-gaskit/external-api-notes.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/overview.md`
+- `docs/CODEBASE_MAP.md`
+- `README.md`
+
+Acceptance criteria:
+
+- The local Node loopback server intercepts `POST /message:stream`, reuses the
+  existing authenticated task send path, and returns `200` with
+  `text/event-stream`.
+- Streaming responses emit sanitized task event payloads without bearer tokens,
+  private prompts, signer refs, wallet internals, payment credentials, raw
+  transaction bytes, user signatures, or private keys.
+- The demo Agent Card advertises `capabilities.streaming: true` and
+  `capabilities.pushNotifications: false`.
+- The pure HTTP handler still fails closed for streaming and push routes when
+  it cannot produce SSE.
+- `npm run smoke:a2a-local-server` proves local SSE streaming instead of
+  expecting unsupported streaming.
+- `npm run proof:a2a-public-readiness` reports local streaming proof while
+  keeping public hosting, production JWKS/auth, push, and external conformance
+  blockers explicit.
+- Product-status and launch-readiness wording no longer imply local streaming
+  is missing, but they still do not mark public A2A interoperability complete.
+
+Verification:
+
+- Focused A2A Node server, HTTP handler, local server demo, and public-readiness
+  tests.
+- Product-status tests.
+- Launch-readiness tests.
+- Operator-gate tests.
+- Package-script wiring tests.
+- Reviewer-docs regression tests.
+- `npm run smoke:a2a-local-server`.
+- `npm run proof:a2a-public-readiness`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:local`.
+
+Dependencies:
+Slice 4.9.
+
+Risk:
+Medium. Local streaming proof can be mistaken for public A2A conformance unless
+the public-hosting, push-notification, production-key, auth, and conformance
+blockers stay visible.
+
+Escalation triggers:
+
+- Any request to stream from a public host, configure push/webhooks, or claim
+  external conformance without operator-approved public infrastructure and
+  conformance evidence.
+
 ## Slice 5.1: Marketplace Readiness Gate
 
 User-visible outcome:

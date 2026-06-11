@@ -517,6 +517,14 @@ Current planning assumptions:
   inputs, production JWKS/auth decisions, unsupported streaming/push
   capabilities, and external conformance report evidence without fetching
   public endpoints or operating a public server.
+- On 2026-06-11, Slice 4.10 rechecked the current A2A specification for
+  streaming behavior. The current spec describes streaming send-message
+  operation as `POST /message:stream` with `text/event-stream` Server-Sent
+  Events and exposes streaming support through Agent Card capabilities. Slice
+  4.10 implements this as local loopback Node server proof only: the server
+  advertises `capabilities.streaming: true`, returns local SSE task events for
+  `POST /message:stream`, and keeps push notifications, public hosting,
+  production key distribution, and external conformance blocked.
 
 Implementation checks:
 

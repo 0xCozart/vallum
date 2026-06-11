@@ -26,6 +26,8 @@ export interface A2ALocalServerDemoResult {
   readonly listedCount: number;
   readonly canceledStatus: string;
   readonly streamingStatus: number;
+  readonly streamingEventCount: number;
+  readonly streamingTaskStatus: string;
   readonly logLeaksSecretMaterial: boolean;
 }
 
@@ -33,6 +35,16 @@ interface HttpJsonResponse {
   readonly status: number;
   readonly body: unknown;
   readonly text: string;
+}
+
+interface HttpTextResponse {
+  readonly status: number;
+  readonly text: string;
+}
+
+interface SseEvent {
+  readonly event?: string;
+  readonly data: unknown;
 }
 
 const now = new Date("2026-06-10T12:00:00.000Z");
@@ -65,6 +77,10 @@ export async function runA2ALocalServerDemo(): Promise<A2ALocalServerDemoResult>
     },
     agentCardOptions: {
       now,
+      capabilities: {
+        streaming: true,
+        pushNotifications: false,
+      },
       signature: {
         keyId: "agent-card-key-1",
         privateKey,
@@ -114,11 +130,13 @@ export async function runA2ALocalServerDemo(): Promise<A2ALocalServerDemoResult>
       method: "POST",
       headers: auth,
     });
-    const streaming = await requestJson(server.baseUrl, A2A_HTTP_STREAM_MESSAGE_PATH, {
+    const streaming = await requestText(server.baseUrl, A2A_HTTP_STREAM_MESSAGE_PATH, {
       method: "POST",
       headers: auth,
       body: sendBody("demo-streaming"),
     });
+    const streamingEvents = parseSseEvents(streaming.text);
+    const streamingTask = taskFrom(streamingEvents.at(-1)?.data);
     const captured = [
       agentCard,
       unauthorized,
@@ -140,6 +158,8 @@ export async function runA2ALocalServerDemo(): Promise<A2ALocalServerDemoResult>
       listedCount: taskListFrom(listed.body).length,
       canceledStatus: taskFrom(canceled.body).status?.state ?? "unknown",
       streamingStatus: streaming.status,
+      streamingEventCount: streamingEvents.length,
+      streamingTaskStatus: streamingTask.status?.state ?? "unknown",
       logLeaksSecretMaterial: captured.some((response) => responseLeaks(response.text)),
     };
   } finally {
@@ -160,6 +180,8 @@ export function formatA2ALocalServerDemoResult(result: A2ALocalServerDemoResult)
     `listed.count=${result.listedCount}`,
     `canceled.status=${result.canceledStatus}`,
     `streaming.status=${result.streamingStatus}`,
+    `streaming.events=${result.streamingEventCount}`,
+    `streaming.taskStatus=${result.streamingTaskStatus}`,
     `logLeaksSecretMaterial=${String(result.logLeaksSecretMaterial)}`,
   ].join("\n");
 }
@@ -187,6 +209,46 @@ async function requestJson(
     body: JSON.parse(text) as unknown,
     text,
   };
+}
+
+async function requestText(
+  baseUrl: string,
+  path: string,
+  init: {
+    readonly method?: string;
+    readonly headers?: Record<string, string>;
+    readonly body?: unknown;
+  } = {},
+): Promise<HttpTextResponse> {
+  const response = await fetch(`${baseUrl}${path}`, {
+    method: init.method ?? "GET",
+    headers: {
+      ...init.headers,
+      ...(init.body === undefined ? {} : { "content-type": "application/json" }),
+    },
+    body: init.body === undefined ? undefined : JSON.stringify(init.body),
+  });
+  return {
+    status: response.status,
+    text: await response.text(),
+  };
+}
+
+function parseSseEvents(text: string): readonly SseEvent[] {
+  return text.trim().split(/\n\n+/)
+    .map((chunk): SseEvent | undefined => {
+      const event = chunk.split("\n")
+        .find((line) => line.startsWith("event: "))
+        ?.slice("event: ".length);
+      const data = chunk.split("\n")
+        .filter((line) => line.startsWith("data: "))
+        .map((line) => line.slice("data: ".length))
+        .join("\n");
+      return data.trim() === ""
+        ? undefined
+        : { ...(event ? { event } : {}), data: JSON.parse(data) as unknown };
+    })
+    .filter((event): event is SseEvent => event !== undefined);
 }
 
 function sendBody(messageId: string) {
