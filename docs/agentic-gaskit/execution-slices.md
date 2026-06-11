@@ -1982,6 +1982,75 @@ Escalation triggers:
   production delivery observability, or mark public webhook delivery complete
   without operator-approved infrastructure evidence.
 
+## Slice 4.16: A2A Public Push Delivery Evidence Gate
+
+User-visible outcome:
+Agentic GasKit can classify an operator-supplied local public push delivery
+report path after an approved public webhook proof run, while the default
+checkout remains blocked and no public endpoints are contacted by the readiness
+command.
+
+Likely files:
+
+- `scripts/check-a2a-public-readiness.ts`
+- `scripts/a2a-public-readiness.test.ts`
+- `scripts/check-product-status.ts`
+- `scripts/check-launch-readiness.ts`
+- `docs/agentic-gaskit/a2a-public-readiness.md`
+- `docs/agentic-gaskit/external-api-notes.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/overview.md`
+- `docs/CODEBASE_MAP.md`
+- `README.md`
+
+Acceptance criteria:
+
+- `A2A_PUBLIC_PUSH_DELIVERY_REPORT` is classified as missing, configured but
+  not found, or ready for approval without printing configured paths.
+- Unconfigured checkouts keep `publicReady=false` and an explicit public push
+  delivery blocker.
+- A configured public push delivery report can make the public push delivery
+  check `ready-approval` only when the file exists locally.
+- `publicReady=true` is possible only when all local proof checks are
+  `proven-local` and every public/config/conformance evidence check is
+  `ready-approval`; this remains a review state, not live execution.
+- The readiness command remains non-networked and does not fetch public Agent
+  Cards, post webhooks, run conformance tooling, publish JWKS, or store
+  credentials.
+- Product-status and launch-readiness wording distinguish redacted report
+  classification from public hosting, production key distribution, production
+  auth, persistent delivery infrastructure, and external conformance proof.
+
+Verification:
+
+- Focused A2A public-readiness tests.
+- Product-status tests.
+- Launch-readiness tests.
+- Operator-gate tests.
+- Reviewer-docs regression tests.
+- `npm run proof:a2a-public-readiness`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:local`.
+
+Dependencies:
+Slice 4.15.
+
+Risk:
+High. A local report path can be mistaken for live public webhook delivery
+unless the command keeps paths redacted, performs no network calls, and treats
+`ready-approval` as evidence for a future human/operator review rather than
+automatic interoperability acceptance.
+
+Escalation triggers:
+
+- Any request to generate the public push report by contacting endpoints from
+  this command, store webhook credentials, run background delivery workers,
+  persist queue state, mark production delivery complete, or claim external
+  conformance without operator-approved public infrastructure evidence.
+
 ## Slice 5.1: Marketplace Readiness Gate
 
 User-visible outcome:

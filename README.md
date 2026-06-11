@@ -167,8 +167,8 @@ Latest local verification and prior live proof:
   public-readiness gate reports local proof, local authenticated extended-card
   access, local loopback streaming, local push notification configuration,
   local injected push delivery, local opt-in push HTTP transport, local
-  retry/attempt observability, public hosting inputs, public webhook delivery
-  blockers, and external conformance blockers.
+  retry/attempt observability, public hosting inputs, redacted public push
+  delivery report classification, and external conformance blockers.
 - `npm run verify:fast`: deterministic fast iteration profile for build,
   TypeScript tests, docs check, secret scan, and non-networked status gates.
 - `npm run proof:verification-profiles`: deterministic non-networked profile

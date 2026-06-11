@@ -66,8 +66,8 @@ It also includes the first Agentic GasKit implementation slices:
   hosting inputs, production JWKS/auth decisions, local authenticated extended
   cards, local loopback streaming, local push configuration, local injected
   push delivery, local opt-in push HTTP transport, local retry/attempt
-  observability, public webhook delivery blockers, and external conformance
-  blockers
+  observability, redacted public push delivery report inputs, and external
+  conformance blockers
 - opt-in IOTA Names GraphQL live resolution smoke with an exact missing-config
   blocker path
 - non-networked live proof status command for testnet, IOTA Names, IOTA

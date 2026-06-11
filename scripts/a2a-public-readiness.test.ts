@@ -32,7 +32,7 @@ test("A2A public readiness reports local proof while public gates remain blocked
     assert.equal(findCheck(report, "local-push-retry-observability").status, "proven-local");
     assert.equal(findCheck(report, "local-push-retry-observability").code, "A2A_PUSH_RETRY_OBSERVABILITY_LOCAL_PROOF_CONFIGURED");
     assert.equal(findCheck(report, "public-push-delivery").status, "blocked-conformance");
-    assert.equal(findCheck(report, "public-push-delivery").code, "A2A_PUBLIC_PUSH_DELIVERY_PROOF_MISSING");
+    assert.equal(findCheck(report, "public-push-delivery").code, "A2A_PUBLIC_PUSH_DELIVERY_REPORT_MISSING");
     assert.equal(findCheck(report, "external-conformance").code, "A2A_EXTERNAL_CONFORMANCE_REPORT_MISSING");
     assert.match(formatted, /Agentic GasKit A2A public readiness blocked/);
     assert.doesNotMatch(formatted, /secret|token|private/i);
@@ -72,6 +72,7 @@ test("A2A public readiness rejects unsafe public URLs without printing them", as
         A2A_PUBLIC_BASE_URL: "https://127.0.0.1/a2a",
         A2A_PUBLIC_JWKS_URL: "https://keys.localhost/jwks.json",
         A2A_PUBLIC_TASK_AUTH_DECISION: "query-token-secret",
+        A2A_PUBLIC_PUSH_DELIVERY_REPORT: "missing-push-secret-report.txt",
         A2A_EXTERNAL_CONFORMANCE_REPORT: "missing-secret-report.txt",
       },
     });
@@ -81,10 +82,11 @@ test("A2A public readiness rejects unsafe public URLs without printing them", as
     assert.equal(findCheck(report, "public-base-url").code, "A2A_PUBLIC_BASE_URL_UNSAFE");
     assert.equal(findCheck(report, "production-jwks-url").code, "A2A_PUBLIC_JWKS_URL_UNSAFE");
     assert.equal(findCheck(report, "task-auth-decision").code, "A2A_PUBLIC_TASK_AUTH_DECISION_UNSUPPORTED");
+    assert.equal(findCheck(report, "public-push-delivery").code, "A2A_PUBLIC_PUSH_DELIVERY_REPORT_NOT_FOUND");
     assert.equal(findCheck(report, "external-conformance").code, "A2A_EXTERNAL_CONFORMANCE_REPORT_NOT_FOUND");
     assert.doesNotMatch(
       formatted,
-      /localhost|127\.0\.0\.1|keys\.localhost|query-token-secret|missing-secret-report/,
+      /localhost|127\.0\.0\.1|keys\.localhost|query-token-secret|missing-push-secret-report|missing-secret-report/,
     );
   } finally {
     await rm(cwd, { recursive: true, force: true });
@@ -122,7 +124,39 @@ test("A2A public readiness accepts redacted public config and existing conforman
     assert.equal(findCheck(report, "local-push-http-transport").status, "proven-local");
     assert.equal(findCheck(report, "local-push-retry-observability").status, "proven-local");
     assert.equal(findCheck(report, "public-push-delivery").status, "blocked-conformance");
+    assert.equal(findCheck(report, "public-push-delivery").code, "A2A_PUBLIC_PUSH_DELIVERY_REPORT_MISSING");
     assert.doesNotMatch(formatted, /agents\.example|a2a-conformance-report|oauth2/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("A2A public readiness accepts redacted public push delivery evidence after approved proof", async () => {
+  const cwd = await writeA2AEvidence();
+  try {
+    await writeFile(join(cwd, "a2a-conformance-report.txt"), "passed external client checks\n");
+    await writeFile(join(cwd, "a2a-public-push-report.txt"), "delivered public push callback status=202\n");
+    const report = await checkA2APublicReadiness({
+      cwd,
+      scripts: completeScripts(),
+      env: {
+        A2A_PUBLIC_AGENT_CARD_URL: "https://agents.example/.well-known/agent-card.json",
+        A2A_PUBLIC_BASE_URL: "https://agents.example/a2a",
+        A2A_PUBLIC_JWKS_URL: "https://agents.example/.well-known/jwks.json",
+        A2A_PUBLIC_TASK_AUTH_DECISION: "oauth2",
+        A2A_PUBLIC_PUSH_DELIVERY_REPORT: "a2a-public-push-report.txt",
+        A2A_EXTERNAL_CONFORMANCE_REPORT: "a2a-conformance-report.txt",
+      },
+    });
+    const formatted = formatA2APublicReadinessReport(report);
+
+    assert.equal(report.localProofOk, true);
+    assert.equal(report.publicReady, true);
+    assert.match(formatted, /Agentic GasKit A2A public readiness ready-for-approval/);
+    assert.equal(findCheck(report, "public-push-delivery").status, "ready-approval");
+    assert.equal(findCheck(report, "public-push-delivery").code, "A2A_PUBLIC_PUSH_DELIVERY_REPORT_PRESENT");
+    assert.equal(findCheck(report, "external-conformance").status, "ready-approval");
+    assert.doesNotMatch(formatted, /agents\.example|a2a-public-push-report|a2a-conformance-report|oauth2/);
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }

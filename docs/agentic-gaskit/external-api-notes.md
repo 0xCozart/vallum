@@ -574,6 +574,13 @@ Current planning assumptions:
   private prompt text. This is not a public delivery worker, persistent queue,
   production observability system, production auth design, or external
   conformance proof.
+- On 2026-06-11, Slice 4.16 adds a non-networked public push delivery evidence
+  gate. Operators can provide `A2A_PUBLIC_PUSH_DELIVERY_REPORT` as a local path
+  after a separate approved public webhook proof run; the readiness command
+  checks only whether the file exists and redacts the configured path. This does
+  not generate public delivery evidence, contact public endpoints, run a worker,
+  persist a queue, store webhook credentials, prove production auth, or run
+  external conformance.
 
 Implementation checks:
 

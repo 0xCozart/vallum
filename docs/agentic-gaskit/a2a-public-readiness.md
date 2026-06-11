@@ -47,8 +47,9 @@ publicReady=false
 - Local push notification retry and delivery-attempt observability are
   supported for explicitly injected transports with in-memory status-only
   attempt records.
-- Public push notification webhook delivery remains blocked until a dedicated
-  security and public-infrastructure slice implements and verifies it.
+- Public push notification webhook delivery remains blocked unless an operator
+  supplies an existing local public push delivery report path after a dedicated
+  approved public-infrastructure proof run.
 - External conformance remains blocked unless an operator supplies a local
   report path and that file exists.
 
@@ -65,7 +66,7 @@ report paths, credentials, tokens, or secret-like values.
 - Production Agent Card key management or key rotation.
 - Production A2A task-route authentication.
 - Production extended-card access control.
-- Public streaming or webhook delivery.
+- Public streaming or webhook delivery by itself.
 - Production push delivery queues/workers, persistent observability, auth, or
   SSRF infrastructure.
 - External A2A conformance.
@@ -79,6 +80,7 @@ The command can classify these optional inputs without contacting them:
 - `A2A_PUBLIC_BASE_URL`
 - `A2A_PUBLIC_JWKS_URL`
 - `A2A_PUBLIC_TASK_AUTH_DECISION`
+- `A2A_PUBLIC_PUSH_DELIVERY_REPORT`
 - `A2A_EXTERNAL_CONFORMANCE_REPORT`
 
 Supplying these values is not approval to operate public infrastructure. Treat a

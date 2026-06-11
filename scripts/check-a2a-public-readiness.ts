@@ -87,7 +87,7 @@ export async function checkA2APublicReadiness(
     localPushDeliverySupport(),
     localPushHttpTransportSupport(),
     localPushRetryObservabilitySupport(),
-    blockedPublicPushDelivery(),
+    await checkPublicPushDeliveryReport(cwd, env.A2A_PUBLIC_PUSH_DELIVERY_REPORT),
     await checkConformanceReport(cwd, env.A2A_EXTERNAL_CONFORMANCE_REPORT),
   ];
 
@@ -305,14 +305,42 @@ function localPushRetryObservabilitySupport(): A2APublicReadinessCheck {
   };
 }
 
-function blockedPublicPushDelivery(): A2APublicReadinessCheck {
+async function checkPublicPushDeliveryReport(
+  cwd: string,
+  value: string | undefined,
+): Promise<A2APublicReadinessCheck> {
+  if (!value || value.trim() === "") {
+    return {
+      id: "public-push-delivery",
+      status: "blocked-conformance",
+      code: "A2A_PUBLIC_PUSH_DELIVERY_REPORT_MISSING",
+      message: "A2A public push webhook delivery evidence has not been supplied.",
+      evidence: "missing=A2A_PUBLIC_PUSH_DELIVERY_REPORT",
+      next: "Provide a local public push delivery report path outside committed docs only after an operator-approved public webhook delivery proof run.",
+    };
+  }
+
+  const reportPath = isAbsolute(value) ? value : resolve(cwd, value);
+  try {
+    await access(reportPath);
+  } catch {
+    return {
+      id: "public-push-delivery",
+      status: "blocked-conformance",
+      code: "A2A_PUBLIC_PUSH_DELIVERY_REPORT_NOT_FOUND",
+      message: "A2A public push webhook delivery evidence path was configured but not found.",
+      evidence: "configured-report-missing",
+      next: "Provide an existing local public push delivery report after an operator-approved public webhook delivery proof run.",
+    };
+  }
+
   return {
     id: "public-push-delivery",
-    status: "blocked-conformance",
-    code: "A2A_PUBLIC_PUSH_DELIVERY_PROOF_MISSING",
-    message: "A2A public push webhook delivery remains blocked until outbound delivery infrastructure, production SSRF controls, production auth, and external conformance evidence exist.",
-    evidence: "public-delivery-proof-missing",
-    next: "Run only in a dedicated operator-approved public webhook delivery slice.",
+    status: "ready-approval",
+    code: "A2A_PUBLIC_PUSH_DELIVERY_REPORT_PRESENT",
+    message: "A2A public push webhook delivery evidence path exists for a future approved review.",
+    evidence: "local-report-present-redacted",
+    next: "Review the report manually before accepting public push delivery claims.",
   };
 }
 
