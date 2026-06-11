@@ -16,21 +16,24 @@ local proof as live IOTA testnet, production marketplace, public scoring,
 public A2A discovery, production key management, or provider-verification
 proof.
 
-As of the latest completed update, Slice 4.24 is complete: A2A push local
-delivery queue. Local A2A push delivery requests can now be written to a
-file-backed queue as sanitized jobs with public headers, redacted task
-payloads, and local claim/complete state. The queue rejects unsafe callback
-URLs before persistence and strips authorization/cookie-style headers. It does
-not persist raw private prompt text, bearer values, signer refs, wallet
-internals, payment secrets, webhook credentials, response bodies, or raw
-transport errors. `npm run proof:a2a-public-readiness` reports
-`A2A_PUSH_DELIVERY_QUEUE_LOCAL_PROOF_CONFIGURED` as local queue proof. This
-does not send A2A task messages to public endpoints, post real webhook
-callbacks, run background workers, prove endpoint ownership, store webhook
-credentials, run external A2A conformance, publish JWKS, prove production key
-rotation, or prove public push delivery. Public hosting acceptance, production
-keys/auth, public webhook infrastructure, live IOTA proof, and external
-conformance claims remain blocked.
+As of the latest completed update, Slice 4.25 is complete: A2A push local
+delivery worker. Local A2A push delivery requests can now be queued as
+sanitized file-backed jobs and processed one at a time by a local worker
+primitive that only calls an explicitly injected transport. Successful 2xx
+responses record delivered status-only attempt evidence and complete the local
+queue entry. Non-2xx responses or thrown transport errors record failed
+status-only attempt evidence and mark the local queue entry failed without
+persisting raw transport error text. The queue and worker do not persist raw
+private prompt text, bearer values, signer refs, wallet internals, payment
+secrets, webhook credentials, authorization/cookie headers, response bodies, or
+raw transport errors. `npm run proof:a2a-public-readiness` reports
+`A2A_PUSH_DELIVERY_WORKER_LOCAL_PROOF_CONFIGURED` as local worker proof. This
+does not send A2A task messages to public endpoints by default, operate a
+background worker service, post real public webhook callbacks, prove endpoint
+ownership, store webhook credentials, run external A2A conformance, publish
+JWKS, prove production key rotation, or prove public push delivery. Public
+hosting acceptance, production keys/auth, public webhook infrastructure, live
+IOTA proof, and external conformance claims remain blocked.
 
 The next continuation should choose the next safe roadmap slice from
 `docs/agentic-gaskit/full-roadmap-execution-goal.md` and

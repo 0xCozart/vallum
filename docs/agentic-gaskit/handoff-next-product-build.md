@@ -11,7 +11,7 @@ Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5,
 2.6, 2.7, 2.8,
 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7,
 4.8, 4.9, 4.10, 4.11, 4.12, 4.13, 4.14, 4.15, 4.16, 4.17, 4.18, 4.19, 4.20,
-4.21, 4.22, 4.23, 4.24, 5.1, 5.2, 6.1, 6.2, 6.3, 7.1, 7.2, 7.3, 7.4, and 7.5 are implemented,
+4.21, 4.22, 4.23, 4.24, 4.25, 5.1, 5.2, 6.1, 6.2, 6.3, 7.1, 7.2, 7.3, 7.4, and 7.5 are implemented,
 reviewed, locally verified, or explicitly deferred with a verified hardening
 gate.
 Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
@@ -31,6 +31,7 @@ new scope and its unresolved gates.
 
 Recent commits to know:
 
+- `ea3cfa3` feat: add a2a push local delivery worker
 - `98b82fb` feat: add a2a push local delivery queue
 - `8a118cd` feat: add a2a push durable attempt evidence
 - `014bf7d` test: consolidate package script contract checks
@@ -71,6 +72,108 @@ Recent commits to know:
 - `fe5a6ee` docs: record agentic gaskit github remote
 - `b2d9928` chore: migrate reviewed gaskit local changes
 - `3b34cef` docs: create agentic gaskit migration fork
+
+## Completed Slice 4.25: A2A Push Local Delivery Worker
+
+Implementation commit: `ea3cfa3` (`feat: add a2a push local delivery worker`).
+
+What changed:
+
+- Added `processNextA2APushNotificationDelivery` for local A2A push delivery
+  queue processing.
+- The worker claims one queued local delivery job and only calls an explicitly
+  injected transport; there is no default public network call or background
+  service.
+- Successful 2xx transport responses record a delivered status-only attempt
+  and mark the queue entry complete.
+- Non-2xx responses or thrown transport errors record a failed status-only
+  attempt and mark the queue entry failed without storing raw transport error
+  text.
+- Queue entries now support a local `failed` state with `failedAt`.
+- Focused tests prove delivered, failed, and empty worker paths while keeping
+  private prompt text, bearer values, signer refs, wallet internals, payment
+  secrets, webhook credentials, authorization/cookie headers, response bodies,
+  and raw transport errors out of worker output and durable attempt evidence.
+- `npm run proof:a2a-public-readiness` now reports
+  `A2A_PUSH_DELIVERY_WORKER_LOCAL_PROOF_CONFIGURED` as local worker proof.
+- Product-status, launch-readiness, README, overview, reviewer docs, external
+  API notes, codebase map, public-readiness docs, full roadmap goal, and
+  execution slices now describe this as local injected-transport worker proof,
+  not public webhook operation, endpoint ownership, production auth, production
+  observability, public push delivery, or external conformance.
+- A local scope record exists at
+  `tmp/apex-workflow/a2a-push-local-delivery-worker-slice-4-25-scope.md`. The
+  file is local workflow state and not a committed Apex artifact.
+
+Commands run:
+
+```bash
+node --import tsx --test packages/standards/src/a2aPush.test.ts scripts/a2a-public-readiness.test.ts scripts/product-status.test.ts scripts/launch-readiness.test.ts scripts/operator-live-gates.test.ts scripts/reviewer-docs.test.ts
+npm run proof:a2a-public-readiness
+npm run typecheck
+npm run docs:check
+npm run secrets:scan
+git diff --check
+npm run verify:fast
+```
+
+Verification result:
+
+- Focused push/readiness/status/launch/operator/reviewer regression tests
+  passed with 45 tests.
+- `npm run proof:a2a-public-readiness` passed with `localProofOk=true`,
+  `publicReady=false`, `A2A_PUSH_DELIVERY_WORKER_LOCAL_PROOF_CONFIGURED`,
+  missing public URL/JWKS/auth config, missing structured public discovery
+  report, missing structured public push delivery report, and missing
+  structured external conformance report.
+- `npm run typecheck` passed.
+- `npm run docs:check` passed: 37 HTML pages from 36 Markdown sources.
+- `npm run secrets:scan` passed: 325 tracked/staged/untracked text files,
+  findings 0.
+- `git diff --check` passed.
+- `npm run verify:fast` passed, including build, 411 TypeScript tests, docs
+  check, secret scan, product-status, launch-readiness, and operator-gate
+  reports.
+
+Hardening notes:
+
+- This is local worker proof only. It is not public webhook operation, public
+  webhook delivery proof, endpoint ownership proof, production webhook
+  authentication, production observability, or external A2A conformance.
+- No live public A2A command was run in this slice because no
+  operator-approved public A2A config was supplied.
+- The readiness command still does not fetch public endpoints, send A2A task
+  messages, post webhook callbacks, run background services, store webhook
+  credentials, run conformance tooling, or publish JWKS.
+- No IOTA/testnet command, npm publish, payment-provider call, or production
+  marketplace action was run for this slice.
+- Apex profile still has `setup.reviewNeeded: true`; this slice does not claim
+  Apex verification.
+
+Known unproven claims:
+
+- No public A2A endpoint was probed in the current checkout.
+- No public A2A hosting run, production key-distribution acceptance,
+  key-rotation/revocation proof, or production task-route auth proof exists.
+- No real public push webhook delivery was attempted.
+- No background delivery service, endpoint ownership proof, or production
+  observability backend exists.
+- No external A2A conformance tool was run and no structured conformance report
+  was accepted in this unconfigured checkout.
+- No configured IOTA Names, IOTA Identity, or VC trust-policy proof passed.
+- No package is published to npm and no registry install/provenance/account
+  ownership proof exists.
+- No live payment/provider settlement, production marketplace, provider
+  verification, custody/KMS, recovery export, or physical device access proof
+  exists.
+
+Next safe slice:
+
+- Choose an operator-approved public A2A hosting/JWKS/auth/conformance run with
+  real public config, a public push webhook infrastructure/security design
+  slice, or another explicit live gate such as IOTA Names/Identity/VC, npm
+  release, payment/provider, marketplace, custody, or device-safety design
+  before claiming launch readiness.
 
 ## Completed Slice 4.24: A2A Push Local Delivery Queue
 
