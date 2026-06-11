@@ -11,6 +11,11 @@ import {
   loadTestnetUpstreamReport,
   validateTestnetUpstreamReport,
 } from "./testnet-upstream-report.js";
+import {
+  checkGasStationRuntimePreflight,
+  type GasStationRuntimeCommandRunner,
+  type GasStationRuntimePreflightReport,
+} from "./check-gas-station-runtime-preflight.js";
 
 export type LiveProofStatus = "ready" | "blocked";
 
@@ -32,6 +37,8 @@ export interface CheckLiveProofStatusOptions {
   readonly env?: NodeJS.ProcessEnv | Record<string, string | undefined>;
   readonly envFile?: string;
   readonly cwd?: string;
+  readonly gasStationRuntimeReport?: GasStationRuntimePreflightReport;
+  readonly gasStationRuntimeRunner?: GasStationRuntimeCommandRunner;
 }
 
 const IOTA_NAMES_REQUIRED_ENV = [
@@ -71,6 +78,7 @@ export async function checkLiveProofStatus(
   const mergedEnv = mergeEnv(fileEnv, env);
   const checks: LiveProofCheck[] = [
     await checkTestnetReadinessStatus(envFile, cwd),
+    await checkGasStationRuntimeStatus(options, cwd),
     await checkTestnetUpstreamStatus(mergedEnv, cwd),
     checkIotaNamesStatus(mergedEnv),
     checkIotaIdentityStatus(mergedEnv),
@@ -80,6 +88,33 @@ export async function checkLiveProofStatus(
   return {
     ok: checks.every((check) => check.status === "ready"),
     checks,
+  };
+}
+
+async function checkGasStationRuntimeStatus(
+  options: CheckLiveProofStatusOptions,
+  cwd: string,
+): Promise<LiveProofCheck> {
+  const report = options.gasStationRuntimeReport ?? await checkGasStationRuntimePreflight({
+    cwd,
+    runner: options.gasStationRuntimeRunner,
+  });
+  if (report.ready) {
+    return {
+      id: "gas-station-runtime",
+      status: "ready",
+      code: report.code,
+      message: report.message,
+      next: "Start the local Gas Station Compose stack if needed, then run npm run diagnose:gas-station -- --report <ignored-json-path>.",
+    };
+  }
+
+  return {
+    id: "gas-station-runtime",
+    status: "blocked",
+    code: report.code,
+    message: report.message,
+    next: "Run npm run gas-station:render-config, enable Docker daemon/Compose for this workspace, then rerun npm run gas-station:runtime-preflight.",
   };
 }
 

@@ -27,17 +27,23 @@ const validPolicy = `apps:
 test("product status reports local proof gates and explicit live blockers without secrets", async () => {
   const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-product-status-"));
   try {
-    const report = await checkProductStatus({ cwd, env: {}, scripts: completeScripts() });
+    const report = await checkProductStatus({
+      cwd,
+      env: {},
+      gasStationRuntimeReport: blockedGasStationRuntime(),
+      scripts: completeScripts(),
+    });
     const formatted = formatProductStatusReport(report);
 
     assert.equal(report.complete, false);
     assert.equal(report.localProofOk, true);
     assert.deepEqual(
-      report.checks.slice(0, 7).map((check) => [check.id, check.status, check.code]),
+      report.checks.slice(0, 8).map((check) => [check.id, check.status, check.code]),
       [
         ["local-verification", "proven-local", "LOCAL_VERIFY_SURFACE_CONFIGURED"],
         ["package-release-local", "proven-local", "PACKAGE_RELEASE_GATES_CONFIGURED"],
         ["testnet-readiness", "blocked-live", "TESTNET_ENV_FILE_MISSING"],
+        ["gas-station-runtime", "blocked-live", "GAS_STATION_DOCKER_DAEMON_UNAVAILABLE"],
         ["testnet-upstream", "blocked-live", "TESTNET_UPSTREAM_REPORT_MISSING"],
         ["iota-names-live", "blocked-live", "IOTA_NAMES_LIVE_CONFIG_MISSING"],
         ["iota-identity-live", "blocked-live", "IOTA_IDENTITY_LIVE_CONFIG_MISSING"],
@@ -88,6 +94,7 @@ test("product status marks configured live gates ready without contacting endpoi
     const report = await checkProductStatus({
       cwd,
       scripts: completeScripts(),
+      gasStationRuntimeReport: readyGasStationRuntime(),
       env: {
         GASKIT_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
         IOTA_NAMES_GRAPHQL_URL: "https://graphql.testnet.example/iota",
@@ -107,6 +114,7 @@ test("product status marks configured live gates ready without contacting endpoi
     assert.equal(report.complete, false);
     assert.equal(report.localProofOk, true);
     assert.equal(report.checks.find((check) => check.id === "testnet-readiness")?.status, "ready-live");
+    assert.equal(report.checks.find((check) => check.id === "gas-station-runtime")?.status, "ready-live");
     assert.equal(report.checks.find((check) => check.id === "testnet-upstream")?.status, "ready-live");
     assert.equal(report.checks.find((check) => check.id === "iota-names-live")?.status, "ready-live");
     assert.equal(report.checks.find((check) => check.id === "iota-identity-live")?.status, "ready-live");
@@ -127,6 +135,7 @@ test("product status fails the local proof surface when required commands are mi
     const report = await checkProductStatus({
       cwd,
       env: {},
+      gasStationRuntimeReport: blockedGasStationRuntime(),
       scripts: {
         "verify:local": "npm test && npm run docs:check",
         "pack:check": "npm pack --dry-run",
@@ -157,7 +166,12 @@ test("product status keeps publish dry-run opt-in", async () => {
     const scripts = completeScripts({
       "verify:local": `${completeScripts()["verify:local"]} && npm run publish:dry-run`,
     });
-    const report = await checkProductStatus({ cwd, env: {}, scripts });
+    const report = await checkProductStatus({
+      cwd,
+      env: {},
+      gasStationRuntimeReport: blockedGasStationRuntime(),
+      scripts,
+    });
     const release = report.checks.find((check) => check.id === "package-release-local");
 
     assert.equal(report.localProofOk, false);
@@ -206,5 +220,23 @@ function completeScripts(overrides: Record<string, string | undefined> = {}): Re
     "smoke:package-install": "npm run build && tsx scripts/smoke-package-install.ts",
     "publish:dry-run": "npm run build && tsx scripts/package-publish-dry-run.ts",
     ...overrides,
+  };
+}
+
+function readyGasStationRuntime() {
+  return {
+    ready: true,
+    code: "GAS_STATION_RUNTIME_READY" as const,
+    message: "Local Gas Station runtime prerequisites are present.",
+    checks: [],
+  };
+}
+
+function blockedGasStationRuntime() {
+  return {
+    ready: false,
+    code: "GAS_STATION_DOCKER_DAEMON_UNAVAILABLE" as const,
+    message: "Docker daemon is not reachable.",
+    checks: [],
   };
 }

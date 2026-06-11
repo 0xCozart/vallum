@@ -72,6 +72,14 @@ was not started because this WSL session cannot reach the Docker daemon, the
 Docker Compose plugin is unavailable, and the standalone Docker Desktop
 `docker-compose` shim reports WSL integration is not active.
 
+Slice 7.9 is the current continuation slice. It adds
+`npm run gas-station:runtime-preflight` as a local-only runtime prerequisite
+gate between config rendering and upstream diagnostics. The gate checks for the
+ignored rendered config, Docker client, Docker daemon, and Docker Compose
+without printing secret values or contacting live services. On this machine the
+latest preflight reports `GAS_STATION_DOCKER_COMPOSE_MISSING`, so fresh
+sponsored testnet execution remains blocked before reserve/execute.
+
 The next continuation should choose the next safe roadmap slice from
 `docs/agentic-gaskit/full-roadmap-execution-goal.md` and
 `docs/agentic-gaskit/handoff-next-product-build.md`. Good next candidates are

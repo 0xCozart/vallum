@@ -23,7 +23,13 @@ test("launch readiness maps local evidence to live and production blockers", asy
   assert.equal(report.areas.find((area) => area.id === "phase-4-standards-bridges")?.status, "blocked-production");
   assert.equal(report.areas.find((area) => area.id === "phase-6-package-release")?.status, "blocked-production");
   assert.equal(report.areas.find((area) => area.id === "phase-3-contract-workflows")?.status, "deferred-safety");
+  assert.ok(
+    report.areas
+      .find((area) => area.id === "packet-h-final-product-status")
+      ?.blockerCodes.includes("GAS_STATION_DOCKER_DAEMON_UNAVAILABLE"),
+  );
   assert.match(formatted, /TESTNET_ENV_FILE_MISSING/);
+  assert.match(formatted, /GAS_STATION_DOCKER_DAEMON_UNAVAILABLE/);
   assert.match(formatted, /NPM_PUBLICATION_UNRUN/);
   assert.match(formatted, /PUBLIC_A2A_HOSTING_UNPROVEN/);
   assert.match(formatted, /DEVICE_ACCESS_SAFETY_DEFERRED/);
@@ -78,6 +84,7 @@ async function writeEvidenceTree(cwd: string): Promise<void> {
     "contracts/receipt_v1/Move.toml",
     "examples/agent-escrow/agent-escrow-demo.ts",
     "docs/testnet-attempts.md",
+    "scripts/check-gas-station-runtime-preflight.ts",
     "scripts/check-testnet-digest-proof.ts",
     "packages/registry/src/profileSchema.ts",
     "packages/registry/src/iotaNamesAdapter.ts",
@@ -128,6 +135,7 @@ async function writeEvidenceTree(cwd: string): Promise<void> {
 function completeProductStatus(): ProductStatusReport {
   const checks = [
     "testnet-readiness",
+    "gas-station-runtime",
     "testnet-upstream",
     "iota-names-live",
     "iota-identity-live",
@@ -162,6 +170,12 @@ function productStatusWithLiveBlockers(): ProductStatusReport {
         status: "blocked-live",
         code: "TESTNET_ENV_FILE_MISSING",
         message: "Synthetic missing testnet env for launch-readiness mapping tests.",
+      },
+      {
+        id: "gas-station-runtime",
+        status: "blocked-live",
+        code: "GAS_STATION_DOCKER_DAEMON_UNAVAILABLE",
+        message: "Synthetic missing Gas Station runtime for launch-readiness mapping tests.",
       },
       {
         id: "testnet-upstream",

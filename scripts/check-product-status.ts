@@ -3,6 +3,10 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { checkLiveProofStatus, type LiveProofCheck } from "./check-live-proof-status.js";
+import type {
+  GasStationRuntimeCommandRunner,
+  GasStationRuntimePreflightReport,
+} from "./check-gas-station-runtime-preflight.js";
 
 export type ProductEvidenceStatus =
   | "proven-local"
@@ -29,6 +33,8 @@ export interface ProductStatusReport {
 export interface ProductStatusOptions {
   readonly cwd?: string;
   readonly env?: NodeJS.ProcessEnv | Record<string, string | undefined>;
+  readonly gasStationRuntimeReport?: GasStationRuntimePreflightReport;
+  readonly gasStationRuntimeRunner?: GasStationRuntimeCommandRunner;
   readonly scripts?: Record<string, string | undefined>;
 }
 
@@ -67,7 +73,12 @@ const LOCAL_VERIFY_REQUIRED_PARTS = [
 export async function checkProductStatus(options: ProductStatusOptions = {}): Promise<ProductStatusReport> {
   const cwd = options.cwd ?? process.cwd();
   const scripts = options.scripts ?? await loadPackageScripts(cwd);
-  const liveStatus = await checkLiveProofStatus({ cwd, env: options.env });
+  const liveStatus = await checkLiveProofStatus({
+    cwd,
+    env: options.env,
+    gasStationRuntimeReport: options.gasStationRuntimeReport,
+    gasStationRuntimeRunner: options.gasStationRuntimeRunner,
+  });
 
   const checks: ProductEvidenceCheck[] = [
     checkLocalVerificationCoverage(scripts),

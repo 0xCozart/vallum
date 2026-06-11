@@ -3749,3 +3749,83 @@ Escalation triggers:
   production hardening slice.
 - Any request to run `execute:testnet-demo` before Docker/Gas Station
   diagnostics pass and explicit operator intent is present.
+
+## Slice 7.9: Gas Station Runtime Preflight Gate
+
+User-visible outcome:
+Operators and future agents can distinguish rendered Gas Station config from
+local runtime readiness before attempting upstream diagnostics or sponsored
+testnet execution.
+
+Likely files:
+
+- `scripts/check-gas-station-runtime-preflight.ts`
+- `scripts/check-gas-station-runtime-preflight.test.ts`
+- `scripts/check-live-proof-status.ts`
+- `scripts/check-product-status.ts`
+- `scripts/check-launch-readiness.ts`
+- `scripts/check-operator-live-gates.ts`
+- `scripts/live-proof-status.test.ts`
+- `scripts/product-status.test.ts`
+- `scripts/launch-readiness.test.ts`
+- `scripts/operator-live-gates.test.ts`
+- `scripts/package-scripts.test.ts`
+- `package.json`
+- `docs/deployment.md`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/CODEBASE_MAP.md`
+- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
+- `docs/agentic-gaskit/codex-active-goal.md`
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+
+Acceptance criteria:
+
+- `npm run gas-station:runtime-preflight` builds first and checks only local
+  prerequisites: ignored rendered config, Docker client, Docker daemon, and
+  Docker Compose plugin or standalone command.
+- The preflight returns a typed blocker code for missing config, missing Docker
+  client, unreachable Docker daemon, or missing Compose.
+- The report prints command/status metadata only; it does not print config
+  paths, environment values, Docker output, bearer tokens, app keys, signer
+  material, raw transaction bytes, or raw errors.
+- `npm run proof:live-status` surfaces `gas-station-runtime` separately from
+  `testnet-readiness` and `testnet-upstream`.
+- `npm run proof:product-status`, `npm run proof:launch-readiness`, and
+  `npm run proof:operator-gates` include the runtime preflight as a local
+  prerequisite before upstream diagnostics or `execute:testnet-demo`.
+- The runtime preflight remains excluded from `verify:fast`, `verify:local`,
+  and `grant:check` because it depends on local Docker state.
+
+Verification:
+
+- Focused runtime-preflight, live-proof, product-status, launch-readiness,
+  operator-gate, and package-script tests.
+- `npm run gas-station:runtime-preflight` on the current machine, recording the
+  typed local blocker if Docker/Compose is unavailable.
+- `npm run proof:live-status`.
+- `npm run proof:product-status`.
+- `npm run proof:launch-readiness`.
+- `npm run proof:operator-gates`.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+
+Dependencies:
+Slices 7.7-7.8 and local `.env` testnet-readiness setup.
+
+Risk:
+Medium. Docker/runtime checks are machine-specific and can be mistaken for live
+Gas Station or sponsored execution proof unless they remain local-only and
+separate from upstream diagnostics.
+
+Escalation triggers:
+
+- Any request to treat preflight success as Gas Station health or reserve_gas
+  compatibility proof.
+- Any request to commit rendered local Gas Station config or diagnostic reports.
+- Any request to run `execute:testnet-demo` before runtime preflight, upstream
+  diagnostics, and explicit operator intent are all present.

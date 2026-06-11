@@ -26,10 +26,17 @@ readiness:testnet` passes non-networked readiness. `npm run proof:live-status`
 now reports:
 
 - `TESTNET_READINESS_CONFIG_PRESENT`
+- `GAS_STATION_DOCKER_COMPOSE_MISSING`
 - `TESTNET_UPSTREAM_REPORT_FAILED`
 - `IOTA_NAMES_LIVE_CONFIG_MISSING`
 - `IOTA_IDENTITY_LIVE_CONFIG_MISSING`
 - `VC_TRUST_POLICY_CONFIG_MISSING`
+
+`npm run gas-station:runtime-preflight` confirms the ignored local Gas Station
+config exists and Docker client/daemon are reachable on this machine, but no
+Docker Compose command is available. This is a local runtime prerequisite
+blocker only; it does not contact IOTA RPC, Gas Station HTTP endpoints, or
+reserve gas.
 
 The configured IOTA testnet RPC endpoint also responded to
 `npm run diagnose:gas-station -- --skip-reserve --report
@@ -45,6 +52,8 @@ funding, not `.env` shape.
 
 - local testnet readiness configuration is present and structurally valid, or
   the exact readiness blocker ids are listed
+- local Gas Station runtime prerequisites are present, or the exact local
+  Docker/config blocker is listed
 - sanitized testnet upstream diagnostic report status is present and proves
   IOTA RPC, Gas Station reachability, and reserve_gas compatibility, or the
   exact upstream report blocker is listed
@@ -77,6 +86,7 @@ files:
 ```bash
 npm run readiness:testnet
 npm run gas-station:render-config
+npm run gas-station:runtime-preflight
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run smoke:iota-names-live
 npm run smoke:iota-identity-live

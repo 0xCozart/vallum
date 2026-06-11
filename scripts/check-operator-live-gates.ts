@@ -5,6 +5,10 @@ import {
   type ProductEvidenceCheck,
   type ProductStatusReport,
 } from "./check-product-status.js";
+import type {
+  GasStationRuntimeCommandRunner,
+  GasStationRuntimePreflightReport,
+} from "./check-gas-station-runtime-preflight.js";
 
 export type OperatorGateStatus =
   | "proven-local"
@@ -34,6 +38,8 @@ export interface OperatorLiveGateReport {
 export interface OperatorLiveGateOptions {
   readonly cwd?: string;
   readonly env?: NodeJS.ProcessEnv | Record<string, string | undefined>;
+  readonly gasStationRuntimeReport?: GasStationRuntimePreflightReport;
+  readonly gasStationRuntimeRunner?: GasStationRuntimeCommandRunner;
   readonly productStatus?: ProductStatusReport;
 }
 
@@ -41,6 +47,7 @@ const GATE_COMMANDS: Record<string, string | undefined> = {
   "local-verification": "npm run verify:local",
   "package-release-local": "npm run pack:check && npm run smoke:package-install && npm run publish:dry-run",
   "testnet-readiness": "npm run readiness:testnet",
+  "gas-station-runtime": "npm run gas-station:runtime-preflight",
   "testnet-upstream": "npm run diagnose:gas-station",
   "iota-names-live": "npm run smoke:iota-names-live",
   "iota-identity-live": "npm run smoke:iota-identity-live",
@@ -81,6 +88,8 @@ export async function checkOperatorLiveGates(
   const productStatus = options.productStatus ?? await checkProductStatus({
     cwd: options.cwd,
     env: options.env,
+    gasStationRuntimeReport: options.gasStationRuntimeReport,
+    gasStationRuntimeRunner: options.gasStationRuntimeRunner,
   });
   const gates = productStatus.checks.map(mapProductCheckToGate);
 
@@ -138,6 +147,7 @@ function classifyGate(check: ProductEvidenceCheck): OperatorGateStatus {
 
 function approvalRequired(check: ProductEvidenceCheck): boolean {
   if (check.id === "testnet-readiness" && check.status === "ready-live") return false;
+  if (check.id === "gas-station-runtime") return false;
   return APPROVAL_REQUIRED_GATES.has(check.id) || check.status === "ready-live";
 }
 

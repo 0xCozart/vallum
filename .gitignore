@@ -53,6 +53,18 @@ docs/agentic-gaskit/*.local.md
 docs/agentic-gaskit/*-draft.md
 docs/agentic-gaskit/*-scratch.md
 docs/agentic-gaskit/*-handoff-local.md
+
+# Internal planning docs. These patterns prevent re-adding local/private
+# planning artifacts after they are intentionally de-indexed in a dedicated
+# public-docs cleanup slice.
+docs/internal/
+docs/agentic-gaskit/codex-active-goal.md
+docs/agentic-gaskit/codex-execution-prompt.md
+docs/agentic-gaskit/end-to-end-goal.md
+docs/agentic-gaskit/full-roadmap-execution-goal.md
+docs/agentic-gaskit/handoff-next-product-build.md
+docs/agentic-gaskit/local-dirty-work-review.md
+docs/agentic-gaskit/planning-structure-audit.md
 .gitnexus/
 .hermes/
 

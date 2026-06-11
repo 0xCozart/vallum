@@ -111,6 +111,9 @@ It also includes the first Agentic GasKit implementation slices:
 - local Gas Station config renderer and compose template for turning ignored
   `.env` values into an ignored official-style `config.local.yaml` before
   starting the `iotaledger/gas-station` container
+- local Gas Station runtime preflight gate for checking ignored rendered config,
+  Docker client, Docker daemon, and Docker Compose availability before upstream
+  diagnostics
 - non-networked testnet digest proof for documented public IOTA testnet
   evidence, plus an opt-in read-only live lookup command
 - non-networked product status proof command for local proof, live/testnet,
@@ -185,6 +188,7 @@ roadmap unless later slices implement and verify them.
 - Testnet upstream diagnostics: `scripts/diagnose-gas-station-upstream.ts`,
   `scripts/testnet-upstream-report.ts`, `docs/testnet-attempts.md`
 - Local Gas Station setup: `scripts/render-gas-station-config.ts`,
+  `scripts/check-gas-station-runtime-preflight.ts`,
   `deploy/docker-compose/docker-compose.local.yml`,
   `deploy/gas-station/config.example.yaml`, `docs/deployment.md`
 - Testnet digest proof: `docs/agentic-gaskit/testnet-digest-proof.md`,
@@ -308,6 +312,7 @@ Safe local checks:
 - `npm run smoke:marketplace-read-model`
 - `npm run smoke:package-install`
 - `npm run proof:live-status`
+- `npm run gas-station:runtime-preflight`
 - `npm run proof:testnet-digest`
 - `npm run proof:a2a-public-readiness`
 - `npm run proof:product-status`

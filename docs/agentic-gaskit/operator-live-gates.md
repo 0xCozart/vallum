@@ -39,6 +39,8 @@ hosts, marketplace systems, or physical devices.
 - Shows which local proof gates are already configured.
 - Shows that fast iteration remains separate from the full local proof gate.
 - Shows whether testnet readiness is blocked by missing local config.
+- Separates rendered local Gas Station config from local Docker/Compose runtime
+  readiness using the `gas-station-runtime` preflight gate.
 - Separates local testnet `.env` readiness from live Gas Station upstream
   readiness using the sanitized `testnet-upstream` diagnostic report gate.
 - Shows which live smokes would contact external services and require explicit
@@ -57,6 +59,7 @@ hosts, marketplace systems, or physical devices.
 
 - It does not run `npm run smoke:iota-names-live`.
 - It does not run `npm run smoke:iota-identity-live`.
+- It does not start Docker, Redis, or Gas Station containers.
 - It does not run `npm run diagnose:gas-station`.
 - It does not run `npm publish`.
 - It does not operate public A2A hosting, live payment providers, production
@@ -79,6 +82,7 @@ npm run proof:verification-profiles
 npm run proof:operator-gates
 npm run readiness:testnet
 npm run gas-station:render-config
+npm run gas-station:runtime-preflight
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
 ```
 

@@ -12,7 +12,11 @@ import {
 test("live proof status reports exact blockers without secret values", async () => {
   const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
   try {
-    const report = await checkLiveProofStatus({ env: {}, cwd });
+    const report = await checkLiveProofStatus({
+      env: {},
+      cwd,
+      gasStationRuntimeReport: blockedGasStationRuntime(),
+    });
     const formatted = formatLiveProofStatusReport(report);
 
     assert.equal(report.ok, false);
@@ -20,6 +24,7 @@ test("live proof status reports exact blockers without secret values", async () 
       report.checks.map((check) => [check.id, check.status, check.code]),
       [
         ["testnet-readiness", "blocked", "TESTNET_ENV_FILE_MISSING"],
+        ["gas-station-runtime", "blocked", "GAS_STATION_DOCKER_DAEMON_UNAVAILABLE"],
         ["testnet-upstream", "blocked", "TESTNET_UPSTREAM_REPORT_MISSING"],
         ["iota-names-live", "blocked", "IOTA_NAMES_LIVE_CONFIG_MISSING"],
         ["iota-identity-live", "blocked", "IOTA_IDENTITY_LIVE_CONFIG_MISSING"],
@@ -52,6 +57,7 @@ test("live proof status marks a passing testnet upstream diagnostic report as re
     }));
     const report = await checkLiveProofStatus({
       cwd,
+      gasStationRuntimeReport: readyGasStationRuntime(),
       env: {
         GASKIT_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
       },
@@ -82,6 +88,7 @@ test("live proof status blocks skipped reserve diagnostic reports", async () => 
     }));
     const report = await checkLiveProofStatus({
       cwd,
+      gasStationRuntimeReport: readyGasStationRuntime(),
       env: {
         GASKIT_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
       },
@@ -100,6 +107,7 @@ test("live proof status marks configured identity proof endpoint as ready withou
   try {
     const report = await checkLiveProofStatus({
       cwd,
+      gasStationRuntimeReport: readyGasStationRuntime(),
       env: {
         IOTA_IDENTITY_PROOF_ENDPOINT: "https://identity.testnet.example/proof",
         IOTA_IDENTITY_PROFILE_PATH: "profiles/researcher.json",
@@ -122,6 +130,7 @@ test("live proof status blocks unsafe identity proof endpoints without printing 
   try {
     const report = await checkLiveProofStatus({
       cwd,
+      gasStationRuntimeReport: readyGasStationRuntime(),
       env: {
         IOTA_IDENTITY_PROOF_ENDPOINT: "http://identity.testnet.example/proof",
         IOTA_IDENTITY_PROFILE_PATH: "profiles/researcher.json",
@@ -143,6 +152,7 @@ test("live proof status validates VC trust policy config without printing values
   try {
     const report = await checkLiveProofStatus({
       cwd,
+      gasStationRuntimeReport: readyGasStationRuntime(),
       env: {
         IOTA_IDENTITY_TRUSTED_ISSUER_DIDS: "did:iota:issuer:agent-registry",
         IOTA_IDENTITY_ALLOWED_VERIFICATION_METHODS: "#agent-capability-key-1",
@@ -167,6 +177,7 @@ test("live proof status blocks malformed VC trust policy config without printing
   try {
     const report = await checkLiveProofStatus({
       cwd,
+      gasStationRuntimeReport: readyGasStationRuntime(),
       env: {
         IOTA_IDENTITY_TRUSTED_ISSUER_DIDS: "issuer-without-did-prefix",
         IOTA_IDENTITY_ALLOWED_VERIFICATION_METHODS: "#agent-capability-key-1",
@@ -191,6 +202,7 @@ test("live proof status marks configured names as ready without contacting Graph
   try {
     const report = await checkLiveProofStatus({
       cwd,
+      gasStationRuntimeReport: readyGasStationRuntime(),
       env: {
         IOTA_NAMES_GRAPHQL_URL: "https://graphql.testnet.example/iota",
         IOTA_NAMES_NAME: "researcher.demo.iota",
@@ -212,6 +224,7 @@ test("live proof status blocks unsafe names endpoints without printing them", as
   try {
     const report = await checkLiveProofStatus({
       cwd,
+      gasStationRuntimeReport: readyGasStationRuntime(),
       env: {
         IOTA_NAMES_GRAPHQL_URL: "http://graphql.testnet.example/iota",
         IOTA_NAMES_NAME: "researcher.demo.iota",
@@ -233,7 +246,11 @@ test("live proof status reports readiness failures by check id only", async () =
   const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
   try {
     await writeFile(join(cwd, ".env"), "IOTA_RPC_URL=https://api.testnet.iota.example\n");
-    const report = await checkLiveProofStatus({ cwd, env: {} });
+    const report = await checkLiveProofStatus({
+      cwd,
+      env: {},
+      gasStationRuntimeReport: readyGasStationRuntime(),
+    });
     const formatted = formatLiveProofStatusReport(report);
     const readiness = report.checks.find((check) => check.id === "testnet-readiness");
 
@@ -245,3 +262,21 @@ test("live proof status reports readiness failures by check id only", async () =
     await rm(cwd, { recursive: true, force: true });
   }
 });
+
+function readyGasStationRuntime() {
+  return {
+    ready: true,
+    code: "GAS_STATION_RUNTIME_READY" as const,
+    message: "Local Gas Station runtime prerequisites are present.",
+    checks: [],
+  };
+}
+
+function blockedGasStationRuntime() {
+  return {
+    ready: false,
+    code: "GAS_STATION_DOCKER_DAEMON_UNAVAILABLE" as const,
+    message: "Docker daemon is not reachable.",
+    checks: [],
+  };
+}

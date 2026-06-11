@@ -27,9 +27,9 @@ surface in one machine-checkable place:
 - verification-profile wiring that keeps fast iteration separate from the full
   local evidence gate;
 - launch-readiness evidence matrix and operator live-gate runbook wiring;
-- live/testnet readiness, sanitized testnet upstream diagnostic report status,
-  IOTA Names, IOTA Identity, and VC proof status from `npm run
-  proof:live-status`;
+- live/testnet readiness, local Gas Station runtime preflight status,
+  sanitized testnet upstream diagnostic report status, IOTA Names, IOTA
+  Identity, and VC proof status from `npm run proof:live-status`;
 - production-only blockers such as npm registry publication, public A2A
   hosting, live payment/provider settlement, production marketplace operation,
   production custody, and physical device access.
@@ -63,17 +63,18 @@ marketplace, or safety work before those claims can be made.
   treated as launch evidence by itself.
 - Package release proof remains local: pack dry-runs, local tarball
   install/import, and opt-in publish dry-run.
-- Live/testnet gates are either ready to run with safe local configuration and
-  sanitized upstream evidence or blocked with exact missing/report check ids.
+- Live/testnet gates are either ready to run with safe local configuration,
+  local Gas Station runtime prerequisites, and sanitized upstream evidence, or
+  blocked with exact missing/runtime/report check ids.
 - Production and safety claims remain explicit blockers instead of implied
   roadmap completion.
 
 ## What It Does Not Prove
 
 - Real npm publication or registry installation.
-- Fresh sponsored IOTA testnet execution unless `testnet-readiness` and
-  `testnet-upstream` are ready and `npm run execute:testnet-demo` passes with
-  explicit operator intent.
+- Fresh sponsored IOTA testnet execution unless `testnet-readiness`,
+  `gas-station-runtime`, and `testnet-upstream` are ready and
+  `npm run execute:testnet-demo` passes with explicit operator intent.
 - Live IOTA Names, IOTA Identity, VC, payment, or A2A proof unless the
   corresponding opt-in live command is configured and passes.
 - Public A2A hosting, production key management, external conformance, public
@@ -93,6 +94,7 @@ npm run verify:fast
 npm run proof:testnet-digest
 npm run proof:testnet-digest:live
 npm run gas-station:render-config
+npm run gas-station:runtime-preflight
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run a2a:write-static-discovery-bundle -- --agent-card <signed-card.json> --jwks <jwks.json> --public-base-url <url> --public-jwks-url <url> --out-dir <dir>
 npm run a2a:check-static-discovery-bundle -- --out-dir <dir> --expected-public-base-url <url> --expected-public-jwks-url <url>

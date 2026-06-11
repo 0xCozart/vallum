@@ -160,6 +160,12 @@ Confirmed current state:
   only ignored local config. The current machine still cannot start the
   container because Docker daemon/Compose integration is unavailable in this
   WSL session.
+  Slice 7.9 adds a local Gas Station runtime preflight gate that checks the
+  ignored rendered config, Docker client, Docker daemon, and Docker Compose
+  availability before upstream diagnostics. It reports typed local blocker
+  codes through live-proof, product-status, launch-readiness, and
+  operator-gate reports without contacting IOTA RPC, Gas Station HTTP
+  endpoints, reserving gas, or executing transactions.
   Slice 4.10 adds local loopback A2A SSE streaming proof for
   `POST /message:stream`; Slice 4.11 adds local A2A push notification
   configuration CRUD that rejects webhook credential storage and unsafe
@@ -732,6 +738,9 @@ Slice 4.9 adds a non-networked A2A public-readiness gate so public A2A hosting
 and conformance blockers are inspectable before any live interoperability
 claim. Slice 7.5 adds a fast deterministic verification profile for iteration
 and a profile audit that preserves `verify:local` as the full evidence gate.
+Slice 7.9 adds a local Gas Station runtime preflight gate, so config rendering,
+Docker/Compose readiness, upstream diagnostics, and sponsored execution remain
+separate proof layers.
 
 Acceptance criteria:
 

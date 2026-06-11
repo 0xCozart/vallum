@@ -17,6 +17,7 @@ test("operator live gates report current blockers without secret values", async 
     await writeFile(join(cwd, "package.json"), JSON.stringify({ scripts: {} }));
     const report = await checkOperatorLiveGates({
       cwd,
+      gasStationRuntimeReport: blockedGasStationRuntime(),
       env: {
         IOTA_NAMES_GRAPHQL_URL: "https://graphql.testnet.example/iota",
         IOTA_NAMES_NAME: "researcher.demo.iota",
@@ -35,6 +36,10 @@ test("operator live gates report current blockers without secret values", async 
     assert.equal(findGate(report, "iota-names-live").contactsLiveService, true);
     assert.equal(findGate(report, "iota-identity-live").status, "requires-approval");
     assert.equal(findGate(report, "testnet-readiness").status, "blocked-config");
+    assert.equal(findGate(report, "gas-station-runtime").status, "blocked-config");
+    assert.equal(findGate(report, "gas-station-runtime").approvalRequired, false);
+    assert.equal(findGate(report, "gas-station-runtime").contactsLiveService, false);
+    assert.equal(findGate(report, "gas-station-runtime").command, "npm run gas-station:runtime-preflight");
     assert.equal(findGate(report, "testnet-upstream").status, "blocked-config");
     assert.equal(findGate(report, "testnet-upstream").command, "npm run diagnose:gas-station");
     assert.equal(findGate(report, "npm-registry-publication").status, "requires-approval");
@@ -49,6 +54,15 @@ test("operator live gates report current blockers without secret values", async 
     await rm(cwd, { recursive: true, force: true });
   }
 });
+
+function blockedGasStationRuntime() {
+  return {
+    ready: false,
+    code: "GAS_STATION_DOCKER_DAEMON_UNAVAILABLE" as const,
+    message: "Docker daemon is not reachable.",
+    checks: [],
+  };
+}
 
 test("operator live gates mark configured testnet readiness as ready-to-run without live contact", async () => {
   const report = await checkOperatorLiveGates({
@@ -67,6 +81,25 @@ test("operator live gates mark configured testnet readiness as ready-to-run with
   assert.equal(testnet.approvalRequired, false);
   assert.equal(testnet.contactsLiveService, false);
   assert.equal(testnet.command, "npm run readiness:testnet");
+});
+
+test("operator live gates keep Gas Station runtime preflight local-only", async () => {
+  const report = await checkOperatorLiveGates({
+    productStatus: productStatusFixture([
+      {
+        id: "gas-station-runtime",
+        status: "ready-live",
+        code: "GAS_STATION_RUNTIME_READY",
+        message: "Local Gas Station runtime prerequisites are present.",
+      },
+    ]),
+  });
+  const runtime = findGate(report, "gas-station-runtime");
+
+  assert.equal(runtime.status, "ready-to-run");
+  assert.equal(runtime.approvalRequired, false);
+  assert.equal(runtime.contactsLiveService, false);
+  assert.equal(runtime.command, "npm run gas-station:runtime-preflight");
 });
 
 test("operator live gates require approval for configured live endpoint smokes", async () => {

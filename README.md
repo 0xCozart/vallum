@@ -212,6 +212,10 @@ Latest local verification and prior live proof:
 - `npm run proof:operator-gates`: deterministic non-networked operator
   runbook classifies live/testnet, publication, public A2A, payment,
   marketplace, custody, and safety gates before execution.
+- `npm run gas-station:runtime-preflight`: local-only preflight checks the
+  ignored rendered Gas Station config, Docker client, Docker daemon, and Docker
+  Compose availability before upstream diagnostics; it does not start
+  containers, contact IOTA services, or reserve gas.
 - `npm run publish:dry-run`: opt-in npm publish dry-run completed locally for
   public workspaces; no package was published.
 - Prior `npm run execute:testnet-demo`: real sponsored IOTA testnet execute succeeded through the local policy gateway and Gas Station; public digest `2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H`.
