@@ -32,6 +32,8 @@ Current surface:
 - Local A2A push notification configuration CRUD that accepts public HTTPS
   callback URLs while rejecting webhook credential storage and unsafe local
   destinations.
+- Local injected A2A push delivery envelopes that POST sanitized task payloads
+  through an explicit transport without default outbound webhook calls.
 - Loopback-only Node HTTP server helper for deterministic local A2A discovery
   and task route smoke proof, with explicit unsafe opt-in required for
   non-loopback binds.
@@ -39,6 +41,6 @@ Current surface:
 This package does not operate a production x402 facilitator, replace AP2, hold
 payment credentials, sign payment payloads, submit live settlement
 transactions, operate a live public A2A task/message server, publish public A2A
-discovery, deliver A2A push/webhook updates, prove external A2A conformance or
-live A2A discovery, provide production Agent Card key management, or replace
-the A2A protocol.
+discovery, deliver public A2A push/webhook updates, prove external A2A
+conformance or live A2A discovery, provide production Agent Card key
+management, or replace the A2A protocol.

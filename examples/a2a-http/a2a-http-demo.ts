@@ -11,6 +11,7 @@ import {
   LocalA2ATaskStore,
   handleLocalA2AHttpRequest,
   type A2AHttpResponse,
+  type A2APushNotificationDeliveryRequest,
 } from "../../packages/standards/src/index.js";
 
 export interface A2AHttpDemoResult {
@@ -26,6 +27,8 @@ export interface A2AHttpDemoResult {
   readonly pushConfigStatus: number;
   readonly pushConfigListCount: number;
   readonly pushConfigCredentialRejectionStatus: number;
+  readonly pushDeliveryCount: number;
+  readonly pushDeliveryStatus: number;
   readonly logLeaksSecretMaterial: boolean;
 }
 
@@ -47,9 +50,14 @@ const policy: AgentActionPolicy = {
 
 export async function runA2AHttpDemo(): Promise<A2AHttpDemoResult> {
   const store = new LocalA2ATaskStore();
+  const pushDeliveries: A2APushNotificationDeliveryRequest[] = [];
   const options = {
     store,
     pushNotificationStore: new LocalA2APushNotificationStore(),
+    pushNotificationTransport: (request: A2APushNotificationDeliveryRequest) => {
+      pushDeliveries.push(request);
+      return { status: 202 };
+    },
     agentCardProfile: {
       ...validAgentProfileFixture(),
       endpoints: [
@@ -101,11 +109,6 @@ export async function runA2AHttpDemo(): Promise<A2AHttpDemoResult> {
     path: A2A_HTTP_TASKS_PATH,
     headers: auth,
   }, options);
-  const canceled = await handleLocalA2AHttpRequest({
-    method: "POST",
-    path: `/tasks/${encodeURIComponent(task.id)}:cancel`,
-    headers: auth,
-  }, options);
   const extendedAgentCard = await handleLocalA2AHttpRequest({
     method: "GET",
     path: A2A_HTTP_EXTENDED_AGENT_CARD_PATH,
@@ -140,6 +143,11 @@ export async function runA2AHttpDemo(): Promise<A2AHttpDemoResult> {
       },
     },
   }, options);
+  const canceled = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: `/tasks/${encodeURIComponent(task.id)}:cancel`,
+    headers: auth,
+  }, options);
 
   return {
     agentCardStatus: agentCard.status,
@@ -154,6 +162,8 @@ export async function runA2AHttpDemo(): Promise<A2AHttpDemoResult> {
     pushConfigStatus: pushConfig.status,
     pushConfigListCount: isPushConfigListResponse(pushConfigList) ? pushConfigList.body.configs.length : 0,
     pushConfigCredentialRejectionStatus: pushConfigCredentialRejection.status,
+    pushDeliveryCount: pushDeliveries.length,
+    pushDeliveryStatus: pushDeliveries.at(-1)?.body.task.status.state === "TASK_STATE_CANCELED" ? 202 : 0,
     logLeaksSecretMaterial: responseLeaks(agentCard)
       || responseLeaks(unauthorized)
       || responseLeaks(sent)
@@ -163,7 +173,8 @@ export async function runA2AHttpDemo(): Promise<A2AHttpDemoResult> {
       || responseLeaks(extendedAgentCard)
       || responseLeaks(pushConfig)
       || responseLeaks(pushConfigList)
-      || responseLeaks(pushConfigCredentialRejection),
+      || responseLeaks(pushConfigCredentialRejection)
+      || pushDeliveries.some(deliveryLeaks),
   };
 }
 
@@ -182,6 +193,8 @@ export function formatA2AHttpDemoResult(result: A2AHttpDemoResult): string {
     `pushConfig.status=${result.pushConfigStatus}`,
     `pushConfig.listCount=${result.pushConfigListCount}`,
     `pushConfig.credentialRejectionStatus=${result.pushConfigCredentialRejectionStatus}`,
+    `pushDelivery.count=${result.pushDeliveryCount}`,
+    `pushDelivery.status=${result.pushDeliveryStatus}`,
     `logLeaksSecretMaterial=${String(result.logLeaksSecretMaterial)}`,
   ].join("\n");
 }
@@ -230,6 +243,11 @@ function extendedA2AProfileFixture() {
 
 function responseLeaks(response: A2AHttpResponse): boolean {
   return /private prompt|privateNote|Bearer abc|push-secret-token|push\.secret|signer_ref_demo_secret|wallet_demo_secret|payment-secret|credential:research/i.test(response.json);
+}
+
+function deliveryLeaks(request: A2APushNotificationDeliveryRequest): boolean {
+  return Boolean(request.headers.authorization)
+    || /private prompt|privateNote|Bearer abc|push-secret-token|push\.secret|signer_ref_demo_secret|wallet_demo_secret|payment-secret|credential:research/i.test(request.json);
 }
 
 function isAgentCardResponse(response: A2AHttpResponse): response is A2AHttpResponse & {

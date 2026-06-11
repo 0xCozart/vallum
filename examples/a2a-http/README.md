@@ -10,7 +10,7 @@ the pure local handler from `@iota-gaskit/standards` to prove:
 - bearer-authenticated task/message routes;
 - local task send/get/list/cancel semantics;
 - local push notification configuration create/list/get/delete semantics
-  without webhook delivery;
+  and injected push delivery without default outbound webhook calls;
 - rejection of webhook credential storage and unsafe local callback URLs;
 - artifact omission on read endpoints unless explicitly requested;
 - safe error output without task auth tokens, signer refs, wallet internals,

@@ -16,6 +16,9 @@ if (result.extendedAgentCardStatus !== 200 || result.extendedAgentCardSkillCount
 if (result.pushConfigStatus !== 200 || result.pushConfigListCount !== 1) {
   throw new Error("A2A HTTP demo did not prove local push notification config storage.");
 }
+if (result.pushDeliveryCount !== 1 || result.pushDeliveryStatus !== 202) {
+  throw new Error("A2A HTTP demo did not prove injected local push notification delivery.");
+}
 if (result.pushConfigCredentialRejectionStatus !== 400) {
   throw new Error("A2A HTTP demo did not reject push notification credential storage.");
 }

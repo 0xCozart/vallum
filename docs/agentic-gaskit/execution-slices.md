@@ -1761,6 +1761,84 @@ Escalation triggers:
   auth, fetch public hosts, or claim external conformance without an
   operator-approved public infrastructure and auth slice.
 
+## Slice 4.13: A2A Local Push Delivery Envelope Gate
+
+User-visible outcome:
+Agentic GasKit can locally prove A2A push notification delivery envelopes
+through an injected transport, while public webhook delivery, default outbound
+network calls, production auth, public hosting, and external conformance remain
+blocked.
+
+Likely files:
+
+- `packages/standards/src/a2aPush.ts`
+- `packages/standards/src/a2aPush.test.ts`
+- `packages/standards/src/a2aHttp.ts`
+- `packages/standards/src/a2aHttp.test.ts`
+- `examples/a2a-http/`
+- `scripts/smoke-a2a-http.ts`
+- `scripts/check-a2a-public-readiness.ts`
+- `scripts/a2a-public-readiness.test.ts`
+- `scripts/check-product-status.ts`
+- `scripts/check-launch-readiness.ts`
+- `docs/agentic-gaskit/a2a-public-readiness.md`
+- `docs/agentic-gaskit/external-api-notes.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/overview.md`
+- `docs/CODEBASE_MAP.md`
+- `README.md`
+
+Acceptance criteria:
+
+- Push delivery request construction uses sanitized task payloads and the A2A
+  media type.
+- Delivery uses only an explicitly injected local transport; there is no
+  default outbound HTTP client.
+- Delivery requests do not include webhook credentials, bearer authorization
+  headers, signer refs, wallet internals, payment material, or private prompt
+  text.
+- Transport errors are captured as failed delivery attempts and do not fail the
+  task route.
+- The A2A HTTP demo proves local push config plus injected delivery after a
+  task update.
+- `npm run proof:a2a-public-readiness` reports local injected delivery proof
+  separately from public webhook delivery blockers.
+- Product-status and launch-readiness wording no longer imply all push
+  delivery work is missing, but they still do not mark public A2A
+  interoperability complete.
+
+Verification:
+
+- Focused A2A push, A2A HTTP handler, A2A HTTP demo, and public-readiness
+  tests.
+- Product-status tests.
+- Launch-readiness tests.
+- Operator-gate tests.
+- Package-script wiring tests.
+- Reviewer-docs regression tests.
+- `npm run smoke:a2a-http`.
+- `npm run proof:a2a-public-readiness`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:local`.
+
+Dependencies:
+Slices 4.10, 4.11, and 4.12.
+
+Risk:
+Medium to high. Local injected transport proof can be mistaken for production
+webhook delivery unless public hosting, SSRF hardening for outbound workers,
+production task auth, credential handling, and external conformance blockers
+stay visible.
+
+Escalation triggers:
+
+- Any request to add default outbound webhook delivery, store callback
+  credentials, operate a public A2A host, or claim external conformance without
+  a separate operator-approved security and infrastructure slice.
+
 ## Slice 5.1: Marketplace Readiness Gate
 
 User-visible outcome:

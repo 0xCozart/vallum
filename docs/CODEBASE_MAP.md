@@ -55,10 +55,13 @@ It also includes the first Agentic GasKit implementation slices:
   authenticated task routes, and SSE task events
 - local A2A push notification configuration CRUD with credential-storage and
   unsafe callback URL rejection
+- local injected A2A push notification delivery envelopes without default
+  outbound webhook calls
 - non-networked A2A public-readiness proof for local A2A evidence, public
   hosting inputs, production JWKS/auth decisions, local authenticated extended
-  cards, local loopback streaming, local push configuration, unsupported
-  webhook delivery, and external conformance blockers
+  cards, local loopback streaming, local push configuration, local injected
+  push delivery, public webhook delivery blockers, and external conformance
+  blockers
 - opt-in IOTA Names GraphQL live resolution smoke with an exact missing-config
   blocker path
 - non-networked live proof status command for testnet, IOTA Names, IOTA

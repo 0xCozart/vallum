@@ -546,6 +546,16 @@ Current planning assumptions:
   route requires bearer auth, the extended card is generated through the same
   public redaction path, and public hosting, production auth, production key
   distribution, and external conformance remain blocked.
+- On 2026-06-11, Slice 4.13 rechecked the current A2A specification for push
+  notification delivery. The current spec describes push notifications as
+  server POSTs to registered webhook URLs carrying task update payloads, while
+  webhook configuration can include auth scheme metadata. Slice 4.13 implements
+  local injected delivery-envelope proof only: registered public HTTPS callback
+  URLs receive sanitized task payloads through an explicitly supplied transport,
+  no webhook credentials are stored, no authorization header is emitted, and
+  default outbound webhook calls, public hosting, production auth, public
+  webhook delivery, SSRF hardening for real outbound workers, and external
+  conformance remain blocked.
 
 Implementation checks:
 

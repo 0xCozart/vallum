@@ -38,10 +38,11 @@ publicReady=false
 - Local loopback SSE streaming proof is configured through the A2A local
   server smoke.
 - Local push notification configuration CRUD is supported through the A2A HTTP
-  boundary without storing webhook credentials or delivering webhooks.
-- Push notification webhook delivery remains explicitly unsupported until a
-  dedicated security and public-infrastructure slice implements and verifies
-  it.
+  boundary without storing webhook credentials.
+- Local push notification delivery envelopes are supported through an injected
+  transport without default outbound webhook calls.
+- Public push notification webhook delivery remains blocked until a dedicated
+  security and public-infrastructure slice implements and verifies it.
 - External conformance remains blocked unless an operator supplies a local
   report path and that file exists.
 

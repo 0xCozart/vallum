@@ -16,6 +16,7 @@ import {
   LocalA2ATaskStore,
   handleLocalA2AHttpRequest,
   type A2AHttpResponse,
+  type A2APushNotificationDeliveryRequest,
 } from "./index.js";
 
 const now = new Date("2026-06-10T12:00:00.000Z");
@@ -60,6 +61,9 @@ test("local A2A HTTP handler serves authenticated extended Agent Card without le
     taskAuthToken: "local-a2a-token",
     taskPolicy: policy,
     now: () => now,
+    processMessage: () => ({
+      state: "TASK_STATE_WORKING" as const,
+    }),
   };
 
   const publicCard = await handleLocalA2AHttpRequest({
@@ -296,6 +300,116 @@ test("local A2A HTTP handler manages push notification configs without storing w
   assertPushConfigSafeJson(listed);
   assertPushConfigSafeJson(fetched);
   assertPushConfigSafeJson(deleted);
+});
+
+test("local A2A HTTP handler dispatches local push delivery through injected transport", async () => {
+  const store = new LocalA2ATaskStore();
+  const pushNotificationStore = new LocalA2APushNotificationStore();
+  const captured: A2APushNotificationDeliveryRequest[] = [];
+  const options = {
+    store,
+    pushNotificationStore,
+    pushNotificationTransport: (request: A2APushNotificationDeliveryRequest) => {
+      captured.push(request);
+      return { status: 202 };
+    },
+    taskAuthToken: "local-a2a-token",
+    taskPolicy: policy,
+    now: () => now,
+    processMessage: () => ({
+      state: "TASK_STATE_WORKING" as const,
+      artifacts: [{
+        artifactId: "push-delivery-draft",
+        parts: [{ text: "private prompt: Bearer abc.def.ghi" }],
+      }],
+    }),
+  };
+  const auth = { authorization: "Bearer local-a2a-token" };
+  const sent = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: A2A_HTTP_SEND_MESSAGE_PATH,
+    headers: auth,
+    body: sendBody("msg-push-delivery"),
+  }, options);
+  assertTaskResponse(sent);
+  assert.equal(captured.length, 0);
+  const taskId = sent.body.task.id;
+
+  const created = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: `/tasks/${encodeURIComponent(taskId)}/pushNotificationConfigs`,
+    headers: auth,
+    body: {
+      id: "push-demo-1",
+      url: "https://client.example.test/a2a/push",
+      authentication: { scheme: "Bearer" },
+    },
+  }, options);
+  const canceled = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: `/tasks/${encodeURIComponent(taskId)}:cancel`,
+    headers: auth,
+  }, options);
+
+  assertPushConfigResponse(created);
+  assertTaskResponse(canceled);
+  assert.equal(canceled.body.task.status.state, "TASK_STATE_CANCELED");
+  assert.equal(captured.length, 1);
+  const delivery = captured[0];
+  assert.equal(delivery?.method, "POST");
+  assert.equal(delivery?.url, "https://client.example.test/a2a/push");
+  assert.equal(delivery?.headers.authorization, undefined);
+  assert.match(delivery?.headers["content-type"] ?? "", /application\/a2a\+json/);
+  assert.equal(delivery?.headers["a2a-version"], A2A_TASK_PROTOCOL_VERSION);
+  assert.equal(delivery?.body.kind, "task");
+  assert.equal(delivery?.body.task.status.state, "TASK_STATE_CANCELED");
+  assert.doesNotMatch(delivery?.json ?? "", /private prompt|Bearer abc|signer_ref|wallet_|payment-secret/i);
+});
+
+test("local A2A HTTP push delivery transport failures do not fail task routes", async () => {
+  const store = new LocalA2ATaskStore();
+  const options = {
+    store,
+    pushNotificationStore: new LocalA2APushNotificationStore(),
+    pushNotificationTransport: () => {
+      throw new Error("webhook failed with Bearer should-not-print");
+    },
+    taskAuthToken: "local-a2a-token",
+    taskPolicy: policy,
+    now: () => now,
+    processMessage: () => ({
+      state: "TASK_STATE_WORKING" as const,
+    }),
+  };
+  const auth = { authorization: "Bearer local-a2a-token" };
+  const sent = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: A2A_HTTP_SEND_MESSAGE_PATH,
+    headers: auth,
+    body: sendBody("msg-push-delivery-failure"),
+  }, options);
+  assertTaskResponse(sent);
+  const taskId = sent.body.task.id;
+
+  await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: `/tasks/${encodeURIComponent(taskId)}/pushNotificationConfigs`,
+    headers: auth,
+    body: {
+      id: "push-demo-1",
+      url: "https://client.example.test/a2a/push",
+    },
+  }, options);
+  const canceled = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: `/tasks/${encodeURIComponent(taskId)}:cancel`,
+    headers: auth,
+  }, options);
+
+  assertTaskResponse(canceled);
+  assert.equal(canceled.status, 200);
+  assert.equal(canceled.body.task.status.state, "TASK_STATE_CANCELED");
+  assert.doesNotMatch(canceled.json, /should-not-print/);
 });
 
 test("local A2A HTTP push notification configs fail closed for unsafe URLs and credential storage", async () => {

@@ -9,8 +9,10 @@ import {
   A2APushNotificationError,
   createA2APushNotificationConfig,
   deleteA2APushNotificationConfig,
+  deliverA2APushNotifications,
   getA2APushNotificationConfig,
   listA2APushNotificationConfigs,
+  type A2APushNotificationTransport,
   type A2ATaskPushNotificationConfig,
   type LocalA2APushNotificationStore,
 } from "./a2aPush.js";
@@ -100,6 +102,7 @@ export interface LocalA2AHttpHandlerOptions {
   readonly taskAuthToken?: string;
   readonly taskPolicy?: AgentActionPolicy;
   readonly pushNotificationStore?: LocalA2APushNotificationStore;
+  readonly pushNotificationTransport?: A2APushNotificationTransport;
   readonly now?: () => Date;
   readonly processMessage?: (
     context: A2AProcessMessageContext,
@@ -189,14 +192,16 @@ export async function handleLocalA2AHttpRequest(
         });
       }
       if (method !== "POST") return methodNotAllowed(["POST"]);
+      const result = cancelA2ATask({
+        store: options.store,
+        id: taskRoute.taskId,
+        now: options.now?.(),
+        includeArtifacts: booleanQuery(url, "includeArtifacts"),
+      });
+      await maybeDeliverPushNotifications(result.task, options);
       return ok({
         kind: "task",
-        ...cancelA2ATask({
-          store: options.store,
-          id: taskRoute.taskId,
-          now: options.now?.(),
-          includeArtifacts: booleanQuery(url, "includeArtifacts"),
-        }),
+        ...result,
       });
     }
 
@@ -284,18 +289,20 @@ async function handleSendMessage(
   if (!isSendMessageBody(body)) {
     return errorResponse(400, "A2A_BODY_INVALID", "A2A request body is invalid.");
   }
+  const result = await sendA2AMessage({
+    store: options.store,
+    protocolVersion: body.protocolVersion ?? A2A_TASK_PROTOCOL_VERSION,
+    message: body.message,
+    manifest: body.manifest,
+    policy: body.message.taskId ? undefined : options.taskPolicy,
+    now: options.now?.(),
+    contextId: body.contextId,
+    processMessage: options.processMessage,
+  });
+  await maybeDeliverPushNotifications(result.task, options);
   return ok({
     kind: "task",
-    ...await sendA2AMessage({
-      store: options.store,
-      protocolVersion: body.protocolVersion ?? A2A_TASK_PROTOCOL_VERSION,
-      message: body.message,
-      manifest: body.manifest,
-      policy: body.message.taskId ? undefined : options.taskPolicy,
-      now: options.now?.(),
-      contextId: body.contextId,
-      processMessage: options.processMessage,
-    }),
+    ...result,
   });
 }
 
@@ -361,6 +368,18 @@ function handlePushNotificationRoute(
     });
   }
   return methodNotAllowed(["DELETE", "GET"]);
+}
+
+async function maybeDeliverPushNotifications(
+  task: A2ATask,
+  options: LocalA2AHttpHandlerOptions,
+): Promise<void> {
+  if (!options.pushNotificationStore || !options.pushNotificationTransport) return;
+  await deliverA2APushNotifications({
+    store: options.pushNotificationStore,
+    task,
+    transport: options.pushNotificationTransport,
+  });
 }
 
 function authorizeTaskRequest(

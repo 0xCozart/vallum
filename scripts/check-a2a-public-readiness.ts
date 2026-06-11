@@ -84,7 +84,8 @@ export async function checkA2APublicReadiness(
     localExtendedAgentCardSupport(),
     localStreamingSupport(),
     localPushConfigurationSupport(),
-    unsupported("push-delivery", "A2A_PUSH_DELIVERY_UNSUPPORTED", "A2A push notification webhook delivery remains unsupported in the current local server."),
+    localPushDeliverySupport(),
+    blockedPublicPushDelivery(),
     await checkConformanceReport(cwd, env.A2A_EXTERNAL_CONFORMANCE_REPORT),
   ];
 
@@ -263,20 +264,31 @@ function localPushConfigurationSupport(): A2APublicReadinessCheck {
     id: "push-notification-configs",
     status: "proven-local",
     code: "A2A_PUSH_CONFIG_LOCAL_PROOF_CONFIGURED",
-    message: "A2A push notification configuration CRUD is locally supported without webhook credential storage or delivery.",
+    message: "A2A push notification configuration CRUD is locally supported without webhook credential storage.",
     evidence: "npm run smoke:a2a-http",
-    next: "Keep this as local configuration proof only until webhook delivery, SSRF controls, production auth, and external conformance evidence exist.",
+    next: "Keep this as local configuration proof only until public webhook delivery, production auth, and external conformance evidence exist.",
   };
 }
 
-function unsupported(id: string, code: string, message: string): A2APublicReadinessCheck {
+function localPushDeliverySupport(): A2APublicReadinessCheck {
   return {
-    id,
-    status: "unsupported",
-    code,
-    message,
-    evidence: "unsupported-by-current-local-server",
-    next: "Keep unsupported in public claims until a dedicated slice implements and verifies this capability.",
+    id: "local-push-delivery",
+    status: "proven-local",
+    code: "A2A_PUSH_DELIVERY_LOCAL_PROOF_CONFIGURED",
+    message: "A2A push notification delivery envelopes are locally supported through an injected transport without default outbound webhook calls.",
+    evidence: "npm run smoke:a2a-http",
+    next: "Keep this as injected local proof only until public webhook delivery controls and infrastructure evidence exist.",
+  };
+}
+
+function blockedPublicPushDelivery(): A2APublicReadinessCheck {
+  return {
+    id: "public-push-delivery",
+    status: "blocked-conformance",
+    code: "A2A_PUBLIC_PUSH_DELIVERY_PROOF_MISSING",
+    message: "A2A public push webhook delivery remains blocked until outbound delivery infrastructure, SSRF controls, production auth, and external conformance evidence exist.",
+    evidence: "public-delivery-proof-missing",
+    next: "Run only in a dedicated operator-approved public webhook delivery slice.",
   };
 }
 

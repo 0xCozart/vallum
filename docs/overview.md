@@ -34,9 +34,9 @@ safety claim boundaries without contacting live services.
 The testnet digest proof checks documented public testnet transaction evidence
 locally and provides a separate opt-in read-only IOTA testnet lookup.
 The A2A public-readiness proof separates local A2A loopback, authenticated
-extended-card, and push configuration evidence from public hosting, production
-keys, webhook delivery, and external conformance blockers without contacting
-public endpoints.
+extended-card, push configuration, and injected push delivery evidence from
+public hosting, production keys, public webhook delivery, and external
+conformance blockers without contacting public endpoints.
 The verification-profile proof adds a faster deterministic iteration path while
 keeping the full local gate as the release, handoff, reviewer, and launch
 evidence surface.
@@ -113,12 +113,12 @@ The official Gas Station is the sponsorship engine. GasKit is the app integratio
 | Agent profiles | Local `@iota-gaskit/registry` schema validation, fixture resolution, mock-tested IOTA Names/Identity adapter interfaces, an opt-in IOTA Names live resolution smoke, and bounded identity verification cache helpers cover required fields, expired/revoked states, unsupported versions, secret-field rejection, SDK resolution, capability policy checks, and stale identity evidence fail-closed behavior. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
 | Live proof status | `npm run proof:live-status` reports testnet, IOTA Names, IOTA Identity, and VC proof readiness or blockers without contacting live services or printing configured values. | [Live Proof Status](agentic-gaskit/live-proof-status.md) |
 | Testnet digest proof | `npm run proof:testnet-digest` checks documented public IOTA testnet digest evidence locally; `npm run proof:testnet-digest:live` performs an opt-in read-only lookup. | [Testnet Digest Proof](agentic-gaskit/testnet-digest-proof.md) |
-| A2A public readiness | `npm run proof:a2a-public-readiness` classifies local A2A proof, local authenticated extended-card access, local loopback streaming, local push notification configuration, public hosting inputs, production JWKS/auth decisions, unsupported webhook delivery, and external conformance blockers without contacting public endpoints. | [A2A Public Readiness](agentic-gaskit/a2a-public-readiness.md) |
+| A2A public readiness | `npm run proof:a2a-public-readiness` classifies local A2A proof, local authenticated extended-card access, local loopback streaming, local push notification configuration, local injected push delivery, public hosting inputs, production JWKS/auth decisions, public webhook delivery blockers, and external conformance blockers without contacting public endpoints. | [A2A Public Readiness](agentic-gaskit/a2a-public-readiness.md) |
 | Verification profiles | `npm run verify:fast` provides a bounded iteration profile, while `npm run proof:verification-profiles` confirms `npm run verify:local` remains the full reviewer and launch evidence gate. | [Verification Profiles](agentic-gaskit/verification-profiles.md) |
 | Product status proof | `npm run proof:product-status` reports the current product evidence boundary: local proof configured, live/testnet gates ready or blocked, and production-only claims still blocked or safety-gated. | [Product Status Proof](agentic-gaskit/product-status.md) |
 | Launch readiness evidence | `npm run proof:launch-readiness` maps roadmap areas to evidence paths, local commands, blocker codes, and safe next gates without contacting live services. | [Launch Readiness Evidence](agentic-gaskit/launch-readiness-evidence.md) |
 | Operator live gates | `npm run proof:operator-gates` classifies remaining live/testnet, publication, public A2A, payment, marketplace, custody, and safety gates before execution. | [Operator Live Gates](agentic-gaskit/operator-live-gates.md) |
-| A2A bridge | Local Agent Card mapping, signed-card verification helpers, `/.well-known/agent-card.json` response helpers, local/mock task/message operation helpers, authenticated extended-card access, local push notification config CRUD, a local HTTP-shaped handler, and a loopback HTTP server smoke expose sanitized profile and task metadata with bearer-authenticated task routes and local SSE task events. Public-readiness proof now reports the remaining public hosting, production key/auth, webhook delivery, and conformance blockers. | [A2A Public Readiness](agentic-gaskit/a2a-public-readiness.md) |
+| A2A bridge | Local Agent Card mapping, signed-card verification helpers, `/.well-known/agent-card.json` response helpers, local/mock task/message operation helpers, authenticated extended-card access, local push notification config CRUD, injected push delivery, a local HTTP-shaped handler, and a loopback HTTP server smoke expose sanitized profile and task metadata with bearer-authenticated task routes and local SSE task events. Public-readiness proof now reports the remaining public hosting, production key/auth, public webhook delivery, and conformance blockers. | [A2A Public Readiness](agentic-gaskit/a2a-public-readiness.md) |
 | Marketplace evidence | Local `@iota-gaskit/marketplace` read model consumes registry profiles, policy compatibility, contract template metadata, receipts, manifests, and standards evidence to prove access-controlled receipt views and redacted dispute bundles without production marketplace operation. | [Marketplace Readiness](marketplace-readiness.md) |
 | Package release strategy | The prerelease package strategy keeps `@iota-gaskit/*` package names, keeps the monorepo root private, checks public package metadata mechanically, proves local tarball install/import, provides opt-in pack and publish dry-run gates, and defers any `@agentic-gaskit/*` rename to a dedicated compatibility slice. | [Package Release Strategy](agentic-gaskit/package-release-strategy.md) |
 | Device access safety | Physical device operation is blocked; any future proof must start with virtual or simulated devices only. | [Device Access Safety Gate](agentic-gaskit/device-access-safety-gate.md) |
@@ -138,8 +138,9 @@ These are not complete production claims yet:
 
 - signer adapter storage beyond documented safety model;
 - public Agent Card hosting, production Agent Card key management, live A2A
-  task/message server operation, public streaming, push webhook delivery,
-  external conformance proof, and live standards-compatible discovery;
+  task/message server operation, public streaming, public push webhook
+  delivery, external conformance proof, and live standards-compatible
+  discovery;
 - configured live IOTA Names proof, configured and passing IOTA Identity proof,
   and live verifiable credential validation beyond the opt-in proof endpoint
   harness and local trust-policy evaluator;

@@ -25,7 +25,10 @@ test("A2A public readiness reports local proof while public gates remain blocked
     assert.equal(findCheck(report, "streaming").code, "A2A_STREAMING_LOCAL_PROOF_CONFIGURED");
     assert.equal(findCheck(report, "push-notification-configs").status, "proven-local");
     assert.equal(findCheck(report, "push-notification-configs").code, "A2A_PUSH_CONFIG_LOCAL_PROOF_CONFIGURED");
-    assert.equal(findCheck(report, "push-delivery").status, "unsupported");
+    assert.equal(findCheck(report, "local-push-delivery").status, "proven-local");
+    assert.equal(findCheck(report, "local-push-delivery").code, "A2A_PUSH_DELIVERY_LOCAL_PROOF_CONFIGURED");
+    assert.equal(findCheck(report, "public-push-delivery").status, "blocked-conformance");
+    assert.equal(findCheck(report, "public-push-delivery").code, "A2A_PUBLIC_PUSH_DELIVERY_PROOF_MISSING");
     assert.equal(findCheck(report, "external-conformance").code, "A2A_EXTERNAL_CONFORMANCE_REPORT_MISSING");
     assert.match(formatted, /Agentic GasKit A2A public readiness blocked/);
     assert.doesNotMatch(formatted, /secret|token|private/i);
@@ -102,7 +105,7 @@ test("A2A public readiness accepts redacted public config and existing conforman
     const formatted = formatA2APublicReadinessReport(report);
 
     assert.equal(report.localProofOk, true);
-    assert.equal(report.publicReady, false, "push webhook delivery is still unsupported");
+    assert.equal(report.publicReady, false, "public push webhook delivery proof is still missing");
     assert.equal(findCheck(report, "public-agent-card-url").status, "ready-approval");
     assert.equal(findCheck(report, "public-base-url").status, "ready-approval");
     assert.equal(findCheck(report, "production-jwks-url").status, "ready-approval");
@@ -111,7 +114,8 @@ test("A2A public readiness accepts redacted public config and existing conforman
     assert.equal(findCheck(report, "extended-agent-card").status, "proven-local");
     assert.equal(findCheck(report, "streaming").status, "proven-local");
     assert.equal(findCheck(report, "push-notification-configs").status, "proven-local");
-    assert.equal(findCheck(report, "push-delivery").status, "unsupported");
+    assert.equal(findCheck(report, "local-push-delivery").status, "proven-local");
+    assert.equal(findCheck(report, "public-push-delivery").status, "blocked-conformance");
     assert.doesNotMatch(formatted, /agents\.example|a2a-conformance-report|oauth2/);
   } finally {
     await rm(cwd, { recursive: true, force: true });

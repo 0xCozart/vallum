@@ -22,6 +22,11 @@ authenticated extended Agent Card local gate. It proves local
 boundary while keeping public hosting, production keys/auth, push webhook
 delivery, and external conformance blockers explicit.
 
+The current in-progress continuation is Slice 4.13: A2A local push delivery
+envelope gate. It should prove injected local push delivery envelopes without
+default outbound webhook calls, credential storage, public hosting, production
+keys/auth, public webhook delivery, or external conformance claims.
+
 The current continuation should choose the next safe roadmap slice from
 `docs/agentic-gaskit/full-roadmap-execution-goal.md` and
 `docs/agentic-gaskit/handoff-next-product-build.md`. Good next candidates are

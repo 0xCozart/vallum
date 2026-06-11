@@ -1,5 +1,12 @@
 import { isIP } from "node:net";
 
+import {
+  A2A_TASK_MEDIA_TYPE,
+  A2A_TASK_PROTOCOL_VERSION,
+  redactA2ATaskForLog,
+  type A2ATask,
+} from "./a2aTask.js";
+
 export interface A2APushNotificationAuthenticationInfo {
   readonly schemes: readonly string[];
 }
@@ -16,6 +23,41 @@ export interface A2ATaskPushNotificationConfig {
 export interface ListA2APushNotificationConfigsResult {
   readonly configs: readonly A2ATaskPushNotificationConfig[];
   readonly nextPageToken?: string;
+}
+
+export interface A2APushNotificationPayload {
+  readonly kind: "task";
+  readonly task: A2ATask;
+}
+
+export interface A2APushNotificationDeliveryRequest {
+  readonly method: "POST";
+  readonly url: string;
+  readonly headers: Record<string, string>;
+  readonly body: A2APushNotificationPayload;
+  readonly json: string;
+  readonly config: A2ATaskPushNotificationConfig;
+}
+
+export interface A2APushNotificationTransportResponse {
+  readonly status: number;
+}
+
+export type A2APushNotificationTransport = (
+  request: A2APushNotificationDeliveryRequest,
+) => A2APushNotificationTransportResponse | Promise<A2APushNotificationTransportResponse>;
+
+export interface A2APushNotificationDeliveryAttempt {
+  readonly configId: string;
+  readonly taskId: string;
+  readonly url: string;
+  readonly status: "delivered" | "failed" | "skipped";
+  readonly httpStatus?: number;
+  readonly errorCode?: "A2A_PUSH_TRANSPORT_UNCONFIGURED" | "A2A_PUSH_TRANSPORT_FAILED";
+}
+
+export interface A2APushNotificationDeliveryResult {
+  readonly attempts: readonly A2APushNotificationDeliveryAttempt[];
 }
 
 export type A2APushNotificationErrorCode =
@@ -112,6 +154,71 @@ export function deleteA2APushNotificationConfig(options: {
     taskId: options.taskId,
     id: options.id,
     deleted: options.store.delete(options.taskId, options.id),
+  };
+}
+
+export async function deliverA2APushNotifications(options: {
+  readonly store: LocalA2APushNotificationStore;
+  readonly task: A2ATask;
+  readonly transport?: A2APushNotificationTransport;
+}): Promise<A2APushNotificationDeliveryResult> {
+  const configs = options.store.list(options.task.id).configs;
+  const attempts: A2APushNotificationDeliveryAttempt[] = [];
+  for (const config of configs) {
+    const request = buildA2APushNotificationDeliveryRequest(config, options.task);
+    if (!options.transport) {
+      attempts.push({
+        configId: config.id,
+        taskId: config.taskId,
+        url: config.url,
+        status: "skipped",
+        errorCode: "A2A_PUSH_TRANSPORT_UNCONFIGURED",
+      });
+      continue;
+    }
+
+    try {
+      const response = await options.transport(request);
+      const delivered = response.status >= 200 && response.status <= 299;
+      attempts.push({
+        configId: config.id,
+        taskId: config.taskId,
+        url: config.url,
+        status: delivered ? "delivered" : "failed",
+        httpStatus: response.status,
+        ...(delivered ? {} : { errorCode: "A2A_PUSH_TRANSPORT_FAILED" }),
+      });
+    } catch {
+      attempts.push({
+        configId: config.id,
+        taskId: config.taskId,
+        url: config.url,
+        status: "failed",
+        errorCode: "A2A_PUSH_TRANSPORT_FAILED",
+      });
+    }
+  }
+  return { attempts };
+}
+
+export function buildA2APushNotificationDeliveryRequest(
+  config: A2ATaskPushNotificationConfig,
+  task: A2ATask,
+): A2APushNotificationDeliveryRequest {
+  const body: A2APushNotificationPayload = {
+    kind: "task",
+    task: redactA2ATaskForLog(task) as A2ATask,
+  };
+  return {
+    method: "POST",
+    url: config.url,
+    headers: {
+      "content-type": `${A2A_TASK_MEDIA_TYPE}; charset=utf-8`,
+      "a2a-version": A2A_TASK_PROTOCOL_VERSION,
+    },
+    body,
+    json: `${JSON.stringify(body)}\n`,
+    config: clone(config),
   };
 }
 

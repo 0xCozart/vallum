@@ -22,6 +22,8 @@ test("A2A HTTP demo proves public discovery authorized task flow and safe output
   assert.equal(result.pushConfigStatus, 200);
   assert.equal(result.pushConfigListCount, 1);
   assert.equal(result.pushConfigCredentialRejectionStatus, 400);
+  assert.equal(result.pushDeliveryCount, 1);
+  assert.equal(result.pushDeliveryStatus, 202);
   assert.equal(result.logLeaksSecretMaterial, false);
   assert.doesNotMatch(formatted, /Bearer|push-secret|signer_ref|wallet_demo_secret|payment-secret|private prompt/i);
 });
