@@ -11,7 +11,7 @@ Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5,
 2.6, 2.7, 2.8,
 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7,
 4.8, 4.9, 4.10, 4.11, 4.12, 4.13, 4.14, 4.15, 4.16, 4.17, 4.18, 4.19, 4.20,
-4.21, 5.1, 5.2, 6.1, 6.2, 6.3, 7.1, 7.2, 7.3, 7.4, and 7.5 are implemented,
+4.21, 4.22, 5.1, 5.2, 6.1, 6.2, 6.3, 7.1, 7.2, 7.3, 7.4, and 7.5 are implemented,
 reviewed, locally verified, or explicitly deferred with a verified hardening
 gate.
 Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
@@ -31,6 +31,8 @@ new scope and its unresolved gates.
 
 Recent commits to know:
 
+- `014bf7d` test: consolidate package script contract checks
+- `f3c92c8` docs: record a2a push host allowlist handoff
 - `7aa3f12` feat: add a2a push host allowlists
 - `64397c9` docs: record a2a push callback hardening handoff
 - `2f2e16f` feat: harden a2a push callback urls
@@ -67,6 +69,64 @@ Recent commits to know:
 - `fe5a6ee` docs: record agentic gaskit github remote
 - `b2d9928` chore: migrate reviewed gaskit local changes
 - `3b34cef` docs: create agentic gaskit migration fork
+
+## Completed Slice 4.22: Test Suite Consolidation
+
+Implementation commit: `014bf7d` (`test: consolidate package script contract checks`).
+
+What changed:
+
+- Repeated `scripts/package-scripts.test.ts` checks for local smoke script
+  wiring were collapsed into one table-driven test.
+- Repeated opt-in live proof command exclusions were collapsed into one
+  table-driven test.
+- Repeated product/launch/operator proof script wiring assertions were
+  collapsed into one table-driven test.
+- The underlying assertions still verify exact package script commands,
+  `verify:local` inclusion for local proof paths, and `verify:local` exclusion
+  for live/opt-in proof paths.
+- A local scope record exists at
+  `tmp/apex-workflow/test-suite-consolidation-slice-4-22-scope.md`. The file
+  is local workflow state and not a committed Apex artifact.
+
+Commands run:
+
+```bash
+node --import tsx --test scripts/package-scripts.test.ts
+git diff --check
+npm run verify:fast
+```
+
+Verification result:
+
+- Focused package-script contract tests passed with 25 tests, down from the
+  previous 40 in that file.
+- `npm run verify:fast` passed, including build, 407 TypeScript tests, docs
+  check, secret scan, product-status, launch-readiness, and operator-gate
+  reports.
+- `git diff --check` passed.
+
+Hardening notes:
+
+- This slice reduces individual test count only; it does not weaken runtime,
+  readiness, secret-scan, live-gate, package, or A2A assertions.
+- No product runtime code changed.
+- No live IOTA/testnet command, npm publish, payment-provider call, public A2A
+  command, production marketplace action, custody change, or device access
+  action was run.
+- Apex profile still has `setup.reviewNeeded: true`; this slice does not claim
+  Apex verification.
+
+Next safe slice:
+
+- Continue looking for table-driven consolidation opportunities before adding
+  new historical slice tests, especially in script-level readiness/doc contract
+  files.
+- If moving product implementation forward instead, choose an operator-approved
+  public A2A hosting/JWKS/auth/conformance run with real public config, a real
+  public webhook delivery infrastructure slice, or another explicit live gate
+  such as IOTA Names/Identity/VC, npm release, payment/provider, marketplace,
+  custody, or device-safety design before claiming launch readiness.
 
 ## Completed Slice 4.21: A2A Push Callback Host Allowlist
 

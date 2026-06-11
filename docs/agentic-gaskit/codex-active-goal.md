@@ -16,11 +16,16 @@ local proof as live IOTA testnet, production marketplace, public scoring,
 public A2A discovery, production key management, or provider-verification
 proof.
 
-As of the latest completed update, Slice 4.21 is complete: A2A push callback
-host allowlisting. Local A2A push notification config and injected HTTP
-transport can now constrain callback URLs to an exact configured hostname
-allowlist before storage or delivery. `npm run proof:a2a-public-readiness` now
-reports `A2A_PUSH_CALLBACK_HOST_ALLOWLIST_LOCAL_PROOF_CONFIGURED` as local
+As of the latest completed update, Slice 4.22 is complete: test-suite
+consolidation. Repeated package-script contract tests were collapsed into
+table-driven checks, reducing the broad `npm run verify:fast` Node test count
+from 422 to 407 while preserving script wiring, opt-in live command exclusion,
+and local readiness proof coverage. The latest product-facing feature slice is
+still Slice 4.21: A2A push callback host allowlisting. Local A2A push
+notification config and injected HTTP transport can constrain callback URLs to
+an exact configured hostname allowlist before storage or delivery.
+`npm run proof:a2a-public-readiness` reports
+`A2A_PUSH_CALLBACK_HOST_ALLOWLIST_LOCAL_PROOF_CONFIGURED` as local
 host-admission proof. This does not send A2A task messages to public endpoints,
 post real webhook callbacks, run background workers, persist queues, store
 webhook credentials, run external A2A conformance, publish JWKS, prove
