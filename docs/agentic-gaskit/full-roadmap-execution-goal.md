@@ -5,8 +5,8 @@ Last updated: 2026-06-11.
 ## Goal Pointer
 
 This is the active `/goal` target for continuing Agentic GasKit in
-`/home/sacred/code/agentic-gaskit` after completion of the local Slice 4.17 A2A
-Public Evidence Report Schema Gate.
+`/home/sacred/code/agentic-gaskit` after completion of the local Slice 4.18 A2A
+Public Discovery Proof Harness.
 
 Primary continuation sources:
 
@@ -103,7 +103,11 @@ Confirmed current state:
   explicit. Slice 4.17 tightens that gate so public push delivery and external
   conformance reports must be structured JSON evidence with schema version,
   expected kind, passing result, recent observation time, and matching
-  configured public URL fields when present.
+  configured public URL fields when present. Slice 4.18 adds an opt-in public
+  discovery/JWKS smoke for operator-approved public HTTPS Agent Card and JWKS
+  probing, while keeping it out of default local verification and keeping
+  public hosting acceptance, production auth/key rotation, public push delivery,
+  and external conformance blockers explicit.
   Slice 7.5 adds a fast deterministic verification profile plus a
   non-networked profile audit, so ordinary build/test/improve loops can run a
   bounded subset while `verify:local` and `grant:check` remain the full
@@ -117,11 +121,12 @@ Confirmed current state:
   retry/attempt observability proof; Slice 4.16 adds redacted public push
   delivery report classification for a future operator-approved review; Slice
   4.17 adds structured public push/conformance report validation for that
-  review path. Public hosting, production keys/auth, public webhook
+  review path; Slice 4.18 adds opt-in public Agent Card/JWKS discovery proof.
+  Public hosting acceptance, production keys/auth, public webhook
   workers/queues, persistent production observability, and external conformance
   blockers remain.
 - `docs/agentic-gaskit/handoff-next-product-build.md` records the latest
-  completed/deferred slice set, including Slice 4.17, with exact local
+  completed/deferred slice set, including Slice 4.18, with exact local
   verification evidence and remaining live, production, publication, custody,
   payment, A2A, marketplace, and safety blockers.
 - `docs/marketplace-readiness.md` permits marketplace requirements/design work

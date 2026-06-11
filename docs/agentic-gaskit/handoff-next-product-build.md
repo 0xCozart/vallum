@@ -10,7 +10,7 @@ Continue actual Agentic GasKit product implementation in
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5,
 2.6, 2.7, 2.8,
 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7,
-4.8, 4.9, 4.10, 4.11, 4.12, 4.13, 4.14, 4.15, 4.16, 4.17, 5.1, 5.2, 6.1, 6.2, 6.3,
+4.8, 4.9, 4.10, 4.11, 4.12, 4.13, 4.14, 4.15, 4.16, 4.17, 4.18, 5.1, 5.2, 6.1, 6.2, 6.3,
 7.1, 7.2, 7.3, 7.4, and 7.5 are implemented, reviewed, locally verified, or
 explicitly deferred with a verified hardening gate.
 Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
@@ -30,6 +30,8 @@ new scope and its unresolved gates.
 
 Recent commits to know:
 
+- `c6137d7` feat: add a2a public discovery smoke
+- `5c4b85e` docs: record a2a evidence schema handoff
 - `e9a8d72` feat: validate a2a public evidence reports
 - `8704369` docs: record a2a public push evidence handoff
 - `8309fa3` feat: add a2a public push evidence gate
@@ -60,6 +62,113 @@ Recent commits to know:
 - `fe5a6ee` docs: record agentic gaskit github remote
 - `b2d9928` chore: migrate reviewed gaskit local changes
 - `3b34cef` docs: create agentic gaskit migration fork
+
+## Completed Slice 4.18: A2A Public Discovery Proof Harness
+
+Implementation commit: `c6137d7` (`feat: add a2a public discovery smoke`).
+
+What changed:
+
+- Added `npm run smoke:a2a-public-discovery` as an opt-in public A2A discovery
+  and JWKS proof command.
+- The command requires `A2A_PUBLIC_AGENT_CARD_URL`, `A2A_PUBLIC_BASE_URL`,
+  `A2A_PUBLIC_JWKS_URL`, and `A2A_PUBLIC_TASK_AUTH_DECISION`.
+- Missing or unsafe config is blocked before network contact and formatted
+  output redacts configured values.
+- The command fetches only configured public HTTPS, non-loopback Agent Card and
+  JWKS URLs, with bounded response size, timeout, and manual redirect handling.
+- Public Agent Card validation checks JSON object shape, non-empty name/version,
+  capabilities, skills array, advertised `HTTP+JSON` interface bound to
+  `A2A_PUBLIC_BASE_URL`, task-auth decision alignment, and absence of
+  secret-like public fields.
+- JWKS validation checks non-empty public key metadata and rejects private JWK
+  material.
+- Package-script tests keep the command opt-in and excluded from `verify:fast`,
+  `verify:local`, and `grant:check`.
+- Product-status and operator-gate reports now point public A2A operators from
+  the non-networked readiness proof to the opt-in public discovery smoke.
+- README, overview, reviewer docs, product-status, launch-readiness,
+  operator-gate docs, external API notes, codebase map, public-readiness docs,
+  and execution slices now describe the opt-in discovery proof and its limits.
+- A local scope record exists at
+  `tmp/apex-workflow/a2a-public-discovery-proof-slice-4-18-scope.md`. The file
+  is local workflow state and not a committed Apex artifact.
+
+Commands run:
+
+```bash
+node --import tsx --test scripts/a2a-public-discovery-smoke.test.ts
+node --import tsx --test scripts/a2a-public-discovery-smoke.test.ts scripts/package-scripts.test.ts
+npm run typecheck
+node --import tsx --test scripts/a2a-public-discovery-smoke.test.ts scripts/package-scripts.test.ts scripts/product-status.test.ts scripts/launch-readiness.test.ts scripts/operator-live-gates.test.ts scripts/reviewer-docs.test.ts
+npm run proof:a2a-public-readiness
+npm run proof:operator-gates
+npm run docs:check
+npm run secrets:scan
+git diff --check
+npm run verify:fast
+```
+
+Verification result:
+
+- Focused public-discovery smoke tests passed with 6 tests.
+- Focused public-discovery plus package-script tests passed with 46 tests.
+- Focused public-discovery/package/status/launch/operator/reviewer regression
+  tests passed with 71 tests.
+- `npm run proof:a2a-public-readiness` passed with `localProofOk=true`,
+  `publicReady=false`, missing public URL/JWKS/auth config, missing structured
+  public push delivery report, and missing structured external conformance
+  report.
+- `npm run proof:operator-gates` passed and now points public A2A hosting at
+  `npm run proof:a2a-public-readiness && npm run smoke:a2a-public-discovery`.
+- `npm run typecheck` passed.
+- `npm run docs:check` passed: 37 HTML pages from 36 Markdown sources.
+- `npm run secrets:scan` passed: 325 tracked/staged/untracked text files,
+  findings 0.
+- `git diff --check` passed.
+- `npm run verify:fast` passed, including build, 420 TypeScript tests, docs
+  check, secret scan, product-status, launch-readiness, and operator-gate
+  reports.
+
+Hardening notes:
+
+- This adds an opt-in networked public discovery/JWKS proof command only. It is
+  not part of local verification, grant verification, or fast verification.
+- No live public A2A command was run in this slice because no operator-approved
+  public A2A config was supplied.
+- The command does not send A2A task messages, post webhooks, run external
+  conformance tooling, publish JWKS, prove key rotation, accept production task
+  auth, or mark launch readiness complete.
+- Formatted output redacts public URLs, auth decisions, response bodies, key
+  ids, and secret-like values.
+- No IOTA/testnet command, npm publish, payment-provider call, or production
+  marketplace action was run for this slice.
+- Apex profile still has `setup.reviewNeeded: true`; this slice does not claim
+  Apex verification.
+
+Known unproven claims:
+
+- No public A2A endpoint was probed in the current checkout.
+- No public A2A hosting run, production key-distribution acceptance, key
+  rotation/revocation proof, or production task-route auth proof exists.
+- No real public push webhook delivery was attempted.
+- No external A2A conformance tool was run and no structured conformance report
+  was accepted in this unconfigured checkout.
+- No configured IOTA Names, IOTA Identity, or VC trust-policy proof passed.
+- No package is published to npm and no registry install/provenance/account
+  ownership proof exists.
+- No live payment/provider settlement, production marketplace, provider
+  verification, custody/KMS, recovery export, or physical device access proof
+  exists.
+
+Next safe slice:
+
+- Choose an operator-approved public A2A hosting/JWKS/auth/conformance run with
+  real public config, a real public webhook delivery infrastructure slice with
+  auth, persistent retry, observability, allowlisting, SSRF controls, and
+  external endpoint proof, or another explicit live gate such as IOTA
+  Names/Identity/VC, npm release, payment/provider, marketplace, custody, or
+  device-safety design before claiming launch readiness.
 
 ## Completed Slice 4.17: A2A Public Evidence Report Schema Gate
 
