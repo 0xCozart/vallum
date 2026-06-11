@@ -17,6 +17,7 @@ const apexProfile = JSON.parse(await readFile(resolve(repoRoot, "apex.workflow.j
   authority?: { executionTruth?: string[] };
 };
 const publicPackageNames = await loadPublicPackageNames();
+const verifyLocalScript = packageJson.scripts?.["verify:local"] ?? "";
 
 test("local smoke script builds workspace packages before running gateway smoke", () => {
   const smokeLocal = packageJson.scripts?.["smoke:local"];
@@ -152,126 +153,55 @@ test("package install smoke is wired after package dry-runs in local verificatio
   assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run pack:check && npm run smoke:package-install/);
 });
 
-test("agent escrow smoke is wired into local verification", () => {
-  assert.equal(packageJson.scripts?.["smoke:agent-escrow"], "npm run build && tsx scripts/smoke-agent-escrow.ts");
-  assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run smoke:agent-escrow/);
+test("local smoke scripts are built and wired into local verification", () => {
+  const localSmokes: ReadonlyArray<readonly [scriptName: string, entrypoint: string]> = [
+    ["smoke:agent-escrow", "scripts/smoke-agent-escrow.ts"],
+    ["smoke:paid-mcp-tool", "scripts/smoke-paid-mcp-tool.ts"],
+    ["smoke:data-license", "scripts/smoke-data-license.ts"],
+    ["smoke:service-bounty", "scripts/smoke-service-bounty.ts"],
+    ["smoke:reputation-receipt", "scripts/smoke-reputation-receipt.ts"],
+    ["smoke:subscription", "scripts/smoke-subscription.ts"],
+    ["smoke:a2a-well-known", "scripts/smoke-a2a-well-known.ts"],
+    ["smoke:a2a-signed-card", "scripts/smoke-a2a-signed-card.ts"],
+    ["smoke:a2a-task-message", "scripts/smoke-a2a-task-message.ts"],
+    ["smoke:a2a-http", "scripts/smoke-a2a-http.ts"],
+    ["smoke:a2a-local-server", "scripts/smoke-a2a-local-server.ts"],
+    ["smoke:marketplace-read-model", "scripts/smoke-marketplace-read-model.ts"],
+  ];
+
+  for (const [scriptName, entrypoint] of localSmokes) {
+    assert.equal(packageJson.scripts?.[scriptName], `npm run build && tsx ${entrypoint}`);
+    assert.match(verifyLocalScript, new RegExp(`npm run ${escapeRegExp(scriptName)}(\\s|$)`));
+  }
 });
 
-test("paid MCP tool smoke is wired into local verification", () => {
-  assert.equal(packageJson.scripts?.["smoke:paid-mcp-tool"], "npm run build && tsx scripts/smoke-paid-mcp-tool.ts");
-  assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run smoke:paid-mcp-tool/);
+test("live proof commands stay opt-in and excluded from local verification", () => {
+  const optInLiveCommands: ReadonlyArray<readonly [scriptName: string, expectedCommand: string]> = [
+    ["smoke:iota-names-live", "npm run build && tsx scripts/smoke-iota-names-live.ts"],
+    ["smoke:iota-identity-live", "npm run build && tsx scripts/smoke-iota-identity-live.ts"],
+    ["proof:live-status", "npm run build && tsx scripts/check-live-proof-status.ts"],
+  ];
+
+  for (const [scriptName, expectedCommand] of optInLiveCommands) {
+    assert.equal(packageJson.scripts?.[scriptName], expectedCommand);
+    assert.doesNotMatch(verifyLocalScript, new RegExp(`npm run ${escapeRegExp(scriptName)}(\\s|$)`));
+  }
 });
 
-test("data license smoke is wired into local verification", () => {
-  assert.equal(packageJson.scripts?.["smoke:data-license"], "npm run build && tsx scripts/smoke-data-license.ts");
-  assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run smoke:data-license/);
-});
+test("non-networked product readiness proofs are wired into local verification", () => {
+  const localProofs: ReadonlyArray<readonly [scriptName: string, expectedCommand: string]> = [
+    ["proof:product-status", "npm run build && tsx scripts/check-product-status.ts"],
+    ["proof:launch-readiness", "npm run build && tsx scripts/check-launch-readiness.ts"],
+    ["proof:operator-gates", "npm run build && tsx scripts/check-operator-live-gates.ts"],
+  ];
 
-test("service bounty smoke is wired into local verification", () => {
-  assert.equal(packageJson.scripts?.["smoke:service-bounty"], "npm run build && tsx scripts/smoke-service-bounty.ts");
-  assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run smoke:service-bounty/);
-});
-
-test("reputation receipt smoke is wired into local verification", () => {
-  assert.equal(packageJson.scripts?.["smoke:reputation-receipt"], "npm run build && tsx scripts/smoke-reputation-receipt.ts");
-  assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run smoke:reputation-receipt/);
-});
-
-test("subscription smoke is wired into local verification", () => {
-  assert.equal(packageJson.scripts?.["smoke:subscription"], "npm run build && tsx scripts/smoke-subscription.ts");
-  assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run smoke:subscription/);
-});
-
-test("A2A well-known smoke is wired into local verification", () => {
-  assert.equal(packageJson.scripts?.["smoke:a2a-well-known"], "npm run build && tsx scripts/smoke-a2a-well-known.ts");
-  assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run smoke:a2a-well-known/);
-});
-
-test("A2A signed Agent Card smoke is wired into local verification", () => {
-  assert.equal(packageJson.scripts?.["smoke:a2a-signed-card"], "npm run build && tsx scripts/smoke-a2a-signed-card.ts");
-  assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run smoke:a2a-signed-card/);
-});
-
-test("A2A task/message smoke is wired into local verification", () => {
-  assert.equal(packageJson.scripts?.["smoke:a2a-task-message"], "npm run build && tsx scripts/smoke-a2a-task-message.ts");
-  assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run smoke:a2a-task-message/);
-});
-
-test("A2A HTTP smoke is wired into local verification", () => {
-  assert.equal(packageJson.scripts?.["smoke:a2a-http"], "npm run build && tsx scripts/smoke-a2a-http.ts");
-  assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run smoke:a2a-http/);
-});
-
-test("A2A local server smoke is wired into local verification", () => {
-  assert.equal(
-    packageJson.scripts?.["smoke:a2a-local-server"],
-    "npm run build && tsx scripts/smoke-a2a-local-server.ts",
-  );
-  assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run smoke:a2a-local-server/);
-});
-
-test("marketplace read-model smoke is wired into local verification", () => {
-  assert.equal(
-    packageJson.scripts?.["smoke:marketplace-read-model"],
-    "npm run build && tsx scripts/smoke-marketplace-read-model.ts",
-  );
-  assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run smoke:marketplace-read-model/);
-});
-
-test("IOTA Names live smoke is opt-in and not part of local verification", () => {
-  assert.equal(
-    packageJson.scripts?.["smoke:iota-names-live"],
-    "npm run build && tsx scripts/smoke-iota-names-live.ts",
-  );
-  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /npm run smoke:iota-names-live/);
-});
-
-test("IOTA Identity live smoke is opt-in and not part of local verification", () => {
-  assert.equal(
-    packageJson.scripts?.["smoke:iota-identity-live"],
-    "npm run build && tsx scripts/smoke-iota-identity-live.ts",
-  );
-  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /npm run smoke:iota-identity-live/);
-});
-
-test("live proof status is non-networked and not part of local verification", () => {
-  assert.equal(
-    packageJson.scripts?.["proof:live-status"],
-    "npm run build && tsx scripts/check-live-proof-status.ts",
-  );
-  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /npm run proof:live-status/);
-});
-
-test("product status is non-networked and wired into local verification", () => {
-  assert.equal(
-    packageJson.scripts?.["proof:product-status"],
-    "npm run build && tsx scripts/check-product-status.ts",
-  );
+  for (const [scriptName, expectedCommand] of localProofs) {
+    assert.equal(packageJson.scripts?.[scriptName], expectedCommand);
+    assert.match(verifyLocalScript, new RegExp(`npm run ${escapeRegExp(scriptName)}(\\s|$)`));
+  }
   assert.match(
-    packageJson.scripts?.["verify:local"] ?? "",
-    /npm run smoke:package-install && npm run proof:a2a-public-readiness && npm run proof:verification-profiles && npm run proof:product-status && npm run proof:launch-readiness && npm run proof:operator-gates && npm run docs:check/,
-  );
-});
-
-test("launch readiness is non-networked and wired into local verification", () => {
-  assert.equal(
-    packageJson.scripts?.["proof:launch-readiness"],
-    "npm run build && tsx scripts/check-launch-readiness.ts",
-  );
-  assert.match(
-    packageJson.scripts?.["verify:local"] ?? "",
+    verifyLocalScript,
     /npm run proof:product-status && npm run proof:launch-readiness && npm run proof:operator-gates && npm run docs:check/,
-  );
-});
-
-test("operator live gates are non-networked and wired into local verification", () => {
-  assert.equal(
-    packageJson.scripts?.["proof:operator-gates"],
-    "npm run build && tsx scripts/check-operator-live-gates.ts",
-  );
-  assert.match(
-    packageJson.scripts?.["verify:local"] ?? "",
-    /npm run proof:launch-readiness && npm run proof:operator-gates && npm run docs:check/,
   );
 });
 
