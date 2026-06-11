@@ -16,19 +16,21 @@ local proof as live IOTA testnet, production marketplace, public scoring,
 public A2A discovery, production key management, or provider-verification
 proof.
 
-As of the latest completed update, Slice 4.26 is complete: A2A local JWKS
-hosting helper. Agentic GasKit can now create a local
-`/.well-known/jwks.json` response for explicitly configured Agent Card signing
-public keys and the local loopback A2A Node server can serve that JWKS route
-when public keys are supplied. The helper rejects empty key sets, blank key
-ids, private key objects, private JWK fields, and secret-like JWK fields before
-response generation. `npm run proof:a2a-public-readiness` reports
-`A2A_PUBLIC_JWKS_LOCAL_PROOF_CONFIGURED` as local JWKS hosting support. This
-does not deploy public JWKS hosting, prove endpoint ownership, store private
-keys, prove production key rotation, accept public discovery evidence, run
-external A2A conformance, prove public push delivery, or prove live IOTA
-behavior. Public hosting acceptance, production keys/auth, public webhook
-infrastructure, live IOTA proof, npm publication, payment/provider,
+As of the latest completed update, Slice 4.27 is complete: A2A static discovery
+bundle. Agentic GasKit can now package a signed Agent Card and public JWKS
+response as local deployable JSON artifacts for
+`/.well-known/agent-card.json` and `/.well-known/jwks.json`. The helper
+requires public HTTPS URLs without credentials, query strings, fragments,
+loopback hosts, or private-network hosts; binds Agent Card signature `jku`
+values to the configured public JWKS URL; requires every signing key id to
+appear in JWKS; and rejects private or secret-like fields before bundle
+generation. `npm run proof:a2a-public-readiness` reports
+`A2A_STATIC_DISCOVERY_BUNDLE_LOCAL_PROOF_CONFIGURED` as local static bundle
+support. This does not deploy public A2A hosting, prove endpoint ownership,
+store private keys, prove production key rotation, accept public discovery
+evidence, run external A2A conformance, prove public push delivery, or prove
+live IOTA behavior. Public hosting acceptance, production keys/auth, public
+webhook infrastructure, live IOTA proof, npm publication, payment/provider,
 marketplace, custody, device-safety, and external conformance claims remain
 blocked.
 
