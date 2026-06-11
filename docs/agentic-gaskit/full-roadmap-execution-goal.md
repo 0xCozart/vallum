@@ -5,8 +5,8 @@ Last updated: 2026-06-11.
 ## Goal Pointer
 
 This is the active `/goal` target for continuing Agentic GasKit in
-`/home/sacred/code/agentic-gaskit` after completion of the local Slice 4.15 A2A
-Push Delivery Retry Observability Gate.
+`/home/sacred/code/agentic-gaskit` after completion of the local Slice 4.16 A2A
+Public Push Delivery Evidence Gate.
 
 Primary continuation sources:
 
@@ -96,6 +96,11 @@ Confirmed current state:
   A2A push transports while keeping default delivery single-attempt and public
   webhook workers, persistent queues, production observability, public hosting,
   production auth, live IOTA proof, and external conformance blockers explicit.
+  Slice 4.16 adds a redacted operator-supplied public push delivery report path
+  gate for `npm run proof:a2a-public-readiness` while keeping public endpoint
+  hosting/fetching, webhook POSTs, background workers, persistent queues,
+  credential storage, live IOTA proof, and external conformance blockers
+  explicit.
   Slice 7.5 adds a fast deterministic verification profile plus a
   non-networked profile audit, so ordinary build/test/improve loops can run a
   bounded subset while `verify:local` and `grant:check` remain the full
@@ -106,11 +111,12 @@ Confirmed current state:
   callback URLs; Slice 4.12 adds local authenticated extended Agent Card
   access; Slice 4.13 adds local injected push delivery envelopes; Slice 4.14
   adds local mocked opt-in push HTTP transport proof; Slice 4.15 adds local
-  retry/attempt observability proof. Public hosting, production keys/auth,
-  public webhook workers/queues, persistent production observability, and
-  external conformance blockers remain.
+  retry/attempt observability proof; Slice 4.16 adds redacted public push
+  delivery report classification for a future operator-approved review. Public
+  hosting, production keys/auth, public webhook workers/queues, persistent
+  production observability, and external conformance blockers remain.
 - `docs/agentic-gaskit/handoff-next-product-build.md` records the latest
-  completed/deferred slice set, including Slice 4.15, with exact local
+  completed/deferred slice set, including Slice 4.16, with exact local
   verification evidence and remaining live, production, publication, custody,
   payment, A2A, marketplace, and safety blockers.
 - `docs/marketplace-readiness.md` permits marketplace requirements/design work

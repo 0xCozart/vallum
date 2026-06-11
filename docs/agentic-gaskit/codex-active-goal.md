@@ -16,14 +16,15 @@ local proof as live IOTA testnet, production marketplace, public scoring,
 public A2A discovery, production key management, or provider-verification
 proof.
 
-As of the latest completed update, Slice 4.15 is complete: an A2A push delivery
-retry observability gate. It proves opt-in local retry and in-memory
-delivery-attempt observability for explicitly injected A2A push transports,
-with default delivery still single-attempt, status-only attempt records, no
-request bodies or credential material, and no default route delivery. Public
-hosting, production keys/auth, public webhook workers/queues, persistent
-production observability, live IOTA proof, and external conformance claims
-remain blocked.
+As of the latest completed update, Slice 4.16 is complete: an A2A public push
+delivery evidence gate. It lets `npm run proof:a2a-public-readiness` classify an
+operator-supplied local public push delivery report path through
+`A2A_PUBLIC_PUSH_DELIVERY_REPORT`, while redacting the configured path and
+keeping missing or absent reports blocked. It does not host public endpoints,
+fetch public Agent Cards, post webhook callbacks, run background workers,
+persist queues, store webhook credentials, or run external A2A conformance.
+Public hosting, production keys/auth, public webhook infrastructure, live IOTA
+proof, and external conformance claims remain blocked.
 
 The next continuation should choose the next safe roadmap slice from
 `docs/agentic-gaskit/full-roadmap-execution-goal.md` and
