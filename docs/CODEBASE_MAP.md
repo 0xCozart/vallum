@@ -118,6 +118,9 @@ It also includes the first Agentic GasKit implementation slices:
   availability before upstream diagnostics
 - non-networked testnet digest proof for documented public IOTA testnet
   evidence, plus an opt-in read-only live lookup command
+- fail-closed sponsored testnet execute prerequisite checks that require local
+  testnet readiness, Gas Station runtime preflight, and a current passing
+  sanitized upstream diagnostic report before reserve/execute
 - non-networked product status proof command for local proof, live/testnet,
   package publication, A2A hosting, payment, marketplace, custody, and device
   safety claim boundaries
@@ -350,5 +353,8 @@ binary path, install `iota` on `PATH`, or use the ignored local release binary
 under `tmp/tooling/iota-v1.24.0/iota`.
 
 Live commands such as `npm run execute:testnet-demo` contact live IOTA services
-and spend sponsored testnet gas. Run them only with explicit operator intent and
-operator-owned credentials configured outside the repo.
+and spend sponsored testnet gas. The command now fails closed before reserve or
+execute unless local testnet readiness, local Gas Station runtime preflight, and
+a current passing sanitized upstream diagnostic report are present. Run it only
+with explicit operator intent and operator-owned credentials configured outside
+the repo.

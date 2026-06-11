@@ -75,7 +75,9 @@ Events may include app ID, wallet address, package/function metadata, operation,
 
 `npm run verify:local` proves the deterministic local surface: tests, typecheck, local smokes, example readiness, package dry-runs, and tracked-file secret scanning. It does not prove production KMS signing, mainnet execution, production persistence, production monitoring, or complete dashboard coverage.
 
-Use `npm run execute:testnet-demo` only when operator-owned testnet credentials and a reachable IOTA Gas Station setup are configured locally.
+Use `npm run execute:testnet-demo` only when operator-owned testnet credentials,
+a reachable IOTA Gas Station setup, local runtime preflight, a passing
+sanitized upstream diagnostic report, and explicit operator intent are present.
 
 ## Before Shipping
 
@@ -92,6 +94,8 @@ For live testnet proof, run:
 
 ```bash
 npm run readiness:testnet
+npm run gas-station:runtime-preflight
+npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run execute:testnet-demo
 ```
 

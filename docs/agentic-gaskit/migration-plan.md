@@ -211,8 +211,10 @@ For first code slices:
 - `npm run smoke:local`
 
 Live testnet commands such as `npm run execute:testnet-demo` must not be run
-unless the operator explicitly asks and credentials are configured outside the
-repo.
+unless the operator explicitly asks, credentials are configured outside the
+repo, runtime preflight passes, and the configured sanitized upstream
+diagnostic report proves IOTA RPC, Gas Station reachability, and reserve_gas
+compatibility.
 
 ## Acceptance Criteria
 

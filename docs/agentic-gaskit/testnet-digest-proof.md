@@ -70,4 +70,5 @@ availability first.
 - Production or mainnet readiness.
 
 Use `npm run execute:testnet-demo` only when operator-owned local credentials,
-Gas Station, and explicit operator intent are available.
+Gas Station, explicit operator intent, local runtime preflight, and a passing
+sanitized upstream diagnostic report are available.

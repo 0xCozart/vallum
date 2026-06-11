@@ -47,7 +47,9 @@ The skill is not an MCP server and does not expose live tools. It gives agents t
 
 Local checks do not prove live sponsored execution. Live commands such as
 `npm run execute:testnet-demo` must only be run when the operator explicitly
-asks and local testnet credentials are configured.
+asks, local testnet credentials are configured, runtime preflight passes, and
+the configured sanitized upstream diagnostic report proves IOTA RPC, Gas
+Station reachability, and reserve_gas compatibility.
 
 Agent wallet convenience is a security boundary. Agents may create wallets
 through approved SDK/CLI/API paths, but normal APIs must return addresses and

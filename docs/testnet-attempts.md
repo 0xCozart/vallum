@@ -189,6 +189,12 @@ rerun the diagnostic without `--skip-reserve` to produce a passing sanitized
 report, then run `npm run execute:testnet-demo` only with explicit operator
 intent.
 
+Follow-up hardening: `npm run execute:testnet-demo` now checks local testnet
+readiness, local Gas Station runtime preflight, and the configured sanitized
+upstream diagnostic report before any reserve/execute attempt. Missing, stale,
+failed, or reserve-skipped reports block execution before transaction building,
+signing, or live Gas Station calls.
+
 ## 2026-06-11 local Gas Station config render
 
 Added a local config render step for the official Gas Station container path:

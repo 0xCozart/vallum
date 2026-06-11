@@ -66,4 +66,4 @@ The default values are for local development only. Do not commit real API keys, 
 
 ## Scope boundary
 
-This is not a production browser dApp and its smoke tests do not submit a real testnet transaction. It remains the safe local integration bridge between the SDK, policy gateway, browser wrapper, and demo dApp. The separate opt-in live proof is `npm run execute:testnet-demo`, documented in `docs/testnet-attempts.md`, and must only be run with operator-controlled testnet credentials.
+This is not a production browser dApp and its smoke tests do not submit a real testnet transaction. It remains the safe local integration bridge between the SDK, policy gateway, browser wrapper, and demo dApp. The separate opt-in live proof is `npm run execute:testnet-demo`, documented in `docs/testnet-attempts.md`, and must only be run with operator-controlled testnet credentials, passing local runtime preflight, a current passing upstream diagnostic report, and explicit operator intent.

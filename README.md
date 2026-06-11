@@ -476,7 +476,10 @@ npm run docs:check
 npm run secrets:scan
 ```
 
-Live commands such as `npm run execute:testnet-demo` contact live IOTA services and consume sponsored testnet gas. Run them only with explicit operator intent and operator-owned credentials configured outside the repo.
+Live commands such as `npm run execute:testnet-demo` contact live IOTA services
+and consume sponsored testnet gas. Run them only with explicit operator intent,
+operator-owned credentials configured outside the repo, passing local runtime
+preflight, and a current passing upstream diagnostic report.
 
 The hosted agent guide is `docs/agent-guide.md`.
 
@@ -499,7 +502,15 @@ npm run typecheck
 npm run smoke:local
 ```
 
-For live proof, configure the local policy gateway and Gas Station with operator-owned testnet credentials, run `npm run gas-station:runtime-preflight`, start the local Gas Station through Compose or the direct Docker fallback, then run `npm run execute:testnet-demo`. The execute command is intentionally opt-in and excluded from CI because it contacts live services and consumes sponsored testnet gas.
+For live proof, configure the local policy gateway and Gas Station with
+operator-owned testnet credentials, render the local Gas Station config, run
+`npm run gas-station:runtime-preflight`, start the local Gas Station through
+Compose or the direct Docker fallback, run `npm run diagnose:gas-station --
+--report tmp/gaskit/testnet-upstream-diagnostic.json`, then run
+`npm run execute:testnet-demo` only with explicit operator intent. The execute
+command is intentionally opt-in, self-checks those preconditions before
+reserve/execute, and is excluded from CI because it contacts live services and
+consumes sponsored testnet gas.
 
 ## Security posture
 

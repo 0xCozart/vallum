@@ -125,3 +125,15 @@ This preflight is intentionally local-only. Passing it does not prove:
 - production deployment hardening is complete.
 
 Those checks belong to later live/testnet slices with explicit operator approval and secret handling. After the offline env preflight passes, use `POST /v1/policy/simulate` against the local gateway as a no-upstream policy preflight before attempting a real reserve/execute path.
+
+`npm run execute:testnet-demo` now fails closed before reserving gas or
+building/signing a transaction unless all of these are true:
+
+- `npm run readiness:testnet` passes.
+- `npm run gas-station:runtime-preflight` passes.
+- `GASKIT_TESTNET_UPSTREAM_REPORT` points at a current sanitized report created
+  by `npm run diagnose:gas-station -- --report <ignored-json-path>` without
+  `--skip-reserve`.
+
+Only after those preconditions pass should an operator use explicit intent to
+run the live sponsored testnet execute.

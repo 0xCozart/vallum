@@ -124,4 +124,6 @@ mainnet operation.
 
 `npm run execute:testnet-demo` contacts live IOTA services and can spend
 sponsored testnet gas. Run it only with explicit operator intent and
-operator-owned local credentials.
+operator-owned local credentials. The command fails closed before reserve or
+execute unless local testnet readiness, local Gas Station runtime preflight,
+and a current passing `GASKIT_TESTNET_UPSTREAM_REPORT` are all present.

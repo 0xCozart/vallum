@@ -81,7 +81,9 @@ What to verify:
 - Sponsor-wallet safety is treated as the primary security boundary.
 - Allowlists, quotas, denial rules, policy simulation, observability, and private Gas Station access are represented.
 - The deterministic proof does not require sponsor keys, real IOTA RPC, Docker, or private prototype files.
-- The optional live proof is isolated in `npm run execute:testnet-demo` and requires operator-owned local credentials.
+- The optional live proof is isolated in `npm run execute:testnet-demo` and
+  requires operator-owned local credentials, local runtime preflight, a passing
+  sanitized upstream diagnostic report, and explicit operator intent.
 
 ## 4. Verify the current local proof
 
