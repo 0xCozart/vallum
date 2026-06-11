@@ -9,7 +9,7 @@ Continue actual Agentic GasKit product implementation in
 
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5,
 2.6, 2.7, 2.8,
-3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 4.10,
+3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 4.10, 4.11,
 5.1, 5.2, 6.1, 6.2, 6.3, 7.1, 7.2, 7.3, 7.4, and 7.5 are implemented, reviewed, locally
 verified, or explicitly deferred with a verified hardening gate.
 Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
@@ -29,6 +29,9 @@ new scope and its unresolved gates.
 
 Recent commits to know:
 
+- `ded068e` feat: add a2a push config safety gate
+- `bfa6c90` docs: update active goal after a2a streaming
+- `ef015fe` docs: record a2a local streaming handoff
 - `ad029d7` feat: add a2a local sse streaming gate
 - `9e9908b` feat: add verification profile gate
 - `3f166cf` feat: add a2a public readiness gate
@@ -48,6 +51,117 @@ Recent commits to know:
 - `fe5a6ee` docs: record agentic gaskit github remote
 - `b2d9928` chore: migrate reviewed gaskit local changes
 - `3b34cef` docs: create agentic gaskit migration fork
+
+## Completed Slice 4.11: A2A Push Notification Config Safety Gate
+
+Implementation commit: `ded068e` (`feat: add a2a push config safety gate`).
+
+What changed:
+
+- Added `packages/standards/src/a2aPush.ts` with a local in-memory A2A task
+  push notification config store and create/get/list/delete helpers.
+- Added authenticated local A2A HTTP routes for
+  `/tasks/{task_id}/pushNotificationConfigs` collection create/list and item
+  get/delete when a push config store is explicitly configured.
+- Push config creation requires an existing task and rejects mismatched body
+  task ids.
+- Callback URLs must be HTTPS and reject credentials, fragments, localhost,
+  loopback, private, link-local, multicast, and reserved IP destinations.
+- Webhook tokens and authentication credential material are rejected, not
+  stored, and not echoed in responses. Authentication scheme declarations are
+  preserved as non-secret metadata.
+- The A2A HTTP demo and `npm run smoke:a2a-http` now prove local push config
+  creation/listing plus credential-storage rejection.
+- `npm run proof:a2a-public-readiness` now reports
+  `A2A_PUSH_CONFIG_LOCAL_PROOF_CONFIGURED` separately from
+  `A2A_PUSH_DELIVERY_UNSUPPORTED`.
+- Product-status, launch-readiness, overview, README, package docs, active
+  goal, external API notes, execution slices, codebase map, and reviewer docs
+  now distinguish local push configuration proof from public webhook delivery.
+- Added a local slice note at
+  `tmp/apex-workflow/a2a-push-config-safety-slice-4-11-scope.md`. It is a
+  repo-local scope note only, not Apex verification.
+
+Commands run:
+
+```bash
+node --import tsx --test packages/standards/src/a2aHttp.test.ts examples/a2a-http/a2a-http-demo.test.ts scripts/a2a-public-readiness.test.ts
+node --import tsx --test packages/standards/src/a2aHttp.test.ts examples/a2a-http/a2a-http-demo.test.ts scripts/a2a-public-readiness.test.ts scripts/product-status.test.ts scripts/launch-readiness.test.ts scripts/operator-live-gates.test.ts scripts/package-scripts.test.ts scripts/reviewer-docs.test.ts
+npm run smoke:a2a-http
+npm run proof:a2a-public-readiness
+npm run typecheck
+npm run docs:check
+npm run secrets:scan
+npm run verify:fast
+npm run verify:local
+git diff --check
+```
+
+Verification result:
+
+- Focused A2A tests passed with 12 tests.
+- Focused A2A/status/docs/package-script regression tests passed with 76 tests.
+- `npm run smoke:a2a-http` passed with public Agent Card status `200`,
+  unauthorized task status `401`, authorized send `200`, hidden artifacts true,
+  canceled status `TASK_STATE_CANCELED`, `pushConfig.status=200`,
+  `pushConfig.listCount=1`, `pushConfig.credentialRejectionStatus=400`, and
+  `logLeaksSecretMaterial=false`.
+- `npm run proof:a2a-public-readiness` passed with `localProofOk=true`,
+  `publicReady=false`, local streaming proof, local push config proof,
+  unsupported push delivery, missing public URL/JWKS/auth config, and missing
+  external conformance report.
+- `npm run typecheck` passed.
+- `npm run docs:check` passed: 37 HTML pages from 36 Markdown sources.
+- `npm run secrets:scan` passed: 322 tracked/staged/untracked text files,
+  findings 0.
+- `npm run verify:fast` passed, including build, 399 TypeScript tests, docs
+  check, secret scan, product-status, launch-readiness, and operator-gate
+  reports.
+- `npm run verify:local` passed with 399 TypeScript tests, 33 Move tests,
+  typecheck, local gateway smoke, demo dApp smoke, browser smoke, agent escrow
+  smoke, paid MCP tool smoke, data-license smoke, service-bounty smoke,
+  reputation-receipt smoke, subscription smoke, A2A well-known smoke, A2A
+  signed-card smoke, A2A task/message smoke, A2A HTTP smoke, A2A local server
+  smoke, marketplace read-model smoke, testnet readiness example, digest proof,
+  package dry-runs, package install smoke, A2A public-readiness proof,
+  verification-profile proof, product-status proof, launch-readiness proof,
+  operator-gates proof, docs check, and secret scan.
+- `git diff --check` passed.
+
+Hardening notes:
+
+- This is local configuration proof only. It does not deliver a webhook and
+  does not prove public A2A interoperability.
+- Callback URL filtering reduces accidental unsafe local callback storage but
+  is not a complete SSRF design for any future outbound delivery worker.
+- Credential-bearing `token` and `authentication.credentials` payloads are
+  rejected so this local store cannot become a callback secret store.
+- Product-status and operator-gate reports still classify public A2A hosting as
+  approval-required and blocked.
+- Apex profile still has `setup.reviewNeeded: true`; this slice does not claim
+  Apex verification.
+
+Known unproven claims:
+
+- No public A2A endpoint was hosted or fetched.
+- No webhook delivery implementation exists.
+- No production JWKS/key-distribution or production task-route auth proof
+  exists.
+- No external A2A conformance report was supplied.
+- No configured IOTA Names, IOTA Identity, or VC trust-policy proof passed.
+- No package is published to npm and no registry install/provenance/account
+  ownership proof exists.
+- No live payment/provider settlement, production marketplace, provider
+  verification, custody/KMS, recovery export, or physical device access proof
+  exists.
+
+Next safe slice:
+
+- Choose an operator-approved public A2A hosting/JWKS/auth/conformance slice,
+  a push webhook delivery security/infrastructure design slice, or move to
+  another explicit live gate such as IOTA Names/Identity/VC, npm release,
+  payment/provider, marketplace, custody, or device-safety design before
+  claiming launch readiness.
 
 ## Completed Slice 4.10: A2A Local SSE Streaming Gate
 
