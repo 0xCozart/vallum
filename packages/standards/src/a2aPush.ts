@@ -1,4 +1,4 @@
-import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { isIP } from "node:net";
 import { dirname } from "node:path";
 
@@ -69,6 +69,19 @@ export interface A2APushNotificationDeliveryAttempt {
 
 export interface A2APushNotificationDeliveryResult {
   readonly attempts: readonly A2APushNotificationDeliveryAttempt[];
+}
+
+export interface A2APushNotificationDeliveryQueueEntry {
+  readonly id: string;
+  readonly enqueuedAt: string;
+  readonly claimedAt?: string;
+  readonly completedAt?: string;
+  readonly status: "queued" | "claimed" | "completed";
+  readonly request: A2APushNotificationDeliveryRequest;
+}
+
+export interface A2APushNotificationDeliveryQueueResult {
+  readonly entries: readonly A2APushNotificationDeliveryQueueEntry[];
 }
 
 export interface A2APushNotificationAttemptStore {
@@ -165,6 +178,90 @@ export class JsonlA2APushNotificationAttemptStore implements A2APushNotification
           throw new A2APushNotificationError("A2A_PUSH_CONFIG_INVALID", "A2A push attempt store JSONL is invalid.");
         }
       });
+  }
+}
+
+export class JsonFileA2APushNotificationDeliveryQueue {
+  readonly #filePath: string;
+
+  constructor(filePath: string) {
+    if (typeof filePath !== "string" || filePath.trim() === "") {
+      throw new A2APushNotificationError("A2A_PUSH_CONFIG_INVALID", "A2A push delivery queue path is required.");
+    }
+    this.#filePath = filePath;
+    mkdirSync(dirname(filePath), { recursive: true });
+    if (!existsSync(filePath)) this.#write([]);
+  }
+
+  enqueue(
+    request: A2APushNotificationDeliveryRequest,
+    options: {
+      readonly id?: string;
+      readonly enqueuedAt?: Date;
+    } = {},
+  ): A2APushNotificationDeliveryQueueEntry {
+    const entries = this.#read();
+    const entry = sanitizeQueueEntry({
+      id: options.id ?? `push_delivery_${crypto.randomUUID()}`,
+      enqueuedAt: (options.enqueuedAt ?? new Date()).toISOString(),
+      status: "queued",
+      request,
+    });
+    entries.push(entry);
+    this.#write(entries);
+    return clone(entry);
+  }
+
+  list(): readonly A2APushNotificationDeliveryQueueEntry[] {
+    return this.#read().map((entry) => clone(entry));
+  }
+
+  claim(options: { readonly now?: Date } = {}): A2APushNotificationDeliveryQueueEntry | undefined {
+    const entries = this.#read();
+    const index = entries.findIndex((entry) => entry.status === "queued");
+    if (index < 0) return undefined;
+    const claimed = sanitizeQueueEntry({
+      ...entries[index],
+      status: "claimed",
+      claimedAt: (options.now ?? new Date()).toISOString(),
+    });
+    entries[index] = claimed;
+    this.#write(entries);
+    return clone(claimed);
+  }
+
+  complete(id: string, options: { readonly now?: Date } = {}): boolean {
+    const entries = this.#read();
+    const index = entries.findIndex((entry) => entry.id === id && entry.status !== "completed");
+    if (index < 0) return false;
+    entries[index] = sanitizeQueueEntry({
+      ...entries[index],
+      status: "completed",
+      completedAt: (options.now ?? new Date()).toISOString(),
+    });
+    this.#write(entries);
+    return true;
+  }
+
+  #read(): A2APushNotificationDeliveryQueueEntry[] {
+    if (!existsSync(this.#filePath)) return [];
+    const raw = readFileSync(this.#filePath, "utf8");
+    if (raw.trim() === "") return [];
+    try {
+      const parsed = JSON.parse(raw) as unknown;
+      if (!Array.isArray(parsed)) {
+        throw new A2APushNotificationError("A2A_PUSH_CONFIG_INVALID", "A2A push delivery queue JSON is invalid.");
+      }
+      return parsed.map((entry) => sanitizeQueueEntry(entry as A2APushNotificationDeliveryQueueEntry));
+    } catch (error) {
+      if (error instanceof A2APushNotificationError) throw error;
+      throw new A2APushNotificationError("A2A_PUSH_CONFIG_INVALID", "A2A push delivery queue JSON is invalid.");
+    }
+  }
+
+  #write(entries: readonly A2APushNotificationDeliveryQueueEntry[]): void {
+    const sanitized = entries.map((entry) => sanitizeQueueEntry(entry));
+    writeFileSync(this.#filePath, `${JSON.stringify(sanitized, null, 2)}\n`, "utf8");
   }
 }
 
@@ -285,6 +382,20 @@ export async function deliverA2APushNotifications(options: {
     }
   }
   return { attempts };
+}
+
+export function queueA2APushNotificationDeliveries(options: {
+  readonly store: LocalA2APushNotificationStore;
+  readonly task: A2ATask;
+  readonly queue: JsonFileA2APushNotificationDeliveryQueue;
+  readonly now?: () => Date;
+}): A2APushNotificationDeliveryQueueResult {
+  const configs = options.store.list(options.task.id).configs;
+  const entries = configs.map((config) => options.queue.enqueue(
+    buildA2APushNotificationDeliveryRequest(config, options.task),
+    { enqueuedAt: (options.now ?? (() => new Date()))() },
+  ));
+  return { entries };
 }
 
 export function buildA2APushNotificationDeliveryRequest(
@@ -492,6 +603,50 @@ function publicDeliveryHeaders(headers: Record<string, string>): Record<string, 
   return result;
 }
 
+function sanitizeQueueEntry(entry: A2APushNotificationDeliveryQueueEntry): A2APushNotificationDeliveryQueueEntry {
+  return {
+    id: nonEmptyAttemptString(entry.id, "queue id"),
+    enqueuedAt: validAttemptIsoDate(entry.enqueuedAt, "queue enqueue time"),
+    ...(entry.claimedAt === undefined ? {} : { claimedAt: validAttemptIsoDate(entry.claimedAt, "queue claim time") }),
+    ...(entry.completedAt === undefined ? {} : { completedAt: validAttemptIsoDate(entry.completedAt, "queue completion time") }),
+    status: validQueueStatus(entry.status),
+    request: sanitizeDeliveryRequest(entry.request),
+  };
+}
+
+function sanitizeDeliveryRequest(request: A2APushNotificationDeliveryRequest): A2APushNotificationDeliveryRequest {
+  const config = sanitizePushConfig(request.config);
+  const body: A2APushNotificationPayload = {
+    kind: "task",
+    task: redactA2ATaskForLog(request.body.task) as A2ATask,
+  };
+  return {
+    method: "POST",
+    url: safeWebhookUrl(request.url),
+    headers: publicDeliveryHeaders({
+      ...request.headers,
+      "content-type": `${A2A_TASK_MEDIA_TYPE}; charset=utf-8`,
+      "a2a-version": A2A_TASK_PROTOCOL_VERSION,
+    }),
+    body,
+    json: `${JSON.stringify(body)}\n`,
+    config,
+  };
+}
+
+function sanitizePushConfig(config: A2ATaskPushNotificationConfig): A2ATaskPushNotificationConfig {
+  return {
+    id: nonEmptyAttemptString(config.id, "config id"),
+    taskId: nonEmptyAttemptString(config.taskId, "task id"),
+    url: safeWebhookUrl(config.url),
+    createdAt: validAttemptIsoDate(config.createdAt, "config created time"),
+    ...(config.tenant ? { tenant: config.tenant } : {}),
+    ...(config.authentication ? { authentication: {
+      schemes: config.authentication.schemes.map((scheme) => nonEmptyAttemptString(scheme, "authentication scheme")),
+    } } : {}),
+  };
+}
+
 function sanitizePushAttempt(attempt: A2APushNotificationDeliveryAttempt): A2APushNotificationDeliveryAttempt {
   return {
     configId: nonEmptyAttemptString(attempt.configId, "config id"),
@@ -537,6 +692,11 @@ function validAttemptIsoDate(value: unknown, label: string): string {
 function validAttemptStatus(value: unknown): A2APushNotificationDeliveryAttempt["status"] {
   if (value === "delivered" || value === "failed" || value === "skipped") return value;
   throw new A2APushNotificationError("A2A_PUSH_CONFIG_INVALID", "A2A push attempt status is invalid.");
+}
+
+function validQueueStatus(value: unknown): A2APushNotificationDeliveryQueueEntry["status"] {
+  if (value === "queued" || value === "claimed" || value === "completed") return value;
+  throw new A2APushNotificationError("A2A_PUSH_CONFIG_INVALID", "A2A push delivery queue status is invalid.");
 }
 
 function validAttemptErrorCode(value: unknown): NonNullable<A2APushNotificationDeliveryAttempt["errorCode"]> {

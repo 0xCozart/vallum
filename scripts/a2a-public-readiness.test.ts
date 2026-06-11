@@ -39,6 +39,8 @@ test("A2A public readiness reports local proof while public gates remain blocked
     assert.equal(findCheck(report, "local-push-retry-observability").code, "A2A_PUSH_RETRY_OBSERVABILITY_LOCAL_PROOF_CONFIGURED");
     assert.equal(findCheck(report, "local-push-durable-attempt-evidence").status, "proven-local");
     assert.equal(findCheck(report, "local-push-durable-attempt-evidence").code, "A2A_PUSH_DURABLE_ATTEMPT_EVIDENCE_LOCAL_PROOF_CONFIGURED");
+    assert.equal(findCheck(report, "local-push-delivery-queue").status, "proven-local");
+    assert.equal(findCheck(report, "local-push-delivery-queue").code, "A2A_PUSH_DELIVERY_QUEUE_LOCAL_PROOF_CONFIGURED");
     assert.equal(findCheck(report, "public-discovery").status, "blocked-conformance");
     assert.equal(findCheck(report, "public-discovery").code, "A2A_PUBLIC_DISCOVERY_REPORT_MISSING");
     assert.equal(findCheck(report, "public-push-delivery").status, "blocked-conformance");
@@ -152,6 +154,7 @@ test("A2A public readiness accepts redacted public config and existing conforman
     assert.equal(findCheck(report, "local-push-callback-host-allowlist").status, "proven-local");
     assert.equal(findCheck(report, "local-push-retry-observability").status, "proven-local");
     assert.equal(findCheck(report, "local-push-durable-attempt-evidence").status, "proven-local");
+    assert.equal(findCheck(report, "local-push-delivery-queue").status, "proven-local");
     assert.equal(findCheck(report, "public-push-delivery").status, "blocked-conformance");
     assert.equal(findCheck(report, "public-push-delivery").code, "A2A_PUBLIC_PUSH_DELIVERY_REPORT_MISSING");
     assert.doesNotMatch(formatted, /agents\.example|a2a-conformance-report|oauth2/);

@@ -70,14 +70,16 @@ It also includes the first Agentic GasKit implementation slices:
 - local file-backed A2A push notification attempt evidence as sanitized JSONL
   status records, without request bodies, response bodies, webhook credentials,
   or raw transport errors
+- local file-backed A2A push notification delivery queueing with sanitized
+  delivery envelopes, public headers, and redacted task payloads
 - non-networked A2A public-readiness proof for local A2A evidence, public
   hosting inputs, production JWKS/auth decisions, local authenticated extended
   cards, local loopback streaming, local push configuration, local injected
   push delivery, local opt-in push HTTP transport, local callback URL admission
   hardening, local callback host allowlisting, local retry/attempt
-  observability, local durable attempt evidence, redacted structured public
-  discovery, public push delivery, and external conformance report inputs, and
-  external conformance blockers
+  observability, local durable attempt evidence, local delivery queueing,
+  redacted structured public discovery, public push delivery, and external
+  conformance report inputs, and external conformance blockers
 - opt-in public A2A discovery smoke for operator-approved public HTTPS Agent
   Card and JWKS probing with optional structured report output, excluded from
   default local verification

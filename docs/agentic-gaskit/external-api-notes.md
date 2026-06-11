@@ -634,6 +634,14 @@ Current planning assumptions:
   prompt text. Public webhook workers, delivery queues, production
   observability, production auth, endpoint ownership, and external conformance
   remain blocked.
+- On 2026-06-11, Slice 4.24 adds a local file-backed A2A push delivery queue
+  primitive. The queue persists sanitized delivery envelopes with public
+  headers and redacted A2A task payloads, and supports local claim/complete
+  state transitions. It strips authorization/cookie-style headers and rejects
+  unsafe callback URLs before persistence. It is local queue proof only; it
+  does not operate public webhook workers, prove public delivery, store webhook
+  credentials, prove endpoint ownership, or replace production authentication,
+  observability, and conformance evidence.
 
 Implementation checks:
 

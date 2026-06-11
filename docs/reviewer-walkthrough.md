@@ -127,10 +127,10 @@ Expected current result:
   streaming proof, local authenticated extended-card access, local push
   notification configuration, local injected push delivery, local opt-in push
   HTTP transport, callback URL admission hardening, callback host allowlisting,
-  local retry/attempt observability, local durable attempt evidence, public
-  hosting input blockers, redacted structured public discovery report
-  classification, redacted structured public push delivery report
-  classification, and structured external conformance blockers without
+  local retry/attempt observability, local durable attempt evidence, local
+  delivery queueing, public hosting input blockers, redacted structured public
+  discovery report classification, redacted structured public push delivery
+  report classification, and structured external conformance blockers without
   contacting public endpoints;
 - the opt-in A2A public-discovery smoke is available for approved public HTTPS
   Agent Card/JWKS probing and can emit the structured discovery report, but is

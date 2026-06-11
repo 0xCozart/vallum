@@ -6,12 +6,14 @@ import { test } from "node:test";
 
 import {
   JsonlA2APushNotificationAttemptStore,
+  JsonFileA2APushNotificationDeliveryQueue,
   LocalA2APushNotificationAttemptStore,
   LocalA2APushNotificationStore,
   buildA2APushNotificationDeliveryRequest,
   createA2APushNotificationConfig,
   createA2APushHttpTransport,
   deliverA2APushNotifications,
+  queueA2APushNotificationDeliveries,
   type A2APushNotificationDeliveryRequest,
   type A2ATask,
 } from "./index.js";
@@ -167,6 +169,64 @@ test("A2A push delivery can persist sanitized attempt evidence to JSONL", async 
     assert.match(raw, /"status":"failed"/);
     assert.match(raw, /"errorCode":"A2A_PUSH_TRANSPORT_FAILED"/);
     assert.doesNotMatch(raw, /private prompt|Bearer abc|should-not-print|signer_ref_secret|wallet_secret|payment-secret|json|body|history|artifacts/i);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("A2A push delivery queue persists sanitized local jobs without webhook secrets", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "agentic-gaskit-a2a-push-"));
+  const filePath = join(dir, "queue.json");
+  try {
+    const store = new LocalA2APushNotificationStore();
+    const queue = new JsonFileA2APushNotificationDeliveryQueue(filePath);
+    createA2APushNotificationConfig({
+      store,
+      taskId: "task-push-1",
+      now,
+      value: {
+        id: "push-1",
+        url: "https://client.example.test/a2a/push",
+      },
+    });
+
+    const queued = queueA2APushNotificationDeliveries({
+      store,
+      task: taskFixture(),
+      queue,
+      now: () => new Date("2026-06-11T12:00:03.000Z"),
+    });
+
+    assert.equal(queued.entries.length, 1);
+    assert.equal(queued.entries[0]?.status, "queued");
+    assert.equal(queued.entries[0]?.request.headers.authorization, undefined);
+    assert.match(queued.entries[0]?.request.headers["content-type"] ?? "", /application\/a2a\+json/);
+    const raw = await readFile(filePath, "utf8");
+    assert.match(raw, /"status": "queued"/);
+    assert.match(raw, /"TASK_STATE_COMPLETED"/);
+    assert.match(raw, /\[REDACTED\]/);
+    assert.doesNotMatch(raw, /private prompt|Bearer abc|signer_ref_secret|wallet_secret|payment-secret|authorization|cookie|raw transport|should-not-store/i);
+
+    const claimed = queue.claim({ now: new Date("2026-06-11T12:00:04.000Z") });
+    assert.equal(claimed?.status, "claimed");
+    assert.equal(claimed?.claimedAt, "2026-06-11T12:00:04.000Z");
+    assert.equal(queue.complete(claimed?.id ?? ""), true);
+    assert.equal(queue.list().find((entry) => entry.id === claimed?.id)?.status, "completed");
+
+    const safeRequest = buildA2APushNotificationDeliveryRequest(createConfigFixture(), taskFixture());
+    assert.throws(
+      () => queue.enqueue({
+        ...safeRequest,
+        url: "https://client.example.test/a2a/push?token=should-not-store",
+        headers: {
+          ...safeRequest.headers,
+          authorization: "Bearer should-not-store",
+          cookie: "session=should-not-store",
+        },
+      }),
+      /A2A push notification URL must be public HTTPS/,
+    );
+    assert.doesNotMatch(await readFile(filePath, "utf8"), /should-not-store|authorization|cookie/i);
   } finally {
     await rm(dir, { recursive: true, force: true });
   }

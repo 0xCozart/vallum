@@ -2450,6 +2450,77 @@ Escalation triggers:
 - Any request to run public webhooks, background workers, public A2A hosts, or
   external conformance from this local evidence store.
 
+## Slice 4.24: A2A Push Local Delivery Queue
+
+User-visible outcome:
+Operators get a local file-backed A2A push delivery queue primitive with
+sanitized delivery envelopes, claim state, and completion state before any
+public webhook worker is considered.
+
+Likely files:
+
+- `packages/standards/src/a2aPush.ts`
+- `packages/standards/src/a2aPush.test.ts`
+- `scripts/check-a2a-public-readiness.ts`
+- `scripts/a2a-public-readiness.test.ts`
+- `scripts/check-product-status.ts`
+- `scripts/check-launch-readiness.ts`
+- `docs/agentic-gaskit/a2a-public-readiness.md`
+- `docs/agentic-gaskit/external-api-notes.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/overview.md`
+- `docs/CODEBASE_MAP.md`
+- `README.md`
+- `docs/reviewer-walkthrough.md`
+
+Acceptance criteria:
+
+- A local file-backed queue can enqueue sanitized A2A push delivery requests.
+- Queue records can be claimed and marked complete locally.
+- Queued delivery requests use public headers only and safe public HTTPS
+  callback URLs.
+- Queued payloads reuse existing A2A task redaction and do not persist raw
+  private prompt text, bearer values, signer refs, wallet internals, payment
+  secrets, webhook credentials, authorization headers, cookie headers, response
+  bodies, or raw transport errors.
+- Unsafe callback URLs are rejected before they enter the local queue file.
+- A2A public-readiness, product-status, launch-readiness, and public docs
+  classify this as local queue proof only, not public webhook worker proof,
+  public delivery proof, endpoint ownership proof, production auth, production
+  observability, or external conformance.
+
+Verification:
+
+- Focused `packages/standards/src/a2aPush.test.ts`.
+- Focused A2A public-readiness tests.
+- Product-status tests.
+- Launch-readiness tests.
+- Operator-gate tests.
+- Reviewer-docs regression tests.
+- `npm run proof:a2a-public-readiness`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slice 4.23.
+
+Risk:
+Medium to high. A local queue can be mistaken for production worker or public
+webhook delivery infrastructure if the docs and status gates do not keep those
+claims blocked.
+
+Escalation triggers:
+
+- Any request to operate public webhooks, run background workers, prove endpoint
+  ownership, persist webhook credentials, or claim public push delivery from
+  this local queue.
+- Any request to persist raw task prompts, authorization/cookie headers,
+  response bodies, raw transport errors, signer refs, wallet internals, or
+  payment secrets in queued jobs.
+
 ## Slice 5.1: Marketplace Readiness Gate
 
 User-visible outcome:

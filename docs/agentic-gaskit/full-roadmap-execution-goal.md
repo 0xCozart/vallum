@@ -121,7 +121,10 @@ Confirmed current state:
   webhook infrastructure, production auth, and public delivery proof. Slice
   4.23 adds local file-backed sanitized push attempt evidence while still
   deferring public webhook workers, delivery queues, production observability,
-  production auth, and public delivery proof.
+  production auth, and public delivery proof. Slice 4.24 adds local
+  file-backed sanitized push delivery queueing while still deferring public
+  webhook workers, production auth, endpoint ownership, production
+  observability, and public delivery proof.
   Slice 7.5 adds a fast deterministic verification profile plus a
   non-networked profile audit, so ordinary build/test/improve loops can run a
   bounded subset while `verify:local` and `grant:check` remain the full
@@ -140,7 +143,7 @@ Confirmed current state:
   public-readiness approval; Slice 4.20 hardens local push callback URL
   admission against query-string credential smuggling; Slice 4.21 adds exact
   local callback-host allowlisting; Slice 4.23 adds local durable sanitized
-  push attempt evidence.
+  push attempt evidence; Slice 4.24 adds local sanitized delivery queueing.
   Public hosting acceptance, production keys/auth, public webhook
   workers/queues, persistent production observability, and external conformance
   blockers remain.
