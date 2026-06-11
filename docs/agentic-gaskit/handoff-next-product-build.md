@@ -9,7 +9,7 @@ Continue actual Agentic GasKit product implementation in
 
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5,
 2.6, 2.7, 2.8,
-3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9,
+3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 4.10,
 5.1, 5.2, 6.1, 6.2, 6.3, 7.1, 7.2, 7.3, 7.4, and 7.5 are implemented, reviewed, locally
 verified, or explicitly deferred with a verified hardening gate.
 Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
@@ -29,6 +29,7 @@ new scope and its unresolved gates.
 
 Recent commits to know:
 
+- `ad029d7` feat: add a2a local sse streaming gate
 - `9e9908b` feat: add verification profile gate
 - `3f166cf` feat: add a2a public readiness gate
 - `6902a53` feat: add testnet digest proof gate
@@ -47,6 +48,116 @@ Recent commits to know:
 - `fe5a6ee` docs: record agentic gaskit github remote
 - `b2d9928` chore: migrate reviewed gaskit local changes
 - `3b34cef` docs: create agentic gaskit migration fork
+
+## Completed Slice 4.10: A2A Local SSE Streaming Gate
+
+Implementation commit: `ad029d7` (`feat: add a2a local sse streaming gate`).
+
+What changed:
+
+- Added local loopback A2A SSE streaming support in the Node server for
+  `POST /message:stream`.
+- The Node server reuses the existing authenticated `message:send` task path
+  and serializes the sanitized task response as `text/event-stream`.
+- The pure HTTP-shaped handler still fails closed for streaming and push routes
+  when it cannot produce SSE directly.
+- The A2A local-server demo now advertises `capabilities.streaming: true`,
+  keeps `pushNotifications: false`, parses SSE task events, and proves the
+  streaming task reaches `TASK_STATE_WORKING`.
+- `npm run smoke:a2a-local-server` now expects streaming status `200`, at
+  least one SSE event, and no secret-looking material in output.
+- `npm run proof:a2a-public-readiness` now reports local streaming as
+  `proven-local` while keeping public hosting, production JWKS/auth, push
+  notifications, and external conformance blocked.
+- Updated product-status, launch-readiness, overview, README, codebase map,
+  active goal, external API notes, execution slices, and reviewer docs so local
+  streaming is no longer described as missing while public A2A remains
+  unproven.
+
+Commands run:
+
+```bash
+node --import tsx --test packages/standards/src/a2aNodeServer.test.ts packages/standards/src/a2aHttp.test.ts examples/a2a-local-server/a2a-local-server-demo.test.ts scripts/a2a-public-readiness.test.ts
+node --import tsx --test scripts/product-status.test.ts scripts/launch-readiness.test.ts scripts/operator-live-gates.test.ts scripts/package-scripts.test.ts scripts/reviewer-docs.test.ts scripts/a2a-public-readiness.test.ts
+npm run smoke:a2a-local-server
+npm run proof:a2a-public-readiness
+npm run docs:check
+npm run secrets:scan
+npm run typecheck
+npm test
+npm run verify:fast
+npm run verify:local
+git diff --check
+```
+
+Verification result:
+
+- Focused A2A tests passed with 13 tests.
+- Focused status/docs/package-script regression tests passed with 68 tests.
+- `npm run smoke:a2a-local-server` passed with `boundToLoopback=true`,
+  signed-card verification true, unauthorized send `401`, authorized send
+  `200`, hidden artifacts true, canceled status `TASK_STATE_CANCELED`,
+  `streaming.status=200`, `streaming.events=1`,
+  `streaming.taskStatus=TASK_STATE_WORKING`, and
+  `logLeaksSecretMaterial=false`.
+- `npm run proof:a2a-public-readiness` passed with `localProofOk=true`,
+  `publicReady=false`, `A2A_STREAMING_LOCAL_PROOF_CONFIGURED`,
+  `A2A_PUSH_UNSUPPORTED`, missing public URL/JWKS/auth config, and missing
+  external conformance report.
+- `npm run docs:check` passed: 37 HTML pages from 36 Markdown sources.
+- `npm run secrets:scan` passed: 321 tracked/staged/untracked text files,
+  findings 0.
+- `npm run typecheck` passed after tightening the duplicated SSE parser helper
+  typing.
+- `npm test` passed with 397 TypeScript tests.
+- `npm run verify:fast` passed, including build, 397 TypeScript tests, docs
+  check, secret scan, product-status, launch-readiness, and operator-gate
+  reports.
+- `npm run verify:local` passed with 397 TypeScript tests, 33 Move tests,
+  typecheck, local gateway smoke, demo dApp smoke, browser smoke, agent escrow
+  smoke, paid MCP tool smoke, data-license smoke, service-bounty smoke,
+  reputation-receipt smoke, subscription smoke, A2A well-known smoke, A2A
+  signed-card smoke, A2A task/message smoke, A2A HTTP smoke, A2A local server
+  smoke, marketplace read-model smoke, testnet readiness example, digest proof,
+  package dry-runs, package install smoke, A2A public-readiness proof,
+  verification-profile proof, product-status proof, launch-readiness proof,
+  operator-gates proof, docs check, and secret scan.
+- `git diff --check` passed.
+
+Hardening notes:
+
+- Streaming responses are local loopback proof only and do not prove public A2A
+  hosting or external conformance.
+- SSE payloads reuse the existing task redaction path and the smoke/test
+  coverage asserts private prompts, bearer tokens, signer refs, wallet ids,
+  payment credentials, and private keys do not appear in captured output.
+- Push notification routes remain unsupported until a separate webhook and
+  security design exists.
+- Product-status and operator-gate reports still classify public A2A hosting
+  as approval-required and blocked.
+- Apex profile still has `setup.reviewNeeded: true`; this slice does not claim
+  Apex verification.
+
+Known unproven claims:
+
+- No public A2A endpoint was hosted or fetched.
+- No production JWKS/key-distribution or production task-route auth proof
+  exists.
+- No push notification or webhook delivery implementation exists.
+- No external A2A conformance report was supplied.
+- No configured IOTA Names, IOTA Identity, or VC trust-policy proof passed.
+- No package is published to npm and no registry install/provenance/account
+  ownership proof exists.
+- No live payment/provider settlement, production marketplace, provider
+  verification, custody/KMS, recovery export, or physical device access proof
+  exists.
+
+Next safe slice:
+
+- Choose an operator-approved public A2A hosting/JWKS/auth/conformance slice,
+  or move to another explicit live gate such as IOTA Names/Identity/VC, npm
+  release, payment/provider, marketplace, custody, or device-safety design
+  before claiming launch readiness.
 
 ## What Is Complete
 
