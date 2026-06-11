@@ -2253,6 +2253,69 @@ Escalation triggers:
   report without structured validation, treat discovery as external
   conformance, or put public network calls in default verification.
 
+## Slice 4.20: A2A Push Callback URL Hardening
+
+User-visible outcome:
+Operators get local proof that A2A push callback URLs cannot smuggle webhook
+tokens or credentials through URL query strings before public webhook delivery
+infrastructure is considered.
+
+Likely files:
+
+- `packages/standards/src/a2aPush.ts`
+- `packages/standards/src/a2aPush.test.ts`
+- `scripts/check-a2a-public-readiness.ts`
+- `scripts/a2a-public-readiness.test.ts`
+- `scripts/check-product-status.ts`
+- `scripts/check-launch-readiness.ts`
+- `docs/agentic-gaskit/a2a-public-readiness.md`
+- `docs/agentic-gaskit/external-api-notes.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/overview.md`
+- `docs/CODEBASE_MAP.md`
+- `README.md`
+- `docs/reviewer-walkthrough.md`
+
+Acceptance criteria:
+
+- A2A push callback URLs with query strings are rejected before config storage.
+- A2A push callback URLs with query strings are rejected before injected HTTP
+  transport delivery.
+- Rejection errors do not print query parameter names or values.
+- Existing public HTTPS callback URLs without credentials, query strings, or
+  fragments continue to work through injected/local tests.
+- A2A public-readiness, product-status, launch-readiness, and public docs
+  classify this as local callback admission hardening only, not public webhook
+  delivery infrastructure or external conformance.
+
+Verification:
+
+- Focused `packages/standards/src/a2aPush.test.ts`.
+- Focused A2A public-readiness tests.
+- Product-status tests.
+- Launch-readiness tests.
+- Operator-gate tests.
+- Reviewer-docs regression tests.
+- `npm run proof:a2a-public-readiness`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slice 4.19.
+
+Risk:
+Medium. URL query strings often carry webhook secrets; tightening them must not
+be mistaken for public webhook delivery proof.
+
+Escalation triggers:
+
+- Any request to allow query-token callback URLs, store webhook credentials,
+  run background delivery workers, persist queues, or mark public webhook
+  delivery complete without operator-approved public infrastructure evidence.
+
 ## Slice 5.1: Marketplace Readiness Gate
 
 User-visible outcome:

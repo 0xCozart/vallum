@@ -53,6 +53,9 @@ publicReady=false
 - Local push notification HTTP transport is supported as an explicitly
   constructed helper with safe URL checks, manual redirect handling, timeout
   handling, no stored webhook credentials, and status-only results.
+- Local push notification callback URL admission rejects credentials, query
+  strings, fragments, loopback hosts, and private network hosts before config
+  storage or delivery.
 - Local push notification retry and delivery-attempt observability are
   supported for explicitly injected transports with in-memory status-only
   attempt records.
@@ -82,7 +85,7 @@ report paths, report contents, credentials, tokens, or secret-like values.
 - Production extended-card access control.
 - Public streaming or webhook delivery by itself.
 - Production push delivery queues/workers, persistent observability, auth, or
-  SSRF infrastructure.
+  SSRF infrastructure beyond the local callback URL admission guard.
 - External A2A conformance.
 - Provider verification or production trust.
 

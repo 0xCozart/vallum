@@ -365,8 +365,15 @@ function safeWebhookUrl(value: unknown): string {
   } catch {
     throw new A2APushNotificationError("A2A_PUSH_URL_UNSAFE", "A2A push notification URL must be a valid HTTPS URL.");
   }
-  if (parsed.protocol !== "https:" || parsed.username || parsed.password || parsed.hash || isUnsafeWebhookHost(parsed.hostname)) {
-    throw new A2APushNotificationError("A2A_PUSH_URL_UNSAFE", "A2A push notification URL must be public HTTPS without credentials or fragments.");
+  if (
+    parsed.protocol !== "https:"
+    || parsed.username
+    || parsed.password
+    || parsed.search
+    || parsed.hash
+    || isUnsafeWebhookHost(parsed.hostname)
+  ) {
+    throw new A2APushNotificationError("A2A_PUSH_URL_UNSAFE", "A2A push notification URL must be public HTTPS without credentials, query strings, or fragments.");
   }
   return parsed.toString();
 }

@@ -610,6 +610,13 @@ Current planning assumptions:
   printing configured values. This still does not run public discovery from the
   readiness command, send task messages, post webhooks, run conformance
   tooling, prove key rotation, or accept launch readiness.
+- On 2026-06-11, Slice 4.20 hardens local A2A push callback URL admission by
+  rejecting callback URLs that include query strings before config storage or
+  delivery. This prevents query-token callback patterns from entering local
+  config state or outbound transport requests. It is local admission proof only:
+  it does not operate public webhook workers, persist queue state, store
+  webhook credentials, prove public webhook delivery, or replace production
+  allowlisting/auth/observability design.
 
 Implementation checks:
 

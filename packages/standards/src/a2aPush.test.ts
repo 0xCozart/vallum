@@ -213,6 +213,45 @@ test("A2A push HTTP transport rejects unsafe URLs before fetch", async () => {
   assert.equal(called, false);
 });
 
+test("A2A push callback URLs reject query strings before storage or delivery", async () => {
+  const store = new LocalA2APushNotificationStore();
+
+  assert.throws(
+    () => createA2APushNotificationConfig({
+      store,
+      taskId: "task-push-1",
+      now,
+      value: {
+        id: "push-query",
+        url: "https://client.example.test/a2a/push?token=should-not-store",
+      },
+    }),
+    (error: unknown) => {
+      assert.ok(error instanceof Error);
+      assert.match(error.message, /query strings/);
+      assert.doesNotMatch(error.message, /should-not-store|token/);
+      return true;
+    },
+  );
+
+  const safeRequest = buildA2APushNotificationDeliveryRequest(createConfigFixture(), taskFixture());
+  const transport = createA2APushHttpTransport({
+    fetch: async () => new Response(null, { status: 204 }),
+  });
+  await assert.rejects(
+    async () => transport({
+      ...safeRequest,
+      url: "https://client.example.test/a2a/push?secret=should-not-send",
+    }),
+    (error: unknown) => {
+      assert.ok(error instanceof Error);
+      assert.match(error.message, /query strings/);
+      assert.doesNotMatch(error.message, /should-not-send|secret/);
+      return true;
+    },
+  );
+});
+
 test("A2A push HTTP transport reports redirects and timeouts as failed delivery without leaking errors", async () => {
   const store = new LocalA2APushNotificationStore();
   createA2APushNotificationConfig({

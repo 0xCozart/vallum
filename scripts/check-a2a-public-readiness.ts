@@ -95,6 +95,7 @@ export async function checkA2APublicReadiness(
     localPushConfigurationSupport(),
     localPushDeliverySupport(),
     localPushHttpTransportSupport(),
+    localPushCallbackUrlHardeningSupport(),
     localPushRetryObservabilitySupport(),
     await checkPublicPushDeliveryReport(cwd, env.A2A_PUBLIC_PUSH_DELIVERY_REPORT, {
       expectedPublicBaseUrl: env.A2A_PUBLIC_BASE_URL,
@@ -307,6 +308,17 @@ function localPushHttpTransportSupport(): A2APublicReadinessCheck {
     message: "A2A push notification HTTP transport is locally supported as an explicitly injected helper with safe URL checks, timeout handling, manual redirect handling, and status-only results.",
     evidence: "node --import tsx --test packages/standards/src/a2aPush.test.ts",
     next: "Keep this as local mocked transport proof only until public webhook infrastructure, delivery observability, and external conformance evidence exist.",
+  };
+}
+
+function localPushCallbackUrlHardeningSupport(): A2APublicReadinessCheck {
+  return {
+    id: "local-push-callback-url-hardening",
+    status: "proven-local",
+    code: "A2A_PUSH_CALLBACK_URL_HARDENING_LOCAL_PROOF_CONFIGURED",
+    message: "A2A push notification callback URLs are locally rejected when they include credentials, query strings, fragments, loopback hosts, or non-public network hosts.",
+    evidence: "node --import tsx --test packages/standards/src/a2aPush.test.ts",
+    next: "Keep this as local callback admission proof only until public webhook allowlisting, authentication, worker, queue, observability, and external conformance evidence exist.",
   };
 }
 
