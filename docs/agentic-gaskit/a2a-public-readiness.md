@@ -15,6 +15,10 @@ plus a sanitized header manifest from already-signed public JSON inputs. It
 does not sign cards, generate keys, fetch public URLs, deploy hosting, or prove
 endpoint ownership.
 
+Operators can then run `npm run a2a:check-static-discovery-bundle` against the
+generated directory. That command validates the local files and manifest before
+hosting review, without fetching public URLs or proving public hosting.
+
 When an operator has approved public A2A infrastructure and supplied local
 configuration, `npm run smoke:a2a-public-discovery` is the opt-in networked
 probe for public Agent Card and JWKS discovery. It is not part of local
@@ -54,6 +58,9 @@ publicReady=false
 - Local static discovery bundles can be written as deployable well-known JSON
   files plus a sanitized manifest that records content headers for static
   hosting review.
+- Generated static discovery directories can be validated locally before
+  public hosting review, including manifest metadata, canonical paths, public
+  URL binding, and private-field rejection.
 - The opt-in public discovery smoke exists for operator-approved public HTTPS
   Agent Card and JWKS probing, but the non-networked readiness command does not
   run it. Readiness remains blocked unless an operator supplies a structured
@@ -110,7 +117,8 @@ report paths, report contents, credentials, tokens, or secret-like values.
 - Deployed public JWKS hosting, production Agent Card key management, or key
   rotation.
 - Deployed static discovery artifacts, endpoint ownership, or public discovery
-  acceptance from local bundle generation or local file writing alone.
+  acceptance from local bundle generation, local file writing, or local
+  artifact validation alone.
 - Production A2A task-route authentication.
 - Production extended-card access control.
 - Public streaming or webhook delivery by itself.
@@ -145,6 +153,20 @@ static bundle rules used by the registry package and prints only local output
 paths/counts. It is still local artifact generation only; public readiness
 requires hosting the files on an operator-approved public HTTPS endpoint and
 then recording structured public discovery evidence.
+
+Validate the generated directory before upload:
+
+```bash
+npm run a2a:check-static-discovery-bundle -- \
+  --out-dir tmp/a2a-public \
+  --expected-public-base-url https://agents.example/a2a \
+  --expected-public-jwks-url https://agents.example/.well-known/jwks.json
+```
+
+The check validates local files only and prints `publicHostingProven=false`.
+Passing it means the local artifact directory is internally consistent; it is
+not endpoint ownership, public discovery, external conformance, or production
+key-management proof.
 
 ## Opt-In Public Discovery Smoke
 

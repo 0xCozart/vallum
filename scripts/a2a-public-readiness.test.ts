@@ -26,6 +26,8 @@ test("A2A public readiness reports local proof while public gates remain blocked
     assert.equal(findCheck(report, "local-static-discovery-bundle").code, "A2A_STATIC_DISCOVERY_BUNDLE_LOCAL_PROOF_CONFIGURED");
     assert.equal(findCheck(report, "local-static-discovery-artifact-writer").status, "proven-local");
     assert.equal(findCheck(report, "local-static-discovery-artifact-writer").code, "A2A_STATIC_DISCOVERY_ARTIFACT_WRITER_LOCAL_PROOF_CONFIGURED");
+    assert.equal(findCheck(report, "local-static-discovery-artifact-validator").status, "proven-local");
+    assert.equal(findCheck(report, "local-static-discovery-artifact-validator").code, "A2A_STATIC_DISCOVERY_ARTIFACT_VALIDATOR_LOCAL_PROOF_CONFIGURED");
     assert.equal(findCheck(report, "public-agent-card-url").code, "A2A_PUBLIC_AGENT_CARD_URL_MISSING");
     assert.equal(findCheck(report, "extended-agent-card").status, "proven-local");
     assert.equal(findCheck(report, "extended-agent-card").code, "A2A_EXTENDED_AGENT_CARD_LOCAL_PROOF_CONFIGURED");
@@ -167,6 +169,7 @@ test("A2A public readiness accepts redacted public config and existing conforman
     assert.equal(findCheck(report, "local-public-jwks-hosting").status, "proven-local");
     assert.equal(findCheck(report, "local-static-discovery-bundle").status, "proven-local");
     assert.equal(findCheck(report, "local-static-discovery-artifact-writer").status, "proven-local");
+    assert.equal(findCheck(report, "local-static-discovery-artifact-validator").status, "proven-local");
     assert.equal(findCheck(report, "public-push-delivery").status, "blocked-conformance");
     assert.equal(findCheck(report, "public-push-delivery").code, "A2A_PUBLIC_PUSH_DELIVERY_REPORT_MISSING");
     assert.doesNotMatch(formatted, /agents\.example|a2a-conformance-report|oauth2/);
@@ -330,6 +333,7 @@ async function writeA2AEvidence(): Promise<string> {
     "packages/standards/src/a2aHttp.ts",
     "packages/standards/src/a2aNodeServer.ts",
     "packages/standards/src/a2aPush.ts",
+    "scripts/check-a2a-static-discovery-bundle.ts",
     "scripts/write-a2a-static-discovery-bundle.ts",
     "scripts/smoke-a2a-local-server.ts",
   ]) {

@@ -111,9 +111,16 @@ test("A2A static discovery bundle writer is opt-in and excluded from local verif
     packageJson.scripts?.["a2a:write-static-discovery-bundle"],
     "npm run build && tsx scripts/write-a2a-static-discovery-bundle.ts",
   );
+  assert.equal(
+    packageJson.scripts?.["a2a:check-static-discovery-bundle"],
+    "npm run build && tsx scripts/check-a2a-static-discovery-bundle.ts",
+  );
   assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /write-static-discovery-bundle/);
   assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /write-static-discovery-bundle/);
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /write-static-discovery-bundle/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /check-static-discovery-bundle/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /check-static-discovery-bundle/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /check-static-discovery-bundle/);
 });
 
 test("verification profiles keep fast iteration separate from the full local gate", () => {

@@ -2823,6 +2823,89 @@ Escalation triggers:
 - Any request to treat generated local files as public A2A discovery proof
   without hosting them and accepting a structured public discovery report.
 
+## Slice 4.29: A2A Static Discovery Artifact Validator
+
+User-visible outcome:
+Operators can validate a generated local A2A static discovery directory before
+uploading it to a public host, without fetching public URLs or claiming public
+hosting proof.
+
+Likely files:
+
+- `packages/registry/src/a2aDiscoveryBundle.ts`
+- `packages/registry/src/a2aDiscoveryBundle.test.ts`
+- `scripts/check-a2a-static-discovery-bundle.ts`
+- `scripts/check-a2a-static-discovery-bundle.test.ts`
+- `scripts/check-a2a-public-readiness.ts`
+- `scripts/a2a-public-readiness.test.ts`
+- `scripts/package-scripts.test.ts`
+- `scripts/check-product-status.ts`
+- `scripts/check-launch-readiness.ts`
+- `package.json`
+- `docs/agentic-gaskit/a2a-public-readiness.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
+- `docs/agentic-gaskit/codex-active-goal.md`
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+- `docs/overview.md`
+- `docs/CODEBASE_MAP.md`
+- `README.md`
+
+Acceptance criteria:
+
+- The registry validator reads `a2a-discovery-bundle-manifest.json`,
+  `.well-known/agent-card.json`, and `.well-known/jwks.json` from a local
+  output directory.
+- The validator requires schema version, manifest kind, public base/JWKS URLs,
+  exactly canonical file metadata, content-type metadata, and generated JSON
+  files that still pass the existing static bundle validation rules.
+- The validator can compare expected public base/JWKS URLs supplied outside
+  committed files.
+- The validator fails closed on tampered Agent Card/JWKS files, unexpected or
+  missing manifest paths, malformed headers, mismatched expected public URLs,
+  and secret-like manifest fields.
+- `npm run a2a:check-static-discovery-bundle` is opt-in, prints only local
+  paths/counts and `publicHostingProven=false`, and stays excluded from
+  `verify:fast`, `verify:local`, and `grant:check`.
+- A2A public-readiness reports artifact validation as local pre-hosting proof
+  only and keeps public hosting, endpoint ownership, public discovery
+  acceptance, production key management, public push delivery, and external
+  conformance blocked until operator-approved reports exist.
+
+Verification:
+
+- Focused `packages/registry/src/a2aDiscoveryBundle.test.ts`.
+- Focused `scripts/check-a2a-static-discovery-bundle.test.ts`.
+- Focused `scripts/write-a2a-static-discovery-bundle.test.ts`.
+- Focused A2A public-readiness tests.
+- Focused package-script tests.
+- Product-status tests.
+- Launch-readiness tests.
+- `npm run proof:a2a-public-readiness`.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slice 4.28.
+
+Risk:
+Medium. A passing local artifact check can be mistaken for endpoint ownership
+or external discovery proof unless status gates keep public hosting and
+conformance blocked.
+
+Escalation triggers:
+
+- Any request to make local artifact validation satisfy public discovery
+  readiness by itself.
+- Any request to fetch public URLs or run public conformance from this local
+  check without explicit operator approval.
+- Any request to store private signing keys, webhook credentials, bearer tokens,
+  or private infrastructure details in the artifact manifest.
+
 ## Slice 5.1: Marketplace Readiness Gate
 
 User-visible outcome:

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { generateKeyPairSync } from "node:crypto";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -12,6 +12,7 @@ import {
   createA2APublicDiscoveryBundle,
   createA2APublicJwksResponse,
   signA2AAgentCard,
+  validateA2APublicDiscoveryBundleArtifacts,
   validAgentProfileFixture,
   writeA2APublicDiscoveryBundle,
 } from "./index.js";
@@ -240,6 +241,75 @@ test("A2A static discovery bundle writer fails closed for unexpected or missing 
         outDir,
       }),
       /unexpected static file path/,
+    );
+  } finally {
+    await rm(outDir, { recursive: true, force: true });
+  }
+});
+
+test("A2A static discovery bundle artifact validator accepts canonical generated files", async () => {
+  const outDir = await mkdtemp(join(tmpdir(), "agentic-gaskit-a2a-static-bundle-"));
+  try {
+    await writeA2APublicDiscoveryBundle({ bundle: validBundle(), outDir });
+
+    const validated = await validateA2APublicDiscoveryBundleArtifacts({
+      outDir,
+      expectedPublicBaseUrl: publicBaseUrl,
+      expectedPublicJwksUrl: publicJwksUrl,
+    });
+
+    assert.equal(validated.outDir, outDir);
+    assert.equal(validated.publicBaseUrl, publicBaseUrl);
+    assert.equal(validated.publicJwksUrl, publicJwksUrl);
+    assert.deepEqual(validated.files.map((file) => file.sourcePath), [
+      A2A_AGENT_CARD_WELL_KNOWN_PATH,
+      A2A_JWKS_WELL_KNOWN_PATH,
+    ]);
+    assert.equal(validated.manifestPath, join(outDir, "a2a-discovery-bundle-manifest.json"));
+  } finally {
+    await rm(outDir, { recursive: true, force: true });
+  }
+});
+
+test("A2A static discovery bundle artifact validator rejects tampered files", async () => {
+  const outDir = await mkdtemp(join(tmpdir(), "agentic-gaskit-a2a-static-bundle-"));
+  try {
+    await writeA2APublicDiscoveryBundle({ bundle: validBundle(), outDir });
+    const agentCardPath = join(outDir, ".well-known", "agent-card.json");
+    const card = JSON.parse(await readFile(agentCardPath, "utf8")) as Record<string, unknown>;
+    await writeFile(agentCardPath, `${JSON.stringify({ ...card, supportedInterfaces: [] }, null, 2)}\n`);
+
+    await assert.rejects(
+      () => validateA2APublicDiscoveryBundleArtifacts({ outDir }),
+      /public base URL/,
+    );
+  } finally {
+    await rm(outDir, { recursive: true, force: true });
+  }
+});
+
+test("A2A static discovery bundle artifact validator rejects unsafe manifests", async () => {
+  const outDir = await mkdtemp(join(tmpdir(), "agentic-gaskit-a2a-static-bundle-"));
+  try {
+    await writeA2APublicDiscoveryBundle({ bundle: validBundle(), outDir });
+    const manifestPath = join(outDir, "a2a-discovery-bundle-manifest.json");
+    const manifest = JSON.parse(await readFile(manifestPath, "utf8")) as Record<string, unknown>;
+
+    await assert.rejects(
+      () => validateA2APublicDiscoveryBundleArtifacts({
+        outDir,
+        expectedPublicBaseUrl: "https://other.example/a2a",
+      }),
+      /expected value/,
+    );
+
+    await writeFile(manifestPath, `${JSON.stringify({
+      ...manifest,
+      [`sec${"ret"}Token`]: "redacted-fixture",
+    }, null, 2)}\n`);
+    await assert.rejects(
+      () => validateA2APublicDiscoveryBundleArtifacts({ outDir }),
+      /private fields/,
     );
   } finally {
     await rm(outDir, { recursive: true, force: true });

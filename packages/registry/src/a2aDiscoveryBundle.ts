@@ -1,5 +1,5 @@
 import { isIP } from "node:net";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
 import {
@@ -50,6 +50,29 @@ export interface WrittenA2APublicDiscoveryBundle {
   readonly publicJwksUrl: string;
   readonly files: readonly WrittenA2APublicDiscoveryBundleFile[];
   readonly manifestPath: string;
+}
+
+export interface ValidateA2APublicDiscoveryBundleArtifactsOptions {
+  readonly outDir: string;
+  readonly expectedPublicBaseUrl?: string;
+  readonly expectedPublicJwksUrl?: string;
+  readonly manifestFileName?: string;
+}
+
+export interface ValidatedA2APublicDiscoveryBundleArtifacts {
+  readonly outDir: string;
+  readonly publicBaseUrl: string;
+  readonly publicJwksUrl: string;
+  readonly files: readonly WrittenA2APublicDiscoveryBundleFile[];
+  readonly manifestPath: string;
+}
+
+interface A2AStaticDiscoveryBundleManifest {
+  readonly schemaVersion?: unknown;
+  readonly kind?: unknown;
+  readonly publicBaseUrl?: unknown;
+  readonly publicJwksUrl?: unknown;
+  readonly files?: unknown;
 }
 
 export function createA2APublicDiscoveryBundle(
@@ -147,6 +170,69 @@ export async function writeA2APublicDiscoveryBundle(
   };
 }
 
+export async function validateA2APublicDiscoveryBundleArtifacts(
+  options: ValidateA2APublicDiscoveryBundleArtifactsOptions,
+): Promise<ValidatedA2APublicDiscoveryBundleArtifacts> {
+  const outDir = options.outDir.trim();
+  if (outDir === "") throw new Error("A2A public discovery bundle output directory is required.");
+
+  const manifestPath = join(outDir, options.manifestFileName ?? "a2a-discovery-bundle-manifest.json");
+  const manifest = parseManifest(await readFile(manifestPath, "utf8"));
+  if (manifest.schemaVersion !== 1 || manifest.kind !== "agentic-gaskit.a2a-static-discovery-bundle") {
+    throw new Error("A2A public discovery bundle manifest is invalid.");
+  }
+  if (typeof manifest.publicBaseUrl !== "string" || typeof manifest.publicJwksUrl !== "string") {
+    throw new Error("A2A public discovery bundle manifest is missing public URLs.");
+  }
+  if (options.expectedPublicBaseUrl && publicHttpsUrl(options.expectedPublicBaseUrl, "A2A expected public base URL") !== manifest.publicBaseUrl) {
+    throw new Error("A2A public discovery bundle public base URL does not match the expected value.");
+  }
+  if (options.expectedPublicJwksUrl && publicHttpsUrl(options.expectedPublicJwksUrl, "A2A expected public JWKS URL") !== manifest.publicJwksUrl) {
+    throw new Error("A2A public discovery bundle public JWKS URL does not match the expected value.");
+  }
+
+  const manifestFiles = parseManifestFiles(manifest.files);
+  const agentCardJson = await readFile(join(outDir, A2A_AGENT_CARD_WELL_KNOWN_PATH.slice(1)), "utf8");
+  const jwksJson = await readFile(join(outDir, A2A_JWKS_WELL_KNOWN_PATH.slice(1)), "utf8");
+  const agentCard = JSON.parse(agentCardJson) as A2AAgentCard;
+  const jwksBody = JSON.parse(jwksJson) as A2APublicJwksResponse["body"];
+  const jwksHeaders = manifestFiles.find((file) => file.sourcePath === A2A_JWKS_WELL_KNOWN_PATH)?.headers ?? {};
+
+  const bundle = createA2APublicDiscoveryBundle({
+    agentCard,
+    jwks: {
+      path: A2A_JWKS_WELL_KNOWN_PATH,
+      status: 200,
+      headers: jwksHeaders,
+      body: jwksBody,
+      json: jwksJson,
+    },
+    publicBaseUrl: manifest.publicBaseUrl,
+    publicJwksUrl: manifest.publicJwksUrl,
+    cacheControl: sharedCacheControl(manifestFiles),
+  });
+
+  for (const file of bundle.files) {
+    const manifestFile = manifestFiles.find((candidate) => candidate.sourcePath === file.path);
+    if (!manifestFile) {
+      throw new Error("A2A public discovery bundle manifest is missing required static file metadata.");
+    }
+    assertContentType(file.path, manifestFile.headers);
+  }
+
+  return {
+    outDir,
+    publicBaseUrl: bundle.publicBaseUrl,
+    publicJwksUrl: bundle.publicJwksUrl,
+    files: manifestFiles.map((file) => ({
+      path: join(outDir, file.sourcePath.slice(1)),
+      sourcePath: file.sourcePath,
+      headers: file.headers,
+    })),
+    manifestPath,
+  };
+}
+
 function sanitizeAgentCard(
   card: A2AAgentCard,
   publicBaseUrl: string,
@@ -168,6 +254,66 @@ function sanitizeAgentCard(
     }
   }
   return JSON.parse(JSON.stringify(card)) as A2AAgentCard;
+}
+
+function parseManifest(json: string): A2AStaticDiscoveryBundleManifest {
+  const parsed = JSON.parse(json) as unknown;
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw new Error("A2A public discovery bundle manifest is invalid.");
+  }
+  if (containsSecretLikeField(parsed)) {
+    throw new Error("A2A public discovery bundle manifest must not contain private fields.");
+  }
+  return parsed as A2AStaticDiscoveryBundleManifest;
+}
+
+function parseManifestFiles(value: unknown): readonly WrittenA2APublicDiscoveryBundleFile[] {
+  if (!Array.isArray(value)) {
+    throw new Error("A2A public discovery bundle manifest files are invalid.");
+  }
+  const expectedPaths = new Set<string>([A2A_AGENT_CARD_WELL_KNOWN_PATH, A2A_JWKS_WELL_KNOWN_PATH]);
+  const seenPaths = new Set<string>();
+  const files: WrittenA2APublicDiscoveryBundleFile[] = [];
+  for (const entry of value) {
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+      throw new Error("A2A public discovery bundle manifest file entry is invalid.");
+    }
+    const path = (entry as { path?: unknown }).path;
+    const headers = (entry as { headers?: unknown }).headers;
+    if (typeof path !== "string" || !expectedPaths.has(path) || seenPaths.has(path)) {
+      throw new Error("A2A public discovery bundle manifest contains an unexpected static file path.");
+    }
+    if (!headers || typeof headers !== "object" || Array.isArray(headers) || containsSecretLikeField(headers)) {
+      throw new Error("A2A public discovery bundle manifest headers are invalid.");
+    }
+    if (!Object.entries(headers).every(([key, nested]) => typeof key === "string" && typeof nested === "string")) {
+      throw new Error("A2A public discovery bundle manifest headers are invalid.");
+    }
+    seenPaths.add(path);
+    files.push({
+      path,
+      sourcePath: path as typeof A2A_AGENT_CARD_WELL_KNOWN_PATH | typeof A2A_JWKS_WELL_KNOWN_PATH,
+      headers: { ...(headers as Record<string, string>) },
+    });
+  }
+  if (seenPaths.size !== expectedPaths.size) {
+    throw new Error("A2A public discovery bundle manifest is missing required static file metadata.");
+  }
+  return files;
+}
+
+function assertContentType(path: A2APublicDiscoveryBundleFile["path"], headers: Record<string, string>): void {
+  const contentType = headers["content-type"];
+  if (path === A2A_AGENT_CARD_WELL_KNOWN_PATH && typeof contentType === "string" && contentType.includes("application/a2a+json")) return;
+  if (path === A2A_JWKS_WELL_KNOWN_PATH && typeof contentType === "string" && contentType.includes("application/jwk-set+json")) return;
+  throw new Error("A2A public discovery bundle manifest has invalid content-type metadata.");
+}
+
+function sharedCacheControl(files: readonly WrittenA2APublicDiscoveryBundleFile[]): string | undefined {
+  const values = files.map((file) => file.headers["cache-control"]).filter((value): value is string => typeof value === "string" && value.trim() !== "");
+  if (values.length === 0) return undefined;
+  const [first] = values;
+  return values.every((value) => value === first) ? first : undefined;
 }
 
 function sanitizeJwks(jwks: A2APublicJwksResponse): A2APublicJwksResponse {

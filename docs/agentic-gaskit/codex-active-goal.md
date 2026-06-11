@@ -16,17 +16,18 @@ local proof as live IOTA testnet, production marketplace, public scoring,
 public A2A discovery, production key management, or provider-verification
 proof.
 
-As of the latest completed update, Slice 4.28 is complete: A2A static discovery
-artifact writer. Agentic GasKit can now take an already-signed public Agent
-Card and public JWKS JSON, validate them through the existing static discovery
-bundle helper, and write canonical local `.well-known/agent-card.json` and
-`.well-known/jwks.json` files plus a sanitized header manifest for static
-hosting review. `npm run proof:a2a-public-readiness` now reports
-`A2A_STATIC_DISCOVERY_ARTIFACT_WRITER_LOCAL_PROOF_CONFIGURED` as local artifact
-writer support. This does not sign cards, generate production keys, deploy
-public A2A hosting, prove endpoint ownership, prove production key rotation,
-accept public discovery evidence, run external A2A conformance, prove public
-push delivery, or prove live IOTA behavior. Public hosting acceptance,
+As of the latest completed update, Slice 4.29 is complete: A2A static discovery
+artifact validator. Agentic GasKit can now validate a generated local static
+discovery directory before public hosting review, checking the manifest,
+canonical `.well-known/agent-card.json` and `.well-known/jwks.json` files,
+public URL binding, content-type metadata, signed Agent Card/JWKS consistency,
+and private-field rejection without fetching public URLs. `npm run
+proof:a2a-public-readiness` now reports
+`A2A_STATIC_DISCOVERY_ARTIFACT_VALIDATOR_LOCAL_PROOF_CONFIGURED` as local
+pre-hosting validation support. This does not sign cards, generate production
+keys, deploy public A2A hosting, prove endpoint ownership, prove production key
+rotation, accept public discovery evidence, run external A2A conformance, prove
+public push delivery, or prove live IOTA behavior. Public hosting acceptance,
 production keys/auth, public webhook infrastructure, live IOTA proof, npm
 publication, payment/provider, marketplace, custody, device-safety, and
 external conformance claims remain blocked.

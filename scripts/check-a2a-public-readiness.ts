@@ -49,6 +49,7 @@ const REQUIRED_SOURCE_PATHS = [
   "packages/standards/src/a2aHttp.ts",
   "packages/standards/src/a2aNodeServer.ts",
   "packages/standards/src/a2aPush.ts",
+  "scripts/check-a2a-static-discovery-bundle.ts",
   "scripts/write-a2a-static-discovery-bundle.ts",
   "scripts/smoke-a2a-local-server.ts",
 ] as const;
@@ -67,6 +68,7 @@ export async function checkA2APublicReadiness(
     localPublicJwksHostingSupport(),
     localStaticDiscoveryBundleSupport(),
     localStaticDiscoveryArtifactWriterSupport(),
+    localStaticDiscoveryArtifactValidatorSupport(),
     checkPublicUrl(
       "public-agent-card-url",
       env.A2A_PUBLIC_AGENT_CARD_URL,
@@ -318,6 +320,17 @@ function localStaticDiscoveryArtifactWriterSupport(): A2APublicReadinessCheck {
     message: "A2A static discovery bundles can be written as local deployable well-known JSON artifacts plus a sanitized header manifest.",
     evidence: "npm run a2a:write-static-discovery-bundle -- --agent-card <signed-card.json> --jwks <jwks.json> --public-base-url <url> --public-jwks-url <url> --out-dir <dir>",
     next: "Keep this as local artifact generation only until the files are hosted on an operator-approved public HTTPS endpoint and structured public discovery evidence is accepted.",
+  };
+}
+
+function localStaticDiscoveryArtifactValidatorSupport(): A2APublicReadinessCheck {
+  return {
+    id: "local-static-discovery-artifact-validator",
+    status: "proven-local",
+    code: "A2A_STATIC_DISCOVERY_ARTIFACT_VALIDATOR_LOCAL_PROOF_CONFIGURED",
+    message: "A2A static discovery artifact directories can be validated locally before public hosting review without fetching public URLs.",
+    evidence: "npm run a2a:check-static-discovery-bundle -- --out-dir <dir> --expected-public-base-url <url> --expected-public-jwks-url <url>",
+    next: "Keep this as local pre-hosting validation only until the files are served by an operator-approved public HTTPS endpoint and structured public discovery evidence is accepted.",
   };
 }
 

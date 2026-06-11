@@ -138,7 +138,9 @@ Confirmed current state:
   artifact writer that turns already-signed public Agent Card and public JWKS
   JSON into canonical `.well-known` files plus a sanitized manifest, while
   still deferring public hosting, endpoint ownership, public discovery
-  acceptance, production key management, and external conformance.
+  acceptance, production key management, and external conformance. Slice 4.29
+  adds an opt-in local static discovery artifact validator that checks generated
+  directories before public hosting review without fetching public URLs.
   Slice 7.5 adds a fast deterministic verification profile plus a
   non-networked profile audit, so ordinary build/test/improve loops can run a
   bounded subset while `verify:local` and `grant:check` remain the full
@@ -174,7 +176,9 @@ Confirmed current state:
   4.26 adds local public JWKS serving support for public signing keys; Slice
   4.27 adds local static discovery bundle generation for signed Agent Card and
   public JWKS artifacts; Slice 4.28 adds local static discovery artifact
-  writing for canonical `.well-known` files plus a sanitized header manifest.
+  writing for canonical `.well-known` files plus a sanitized header manifest;
+  Slice 4.29 adds local static discovery artifact validation before public
+  hosting review.
   Public hosting acceptance, production keys/auth, public webhook
   workers/queues, persistent production observability, and external conformance
   blockers remain.
@@ -576,10 +580,11 @@ a local injected-transport delivery worker for one sanitized queued job. Slice
 4.26 adds local public JWKS serving support for public signing keys. Slice 4.27
 adds local static discovery bundle generation for signed Agent Card and public
 JWKS JSON artifacts. Slice 4.28 adds local static discovery artifact writing
-for canonical `.well-known` files plus a sanitized header manifest. These
-slices are not deployed public hosting, production key management, key rotation
-approval, public streaming, public push webhook infrastructure proof, external
-conformance, or live A2A discovery proof.
+for canonical `.well-known` files plus a sanitized header manifest. Slice 4.29
+adds local static discovery artifact validation before public hosting review.
+These slices are not deployed public hosting, production key management, key
+rotation approval, public streaming, public push webhook infrastructure proof,
+external conformance, or live A2A discovery proof.
 
 Acceptance criteria:
 
@@ -592,10 +597,10 @@ Acceptance criteria:
 - Streaming, push notification configuration, injected push delivery, the
   opt-in push HTTP transport helper, local durable attempt evidence, local
   queueing, the local injected-transport worker, local public JWKS serving,
-  local static discovery bundle generation, and local static discovery artifact
-  writing are implemented locally or documented as unsupported capabilities;
-  public webhook delivery infrastructure remains blocked until separately
-  implemented and verified.
+  local static discovery bundle generation, local static discovery artifact
+  writing, and local static discovery artifact validation are implemented
+  locally or documented as unsupported capabilities; public webhook delivery
+  infrastructure remains blocked until separately implemented and verified.
 - External A2A conformance proof is recorded, or blocked with exact reason.
 - Public A2A readiness command reports exact local proof, config, unsupported
   capability, and external conformance blockers without printing configured

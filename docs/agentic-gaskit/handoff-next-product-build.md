@@ -11,7 +11,7 @@ Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5,
 2.6, 2.7, 2.8,
 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7,
 4.8, 4.9, 4.10, 4.11, 4.12, 4.13, 4.14, 4.15, 4.16, 4.17, 4.18, 4.19, 4.20,
-4.21, 4.22, 4.23, 4.24, 4.25, 4.26, 4.27, 4.28, 5.1, 5.2, 6.1, 6.2, 6.3,
+4.21, 4.22, 4.23, 4.24, 4.25, 4.26, 4.27, 4.28, 4.29, 5.1, 5.2, 6.1, 6.2, 6.3,
 7.1, 7.2, 7.3, 7.4, 7.5, 7.7, and 7.8 are implemented, reviewed, locally
 verified, or explicitly deferred with a verified hardening gate.
 Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
@@ -90,6 +90,33 @@ Latest local A2A artifact update:
   proof code.
 - `npm run typecheck`, `npm run docs:check`, `npm run secrets:scan`, and
   `npm run verify:fast` passed; `verify:fast` covered 433 TypeScript tests and
+  kept product-status, launch-readiness, and operator-gate reports blocked on
+  the remaining live/production gates.
+
+Latest local A2A artifact validation update:
+
+- Slice 4.29 adds `npm run a2a:check-static-discovery-bundle`, an opt-in local
+  pre-hosting validator for generated static discovery directories.
+- The validator reads `a2a-discovery-bundle-manifest.json`,
+  `.well-known/agent-card.json`, and `.well-known/jwks.json`, validates
+  canonical file metadata, public URL binding, content-type headers, signed
+  Agent Card/JWKS consistency, and private-field rejection without fetching
+  public URLs.
+- `npm run proof:a2a-public-readiness` now reports
+  `A2A_STATIC_DISCOVERY_ARTIFACT_VALIDATOR_LOCAL_PROOF_CONFIGURED` as local
+  pre-hosting proof while public hosting, endpoint ownership, public discovery
+  acceptance, production key management, public push delivery, and external
+  conformance remain blocked.
+- This slice does not generate keys, sign Agent Cards, deploy public hosting,
+  contact public A2A endpoints, use IOTA testnet, publish packages, or touch
+  payment/provider flows.
+- Focused A2A artifact, readiness, package-script, product-status,
+  launch-readiness, and reviewer-doc tests passed with 69 tests.
+- `npm run proof:a2a-public-readiness` passed as a report gate with
+  `localProofOk=true`, `publicReady=false`, and the new local artifact-validator
+  proof code.
+- `npm run typecheck`, `npm run docs:check`, `npm run secrets:scan`, and
+  `npm run verify:fast` passed; `verify:fast` covered 438 TypeScript tests and
   kept product-status, launch-readiness, and operator-gate reports blocked on
   the remaining live/production gates.
 
