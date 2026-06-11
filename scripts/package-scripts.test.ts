@@ -172,6 +172,16 @@ test("marketplace readiness proof is non-networked and opt-in", () => {
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /marketplace-readiness/);
 });
 
+test("custody readiness proof is non-networked and opt-in", () => {
+  assert.equal(
+    packageJson.scripts?.["proof:custody-readiness"],
+    "npm run build && tsx scripts/check-custody-readiness.ts",
+  );
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /custody-readiness/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /custody-readiness/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /custody-readiness/);
+});
+
 test("A2A public proof plan is non-networked and opt-in", () => {
   assert.equal(
     packageJson.scripts?.["a2a:write-public-proof-plan"],

@@ -48,6 +48,7 @@
     "proof:payment-provider-readiness": "npm run build && tsx scripts/check-payment-provider-readiness.ts",
     "proof:package-publication-readiness": "npm run build && tsx scripts/check-package-publication-readiness.ts",
     "proof:marketplace-readiness": "npm run build && tsx scripts/check-marketplace-readiness.ts",
+    "proof:custody-readiness": "npm run build && tsx scripts/check-custody-readiness.ts",
     "payment:write-provider-proof-plan": "npm run build && tsx scripts/write-payment-provider-proof-plan.ts",
     "proof:verification-profiles": "npm run build && tsx scripts/check-verification-profiles.ts",
     "readiness:testnet": "npm run build && tsx scripts/check-testnet-readiness.ts",

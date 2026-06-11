@@ -15,6 +15,10 @@ import {
   checkMarketplaceReadiness,
   type MarketplaceReadinessReport,
 } from "./check-marketplace-readiness.js";
+import {
+  checkCustodyReadiness,
+  type CustodyReadinessReport,
+} from "./check-custody-readiness.js";
 import type {
   GasStationRuntimeCommandRunner,
   GasStationRuntimePreflightReport,
@@ -45,6 +49,7 @@ export interface ProductStatusReport {
 export interface ProductStatusOptions {
   readonly cwd?: string;
   readonly env?: NodeJS.ProcessEnv | Record<string, string | undefined>;
+  readonly custodyReadiness?: CustodyReadinessReport;
   readonly gasStationRuntimeReport?: GasStationRuntimePreflightReport;
   readonly gasStationRuntimeRunner?: GasStationRuntimeCommandRunner;
   readonly marketplaceReadiness?: MarketplaceReadinessReport;
@@ -108,12 +113,17 @@ export async function checkProductStatus(options: ProductStatusOptions = {}): Pr
     env: options.env,
     scripts,
   });
+  const custodyReadiness = options.custodyReadiness ?? await checkCustodyReadiness({
+    cwd,
+    env: options.env,
+    scripts,
+  });
 
   const checks: ProductEvidenceCheck[] = [
     checkLocalVerificationCoverage(scripts),
     checkPackageReleaseCoverage(scripts),
     ...liveStatus.checks.map(mapLiveProofCheck),
-    ...productionBlockers(paymentProviderReadiness, packagePublicationReadiness, marketplaceReadiness),
+    ...productionBlockers(paymentProviderReadiness, packagePublicationReadiness, marketplaceReadiness, custodyReadiness),
   ];
 
   return {
@@ -219,6 +229,7 @@ function productionBlockers(
   paymentProviderReadiness: PaymentProviderReadinessReport,
   packagePublicationReadiness: PackagePublicationReadinessReport,
   marketplaceReadiness: MarketplaceReadinessReport,
+  custodyReadiness: CustodyReadinessReport,
 ): readonly ProductEvidenceCheck[] {
   return [
     packagePublicationCheck(packagePublicationReadiness),
@@ -232,13 +243,7 @@ function productionBlockers(
     },
     paymentProviderCheck(paymentProviderReadiness),
     marketplaceCheck(marketplaceReadiness),
-    {
-      id: "production-custody",
-      status: "blocked-production",
-      code: "PRODUCTION_CUSTODY_OUT_OF_SCOPE",
-      message: "Agent wallets use signer references locally; production custody, KMS, recovery export, staking, bonding, and slashing are out of scope without explicit approval.",
-      next: "Create a separate custody/security design before adding production signer custody or recovery workflows.",
-    },
+    custodyCheck(custodyReadiness),
     {
       id: "physical-device-access",
       status: "deferred-safety",
@@ -247,6 +252,41 @@ function productionBlockers(
       next: "Replace the safety gate only after physical safety, provider accountability, revocation, emergency stop, privacy, and incident response are approved.",
     },
   ];
+}
+
+function custodyCheck(readiness: CustodyReadinessReport): ProductEvidenceCheck {
+  if (readiness.productionReady) {
+    return {
+      id: "production-custody",
+      status: "ready-live",
+      code: "CUSTODY_PRODUCTION_REPORT_VALID",
+      message: "Local signer-reference proof exists and an operator-supplied structured production custody report is valid for manual review.",
+      evidence: "npm run proof:custody-readiness",
+      next: "Manually review the ignored structured report before accepting production custody, KMS, recovery, staking, bonding, slashing, or signer-operation claims.",
+    };
+  }
+
+  if (!readiness.localProofOk) {
+    const local = readiness.checks.find((check) => check.id === "local-signer-reference-proof");
+    return {
+      id: "production-custody",
+      status: "blocked-production",
+      code: local?.code ?? "CUSTODY_LOCAL_PROOF_INCOMPLETE",
+      message: "Local signer-reference account source, docs, tests, or script coverage is incomplete, so production custody readiness cannot be evaluated.",
+      evidence: "npm run proof:custody-readiness",
+      next: local?.next ?? "Restore local signer-reference proof, then rerun custody readiness.",
+    };
+  }
+
+  const live = readiness.checks.find((check) => check.id === "production-custody-report");
+  return {
+    id: "production-custody",
+    status: "blocked-production",
+    code: "PRODUCTION_CUSTODY_OUT_OF_SCOPE",
+    message: `Agent wallets use signer references locally; production custody, KMS, recovery export, staking, bonding, and slashing remain blocked by ${live?.code ?? "CUSTODY_PRODUCTION_REPORT_MISSING"}.`,
+    evidence: "npm run proof:custody-readiness",
+    next: "Complete a dedicated operator-approved custody, KMS, recovery, legal, and incident-response review, save a redacted structured report outside tracked files, set CUSTODY_PRODUCTION_REPORT, and rerun readiness/status gates.",
+  };
 }
 
 function marketplaceCheck(readiness: MarketplaceReadinessReport): ProductEvidenceCheck {

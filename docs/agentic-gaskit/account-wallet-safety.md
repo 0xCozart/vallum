@@ -103,3 +103,27 @@ wallet operations:
   authorization
 
 Only after that should the project add encrypted local keystore behavior.
+
+## Production Custody Readiness Gate
+
+`npm run proof:custody-readiness` is the non-networked production custody
+readiness gate.
+
+It checks the local signer-reference account source, tests, package README,
+this safety model, verification hardening guidance, package build coverage, and
+local verification coverage. It does not create a production custody service,
+connect to a KMS, export keys, operate signer infrastructure, stake, bond,
+slash, or custody funds.
+
+Production custody claims remain blocked unless `CUSTODY_PRODUCTION_REPORT`
+points to an ignored redacted structured report from an operator-approved
+custody review. The report must be status-only JSON with `schemaVersion=1`,
+`kind=agentic-gaskit.custody-production-proof`, `result=passed`, a recent
+`observedAt`, `custodyMode=external-signer` or `custodyMode=kms`, and check ids
+for signer-reference contract review, no agent secret exposure, KMS/external
+signer review, recovery/export review, rotation/revocation review, audit
+logging, legal/security review, and incident response.
+
+The report must not include seeds, mnemonics, private keys, raw keypairs,
+signer material, credentials, payloads, headers, signatures, or local secret
+paths.

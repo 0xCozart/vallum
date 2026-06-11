@@ -40,6 +40,10 @@ surface in one machine-checkable place:
   tests, smoke wiring, and accepts only an operator-supplied redacted structured
   production marketplace report path before moving marketplace evidence to
   manual review;
+- custody readiness wiring that checks local signer-reference account source,
+  docs, tests, build coverage, and accepts only an operator-supplied redacted
+  structured production custody report path before moving custody evidence to
+  manual review;
 - launch-readiness evidence matrix and operator live-gate runbook wiring;
 - live/testnet readiness, local Gas Station runtime preflight status,
   sanitized testnet upstream diagnostic report status, IOTA Names, IOTA
@@ -102,8 +106,10 @@ marketplace, or safety work before those claims can be made.
 - Production marketplace, provider verification, moderation, public scoring, or
   live settlement unless `npm run proof:marketplace-readiness` validates an
   ignored structured report and the operator manually accepts it.
-- Production custody, KMS, recovery export, staking, bonding, slashing, or
-  physical device access.
+- Production custody, KMS, recovery export, staking, bonding, or slashing
+  unless `npm run proof:custody-readiness` validates an ignored structured
+  report and the operator manually accepts it.
+- Physical device access.
 
 ## Next Commands
 
@@ -125,6 +131,7 @@ npm run proof:a2a-public-readiness
 npm run proof:package-publication-readiness
 npm run proof:payment-provider-readiness
 npm run proof:marketplace-readiness
+npm run proof:custody-readiness
 npm run payment:write-provider-proof-plan -- --out tmp/gaskit/payment-provider-proof-plan.json
 npm run proof:verification-profiles
 npm run proof:live-status

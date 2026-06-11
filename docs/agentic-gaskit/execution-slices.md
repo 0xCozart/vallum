@@ -190,6 +190,78 @@ Escalation triggers:
 - Need for production KMS, custody, or mainnet signer operation.
 - Any requirement to expose raw seeds outside explicit recovery workflows.
 
+## Slice 1.0.1: Production Custody Readiness Gate
+
+User-visible outcome:
+Operators have a non-networked custody readiness command that separates local
+signer-reference account proof from production custody, KMS, recovery,
+staking, bonding, slashing, or signer-operation claims.
+
+Likely files:
+
+- `scripts/check-custody-readiness.ts`
+- `scripts/custody-readiness.test.ts`
+- `scripts/check-product-status.ts`
+- `scripts/check-launch-readiness.ts`
+- `scripts/check-operator-live-gates.ts`
+- `scripts/package-scripts.test.ts`
+- `scripts/product-status.test.ts`
+- `docs/agentic-gaskit/account-wallet-safety.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/CODEBASE_MAP.md`
+- `docs/overview.md`
+- `package.json`
+
+Acceptance criteria:
+
+- `npm run proof:custody-readiness` builds first and does not contact a KMS,
+  external signer, IOTA services, Gas Station endpoints, custody provider, or
+  live wallet infrastructure.
+- The readiness command checks account signer-reference source, tests, package
+  README, wallet safety docs, verification hardening docs, account build
+  coverage, and local verification coverage.
+- The command remains excluded from `verify:fast`, `verify:local`, and
+  `grant:check` because it is an operator production-readiness gate, not a
+  default local proof command.
+- Missing `CUSTODY_PRODUCTION_REPORT` keeps production custody blocked with an
+  exact blocker code.
+- A valid structured report requires status-only evidence for signer-reference
+  contract review, no agent secret exposure, KMS/external signer review,
+  recovery/export review, rotation/revocation review, audit logging,
+  legal/security review, and incident response.
+- Unsafe report fields such as seeds, mnemonics, private keys, raw keypairs,
+  signer material, credentials, payloads, headers, signatures, or local secret
+  paths are rejected.
+- Product status, launch readiness, and operator gates point production custody
+  at the readiness command without claiming production custody launch.
+
+Verification:
+
+- Focused custody readiness tests.
+- Account package tests.
+- Product-status, launch-readiness, operator-gate, and package-script tests.
+- `npm run proof:custody-readiness`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slice 1.0.
+
+Risk:
+High. A custody readiness report can be mistaken for production custody,
+recovery/export approval, staking/bonding/slashing approval, or live signer
+operation unless it stays redacted, opt-in, and manually reviewed.
+
+Escalation triggers:
+
+- Any production KMS integration, external signer operation, custody of user or
+  provider funds, recovery export, staking, bonding, slashing, or mainnet
+  signer behavior.
+
 ## Slice 1.1: Manifest Schema
 
 User-visible outcome:

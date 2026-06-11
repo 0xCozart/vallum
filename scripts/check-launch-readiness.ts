@@ -38,9 +38,10 @@ export interface LaunchReadinessOptions {
 const AREA_DEFINITIONS = [
   {
     id: "phase-1-sponsored-policy-mvp",
-    claim: "Agents can use local/mock signer-reference wallets, manifests, policy-gated sponsorship, MCP tools, escrow, and receipts without secret exposure.",
+    claim: "Agents can use local/mock signer-reference wallets, manifests, policy-gated sponsorship, MCP tools, escrow, and receipts without secret exposure, with a non-networked custody readiness gate for production signer/custody review.",
     evidencePaths: [
       "packages/accounts/src/index.ts",
+      "scripts/check-custody-readiness.ts",
       "packages/manifest/src/validate.ts",
       "packages/policy-gateway/src/evaluatePolicy.ts",
       "packages/sdk/src/requestSponsoredAction.ts",
@@ -55,6 +56,7 @@ const AREA_DEFINITIONS = [
     ],
     commands: [
       "npm test",
+      "npm run proof:custody-readiness",
       "npm run contracts:test",
       "npm run smoke:agent-escrow",
       "npm run proof:testnet-digest",
@@ -66,7 +68,7 @@ const AREA_DEFINITIONS = [
     ],
     productCheckIds: ["gas-station-runtime", "testnet-upstream"],
     fallbackStatus: "proven-local",
-    next: "Keep live IOTA execution behind configured testnet readiness, passing upstream diagnostics, and operator approval.",
+    next: "Keep live IOTA execution behind configured testnet readiness, passing upstream diagnostics, operator approval, and separate production custody review.",
   },
   {
     id: "phase-2-identity-and-vc",

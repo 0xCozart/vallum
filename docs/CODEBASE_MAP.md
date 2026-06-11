@@ -161,6 +161,10 @@ It also includes the first Agentic GasKit implementation slices:
 - device access safety gate that blocks physical-device implementation and
   limits any future proof to virtual or simulated resources until a separate
   approved safety design exists
+- non-networked production custody readiness gate for local signer-reference
+  account proof plus an operator-supplied redacted structured custody report
+  path before manual approval of KMS, recovery, staking, bonding, slashing, or
+  signer-operation claims
 - pure profile capability policy check
 - contract template metadata registry consumed by agent policy allow-lists
 
@@ -192,7 +196,8 @@ roadmap unless later slices implement and verify them.
 - SDK: `packages/sdk/src/`
 - Policy engine: `packages/policy-gateway/src/`
 - Shared types: `packages/shared-types/src/`
-- Agent accounts: `packages/accounts/src/`
+- Agent accounts and custody readiness: `packages/accounts/src/`,
+  `scripts/check-custody-readiness.ts`
 - Agent manifests: `packages/manifest/src/`
 - Agent registry/profile schema, local resolver, and adapters:
   `packages/registry/src/`

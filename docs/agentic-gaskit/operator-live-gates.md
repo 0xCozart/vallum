@@ -70,6 +70,10 @@ hosts, marketplace systems, or physical devices.
   `npm run proof:marketplace-readiness` command, which validates local
   marketplace read-model proof plus an ignored structured production
   marketplace report before manual acceptance.
+- Points production custody review at the non-networked
+  `npm run proof:custody-readiness` command, which validates local
+  signer-reference proof plus an ignored structured custody report before
+  manual acceptance.
 - Points live payment/provider review at the non-networked
   `npm run proof:payment-provider-readiness` command, which validates local
   x402/AP2 proof plus an ignored structured report before manual acceptance.
@@ -114,6 +118,7 @@ npm run proof:a2a-public-readiness
 npm run proof:package-publication-readiness
 npm run proof:payment-provider-readiness
 npm run proof:marketplace-readiness
+npm run proof:custody-readiness
 npm run payment:write-provider-proof-plan -- --out tmp/gaskit/payment-provider-proof-plan.json
 npm run smoke:a2a-public-discovery
 npm run verify:fast

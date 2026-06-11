@@ -30,6 +30,7 @@ test("product status reports local proof gates and explicit live blockers withou
     const report = await checkProductStatus({
       cwd,
       env: {},
+      custodyReadiness: blockedCustodyReadiness(),
       gasStationRuntimeReport: blockedGasStationRuntime(),
       scripts: completeScripts(),
       marketplaceReadiness: blockedMarketplaceReadiness(),
@@ -61,6 +62,8 @@ test("product status reports local proof gates and explicit live blockers withou
     assert.match(formatted, /npm run proof:payment-provider-readiness/);
     assert.match(formatted, /PRODUCTION_MARKETPLACE_BLOCKED/);
     assert.match(formatted, /npm run proof:marketplace-readiness/);
+    assert.match(formatted, /PRODUCTION_CUSTODY_OUT_OF_SCOPE/);
+    assert.match(formatted, /npm run proof:custody-readiness/);
     assert.match(formatted, /DEVICE_ACCESS_SAFETY_DEFERRED/);
     assert.doesNotMatch(formatted, /local-secret|iotaprivkey|fake-private-key|seed-phrase|mnemonic-value/i);
   } finally {
@@ -102,6 +105,7 @@ test("product status marks configured live gates ready without contacting endpoi
     const report = await checkProductStatus({
       cwd,
       scripts: completeScripts(),
+      custodyReadiness: blockedCustodyReadiness(),
       marketplaceReadiness: blockedMarketplaceReadiness(),
       packagePublicationReadiness: blockedPackagePublicationReadiness(),
       gasStationRuntimeReport: readyGasStationRuntime(),
@@ -261,6 +265,48 @@ test("product status can mark marketplace report ready for approval without expo
     assert.equal(marketplace?.code, "MARKETPLACE_PRODUCTION_REPORT_VALID");
     assert.match(formatted, /MARKETPLACE_PRODUCTION_REPORT_VALID/);
     assert.doesNotMatch(formatted, /provider-verification-review|session-auth-review|marketplace-production-report/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("product status can mark custody report ready for approval without exposing report values", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-product-status-"));
+  try {
+    const report = await checkProductStatus({
+      cwd,
+      env: {},
+      custodyReadiness: {
+        localProofOk: true,
+        productionReady: true,
+        checks: [
+          {
+            id: "local-signer-reference-proof",
+            status: "proven-local",
+            code: "CUSTODY_LOCAL_SIGNER_REFERENCE_PROOF_CONFIGURED",
+            message: "Local signer-reference proof exists.",
+            next: "Keep local proof current.",
+          },
+          {
+            id: "production-custody-report",
+            status: "ready-approval",
+            code: "CUSTODY_PRODUCTION_REPORT_VALID",
+            message: "Structured report is valid.",
+            evidence: "local-structured-report-valid-redacted",
+            next: "Review manually.",
+          },
+        ],
+      },
+      gasStationRuntimeReport: blockedGasStationRuntime(),
+      scripts: completeScripts(),
+    });
+    const formatted = formatProductStatusReport(report);
+    const custody = report.checks.find((check) => check.id === "production-custody");
+
+    assert.equal(custody?.status, "ready-live");
+    assert.equal(custody?.code, "CUSTODY_PRODUCTION_REPORT_VALID");
+    assert.match(formatted, /CUSTODY_PRODUCTION_REPORT_VALID/);
+    assert.doesNotMatch(formatted, /kms-external-signer-review|recovery-export-review|custody-production-report/);
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }
@@ -429,6 +475,30 @@ function blockedMarketplaceReadiness() {
         code: "MARKETPLACE_PRODUCTION_REPORT_MISSING",
         message: "Structured report is missing.",
         evidence: "missing=MARKETPLACE_PRODUCTION_REPORT",
+        next: "Provide a redacted structured report.",
+      },
+    ],
+  };
+}
+
+function blockedCustodyReadiness() {
+  return {
+    localProofOk: true,
+    productionReady: false,
+    checks: [
+      {
+        id: "local-signer-reference-proof",
+        status: "proven-local" as const,
+        code: "CUSTODY_LOCAL_SIGNER_REFERENCE_PROOF_CONFIGURED",
+        message: "Local signer-reference proof exists.",
+        next: "Keep local proof current.",
+      },
+      {
+        id: "production-custody-report",
+        status: "blocked-config" as const,
+        code: "CUSTODY_PRODUCTION_REPORT_MISSING",
+        message: "Structured report is missing.",
+        evidence: "missing=CUSTODY_PRODUCTION_REPORT",
         next: "Provide a redacted structured report.",
       },
     ],

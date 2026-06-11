@@ -121,7 +121,7 @@ The official Gas Station is the sponsorship engine. GasKit is the app integratio
 | Area | Current status | Start here |
 | --- | --- | --- |
 | Agentic migration | The fork direction, migrated planning docs, code-slice gates, and remote/package decisions are documented. | [Agentic Migration Plan](agentic-gaskit/migration-plan.md) |
-| Agent wallets | Signer-reference-first account/wallet safety model and local package implementation exist. | [Account And Wallet Safety](agentic-gaskit/account-wallet-safety.md) |
+| Agent wallets | Signer-reference-first account/wallet safety model and local package implementation exist; production custody remains blocked behind `npm run proof:custody-readiness` and an operator-approved report. | [Account And Wallet Safety](agentic-gaskit/account-wallet-safety.md) |
 | Agent manifests and policy | Manifest validation, pure agent action policy, and mock sponsorship gateway are implemented locally. | [Architecture](architecture.md) |
 | Agent MCP tools | Local MCP-shaped sponsorship tools route through the SDK and policy gateway. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
 | Receipts and contracts | Local receipt state package, non-custodial Move escrow/receipt/pay-per-call/data-license/service-bounty/reputation-receipt/subscription state contracts, and contract-template metadata allow-list checks are implemented and covered by local tests. Device access remains safety-gated and is not implemented. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
@@ -199,4 +199,7 @@ same-origin backend routes that own GasKit app credentials.
 
 Agent-created wallets must be signer-reference-first. Normal APIs return
 addresses and scoped signer references, not seeds, mnemonics, private keys, or
-raw keypairs. A signer reference is not bearer authorization.
+raw keypairs. A signer reference is not bearer authorization. `npm run
+proof:custody-readiness` validates the local signer-reference boundary while
+keeping production KMS, recovery, staking, bonding, slashing, and custody
+claims behind an operator-approved structured report.
