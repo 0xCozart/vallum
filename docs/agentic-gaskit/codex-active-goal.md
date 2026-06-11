@@ -16,13 +16,14 @@ local proof as live IOTA testnet, production marketplace, public scoring,
 public A2A discovery, production key management, or provider-verification
 proof.
 
-As of the latest completed update, Slice 4.14 is complete: an A2A push HTTP
-transport safety gate. It proves an opt-in locally mocked HTTP transport helper
-for sanitized push delivery requests with safe URL checks, manual redirect
-handling, timeout handling, no stored webhook credentials, and status-only
-results, while keeping default route delivery, public hosting, production
-keys/auth, public webhook infrastructure, retry/observability infrastructure,
-live IOTA proof, and external conformance claims blocked.
+As of the latest completed update, Slice 4.15 is complete: an A2A push delivery
+retry observability gate. It proves opt-in local retry and in-memory
+delivery-attempt observability for explicitly injected A2A push transports,
+with default delivery still single-attempt, status-only attempt records, no
+request bodies or credential material, and no default route delivery. Public
+hosting, production keys/auth, public webhook workers/queues, persistent
+production observability, live IOTA proof, and external conformance claims
+remain blocked.
 
 The next continuation should choose the next safe roadmap slice from
 `docs/agentic-gaskit/full-roadmap-execution-goal.md` and

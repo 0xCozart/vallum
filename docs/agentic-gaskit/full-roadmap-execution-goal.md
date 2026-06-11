@@ -5,8 +5,8 @@ Last updated: 2026-06-11.
 ## Goal Pointer
 
 This is the active `/goal` target for continuing Agentic GasKit in
-`/home/sacred/code/agentic-gaskit` after completion of the local Slice 3.6
-Subscription Workflow.
+`/home/sacred/code/agentic-gaskit` after completion of the local Slice 4.15 A2A
+Push Delivery Retry Observability Gate.
 
 Primary continuation sources:
 
@@ -91,7 +91,11 @@ Confirmed current state:
   webhook delivery, and external conformance blockers explicit. Slice 4.14
   adds local mocked opt-in push HTTP transport proof while keeping public
   webhook infrastructure, production auth, retry/observability infrastructure,
-  and external conformance blockers explicit.
+  and external conformance blockers explicit. Slice 4.15 adds opt-in local
+  retry plus in-memory delivery-attempt observability for explicitly injected
+  A2A push transports while keeping default delivery single-attempt and public
+  webhook workers, persistent queues, production observability, public hosting,
+  production auth, live IOTA proof, and external conformance blockers explicit.
   Slice 7.5 adds a fast deterministic verification profile plus a
   non-networked profile audit, so ordinary build/test/improve loops can run a
   bounded subset while `verify:local` and `grant:check` remain the full
@@ -101,13 +105,14 @@ Confirmed current state:
   configuration CRUD that rejects webhook credential storage and unsafe
   callback URLs; Slice 4.12 adds local authenticated extended Agent Card
   access; Slice 4.13 adds local injected push delivery envelopes; Slice 4.14
-  adds local mocked opt-in push HTTP transport proof. Public hosting,
-  production keys/auth, public webhook infrastructure, and external conformance
-  blockers remain.
-- `docs/agentic-gaskit/handoff-next-product-build.md` says Slices 1.0, 1.1,
-  1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.3,
-  3.4, 3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 5.1, and 5.2 are
-  implemented or reviewed and locally verified.
+  adds local mocked opt-in push HTTP transport proof; Slice 4.15 adds local
+  retry/attempt observability proof. Public hosting, production keys/auth,
+  public webhook workers/queues, persistent production observability, and
+  external conformance blockers remain.
+- `docs/agentic-gaskit/handoff-next-product-build.md` records the latest
+  completed/deferred slice set, including Slice 4.15, with exact local
+  verification evidence and remaining live, production, publication, custody,
+  payment, A2A, marketplace, and safety blockers.
 - `docs/marketplace-readiness.md` permits marketplace requirements/design work
   only inside local/mock proof. Production marketplace implementation remains
   blocked.
