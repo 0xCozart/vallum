@@ -525,6 +525,16 @@ Current planning assumptions:
   advertises `capabilities.streaming: true`, returns local SSE task events for
   `POST /message:stream`, and keeps push notifications, public hosting,
   production key distribution, and external conformance blocked.
+- On 2026-06-11, Slice 4.11 rechecked the current A2A specification for push
+  notification configuration. The current HTTP binding defines
+  `/tasks/{task_id}/pushNotificationConfigs` resources and
+  `TaskPushNotificationConfig` fields such as `id`, `taskId`, `url`, `token`,
+  and `authentication`. Slice 4.11 implements local configuration CRUD only:
+  it accepts public HTTPS callback URLs, normalizes declared authentication
+  schemes, rejects webhook credential storage, rejects unsafe local callback
+  destinations, and does not deliver webhooks. Public push delivery, SSRF
+  controls for outbound delivery, production task auth, public hosting, and
+  external conformance remain blocked.
 
 Implementation checks:
 

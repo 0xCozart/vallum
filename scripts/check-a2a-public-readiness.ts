@@ -45,6 +45,7 @@ const REQUIRED_SOURCE_PATHS = [
   "packages/standards/src/a2a.ts",
   "packages/standards/src/a2aHttp.ts",
   "packages/standards/src/a2aNodeServer.ts",
+  "packages/standards/src/a2aPush.ts",
   "scripts/smoke-a2a-local-server.ts",
 ] as const;
 
@@ -81,7 +82,8 @@ export async function checkA2APublicReadiness(
     ),
     checkTaskAuthDecision(env.A2A_PUBLIC_TASK_AUTH_DECISION),
     localStreamingSupport(),
-    unsupported("push-notifications", "A2A_PUSH_UNSUPPORTED", "A2A push notifications remain unsupported in the current local server."),
+    localPushConfigurationSupport(),
+    unsupported("push-delivery", "A2A_PUSH_DELIVERY_UNSUPPORTED", "A2A push notification webhook delivery remains unsupported in the current local server."),
     await checkConformanceReport(cwd, env.A2A_EXTERNAL_CONFORMANCE_REPORT),
   ];
 
@@ -241,6 +243,17 @@ function localStreamingSupport(): A2APublicReadinessCheck {
     message: "A2A streaming is locally supported by the loopback Node server through SSE task events.",
     evidence: "npm run smoke:a2a-local-server",
     next: "Keep this as local loopback streaming proof only until public hosting and external conformance evidence exists.",
+  };
+}
+
+function localPushConfigurationSupport(): A2APublicReadinessCheck {
+  return {
+    id: "push-notification-configs",
+    status: "proven-local",
+    code: "A2A_PUSH_CONFIG_LOCAL_PROOF_CONFIGURED",
+    message: "A2A push notification configuration CRUD is locally supported without webhook credential storage or delivery.",
+    evidence: "npm run smoke:a2a-http",
+    next: "Keep this as local configuration proof only until webhook delivery, SSRF controls, production auth, and external conformance evidence exist.",
   };
 }
 

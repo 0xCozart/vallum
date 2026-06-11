@@ -164,9 +164,9 @@ Latest local verification and prior live proof:
 - `npm run proof:testnet-digest:live`: opt-in read-only IOTA testnet digest
   lookup exists; it does not spend gas or use sponsor credentials.
 - `npm run proof:a2a-public-readiness`: deterministic non-networked A2A
-  public-readiness gate reports local proof, local loopback streaming, public
-  hosting inputs, unsupported push capability, and external conformance
-  blockers.
+  public-readiness gate reports local proof, local loopback streaming, local
+  push notification configuration, public hosting inputs, unsupported webhook
+  delivery, and external conformance blockers.
 - `npm run verify:fast`: deterministic fast iteration profile for build,
   TypeScript tests, docs check, secret scan, and non-networked status gates.
 - `npm run proof:verification-profiles`: deterministic non-networked profile

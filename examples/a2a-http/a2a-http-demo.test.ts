@@ -17,6 +17,9 @@ test("A2A HTTP demo proves public discovery authorized task flow and safe output
   assert.equal(result.hiddenArtifacts, true);
   assert.equal(result.listedCount, 1);
   assert.equal(result.canceledStatus, "TASK_STATE_CANCELED");
+  assert.equal(result.pushConfigStatus, 200);
+  assert.equal(result.pushConfigListCount, 1);
+  assert.equal(result.pushConfigCredentialRejectionStatus, 400);
   assert.equal(result.logLeaksSecretMaterial, false);
-  assert.doesNotMatch(formatted, /Bearer|signer_ref|wallet_demo_secret|payment-secret|private prompt/i);
+  assert.doesNotMatch(formatted, /Bearer|push-secret|signer_ref|wallet_demo_secret|payment-secret|private prompt/i);
 });

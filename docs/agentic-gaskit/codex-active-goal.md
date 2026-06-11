@@ -19,8 +19,14 @@ proof.
 As of the latest completed update, Slice 4.10 is complete: an A2A local SSE
 streaming gate. It proves local loopback `POST /message:stream` Server-Sent
 Events through the Node server and readiness gates while preserving public A2A
-hosting, production keys/auth, push notification, and external conformance
-blockers.
+hosting, production keys/auth, push notification delivery, and external
+conformance blockers.
+
+The current in-progress continuation is Slice 4.11: A2A push notification
+configuration safety. It should prove local task push-config create/list/get/
+delete without storing webhook credentials or delivering webhooks, then keep
+public hosting, production keys/auth, push webhook delivery, and external
+conformance blockers explicit.
 
 The current continuation should choose the next safe roadmap slice from
 `docs/agentic-gaskit/full-roadmap-execution-goal.md` and

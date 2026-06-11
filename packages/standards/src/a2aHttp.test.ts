@@ -11,6 +11,7 @@ import {
   A2A_HTTP_STREAM_MESSAGE_PATH,
   A2A_HTTP_TASKS_PATH,
   A2A_TASK_PROTOCOL_VERSION,
+  LocalA2APushNotificationStore,
   LocalA2ATaskStore,
   handleLocalA2AHttpRequest,
   type A2AHttpResponse,
@@ -162,6 +163,130 @@ test("local A2A HTTP handler sends gets lists and cancels authorized tasks", asy
   assert.equal(canceled.body.task.artifacts, undefined);
 });
 
+test("local A2A HTTP handler manages push notification configs without storing webhook credentials", async () => {
+  const store = new LocalA2ATaskStore();
+  const pushNotificationStore = new LocalA2APushNotificationStore();
+  const options = {
+    store,
+    pushNotificationStore,
+    taskAuthToken: "local-a2a-token",
+    taskPolicy: policy,
+    now: () => now,
+  };
+  const auth = { authorization: "Bearer local-a2a-token" };
+  const sent = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: A2A_HTTP_SEND_MESSAGE_PATH,
+    headers: auth,
+    body: sendBody("msg-push-config"),
+  }, options);
+  assertTaskResponse(sent);
+  const taskId = sent.body.task.id;
+
+  const created = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: `/tasks/${encodeURIComponent(taskId)}/pushNotificationConfigs`,
+    headers: auth,
+    body: {
+      id: "push-demo-1",
+      url: "https://client.example.test/a2a/push",
+      authentication: { scheme: "Bearer" },
+    },
+  }, options);
+  assertPushConfigResponse(created);
+
+  const listed = await handleLocalA2AHttpRequest({
+    method: "GET",
+    path: `/tasks/${encodeURIComponent(taskId)}/pushNotificationConfigs`,
+    headers: auth,
+  }, options);
+  const fetched = await handleLocalA2AHttpRequest({
+    method: "GET",
+    path: `/tasks/${encodeURIComponent(taskId)}/pushNotificationConfigs/push-demo-1`,
+    headers: auth,
+  }, options);
+  const deleted = await handleLocalA2AHttpRequest({
+    method: "DELETE",
+    path: `/tasks/${encodeURIComponent(taskId)}/pushNotificationConfigs/push-demo-1`,
+    headers: auth,
+  }, options);
+
+  assert.equal(created.body.config.id, "push-demo-1");
+  assert.equal(created.body.config.taskId, taskId);
+  assert.equal(created.body.config.url, "https://client.example.test/a2a/push");
+  assert.equal(created.body.config.createdAt, now.toISOString());
+  assert.deepEqual(created.body.config.authentication, { schemes: ["Bearer"] });
+  assertPushConfigListResponse(listed);
+  assert.equal(listed.body.configs.length, 1);
+  assertPushConfigResponse(fetched);
+  assert.equal(fetched.body.config.id, "push-demo-1");
+  assertPushConfigDeletedResponse(deleted);
+  assert.equal(deleted.body.kind, "push-config-deleted");
+  assertPushConfigSafeJson(created);
+  assertPushConfigSafeJson(listed);
+  assertPushConfigSafeJson(fetched);
+  assertPushConfigSafeJson(deleted);
+});
+
+test("local A2A HTTP push notification configs fail closed for unsafe URLs and credential storage", async () => {
+  const store = new LocalA2ATaskStore();
+  const options = {
+    store,
+    pushNotificationStore: new LocalA2APushNotificationStore(),
+    taskAuthToken: "local-a2a-token",
+    taskPolicy: policy,
+    now: () => now,
+  };
+  const auth = { authorization: "Bearer local-a2a-token" };
+  const sent = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: A2A_HTTP_SEND_MESSAGE_PATH,
+    headers: auth,
+    body: sendBody("msg-push-config-denials"),
+  }, options);
+  assertTaskResponse(sent);
+  const taskId = sent.body.task.id;
+
+  const unsafeUrl = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: `/tasks/${encodeURIComponent(taskId)}/pushNotificationConfigs`,
+    headers: auth,
+    body: {
+      url: "http://localhost/a2a/push",
+    },
+  }, options);
+  const token = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: `/tasks/${encodeURIComponent(taskId)}/pushNotificationConfigs`,
+    headers: auth,
+    body: {
+      url: "https://client.example.test/a2a/push",
+      token: "push-secret-token",
+    },
+  }, options);
+  const credentials = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: `/tasks/${encodeURIComponent(taskId)}/pushNotificationConfigs`,
+    headers: auth,
+    body: {
+      url: "https://client.example.test/a2a/push",
+      authentication: {
+        scheme: "Bearer",
+        credentials: "Bearer abc.def.ghi",
+      },
+    },
+  }, options);
+
+  assert.equal(unsafeUrl.status, 400);
+  assert.equal(token.status, 400);
+  assert.equal(credentials.status, 400);
+  assert.match(unsafeUrl.json, /A2A_PUSH_URL_UNSAFE/);
+  assert.match(token.json, /A2A_PUSH_CREDENTIAL_STORAGE_UNSUPPORTED/);
+  assert.match(credentials.json, /A2A_PUSH_CREDENTIAL_STORAGE_UNSUPPORTED/);
+  assert.doesNotMatch(token.json, /push-secret-token/);
+  assert.doesNotMatch(credentials.json, /abc\.def\.ghi/);
+});
+
 test("local A2A HTTP handler returns safe errors without leaking request secrets", async () => {
   const response = await handleLocalA2AHttpRequest({
     method: "POST",
@@ -270,6 +395,11 @@ function assertSafeJson(response: A2AHttpResponse): void {
   assert.doesNotMatch(response.json, /not json|Bearer|signer_ref|private prompt/i);
 }
 
+function assertPushConfigSafeJson(response: A2AHttpResponse): void {
+  assert.doesNotThrow(() => JSON.parse(response.json));
+  assert.doesNotMatch(response.json, /not json|push-secret|credentials|signer_ref|private prompt/i);
+}
+
 function assertAgentCardResponse(response: A2AHttpResponse): asserts response is A2AHttpResponse & {
   readonly body: Extract<A2AHttpResponse["body"], { readonly kind: "agent-card" }>;
 } {
@@ -289,4 +419,25 @@ function assertTaskListResponse(response: A2AHttpResponse): asserts response is 
 } {
   assert.equal(response.status, 200);
   assert.ok("kind" in response.body && response.body.kind === "task-list");
+}
+
+function assertPushConfigResponse(response: A2AHttpResponse): asserts response is A2AHttpResponse & {
+  readonly body: Extract<A2AHttpResponse["body"], { readonly kind: "push-config" }>;
+} {
+  assert.equal(response.status, 200);
+  assert.ok("kind" in response.body && response.body.kind === "push-config");
+}
+
+function assertPushConfigListResponse(response: A2AHttpResponse): asserts response is A2AHttpResponse & {
+  readonly body: Extract<A2AHttpResponse["body"], { readonly kind: "push-config-list" }>;
+} {
+  assert.equal(response.status, 200);
+  assert.ok("kind" in response.body && response.body.kind === "push-config-list");
+}
+
+function assertPushConfigDeletedResponse(response: A2AHttpResponse): asserts response is A2AHttpResponse & {
+  readonly body: Extract<A2AHttpResponse["body"], { readonly kind: "push-config-deleted" }>;
+} {
+  assert.equal(response.status, 200);
+  assert.ok("kind" in response.body && response.body.kind === "push-config-deleted");
 }

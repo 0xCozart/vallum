@@ -115,13 +115,14 @@ const AREA_DEFINITIONS = [
   },
   {
     id: "phase-4-standards-bridges",
-    claim: "x402, AP2, and A2A mappings are locally proven with fail-closed behavior; live payment/provider and public A2A proofs remain blocked.",
+    claim: "x402, AP2, and A2A mappings are locally proven with fail-closed behavior, including local A2A streaming and push configuration; live payment/provider and public A2A proofs remain blocked.",
     evidencePaths: [
       "packages/standards/src/x402.ts",
       "packages/standards/src/ap2.ts",
       "packages/standards/src/a2a.ts",
       "packages/standards/src/a2aHttp.ts",
       "packages/standards/src/a2aNodeServer.ts",
+      "packages/standards/src/a2aPush.ts",
       "scripts/check-a2a-public-readiness.ts",
       "docs/agentic-gaskit/a2a-public-readiness.md",
       "scripts/smoke-a2a-local-server.ts",

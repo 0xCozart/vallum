@@ -6,6 +6,15 @@ import {
 import type { AgentActionPolicy } from "@iota-gaskit/policy-gateway";
 
 import {
+  A2APushNotificationError,
+  createA2APushNotificationConfig,
+  deleteA2APushNotificationConfig,
+  getA2APushNotificationConfig,
+  listA2APushNotificationConfigs,
+  type A2ATaskPushNotificationConfig,
+  type LocalA2APushNotificationStore,
+} from "./a2aPush.js";
+import {
   A2A_TASK_MEDIA_TYPE,
   A2A_TASK_PROTOCOL_VERSION,
   A2ATaskError,
@@ -42,6 +51,21 @@ export type A2AHttpResponseBody =
       readonly tasks: readonly A2ATask[];
     }
   | {
+      readonly kind: "push-config";
+      readonly config: A2ATaskPushNotificationConfig;
+    }
+  | {
+      readonly kind: "push-config-list";
+      readonly configs: readonly A2ATaskPushNotificationConfig[];
+      readonly nextPageToken?: string;
+    }
+  | {
+      readonly kind: "push-config-deleted";
+      readonly taskId: string;
+      readonly id: string;
+      readonly deleted: boolean;
+    }
+  | {
       readonly error: {
         readonly code: A2AHttpErrorCode | string;
         readonly message: string;
@@ -72,6 +96,7 @@ export interface LocalA2AHttpHandlerOptions {
   readonly agentCardOptions?: A2AAgentCardWellKnownOptions;
   readonly taskAuthToken?: string;
   readonly taskPolicy?: AgentActionPolicy;
+  readonly pushNotificationStore?: LocalA2APushNotificationStore;
   readonly now?: () => Date;
   readonly processMessage?: (
     context: A2AProcessMessageContext,
@@ -109,15 +134,18 @@ export async function handleLocalA2AHttpRequest(
   const versionError = validateProtocolVersion(request);
   if (versionError) return versionError;
 
-  if (url.pathname === A2A_HTTP_STREAM_MESSAGE_PATH || isPushNotificationPath(url.pathname)) {
+  if (url.pathname === A2A_HTTP_STREAM_MESSAGE_PATH) {
     return errorResponse(
       501,
       "A2A_OPERATION_UNSUPPORTED",
-      "A2A streaming and push notification operations are not supported by this local Agentic GasKit server.",
+      "A2A streaming is supported by the local Node SSE server, not by this pure HTTP response handler.",
     );
   }
 
   try {
+    const pushRoute = matchPushNotificationRoute(url.pathname);
+    if (pushRoute) return handlePushNotificationRoute(method, url, request, options, pushRoute);
+
     if (url.pathname === A2A_HTTP_SEND_MESSAGE_PATH) {
       if (method !== "POST") return methodNotAllowed(["POST"]);
       return await handleSendMessage(request, options);
@@ -167,6 +195,9 @@ export async function handleLocalA2AHttpRequest(
     return errorResponse(404, "A2A_ROUTE_NOT_FOUND", "A2A route was not found.");
   } catch (error) {
     if (error instanceof A2ATaskError) {
+      return errorResponse(error.status, error.code, error.message);
+    }
+    if (error instanceof A2APushNotificationError) {
       return errorResponse(error.status, error.code, error.message);
     }
     return errorResponse(400, "A2A_BODY_INVALID", "A2A request body is invalid.");
@@ -223,6 +254,70 @@ async function handleSendMessage(
       processMessage: options.processMessage,
     }),
   });
+}
+
+function handlePushNotificationRoute(
+  method: string,
+  url: URL,
+  request: A2AHttpRequest,
+  options: LocalA2AHttpHandlerOptions,
+  route: { readonly taskId: string; readonly configId?: string },
+): A2AHttpResponse {
+  if (!options.pushNotificationStore) {
+    return errorResponse(
+      501,
+      "A2A_OPERATION_UNSUPPORTED",
+      "A2A push notification configuration is not enabled for this local Agentic GasKit server.",
+    );
+  }
+  getA2ATask({ store: options.store, id: route.taskId });
+
+  if (!route.configId) {
+    if (method === "POST") {
+      return ok({
+        kind: "push-config",
+        config: createA2APushNotificationConfig({
+          store: options.pushNotificationStore,
+          taskId: route.taskId,
+          value: parseBody(request.body),
+          now: options.now?.(),
+        }),
+      });
+    }
+    if (method === "GET") {
+      return ok({
+        kind: "push-config-list",
+        ...listA2APushNotificationConfigs({
+          store: options.pushNotificationStore,
+          taskId: route.taskId,
+          pageSize: numberQuery(url, "pageSize"),
+        }),
+      });
+    }
+    return methodNotAllowed(["GET", "POST"]);
+  }
+
+  if (method === "GET") {
+    return ok({
+      kind: "push-config",
+      config: getA2APushNotificationConfig({
+        store: options.pushNotificationStore,
+        taskId: route.taskId,
+        id: route.configId,
+      }),
+    });
+  }
+  if (method === "DELETE") {
+    return ok({
+      kind: "push-config-deleted",
+      ...deleteA2APushNotificationConfig({
+        store: options.pushNotificationStore,
+        taskId: route.taskId,
+        id: route.configId,
+      }),
+    });
+  }
+  return methodNotAllowed(["DELETE", "GET"]);
 }
 
 function authorizeTaskRequest(
@@ -311,8 +406,16 @@ function matchTaskRoute(pathname: string): { readonly taskId: string; readonly a
   return { taskId: decodeURIComponent(taskPart), action: "get" };
 }
 
-function isPushNotificationPath(pathname: string): boolean {
-  return /^\/tasks\/[^/]+\/pushNotificationConfigs(?:\/[^/]+)?$/.test(pathname);
+function matchPushNotificationRoute(
+  pathname: string,
+): { readonly taskId: string; readonly configId?: string } | undefined {
+  const parts = pathname.split("/").filter(Boolean);
+  if (parts.length !== 3 && parts.length !== 4) return undefined;
+  if (parts[0] !== "tasks" || parts[2] !== "pushNotificationConfigs") return undefined;
+  return {
+    taskId: decodeURIComponent(parts[1] ?? ""),
+    ...(parts[3] ? { configId: decodeURIComponent(parts[3]) } : {}),
+  };
 }
 
 function parsePath(path = "/"): URL {

@@ -6,6 +6,7 @@ import {
   A2A_HTTP_SEND_MESSAGE_PATH,
   A2A_HTTP_TASKS_PATH,
   A2A_TASK_PROTOCOL_VERSION,
+  LocalA2APushNotificationStore,
   LocalA2ATaskStore,
   handleLocalA2AHttpRequest,
   type A2AHttpResponse,
@@ -19,6 +20,9 @@ export interface A2AHttpDemoResult {
   readonly hiddenArtifacts: boolean;
   readonly listedCount: number;
   readonly canceledStatus: string;
+  readonly pushConfigStatus: number;
+  readonly pushConfigListCount: number;
+  readonly pushConfigCredentialRejectionStatus: number;
   readonly logLeaksSecretMaterial: boolean;
 }
 
@@ -42,6 +46,7 @@ export async function runA2AHttpDemo(): Promise<A2AHttpDemoResult> {
   const store = new LocalA2ATaskStore();
   const options = {
     store,
+    pushNotificationStore: new LocalA2APushNotificationStore(),
     agentCardProfile: {
       ...validAgentProfileFixture(),
       endpoints: [
@@ -97,6 +102,35 @@ export async function runA2AHttpDemo(): Promise<A2AHttpDemoResult> {
     path: `/tasks/${encodeURIComponent(task.id)}:cancel`,
     headers: auth,
   }, options);
+  const pushConfig = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: `/tasks/${encodeURIComponent(task.id)}/pushNotificationConfigs`,
+    headers: auth,
+    body: {
+      id: "push-demo-1",
+      url: "https://client.example.test/a2a/push",
+      authentication: { scheme: "Bearer" },
+    },
+  }, options);
+  const pushConfigList = await handleLocalA2AHttpRequest({
+    method: "GET",
+    path: `/tasks/${encodeURIComponent(task.id)}/pushNotificationConfigs`,
+    headers: auth,
+  }, options);
+  const pushConfigCredentialRejection = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: `/tasks/${encodeURIComponent(task.id)}/pushNotificationConfigs`,
+    headers: auth,
+    body: {
+      id: "push-demo-secret",
+      url: "https://client.example.test/a2a/push",
+      token: "push-secret-token",
+      authentication: {
+        scheme: "Bearer",
+        credentials: "Bearer push.secret.token",
+      },
+    },
+  }, options);
 
   return {
     agentCardStatus: agentCard.status,
@@ -106,12 +140,18 @@ export async function runA2AHttpDemo(): Promise<A2AHttpDemoResult> {
     hiddenArtifacts: !JSON.stringify(hidden.body).includes("demo-draft"),
     listedCount: isTaskListResponse(listed) ? listed.body.tasks.length : 0,
     canceledStatus: isTaskResponse(canceled) ? canceled.body.task.status.state : "unknown",
+    pushConfigStatus: pushConfig.status,
+    pushConfigListCount: isPushConfigListResponse(pushConfigList) ? pushConfigList.body.configs.length : 0,
+    pushConfigCredentialRejectionStatus: pushConfigCredentialRejection.status,
     logLeaksSecretMaterial: responseLeaks(agentCard)
       || responseLeaks(unauthorized)
       || responseLeaks(sent)
       || responseLeaks(hidden)
       || responseLeaks(listed)
-      || responseLeaks(canceled),
+      || responseLeaks(canceled)
+      || responseLeaks(pushConfig)
+      || responseLeaks(pushConfigList)
+      || responseLeaks(pushConfigCredentialRejection),
   };
 }
 
@@ -125,6 +165,9 @@ export function formatA2AHttpDemoResult(result: A2AHttpDemoResult): string {
     `hiddenArtifacts=${String(result.hiddenArtifacts)}`,
     `listed.count=${result.listedCount}`,
     `canceled.status=${result.canceledStatus}`,
+    `pushConfig.status=${result.pushConfigStatus}`,
+    `pushConfig.listCount=${result.pushConfigListCount}`,
+    `pushConfig.credentialRejectionStatus=${result.pushConfigCredentialRejectionStatus}`,
     `logLeaksSecretMaterial=${String(result.logLeaksSecretMaterial)}`,
   ].join("\n");
 }
@@ -147,7 +190,7 @@ function sendBody(messageId: string) {
 }
 
 function responseLeaks(response: A2AHttpResponse): boolean {
-  return /private prompt|Bearer abc|signer_ref_demo_secret|wallet_demo_secret|payment-secret/i.test(response.json);
+  return /private prompt|Bearer abc|push-secret-token|push\.secret|signer_ref_demo_secret|wallet_demo_secret|payment-secret/i.test(response.json);
 }
 
 function isTaskResponse(response: A2AHttpResponse): response is A2AHttpResponse & {
@@ -160,4 +203,10 @@ function isTaskListResponse(response: A2AHttpResponse): response is A2AHttpRespo
   readonly body: Extract<A2AHttpResponse["body"], { readonly kind: "task-list" }>;
 } {
   return response.status === 200 && "kind" in response.body && response.body.kind === "task-list";
+}
+
+function isPushConfigListResponse(response: A2AHttpResponse): response is A2AHttpResponse & {
+  readonly body: Extract<A2AHttpResponse["body"], { readonly kind: "push-config-list" }>;
+} {
+  return response.status === 200 && "kind" in response.body && response.body.kind === "push-config-list";
 }

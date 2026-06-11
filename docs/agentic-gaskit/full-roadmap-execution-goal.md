@@ -81,15 +81,18 @@ Confirmed current state:
   local A2A proof, public hosting inputs, production JWKS/auth decisions,
   unsupported streaming/push capabilities, and external conformance blockers
   without fetching public endpoints or operating a public A2A server. Slice
-  4.10 adds local loopback SSE streaming proof while keeping push and public
-  A2A blockers explicit.
+  4.10 adds local loopback SSE streaming proof while keeping public A2A
+  blockers explicit. Slice 4.11 adds local push notification configuration
+  proof while keeping webhook delivery and public A2A blockers explicit.
   Slice 7.5 adds a fast deterministic verification profile plus a
   non-networked profile audit, so ordinary build/test/improve loops can run a
   bounded subset while `verify:local` and `grant:check` remain the full
   reviewer/release/launch evidence gates.
   Slice 4.10 adds local loopback A2A SSE streaming proof for
-  `POST /message:stream` while preserving public hosting, production keys/auth,
-  push notification, and external conformance blockers.
+  `POST /message:stream`; Slice 4.11 adds local A2A push notification
+  configuration CRUD that rejects webhook credential storage and unsafe
+  callback URLs. Public hosting, production keys/auth, webhook delivery, and
+  external conformance blockers remain.
 - `docs/agentic-gaskit/handoff-next-product-build.md` says Slices 1.0, 1.1,
   1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.3,
   3.4, 3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 5.1, and 5.2 are
@@ -130,7 +133,7 @@ Confirmed remaining gaps:
 
 - Public Agent Card hosting, production Agent Card key management, live A2A
   discovery proof, live public A2A server operation beyond the local loopback
-  smoke, public streaming, push notification support, external A2A conformance
+  smoke, public streaming, push webhook delivery, external A2A conformance
   proof, and production A2A authentication decisions.
 - Configured live IOTA Names proof, live IOTA Identity proof, live verifiable
   credential validation beyond local/mock trust-policy behavior, and live
@@ -479,9 +482,11 @@ handler behind a loopback HTTP server with signed discovery and authenticated
 task routes. Slice 4.9 adds a non-networked public-readiness gate for local
 A2A proof, public hosting inputs, production JWKS/auth decisions, unsupported
 streaming/push capabilities, and external conformance evidence. Slice 4.10 adds
-local loopback SSE streaming proof for `POST /message:stream`. These slices are
-not public hosting, production key management, public streaming, push
-notification support, external conformance, or live A2A discovery proof.
+local loopback SSE streaming proof for `POST /message:stream`. Slice 4.11 adds
+local push notification configuration CRUD with webhook credential-storage and
+unsafe callback URL rejection. These slices are not public hosting, production
+key management, public streaming, push webhook delivery, external conformance,
+or live A2A discovery proof.
 
 Acceptance criteria:
 
@@ -490,8 +495,9 @@ Acceptance criteria:
 - Public or local server proof serves canonical well-known Agent Card and
   task/message endpoints without leaking private metadata.
 - Auth requirements are explicit and fail closed.
-- Streaming and push notification support are implemented or documented as
-  unsupported capabilities.
+- Streaming and push notification configuration support are implemented locally
+  or documented as unsupported capabilities; webhook delivery remains blocked
+  until separately implemented and verified.
 - External A2A conformance proof is recorded, or blocked with exact reason.
 - Public A2A readiness command reports exact local proof, config, unsupported
   capability, and external conformance blockers without printing configured

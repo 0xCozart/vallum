@@ -124,8 +124,9 @@ Expected current result:
   without contacting IOTA RPC;
 - package dry-runs complete for publishable workspace packages;
 - A2A public-readiness proof reports local A2A evidence, local loopback
-  streaming proof, public hosting input blockers, unsupported push capability,
-  and external conformance blockers without contacting public endpoints;
+  streaming proof, local push notification configuration, public hosting input
+  blockers, unsupported webhook delivery, and external conformance blockers
+  without contacting public endpoints;
 - verification-profile proof reports the fast iteration profile and confirms
   reviewer/grant proof still uses the full local gate;
 - product-status proof reports local verification and package gates separately

@@ -1608,6 +1608,82 @@ Escalation triggers:
   external conformance without operator-approved public infrastructure and
   conformance evidence.
 
+## Slice 4.11: A2A Push Notification Config Safety Gate
+
+User-visible outcome:
+Agentic GasKit can locally create, list, read, and delete A2A task push
+notification configuration records while refusing webhook credential storage
+and unsafe callback URLs. Webhook delivery remains explicitly unsupported.
+
+Likely files:
+
+- `packages/standards/src/a2aPush.ts`
+- `packages/standards/src/a2aHttp.ts`
+- `packages/standards/src/a2aHttp.test.ts`
+- `examples/a2a-http/`
+- `scripts/smoke-a2a-http.ts`
+- `scripts/check-a2a-public-readiness.ts`
+- `scripts/a2a-public-readiness.test.ts`
+- `scripts/check-product-status.ts`
+- `scripts/check-launch-readiness.ts`
+- `docs/agentic-gaskit/a2a-public-readiness.md`
+- `docs/agentic-gaskit/external-api-notes.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/overview.md`
+- `docs/CODEBASE_MAP.md`
+- `README.md`
+
+Acceptance criteria:
+
+- The local A2A HTTP handler supports authenticated
+  `/tasks/{task_id}/pushNotificationConfigs` collection create/list and item
+  get/delete routes when a local push config store is supplied.
+- Push config creation requires the route task to exist and rejects mismatched
+  body task ids.
+- Callback URLs must be HTTPS and must not include credentials, fragments,
+  loopback hosts, private IPs, link-local IPs, or multicast/reserved IP ranges.
+- Webhook `token` and authentication credential material are rejected and are
+  not stored or echoed in responses.
+- Authentication scheme declarations are preserved as non-secret metadata.
+- `npm run smoke:a2a-http` proves local push config create/list and credential
+  rejection without delivering a webhook.
+- `npm run proof:a2a-public-readiness` reports local push configuration proof
+  while keeping webhook delivery, public hosting, production JWKS/auth, and
+  external conformance blockers explicit.
+- Product-status and launch-readiness wording no longer imply all push
+  capability is missing, but they still do not mark public A2A interoperability
+  complete.
+
+Verification:
+
+- Focused A2A HTTP handler, A2A HTTP demo, and public-readiness tests.
+- Product-status tests.
+- Launch-readiness tests.
+- Operator-gate tests.
+- Package-script wiring tests.
+- Reviewer-docs regression tests.
+- `npm run smoke:a2a-http`.
+- `npm run proof:a2a-public-readiness`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:local`.
+
+Dependencies:
+Slice 4.10.
+
+Risk:
+Medium. Local config storage can be mistaken for push delivery unless webhook
+delivery and public-infrastructure blockers stay visible. URL validation also
+must not become the only SSRF control for any future outbound delivery feature.
+
+Escalation triggers:
+
+- Any request to deliver push webhooks, store callback credentials, operate a
+  public A2A host, or claim external conformance without a separate
+  operator-approved security and infrastructure slice.
+
 ## Slice 5.1: Marketplace Readiness Gate
 
 User-visible outcome:

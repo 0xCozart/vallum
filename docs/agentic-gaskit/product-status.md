@@ -10,9 +10,9 @@ surface in one machine-checkable place:
 - local verification and package release gates that are configured in this
   checkout;
 - documented public testnet digest evidence wiring;
-- A2A public-readiness wiring for local proof, local loopback streaming,
-  public hosting inputs, unsupported push capability, and external conformance
-  blockers;
+- A2A public-readiness wiring for local proof, local loopback streaming, local
+  push notification configuration, public hosting inputs, unsupported webhook
+  delivery, and external conformance blockers;
 - verification-profile wiring that keeps fast iteration separate from the full
   local evidence gate;
 - launch-readiness evidence matrix and operator live-gate runbook wiring;
