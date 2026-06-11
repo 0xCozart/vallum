@@ -1,6 +1,6 @@
 # Handoff: Next Product Build
 
-Last updated: 2026-06-10.
+Last updated: 2026-06-11.
 
 ## Next Session Focus
 
@@ -9,7 +9,7 @@ Continue actual Agentic GasKit product implementation in
 
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5,
 2.6, 2.7, 2.8,
-3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8,
+3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9,
 5.1, 5.2, 6.1, 6.2, 6.3, 7.1, 7.2, 7.3, and 7.4 are implemented, reviewed, locally
 verified, or explicitly deferred with a verified hardening gate.
 Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
@@ -29,6 +29,7 @@ new scope and its unresolved gates.
 
 Recent commits to know:
 
+- `3f166cf` feat: add a2a public readiness gate
 - `6902a53` feat: add testnet digest proof gate
 - `6ea9306` feat: add operator live gate runbook
 - `9635c7d` feat: add launch readiness evidence matrix
@@ -4158,6 +4159,128 @@ Next safe slice:
   and run one explicitly approved live gate; or choose a dedicated
   operator-approved release, public A2A, payment/provider, marketplace,
   custody, or device-safety design slice before claiming launch readiness.
+
+## Completed Slice 4.9: A2A Public Readiness Gate
+
+Implementation commit: `3f166cf` (`feat: add a2a public readiness gate`).
+
+What changed:
+
+- Added `npm run proof:a2a-public-readiness` as a non-networked public
+  readiness report for A2A.
+- Added `scripts/check-a2a-public-readiness.ts` and
+  `scripts/a2a-public-readiness.test.ts`.
+- Wired the A2A readiness proof into `npm run verify:local` after package
+  install smoke and before product-status.
+- Updated product-status, launch-readiness, and operator-gate reporting so
+  public A2A now points to the exact readiness proof command.
+- Added `docs/agentic-gaskit/a2a-public-readiness.md` and docs-site
+  navigation.
+- Updated active goal, full roadmap goal, execution slices, codebase map,
+  external API notes, product-status docs, launch-readiness docs, operator-gate
+  docs, README, overview, quickstart, reviewer walkthrough, milestone proof,
+  package-script tests, product-status tests, launch-readiness tests,
+  operator-gate tests, and reviewer-doc tests.
+
+Important boundary:
+
+- This is a local readiness gate, not public hosting proof.
+- It does not fetch a public Agent Card, run a public A2A server, contact an
+  external conformance service, sign with production keys, or prove streaming
+  or push notification support.
+- The command accepts optional operator-provided environment variables but
+  redacts configured URLs, JWKS URLs, auth decisions, and report paths in
+  output.
+- The official A2A spec refresh recorded in
+  `docs/agentic-gaskit/external-api-notes.md` uses
+  `https://a2a-protocol.org/latest/specification` and keeps this slice scoped
+  to non-networked local readiness.
+
+Commands run:
+
+```bash
+node --import tsx --test scripts/a2a-public-readiness.test.ts scripts/product-status.test.ts scripts/launch-readiness.test.ts scripts/operator-live-gates.test.ts scripts/package-scripts.test.ts
+node --import tsx --test scripts/a2a-public-readiness.test.ts scripts/product-status.test.ts scripts/launch-readiness.test.ts scripts/operator-live-gates.test.ts scripts/package-scripts.test.ts scripts/reviewer-docs.test.ts
+npm run proof:a2a-public-readiness
+npm run docs:check
+npm run secrets:scan
+npm run typecheck
+npm test
+npm run proof:product-status
+npm run proof:launch-readiness
+npm run proof:operator-gates
+npm run verify:local
+git diff --check
+```
+
+Verification result:
+
+- Focused A2A/product/launch/operator/package-script tests passed with 53
+  tests.
+- Focused A2A/product/launch/operator/package-script/reviewer-doc tests passed
+  with 67 tests.
+- `npm run proof:a2a-public-readiness` passed and reported
+  `localProofOk=true`, `publicReady=false`,
+  `A2A_LOCAL_PROOF_CONFIGURED`, missing public Agent Card/base/JWKS/auth
+  configuration, unsupported streaming and push notifications, and missing
+  external conformance report.
+- `npm run docs:check` passed: 36 HTML pages from 35 Markdown sources.
+- `npm run secrets:scan` passed: 318 tracked/staged/untracked text files,
+  findings 0.
+- `npm run typecheck` passed.
+- `npm test` passed with 392 TypeScript tests.
+- `npm run proof:product-status` passed with `localProofOk=true` and
+  `complete=false`; public A2A now points to
+  `npm run proof:a2a-public-readiness`.
+- `npm run proof:launch-readiness` passed with `localEvidenceOk=true` and
+  `launchReady=false`; Phase 4 now includes the A2A public readiness script,
+  docs, and command.
+- `npm run proof:operator-gates` passed with `allGatesClear=false`; public A2A
+  remains `requires-approval`.
+- `npm run verify:local` passed with 392 TypeScript tests, 33 Move tests,
+  typecheck, local gateway smoke, demo dApp smoke, browser smoke, agent escrow
+  smoke, paid MCP tool smoke, data-license smoke, service-bounty smoke,
+  reputation-receipt smoke, subscription smoke, A2A well-known smoke, A2A
+  signed-card smoke, A2A task/message smoke, A2A HTTP smoke, A2A local server
+  smoke, marketplace read-model smoke, testnet readiness example, digest proof,
+  package dry-runs, package install smoke, A2A public readiness proof,
+  product-status proof, launch-readiness proof, operator-gates proof, docs
+  check, and secret scan.
+- `git diff --check` passed.
+
+Hardening notes:
+
+- Unsafe or loopback public URLs fail closed with typed blocker codes.
+- Configured public URLs and paths are redacted from reports and tests assert
+  that raw configured values are not printed.
+- Streaming and push notifications intentionally stay `unsupported` until a
+  dedicated implementation and proof slice exists.
+- Public readiness cannot become true without local proof, safe public config,
+  production auth decision, production JWKS URL, and an external conformance
+  report path.
+- Apex profile still has `setup.reviewNeeded: true`; this slice does not claim
+  Apex verification.
+
+Known unproven claims:
+
+- No public A2A endpoint was hosted or fetched.
+- No production JWKS/key-distribution proof exists.
+- No A2A streaming or push notification implementation exists.
+- No external A2A conformance report was supplied.
+- No configured IOTA Names, IOTA Identity, or VC trust-policy proof passed.
+- No package is published to npm and no registry install/provenance/account
+  ownership proof exists.
+- No live payment/provider settlement, production marketplace, provider
+  verification, custody/KMS, recovery export, or physical device access proof
+  exists.
+
+Next safe slice:
+
+- Provide operator-approved public A2A hosting/JWKS/auth/conformance inputs and
+  run a dedicated public proof slice; or choose another operator-approved live
+  gate such as IOTA Names/Identity/VC, npm release, payment/provider,
+  marketplace, custody, or device-safety design before claiming launch
+  readiness.
 
 ## Completed Slice 7.4: Testnet Digest Proof Gate
 
