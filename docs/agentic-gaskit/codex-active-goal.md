@@ -16,17 +16,11 @@ local proof as live IOTA testnet, production marketplace, public scoring,
 public A2A discovery, production key management, or provider-verification
 proof.
 
-As of the latest completed update, Slice 4.11 is complete: an A2A push
-notification configuration safety gate. It proves local task push-config
-create/list/get/delete through the HTTP-shaped handler without storing webhook
-credentials or delivering webhooks, while preserving public A2A hosting,
-production keys/auth, push webhook delivery, and external conformance blockers.
-
-The current in-progress continuation is Slice 4.12: A2A authenticated extended
-Agent Card local gate. It should prove local `/extendedAgentCard` access behind
-the existing bearer-authenticated A2A HTTP boundary while keeping public
-hosting, production keys/auth, push webhook delivery, and external conformance
-blockers explicit.
+As of the latest completed update, Slice 4.12 is complete: an A2A
+authenticated extended Agent Card local gate. It proves local
+`/extendedAgentCard` access behind the existing bearer-authenticated A2A HTTP
+boundary while keeping public hosting, production keys/auth, push webhook
+delivery, and external conformance blockers explicit.
 
 The current continuation should choose the next safe roadmap slice from
 `docs/agentic-gaskit/full-roadmap-execution-goal.md` and

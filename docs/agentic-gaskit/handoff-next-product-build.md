@@ -9,7 +9,7 @@ Continue actual Agentic GasKit product implementation in
 
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5,
 2.6, 2.7, 2.8,
-3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 4.10, 4.11,
+3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 4.10, 4.11, 4.12,
 5.1, 5.2, 6.1, 6.2, 6.3, 7.1, 7.2, 7.3, 7.4, and 7.5 are implemented, reviewed, locally
 verified, or explicitly deferred with a verified hardening gate.
 Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
@@ -29,6 +29,7 @@ new scope and its unresolved gates.
 
 Recent commits to know:
 
+- `e746126` feat: add a2a extended card auth gate
 - `ded068e` feat: add a2a push config safety gate
 - `bfa6c90` docs: update active goal after a2a streaming
 - `ef015fe` docs: record a2a local streaming handoff
@@ -51,6 +52,118 @@ Recent commits to know:
 - `fe5a6ee` docs: record agentic gaskit github remote
 - `b2d9928` chore: migrate reviewed gaskit local changes
 - `3b34cef` docs: create agentic gaskit migration fork
+
+## Completed Slice 4.12: A2A Authenticated Extended Agent Card Gate
+
+Implementation commit: `e746126` (`feat: add a2a extended card auth gate`).
+
+What changed:
+
+- Added local authenticated `GET /extendedAgentCard` support to the A2A HTTP
+  boundary when an extended Agent Card profile is explicitly configured.
+- Public `GET /.well-known/agent-card.json` now advertises
+  `capabilities.extendedAgentCard: true` only when extended-card support is
+  configured.
+- The extended-card route uses the existing local A2A bearer-auth boundary.
+  Unauthenticated access returns `401`; unsupported methods return `405` with
+  `Allow: GET`.
+- Missing extended-card configuration fails closed with
+  `A2A_EXTENDED_AGENT_CARD_NOT_CONFIGURED` and does not expose profile details.
+- Extended Agent Cards are generated through the same Agent Card generation and
+  redaction path used by public cards.
+- The A2A HTTP demo and `npm run smoke:a2a-http` now prove authenticated
+  extended-card access, two-card skill exposure behavior, push config proof,
+  and no secret-looking material in logs.
+- `npm run proof:a2a-public-readiness` now reports
+  `A2A_EXTENDED_AGENT_CARD_LOCAL_PROOF_CONFIGURED` while keeping public
+  hosting, production auth/JWKS, webhook delivery, and external conformance
+  blockers explicit.
+- Product-status, launch-readiness, overview, README, package docs, active
+  goal, external API notes, execution slices, codebase map, and reviewer docs
+  now distinguish local authenticated extended-card proof from public A2A
+  interoperability.
+
+Commands run:
+
+```bash
+node --import tsx --test packages/standards/src/a2aHttp.test.ts examples/a2a-http/a2a-http-demo.test.ts scripts/a2a-public-readiness.test.ts
+node --import tsx --test packages/standards/src/a2aHttp.test.ts examples/a2a-http/a2a-http-demo.test.ts scripts/a2a-public-readiness.test.ts scripts/product-status.test.ts scripts/launch-readiness.test.ts scripts/operator-live-gates.test.ts scripts/package-scripts.test.ts scripts/reviewer-docs.test.ts
+npm run typecheck && npm run smoke:a2a-http && npm run proof:a2a-public-readiness
+npm run docs:check
+npm run secrets:scan
+npm run verify:fast
+npm run verify:local
+git diff --check
+```
+
+Verification result:
+
+- Focused A2A tests passed with 14 tests.
+- Focused A2A/status/docs/package-script regression tests passed with 78
+  tests.
+- `npm run typecheck` passed.
+- `npm run smoke:a2a-http` passed with public Agent Card status `200`,
+  unauthorized task status `401`, authorized send `200`, hidden artifacts true,
+  canceled status `TASK_STATE_CANCELED`, `extendedAgentCard.status=200`,
+  `extendedAgentCard.skillCount=2`, `pushConfig.status=200`,
+  `pushConfig.listCount=1`, `pushConfig.credentialRejectionStatus=400`, and
+  `logLeaksSecretMaterial=false`.
+- `npm run proof:a2a-public-readiness` passed with `localProofOk=true`,
+  `publicReady=false`, local extended-card proof, local streaming proof, local
+  push config proof, unsupported push delivery, missing public URL/JWKS/auth
+  config, and missing external conformance report.
+- `npm run docs:check` passed: 37 HTML pages from 36 Markdown sources.
+- `npm run secrets:scan` passed: 322 tracked/staged/untracked text files,
+  findings 0.
+- `npm run verify:fast` passed, including build, 401 TypeScript tests, docs
+  check, secret scan, product-status, launch-readiness, and operator-gate
+  reports.
+- `npm run verify:local` passed with 401 TypeScript tests, 33 Move tests,
+  typecheck, local gateway smoke, demo dApp smoke, browser smoke, agent escrow
+  smoke, paid MCP tool smoke, data-license smoke, service-bounty smoke,
+  reputation-receipt smoke, subscription smoke, A2A well-known smoke, A2A
+  signed-card smoke, A2A task/message smoke, A2A HTTP smoke, A2A local server
+  smoke, marketplace read-model smoke, testnet readiness example, digest proof,
+  package dry-runs, package install smoke, A2A public-readiness proof,
+  verification-profile proof, product-status proof, launch-readiness proof,
+  operator-gates proof, docs check, and secret scan.
+- `git diff --check` passed.
+
+Hardening notes:
+
+- This is local authenticated extended-card proof only. It is not production
+  OAuth/mTLS, public hosting, or external A2A conformance proof.
+- Extended cards can expose more capability metadata than public cards; the
+  route remains behind bearer auth and reuses the existing Agent Card redaction
+  path.
+- No public A2A endpoint was hosted or fetched.
+- No production JWKS/key-distribution or production task-route auth proof
+  exists.
+- No webhook delivery implementation exists.
+- Apex profile still has `setup.reviewNeeded: true`; this slice does not claim
+  Apex verification.
+
+Known unproven claims:
+
+- No public A2A endpoint was hosted or fetched.
+- No webhook delivery implementation exists.
+- No production JWKS/key-distribution or production task-route auth proof
+  exists.
+- No external A2A conformance report was supplied.
+- No configured IOTA Names, IOTA Identity, or VC trust-policy proof passed.
+- No package is published to npm and no registry install/provenance/account
+  ownership proof exists.
+- No live payment/provider settlement, production marketplace, provider
+  verification, custody/KMS, recovery export, or physical device access proof
+  exists.
+
+Next safe slice:
+
+- Choose an operator-approved public A2A hosting/JWKS/auth/conformance slice,
+  a push webhook delivery security/infrastructure design slice, or move to
+  another explicit live gate such as IOTA Names/Identity/VC, npm release,
+  payment/provider, marketplace, custody, or device-safety design before
+  claiming launch readiness.
 
 ## Completed Slice 4.11: A2A Push Notification Config Safety Gate
 
