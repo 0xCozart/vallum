@@ -30,6 +30,7 @@ test("direct Docker Gas Station plan uses loopback ports and sanitized config mo
 test("direct Docker Gas Station plan starts Redis and Gas Station on an isolated network", () => {
   const plan = buildGasStationDockerDirectPlan();
   const labels = plan.commands.map((command) => command.label);
+  const startRedis = plan.commands.find((command) => command.label === "start-redis");
 
   assert.deepEqual(labels, [
     "create-network",
@@ -39,6 +40,9 @@ test("direct Docker Gas Station plan starts Redis and Gas Station on an isolated
     "start-gas-station",
   ]);
   assert.equal(plan.networkName, "gaskit-local");
+  assert.equal(plan.redisNetworkAlias, "redis");
   assert.equal(plan.redisContainer, "gaskit-redis");
   assert.equal(plan.gasStationContainer, "gaskit-gas-station");
+  assert.ok(startRedis);
+  assert.match(startRedis.args.join(" "), /--network-alias redis/);
 });

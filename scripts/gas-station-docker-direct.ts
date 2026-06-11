@@ -10,6 +10,7 @@ export interface GasStationDockerDirectOptions {
   readonly env?: Record<string, string | undefined>;
   readonly image?: string;
   readonly networkName?: string;
+  readonly redisNetworkAlias?: string;
   readonly redisContainer?: string;
   readonly gasStationContainer?: string;
 }
@@ -26,6 +27,7 @@ export interface GasStationDockerDirectPlan {
   readonly gasStationContainer: string;
   readonly image: string;
   readonly networkName: string;
+  readonly redisNetworkAlias: string;
   readonly redisContainer: string;
   readonly usesGasStationAuth: boolean;
   readonly commands: readonly GasStationDockerCommand[];
@@ -45,6 +47,9 @@ const DEFAULT_GAS_STATION_CONTAINER = "gaskit-gas-station";
 const DEFAULT_GAS_STATION_IMAGE = "iotaledger/gas-station:latest";
 const DEFAULT_NETWORK = "gaskit-local";
 const DEFAULT_REDIS_CONTAINER = "gaskit-redis";
+const DEFAULT_REDIS_NETWORK_ALIAS = "redis";
+const START_COMMAND_ATTEMPTS = 3;
+const START_COMMAND_RETRY_DELAY_MS = 1_000;
 const REDIS_IMAGE = "redis:7-alpine";
 const usage = `usage: npm exec tsx -- scripts/gas-station-docker-direct.ts [--dry-run] [--execute] [--env-file <path>]
 
@@ -60,6 +65,7 @@ export function buildGasStationDockerDirectPlan(
   const image = env.IOTA_GAS_STATION_IMAGE ?? options.image ?? DEFAULT_GAS_STATION_IMAGE;
   const networkName = options.networkName ?? DEFAULT_NETWORK;
   const redisContainer = options.redisContainer ?? DEFAULT_REDIS_CONTAINER;
+  const redisNetworkAlias = options.redisNetworkAlias ?? DEFAULT_REDIS_NETWORK_ALIAS;
   const gasStationContainer = options.gasStationContainer ?? DEFAULT_GAS_STATION_CONTAINER;
   const usesGasStationAuth = Boolean(env.GAS_STATION_AUTH);
   const configMount = `${resolve(process.cwd(), configPath)}:/app/config.yaml:ro`;
@@ -90,6 +96,7 @@ export function buildGasStationDockerDirectPlan(
     gasStationContainer,
     image,
     networkName,
+    redisNetworkAlias,
     redisContainer,
     usesGasStationAuth,
     commands: [
@@ -118,6 +125,8 @@ export function buildGasStationDockerDirectPlan(
           redisContainer,
           "--network",
           networkName,
+          "--network-alias",
+          redisNetworkAlias,
           "-p",
           "127.0.0.1:6379:6379",
           REDIS_IMAGE,
@@ -138,6 +147,7 @@ export function formatGasStationDockerDirectPlan(plan: GasStationDockerDirectPla
     `configPath=${plan.configPath}`,
     `image=${plan.image}`,
     `network=${plan.networkName}`,
+    `redisNetworkAlias=${plan.redisNetworkAlias}`,
     `redisContainer=${plan.redisContainer}`,
     `gasStationContainer=${plan.gasStationContainer}`,
     `gasStationAuthConfigured=${plan.usesGasStationAuth}`,
@@ -166,12 +176,56 @@ async function runPlan(plan: GasStationDockerDirectPlan, env: Record<string, str
   const runner = createExecRunner(env);
   for (const command of plan.commands) {
     try {
-      await runner(command.command, command.args);
+      await runCommandWithRetries(plan, command, runner);
     } catch (error) {
       if (command.label === "create-network" || command.label.startsWith("remove-existing-")) continue;
-      throw error;
+      throw new Error(`Direct Docker Gas Station command failed at step: ${command.label}.`, {
+        cause: error,
+      });
     }
   }
+}
+
+async function runCommandWithRetries(
+  plan: GasStationDockerDirectPlan,
+  command: GasStationDockerCommand,
+  runner: DockerRunner,
+): Promise<void> {
+  const attempts = command.label.startsWith("start-") ? START_COMMAND_ATTEMPTS : 1;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      await runner(command.command, command.args);
+      return;
+    } catch (error) {
+      if (attempt >= attempts) throw error;
+      await removePossiblyCreatedContainer(plan, command, runner);
+      await delay(START_COMMAND_RETRY_DELAY_MS);
+    }
+  }
+}
+
+async function removePossiblyCreatedContainer(
+  plan: GasStationDockerDirectPlan,
+  command: GasStationDockerCommand,
+  runner: DockerRunner,
+): Promise<void> {
+  const container = command.label === "start-redis"
+    ? plan.redisContainer
+    : command.label === "start-gas-station"
+      ? plan.gasStationContainer
+      : undefined;
+  if (!container) return;
+  try {
+    await runner("docker", ["rm", "-f", container]);
+  } catch {
+    // Best-effort cleanup only. The final failure stays on the required start step.
+  }
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolveDelay) => {
+    setTimeout(resolveDelay, ms);
+  });
 }
 
 function createExecRunner(env: Record<string, string | undefined>): DockerRunner {
@@ -245,7 +299,12 @@ async function main(): Promise<number> {
   console.log(formatGasStationDockerDirectPlan(plan));
 
   if (options.execute) {
-    await runPlan(plan, env);
+    try {
+      await runPlan(plan, env);
+    } catch (error) {
+      console.error(error instanceof Error ? error.message : "Direct Docker Gas Station command failed.");
+      return 1;
+    }
     console.log("executed=true");
     console.log("next=npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json");
   } else {

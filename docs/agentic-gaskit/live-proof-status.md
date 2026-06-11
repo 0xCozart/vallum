@@ -26,19 +26,22 @@ readiness:testnet` passes non-networked readiness. `npm run proof:live-status`
 now reports:
 
 - `TESTNET_READINESS_CONFIG_PRESENT`
-- `GAS_STATION_RUNTIME_READY`
+- `GAS_STATION_DOCKER_DAEMON_UNAVAILABLE`
 - `TESTNET_UPSTREAM_REPORT_FAILED`
 - `IOTA_NAMES_LIVE_CONFIG_MISSING`
 - `IOTA_IDENTITY_LIVE_CONFIG_MISSING`
 - `VC_TRUST_POLICY_CONFIG_MISSING`
 
 `npm run gas-station:runtime-preflight` confirms the ignored local Gas Station
-config exists and Docker client/daemon are reachable on this machine. Docker
-Compose is not required on this machine because the preflight can fall back to
-the direct Docker dry-run path exposed by
-`npm run gas-station:docker-direct -- --dry-run`. This is a local runtime
-prerequisite only; it does not start containers, contact IOTA RPC, call Gas
-Station HTTP endpoints, or reserve gas.
+config exists and Docker client command is available on this machine, but the
+Docker daemon is not currently reachable from this workspace. The preflight now
+requires a real non-empty Docker server version from `docker info`, so Docker
+Desktop/WSL false-ready states are classified as
+`GAS_STATION_DOCKER_DAEMON_UNAVAILABLE`. When the daemon is reachable, Docker
+Compose is not required because the preflight can fall back to the direct
+Docker dry-run path exposed by `npm run gas-station:docker-direct -- --dry-run`.
+This is a local runtime prerequisite only; it does not start containers,
+contact IOTA RPC, call Gas Station HTTP endpoints, or reserve gas.
 
 The configured IOTA testnet RPC endpoint also responded to
 `npm run diagnose:gas-station -- --skip-reserve --report

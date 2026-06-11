@@ -62,7 +62,9 @@ command above. If Compose is unavailable but the Docker client and daemon are
 reachable, review the sanitized direct plan with
 `npm run gas-station:docker-direct -- --dry-run`, then run
 `npm run gas-station:docker-direct -- --execute` only when you intentionally
-want to pull/start the local Redis and Gas Station containers.
+want to pull/start the local Redis and Gas Station containers. The direct path
+adds the `redis` network alias that the rendered local Gas Station config uses
+by default.
 
 ## Production path
 

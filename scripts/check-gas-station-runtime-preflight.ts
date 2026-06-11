@@ -29,6 +29,7 @@ export interface GasStationRuntimePreflightReport {
 
 export interface GasStationRuntimeCommandResult {
   readonly ok: boolean;
+  readonly output?: string;
 }
 
 export type GasStationRuntimeCommandRunner = (
@@ -68,6 +69,10 @@ export async function checkGasStationRuntimePreflight(
       id: "docker-daemon",
       command: "docker info",
       args: ["info", "--format", "{{json .ServerVersion}}"],
+      acceptsOutput: (output) => {
+        const trimmed = output.trim();
+        return /^"[^"]+"$/.test(trimmed) && trimmed !== "\"\"";
+      },
       readyCode: "DOCKER_DAEMON_READY",
       blockedCode: "DOCKER_DAEMON_UNAVAILABLE",
       readyMessage: "Docker daemon is reachable.",
@@ -179,6 +184,7 @@ async function checkCommand(
   runner: GasStationRuntimeCommandRunner,
   options: {
     readonly args: readonly string[];
+    readonly acceptsOutput?: (output: string) => boolean;
     readonly binary?: string;
     readonly blockedCode: string;
     readonly blockedMessage: string;
@@ -189,11 +195,12 @@ async function checkCommand(
   },
 ): Promise<GasStationRuntimePreflightCheck> {
   const result = await runner(options.binary ?? "docker", options.args);
+  const ready = result.ok && (!options.acceptsOutput || options.acceptsOutput(result.output ?? ""));
   return {
     id: options.id,
-    status: result.ok ? "ready" : "blocked",
-    code: result.ok ? options.readyCode : options.blockedCode,
-    message: result.ok ? options.readyMessage : options.blockedMessage,
+    status: ready ? "ready" : "blocked",
+    code: ready ? options.readyCode : options.blockedCode,
+    message: ready ? options.readyMessage : options.blockedMessage,
     command: options.command,
   };
 }
@@ -204,8 +211,8 @@ function createExecRunner(cwd: string): GasStationRuntimeCommandRunner {
       cwd,
       timeout: COMMAND_TIMEOUT_MS,
       windowsHide: true,
-    }, (error) => {
-      resolveRunner({ ok: !error });
+    }, (error, stdout, stderr) => {
+      resolveRunner({ ok: !error, output: `${stdout}${stderr}` });
     });
     child.stdin?.end();
   });

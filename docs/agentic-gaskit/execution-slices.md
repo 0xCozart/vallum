@@ -3869,3 +3869,69 @@ Escalation triggers:
 - Any request to treat direct Docker dry-run or preflight success as live
   Gas Station availability, reserve_gas compatibility, or sponsored execution
   proof.
+
+## Slice 7.11: Direct Docker Runtime Hardening
+
+User-visible outcome:
+The direct Docker fallback and runtime preflight distinguish a real reachable
+Docker daemon from Docker Desktop/WSL false-ready output before attempting to
+start Redis or Gas Station containers.
+
+Likely files:
+
+- `scripts/gas-station-docker-direct.ts`
+- `scripts/gas-station-docker-direct.test.ts`
+- `scripts/check-gas-station-runtime-preflight.ts`
+- `scripts/check-gas-station-runtime-preflight.test.ts`
+- `docs/deployment.md`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- The direct Docker Redis container has a `redis` network alias so it matches
+  the rendered default `redis://redis:6379` Gas Station config.
+- `npm run gas-station:docker-direct -- --execute` reports the failed sanitized
+  plan step without printing Docker stderr, `.env` values, rendered config,
+  sponsor key material, or bearer tokens.
+- Required Docker start steps retry with best-effort cleanup for transient
+  Docker Desktop/WSL daemon availability.
+- `npm run gas-station:runtime-preflight` treats empty Docker server-version
+  output as `GAS_STATION_DOCKER_DAEMON_UNAVAILABLE`, even when the Docker CLI
+  command itself does not surface a normal process error.
+- Public status docs record the current machine blocker as Docker daemon
+  availability when that is the actual preflight result.
+
+Verification:
+
+- Focused direct-Docker, runtime-preflight, status, and package-script tests.
+- `npm run gas-station:docker-direct -- --dry-run`.
+- `npm run gas-station:docker-direct -- --execute`, recording only sanitized
+  failure step output if Docker daemon availability blocks startup.
+- `npm run gas-station:runtime-preflight`, recording the typed current blocker.
+- `npm run proof:live-status`.
+- `npm run proof:product-status`.
+- `npm run proof:launch-readiness`.
+- `npm run proof:operator-gates`.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+
+Dependencies:
+Slice 7.10 and local `.env` testnet-readiness setup.
+
+Risk:
+Medium. Docker CLI behavior varies by host and can appear successful while the
+daemon is unavailable. Treat daemon reachability as machine-specific evidence
+and keep it separate from Gas Station HTTP health, reserve_gas compatibility,
+and sponsored execution proof.
+
+Escalation triggers:
+
+- Any request to ignore `GAS_STATION_DOCKER_DAEMON_UNAVAILABLE` and proceed to
+  live reserve or execute anyway.
+- Any request to print raw Docker logs, rendered Gas Station config, local
+  `.env`, bearer tokens, signer material, or raw upstream errors.
+- Any request to claim direct Docker startup without confirmed running
+  containers and a passing sanitized upstream diagnostic.

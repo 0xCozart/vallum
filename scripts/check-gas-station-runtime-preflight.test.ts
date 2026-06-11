@@ -59,6 +59,28 @@ test("Gas Station runtime preflight blocks when Docker daemon is unavailable", a
   }
 });
 
+test("Gas Station runtime preflight blocks when Docker daemon output is empty", async () => {
+  const cwd = await writeConfigFixture();
+  try {
+    const report = await checkGasStationRuntimePreflight({
+      cwd,
+      runner: async (command, args) => {
+        const key = [command, ...args].join(" ");
+        if (key === "docker --version") return { ok: true, output: "Docker version 28.3.2" };
+        if (key === "docker info --format {{json .ServerVersion}}") return { ok: true, output: "\"\"" };
+        if (key === "docker compose version") return { ok: true, output: "Docker Compose version v2" };
+        return { ok: false, output: "" };
+      },
+    });
+
+    assert.equal(report.ready, false);
+    assert.equal(report.code, "GAS_STATION_DOCKER_DAEMON_UNAVAILABLE");
+    assert.equal(findCheck(report, "docker-daemon").status, "blocked");
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
 test("Gas Station runtime preflight passes through direct Docker fallback when Compose is unavailable", async () => {
   const cwd = await writeConfigFixture();
   try {
@@ -134,9 +156,14 @@ async function writeConfigFixture(): Promise<string> {
 }
 
 function runnerFixture(results: Record<string, boolean>): GasStationRuntimeCommandRunner {
-  return async (command, args) => ({
-    ok: results[[command, ...args].join(" ")] ?? false,
-  });
+  return async (command, args) => {
+    const key = [command, ...args].join(" ");
+    const ok = results[key] ?? false;
+    return {
+      ok,
+      output: ok && key === "docker info --format {{json .ServerVersion}}" ? "\"28.3.2\"" : "",
+    };
+  };
 }
 
 function findCheck(
