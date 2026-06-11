@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
+import { generateKeyPairSync } from "node:crypto";
 import { test } from "node:test";
 
 import { validManifestFixture } from "@iota-gaskit/manifest";
 import type { AgentActionPolicy } from "@iota-gaskit/policy-gateway";
-import { validAgentProfileFixture } from "@iota-gaskit/registry";
+import { A2A_JWKS_WELL_KNOWN_PATH, validAgentProfileFixture } from "@iota-gaskit/registry";
 
 import {
   A2A_AGENT_CARD_WELL_KNOWN_PATH,
@@ -106,6 +107,37 @@ test("local A2A Node server serves Agent Card and authorized task routes over lo
     }
   } finally {
     await server.close();
+  }
+});
+
+test("local A2A Node server serves public JWKS only when explicitly configured", async () => {
+  const { publicKey } = generateKeyPairSync("ed25519");
+  const server = await startLocalA2ANodeServer({
+    ...serverOptions(),
+    publicJwks: {
+      keys: [{ keyId: "agent-card-key-1", publicKey }],
+      cacheControl: "public, max-age=60",
+    },
+  });
+  const unconfigured = await startLocalA2ANodeServer(serverOptions());
+
+  try {
+    const jwks = await requestJson(server.baseUrl, A2A_JWKS_WELL_KNOWN_PATH);
+    const unavailable = await requestJson(unconfigured.baseUrl, A2A_JWKS_WELL_KNOWN_PATH);
+    const wrongMethod = await requestText(server.baseUrl, A2A_JWKS_WELL_KNOWN_PATH, { method: "POST" });
+
+    assert.equal(jwks.status, 200);
+    assert.match(jwks.headers.get("content-type") ?? "", /application\/jwk-set\+json/);
+    assert.equal(jwks.headers.get("cache-control"), "public, max-age=60");
+    assert.equal(jwksBody(jwks.body).keys[0]?.kid, "agent-card-key-1");
+    assert.equal(jwksBody(jwks.body).keys[0]?.alg, "EdDSA");
+    assert.equal(unavailable.status, 404);
+    assert.match(unavailable.text, /A2A_JWKS_UNAVAILABLE/);
+    assert.equal(wrongMethod.status, 405);
+    assert.doesNotMatch(`${jwks.text}\n${unavailable.text}\n${wrongMethod.text}`, /"d"|"p"|"q"|private|secret|mnemonic|seed|Bearer abc|signer_ref/i);
+  } finally {
+    await server.close();
+    await unconfigured.close();
   }
 });
 
@@ -271,6 +303,13 @@ function parseSseEvents(text: string): readonly SseEvent[] {
         : { ...(event ? { event } : {}), data: JSON.parse(data) as unknown };
     })
     .filter((event): event is SseEvent => event !== undefined);
+}
+
+function jwksBody(value: unknown): { readonly keys: readonly Record<string, unknown>[] } {
+  assert.ok(typeof value === "object" && value !== null && "keys" in value);
+  const keys = (value as { readonly keys: unknown }).keys;
+  assert.ok(Array.isArray(keys));
+  return { keys: keys as readonly Record<string, unknown>[] };
 }
 
 function taskFrom(value: unknown): {

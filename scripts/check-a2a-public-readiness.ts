@@ -43,6 +43,7 @@ const REQUIRED_LOCAL_COMMANDS = [
 const REQUIRED_SOURCE_PATHS = [
   "packages/registry/src/a2aCard.ts",
   "packages/registry/src/a2aWellKnown.ts",
+  "packages/registry/src/a2aJwks.ts",
   "packages/standards/src/a2a.ts",
   "packages/standards/src/a2aHttp.ts",
   "packages/standards/src/a2aNodeServer.ts",
@@ -61,6 +62,7 @@ export async function checkA2APublicReadiness(
   const now = options.now ?? new Date();
   const checks = [
     await checkLocalA2AProof(cwd, scripts),
+    localPublicJwksHostingSupport(),
     checkPublicUrl(
       "public-agent-card-url",
       env.A2A_PUBLIC_AGENT_CARD_URL,
@@ -279,6 +281,17 @@ function localExtendedAgentCardSupport(): A2APublicReadinessCheck {
     message: "A2A authenticated extended Agent Card access is locally supported by the HTTP boundary.",
     evidence: "npm run smoke:a2a-http",
     next: "Keep this as local authenticated-card proof only until public hosting, production auth, and external conformance evidence exist.",
+  };
+}
+
+function localPublicJwksHostingSupport(): A2APublicReadinessCheck {
+  return {
+    id: "local-public-jwks-hosting",
+    status: "proven-local",
+    code: "A2A_PUBLIC_JWKS_LOCAL_PROOF_CONFIGURED",
+    message: "A2A public JWKS responses can be served locally with explicitly configured public key material only.",
+    evidence: "node --import tsx --test packages/registry/src/a2aJwks.test.ts packages/standards/src/a2aNodeServer.test.ts",
+    next: "Keep this as local JWKS hosting support only until an operator-approved public HTTPS JWKS URL, endpoint ownership, key rotation policy, and structured public discovery evidence exist.",
   };
 }
 

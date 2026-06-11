@@ -165,12 +165,14 @@ Latest local verification and prior live proof:
   lookup exists; it does not spend gas or use sponsor credentials.
 - `npm run proof:a2a-public-readiness`: deterministic non-networked A2A
   public-readiness gate reports local proof, local authenticated extended-card
-  access, local loopback streaming, local push notification configuration,
-  local injected push delivery, local opt-in push HTTP transport, local
-  callback URL admission hardening, callback host allowlisting, local
-  retry/attempt observability, local durable attempt evidence, local delivery
-  queueing, a local injected-transport worker, public hosting inputs, redacted public discovery report classification, public push delivery structured-report
-  classification, and external conformance structured-report blockers.
+  access, local public JWKS serving, local loopback streaming, local push
+  notification configuration, local injected push delivery, local opt-in push
+  HTTP transport, local callback URL admission hardening, callback host
+  allowlisting, local retry/attempt observability, local durable attempt
+  evidence, local delivery queueing, a local injected-transport worker, public
+  hosting inputs, redacted public discovery report classification, public push
+  delivery structured-report classification, and external conformance
+  structured-report blockers.
 - `npm run smoke:a2a-public-discovery`: opt-in public A2A Agent Card and JWKS
   discovery smoke exists for operator-approved public HTTPS configuration; it
   can emit a structured discovery report for readiness review, is not part of

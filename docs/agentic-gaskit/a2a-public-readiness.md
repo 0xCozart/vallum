@@ -38,6 +38,8 @@ publicReady=false
 - Public base URL and production JWKS URL are HTTPS and non-loopback.
 - Public task route authentication has an explicit decision: bearer, OAuth2,
   or mTLS.
+- Local JWKS responses can be served for explicitly configured public signing
+  keys without exposing private key material.
 - The opt-in public discovery smoke exists for operator-approved public HTTPS
   Agent Card and JWKS probing, but the non-networked readiness command does not
   run it. Readiness remains blocked unless an operator supplies a structured
@@ -91,7 +93,8 @@ report paths, report contents, credentials, tokens, or secret-like values.
 
 - Public A2A hosting.
 - Live public Agent Card discovery.
-- Production Agent Card key management or key rotation.
+- Deployed public JWKS hosting, production Agent Card key management, or key
+  rotation.
 - Production A2A task-route authentication.
 - Production extended-card access control.
 - Public streaming or webhook delivery by itself.

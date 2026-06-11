@@ -1,5 +1,10 @@
 import { createServer, type IncomingHttpHeaders, type IncomingMessage, type ServerResponse } from "node:http";
 import type { AddressInfo } from "node:net";
+import {
+  A2A_JWKS_WELL_KNOWN_PATH,
+  handleA2APublicJwksRequest,
+  type A2APublicJwksOptions,
+} from "@iota-gaskit/registry";
 
 import {
   A2A_HTTP_SEND_MESSAGE_PATH,
@@ -14,6 +19,7 @@ export interface LocalA2ANodeServerOptions extends LocalA2AHttpHandlerOptions {
   readonly port?: number;
   readonly maxBodyBytes?: number;
   readonly allowNonLoopbackHost?: boolean;
+  readonly publicJwks?: A2APublicJwksOptions;
 }
 
 export interface LocalA2ANodeServer {
@@ -36,6 +42,15 @@ export async function startLocalA2ANodeServer(options: LocalA2ANodeServerOptions
   const server = createServer(async (request, response) => {
     try {
       const body = await readBody(request, options.maxBodyBytes ?? DEFAULT_MAX_BODY_BYTES);
+      if (requestPathname(request.url) === A2A_JWKS_WELL_KNOWN_PATH) {
+        const handled = handleA2APublicJwksRequest({
+          method: request.method,
+          path: request.url,
+        }, options.publicJwks ?? { keys: [] });
+        writeHandledResponse(response, handled.status, handled.headers, handled.json);
+        return;
+      }
+
       if (requestPathname(request.url) === A2A_HTTP_STREAM_MESSAGE_PATH) {
         const handled = await handleLocalA2AHttpRequest({
           method: request.method,

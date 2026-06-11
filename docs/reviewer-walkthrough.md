@@ -124,12 +124,12 @@ Expected current result:
   without contacting IOTA RPC;
 - package dry-runs complete for publishable workspace packages;
 - A2A public-readiness proof reports local A2A evidence, local loopback
-  streaming proof, local authenticated extended-card access, local push
-  notification configuration, local injected push delivery, local opt-in push
-  HTTP transport, callback URL admission hardening, callback host allowlisting,
-  local retry/attempt observability, local durable attempt evidence, local
-  delivery queueing, a local injected-transport worker, public hosting input
-  blockers, redacted structured public discovery report classification,
+  streaming proof, local authenticated extended-card access, local public JWKS
+  serving, local push notification configuration, local injected push delivery,
+  local opt-in push HTTP transport, callback URL admission hardening, callback
+  host allowlisting, local retry/attempt observability, local durable attempt
+  evidence, local delivery queueing, a local injected-transport worker, public
+  hosting input blockers, redacted structured public discovery report classification,
   redacted structured public push delivery report classification, and structured
   external conformance blockers without contacting public endpoints;
 - the opt-in A2A public-discovery smoke is available for approved public HTTPS

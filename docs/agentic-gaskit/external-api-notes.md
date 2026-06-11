@@ -650,6 +650,13 @@ Current planning assumptions:
   prove endpoint ownership, store webhook credentials, persist raw transport
   errors or response bodies, or replace production authentication,
   observability, and conformance evidence.
+- On 2026-06-11, Slice 4.26 adds local public JWKS response helpers and
+  loopback Node server route support for `/.well-known/jwks.json`. The helper
+  accepts explicitly configured public signing keys only and rejects private
+  JWK fields or private key objects before response generation. It does not
+  deploy public JWKS hosting, prove endpoint ownership, implement production
+  key rotation, store private keys, or replace structured public discovery,
+  production key management, or conformance evidence.
 
 Implementation checks:
 

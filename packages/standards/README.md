@@ -22,6 +22,9 @@ Current surface:
   signed-card proof.
 - A2A well-known response helpers for serving local Agent Cards at the
   canonical `/.well-known/agent-card.json` path.
+- A2A JWKS response helpers for serving explicitly configured public signing
+  keys at the canonical `/.well-known/jwks.json` path without private key
+  material.
 - Local/mock A2A task and message operation helpers for send-message,
   get-task, list-tasks, and cancel-task semantics, gated by Agentic GasKit
   manifest/policy metadata and log-safe redaction.
@@ -42,8 +45,8 @@ Current surface:
   injected transports, recording status-only attempt metadata without request
   bodies or credential material.
 - Loopback-only Node HTTP server helper for deterministic local A2A discovery
-  and task route smoke proof, with explicit unsafe opt-in required for
-  non-loopback binds.
+  and task route smoke proof, including optional local JWKS serving, with
+  explicit unsafe opt-in required for non-loopback binds.
 
 This package does not operate a production x402 facilitator, replace AP2, hold
 payment credentials, sign payment payloads, submit live settlement

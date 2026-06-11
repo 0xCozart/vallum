@@ -2594,6 +2594,83 @@ Escalation triggers:
   errors, authorization/cookie headers, signer refs, wallet internals, or
   payment secrets in worker output or attempt evidence.
 
+## Slice 4.26: A2A Local JWKS Hosting Helper
+
+User-visible outcome:
+Operators get local `/.well-known/jwks.json` response and loopback route
+support for Agent Card signing public keys before any public A2A hosting proof
+is attempted.
+
+Likely files:
+
+- `packages/registry/src/a2aJwks.ts`
+- `packages/registry/src/a2aJwks.test.ts`
+- `packages/registry/src/index.ts`
+- `packages/registry/README.md`
+- `packages/standards/src/a2aNodeServer.ts`
+- `packages/standards/src/a2aNodeServer.test.ts`
+- `packages/standards/README.md`
+- `scripts/check-a2a-public-readiness.ts`
+- `scripts/a2a-public-readiness.test.ts`
+- `scripts/check-product-status.ts`
+- `scripts/check-launch-readiness.ts`
+- `docs/agentic-gaskit/a2a-public-readiness.md`
+- `docs/agentic-gaskit/external-api-notes.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/overview.md`
+- `docs/CODEBASE_MAP.md`
+- `README.md`
+- `docs/reviewer-walkthrough.md`
+
+Acceptance criteria:
+
+- A local JWKS helper serves `GET /.well-known/jwks.json` with public key
+  material only.
+- The JWKS helper rejects empty key sets, blank key ids, private JWK fields,
+  and private key objects before response generation.
+- Unsupported JWKS paths and methods return safe errors without key ids or
+  private material.
+- The local loopback A2A Node server can serve the JWKS route only when public
+  keys are explicitly configured.
+- Existing Agent Card, task, streaming, and local push behavior remains
+  unchanged.
+- Public-readiness, product-status, launch-readiness, and public docs classify
+  this as local JWKS hosting support only, not deployed public JWKS hosting,
+  endpoint ownership, production key management, key rotation approval, public
+  discovery acceptance, or external conformance.
+
+Verification:
+
+- Focused `packages/registry/src/a2aJwks.test.ts`.
+- Focused `packages/standards/src/a2aNodeServer.test.ts`.
+- Focused A2A public-readiness tests.
+- Product-status tests.
+- Launch-readiness tests.
+- Operator-gate tests.
+- Reviewer-docs regression tests.
+- `npm run proof:a2a-public-readiness`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slice 4.25.
+
+Risk:
+Medium. Local JWKS serving can be mistaken for deployed public key management if
+docs/status gates do not keep public hosting, endpoint ownership, and key
+rotation blocked.
+
+Escalation triggers:
+
+- Any request to store private keys, expose private JWK fields, commit key
+  material, bind a public server, claim endpoint ownership, or accept public
+  discovery from this local helper alone.
+- Any request to treat a locally served JWKS as production key rotation,
+  revocation, or external conformance evidence.
+
 ## Slice 5.1: Marketplace Readiness Gate
 
 User-visible outcome:
