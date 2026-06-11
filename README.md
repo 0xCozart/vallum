@@ -170,6 +170,10 @@ Latest local verification and prior live proof:
   retry/attempt observability, public hosting inputs, redacted public push
   delivery structured-report classification, and external conformance
   structured-report blockers.
+- `npm run smoke:a2a-public-discovery`: opt-in public A2A Agent Card and JWKS
+  discovery smoke exists for operator-approved public HTTPS configuration; it
+  is not part of local verification and does not prove external conformance or
+  public push delivery.
 - `npm run verify:fast`: deterministic fast iteration profile for build,
   TypeScript tests, docs check, secret scan, and non-networked status gates.
 - `npm run proof:verification-profiles`: deterministic non-networked profile

@@ -75,6 +75,16 @@ test("A2A public readiness proof is non-networked and wired into local verificat
   );
 });
 
+test("A2A public discovery smoke is opt-in and excluded from local verification", () => {
+  assert.equal(
+    packageJson.scripts?.["smoke:a2a-public-discovery"],
+    "npm run build && tsx scripts/smoke-a2a-public-discovery.ts",
+  );
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /a2a-public-discovery/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /a2a-public-discovery/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /a2a-public-discovery/);
+});
+
 test("verification profiles keep fast iteration separate from the full local gate", () => {
   assert.equal(
     packageJson.scripts?.["proof:verification-profiles"],

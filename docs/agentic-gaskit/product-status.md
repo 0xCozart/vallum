@@ -16,6 +16,8 @@ surface in one machine-checkable place:
   transport, local retry/attempt observability, public hosting inputs,
   redacted structured public push delivery report classification, and
   structured external conformance blockers;
+- opt-in public A2A discovery/JWKS smoke wiring for operator-approved public
+  HTTPS configuration, kept outside default local verification;
 - verification-profile wiring that keeps fast iteration separate from the full
   local evidence gate;
 - launch-readiness evidence matrix and operator live-gate runbook wiring;
@@ -64,8 +66,8 @@ marketplace, or safety work before those claims can be made.
 - Real npm publication or registry installation.
 - Live IOTA Names, IOTA Identity, VC, payment, or A2A proof unless the
   corresponding opt-in live command is configured and passes.
-- Public A2A hosting, production key management, external conformance, or
-  production auth decisions.
+- Public A2A hosting, production key management, external conformance, public
+  push delivery, or production auth decisions.
 - Production marketplace, provider verification, moderation, public scoring, or
   live settlement.
 - Production custody, KMS, recovery export, staking, bonding, slashing, or

@@ -8,6 +8,11 @@ material, run external conformance tools, deliver webhooks, or store webhook
 credentials. Instead, it classifies the evidence needed before local A2A proof
 can be described as public A2A interoperability.
 
+When an operator has approved public A2A infrastructure and supplied local
+configuration, `npm run smoke:a2a-public-discovery` is the opt-in networked
+probe for public Agent Card and JWKS discovery. It is not part of local
+verification and must not be run as a default proof command.
+
 Run it from the repository root:
 
 ```bash
@@ -33,6 +38,9 @@ publicReady=false
 - Public base URL and production JWKS URL are HTTPS and non-loopback.
 - Public task route authentication has an explicit decision: bearer, OAuth2,
   or mTLS.
+- The opt-in public discovery smoke exists for operator-approved public HTTPS
+  Agent Card and JWKS probing, but the non-networked readiness command does not
+  run it.
 - Authenticated extended Agent Card access is locally supported through the A2A
   HTTP boundary when an extended card is configured.
 - Local loopback SSE streaming proof is configured through the A2A local
@@ -76,6 +84,26 @@ report paths, report contents, credentials, tokens, or secret-like values.
   SSRF infrastructure.
 - External A2A conformance.
 - Provider verification or production trust.
+
+## Opt-In Public Discovery Smoke
+
+Run only after operator approval and with public A2A configuration outside
+committed files:
+
+```bash
+npm run smoke:a2a-public-discovery
+```
+
+The command contacts the configured public Agent Card URL and JWKS URL. It
+requires public HTTPS, rejects loopback URLs, bounds response size and timeout,
+validates Agent Card JSON shape, verifies the advertised HTTP+JSON interface
+matches `A2A_PUBLIC_BASE_URL`, checks auth scheme alignment with
+`A2A_PUBLIC_TASK_AUTH_DECISION`, and rejects secret-like public Agent Card
+fields or private JWK material. Its formatted output redacts configured URLs,
+auth decisions, response bodies, and key ids.
+
+Passing this smoke is still not external conformance, public push webhook
+delivery, production key-rotation approval, or provider verification.
 
 ## Operator Inputs
 

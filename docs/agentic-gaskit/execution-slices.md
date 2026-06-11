@@ -2115,6 +2115,76 @@ Escalation triggers:
   public endpoints from the readiness command, or treat a structured report as
   automatic public A2A completion without operator review.
 
+## Slice 4.18: A2A Public Discovery Proof Harness
+
+User-visible outcome:
+Operators get an opt-in command for public Agent Card and JWKS discovery proof
+after public A2A infrastructure is approved and configured outside the repo.
+
+Likely files:
+
+- `scripts/smoke-a2a-public-discovery.ts`
+- `scripts/a2a-public-discovery-smoke.test.ts`
+- `scripts/package-scripts.test.ts`
+- `scripts/check-product-status.ts`
+- `scripts/check-operator-live-gates.ts`
+- `docs/agentic-gaskit/a2a-public-readiness.md`
+- `docs/agentic-gaskit/external-api-notes.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/overview.md`
+- `docs/CODEBASE_MAP.md`
+- `README.md`
+
+Acceptance criteria:
+
+- `npm run smoke:a2a-public-discovery` is available as an opt-in command and is
+  excluded from `verify:fast`, `verify:local`, and `grant:check`.
+- Missing or unsafe public discovery configuration is blocked before network
+  contact and formatted output redacts configured values.
+- The command only probes public HTTPS, non-loopback Agent Card and JWKS URLs,
+  with bounded response size, timeout, and no redirects followed automatically.
+- Public Agent Card validation checks JSON shape, `HTTP+JSON` interface binding
+  to `A2A_PUBLIC_BASE_URL`, configured task-auth decision alignment, and absence
+  of secret-like public fields.
+- JWKS validation checks non-empty public keys with key ids and rejects private
+  JWK material.
+- Passing proof remains public discovery/JWKS evidence only. It is not external
+  conformance, public push webhook delivery, production key-rotation approval,
+  production auth approval, provider verification, live IOTA proof, or launch
+  readiness.
+
+Verification:
+
+- Focused public discovery smoke tests.
+- Package-script tests.
+- Product-status tests.
+- Launch-readiness tests.
+- Operator-gate tests.
+- Reviewer-docs regression tests.
+- `npm run proof:a2a-public-readiness`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slice 4.17.
+
+Risk:
+Medium to high. This is an opt-in networked public A2A proof command, so it
+must stay outside default local verification, redact configured values, and
+avoid turning public discovery/JWKS reachability into broader conformance or
+production-readiness claims.
+
+Escalation triggers:
+
+- Any request to put the public discovery smoke in default verification, print
+  configured URLs or response bodies, send task messages, post webhooks, store
+  credentials, follow redirects automatically, or claim external conformance
+  from discovery/JWKS reachability alone.
+
 ## Slice 5.1: Marketplace Readiness Gate
 
 User-visible outcome:

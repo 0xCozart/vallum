@@ -591,6 +591,14 @@ Current planning assumptions:
   endpoints, post webhooks, run conformance tooling, publish JWKS, operate
   workers, persist queues, or accept public A2A interoperability without
   operator review.
+- On 2026-06-11, Slice 4.18 adds an opt-in public A2A discovery smoke command
+  for operator-approved public infrastructure. The command fetches only
+  configured public HTTPS Agent Card and JWKS URLs, validates Agent Card JSON
+  shape, HTTP+JSON public base URL binding, task-auth decision alignment, and
+  public JWKS key shape, and rejects secret-like Agent Card fields or private
+  JWK material. It is not part of default verification and does not send A2A
+  task messages, post webhooks, run external conformance tooling, prove key
+  rotation, or accept launch readiness by itself.
 
 Implementation checks:
 

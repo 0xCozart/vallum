@@ -130,6 +130,8 @@ Expected current result:
   blockers, redacted structured public push delivery report classification,
   and structured external conformance blockers without contacting public
   endpoints;
+- the opt-in A2A public-discovery smoke is available for approved public HTTPS
+  Agent Card/JWKS probing, but is not part of local verification;
 - verification-profile proof reports the fast iteration profile and confirms
   reviewer/grant proof still uses the full local gate;
 - product-status proof reports local verification and package gates separately

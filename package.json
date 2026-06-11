@@ -28,6 +28,7 @@
     "smoke:a2a-task-message": "npm run build && tsx scripts/smoke-a2a-task-message.ts",
     "smoke:a2a-http": "npm run build && tsx scripts/smoke-a2a-http.ts",
     "smoke:a2a-local-server": "npm run build && tsx scripts/smoke-a2a-local-server.ts",
+    "smoke:a2a-public-discovery": "npm run build && tsx scripts/smoke-a2a-public-discovery.ts",
     "smoke:marketplace-read-model": "npm run build && tsx scripts/smoke-marketplace-read-model.ts",
     "smoke:iota-names-live": "npm run build && tsx scripts/smoke-iota-names-live.ts",
     "smoke:iota-identity-live": "npm run build && tsx scripts/smoke-iota-identity-live.ts",

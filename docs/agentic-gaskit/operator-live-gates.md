@@ -46,7 +46,8 @@ hosts, marketplace systems, or physical devices.
   local verification claims.
 - Points public A2A hosting/conformance review at the non-networked
   `npm run proof:a2a-public-readiness` command before any public endpoint is
-  operated.
+  probed, then at `npm run smoke:a2a-public-discovery` only after
+  operator-approved public HTTPS configuration exists.
 - Reports command names and next gates without printing configured endpoints,
   profile paths, names, addresses, credentials, tokens, or secret-like values.
 
@@ -69,6 +70,7 @@ npm run proof:launch-readiness
 npm run proof:testnet-digest
 npm run proof:testnet-digest:live
 npm run proof:a2a-public-readiness
+npm run smoke:a2a-public-discovery
 npm run verify:fast
 npm run proof:verification-profiles
 npm run proof:operator-gates

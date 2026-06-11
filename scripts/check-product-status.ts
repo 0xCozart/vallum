@@ -188,9 +188,9 @@ function productionBlockers(): readonly ProductEvidenceCheck[] {
       id: "public-a2a-hosting",
       status: "blocked-production",
       code: "PUBLIC_A2A_HOSTING_UNPROVEN",
-      message: "A2A discovery, task routes, authenticated extended Agent Card access, SSE streaming, push notification configuration, injected push delivery, opt-in push HTTP transport, and local retry/attempt observability are proven locally and over loopback/local handler or mocked paths only; public readiness is reported locally, but no public hosting, production key distribution, valid operator-supplied structured public push delivery report, or valid structured external conformance proof is complete.",
+      message: "A2A discovery, task routes, authenticated extended Agent Card access, SSE streaming, push notification configuration, injected push delivery, opt-in push HTTP transport, and local retry/attempt observability are proven locally and over loopback/local handler or mocked paths only; public readiness is reported locally and an opt-in public discovery/JWKS smoke exists, but no public hosting run, production key distribution acceptance, valid operator-supplied structured public push delivery report, or valid structured external conformance proof is complete.",
       evidence: "npm run proof:a2a-public-readiness",
-      next: "Use npm run proof:a2a-public-readiness to inspect exact public A2A blockers before any operator-approved public hosting/conformance slice.",
+      next: "Use npm run proof:a2a-public-readiness to inspect blockers, then run npm run smoke:a2a-public-discovery only with operator-approved public A2A config.",
     },
     {
       id: "live-payment-provider",
