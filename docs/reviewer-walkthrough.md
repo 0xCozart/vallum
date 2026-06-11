@@ -129,6 +129,7 @@ Expected current result:
   streaming proof, local authenticated extended-card access, local public JWKS
   serving, local static discovery bundle generation, local static discovery
   artifact writing and validation, local static discovery loopback host smoke,
+  local static hosting review,
   local push notification configuration, local injected push delivery, local
   opt-in push HTTP transport, callback URL admission hardening, callback host
   allowlisting, local retry/attempt observability, local durable attempt

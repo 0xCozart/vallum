@@ -92,8 +92,9 @@ local VC trust-policy evaluation, an opt-in IOTA Identity live proof harness,
 and local A2A well-known Agent Card response proof plus local/mock A2A
 signed Agent Card proof, local public JWKS and static discovery bundle
 helpers, static discovery artifact writer and validator, local static
-discovery loopback host smoke, task/message operation helpers, a local A2A
-HTTP-shaped boundary, a loopback HTTP server smoke proof,
+discovery loopback host smoke, static hosting review packet writer,
+task/message operation helpers, a local A2A HTTP-shaped boundary, a loopback
+HTTP server smoke proof,
 and a local read-only marketplace evidence model.
 
 Some production surfaces remain planned roadmap work, including the full
@@ -173,7 +174,7 @@ Latest local verification and prior live proof:
   public-readiness gate reports local proof, local authenticated extended-card
   access, local public JWKS serving, local static discovery bundle generation,
   local static discovery artifact writing and validation, local static
-  discovery loopback host smoke, local loopback streaming, local push
+  discovery loopback host smoke, local static hosting review, local loopback streaming, local push
   notification configuration, local injected push delivery, local opt-in push
   HTTP transport, local callback URL admission hardening, callback host
   allowlisting, local retry/attempt observability, local durable attempt
@@ -193,6 +194,10 @@ Latest local verification and prior live proof:
   generated static discovery directory; it serves the validated `.well-known`
   files locally with manifest-declared headers and fetches them back without
   proving public hosting.
+- `npm run a2a:write-static-hosting-review`: opt-in non-networked review
+  packet for a generated static discovery directory; it records canonical
+  public paths, required headers, command order, operator input names, and
+  proof boundaries without proving public hosting or public discovery.
 - `npm run a2a:write-public-proof-plan`: opt-in non-networked public A2A proof
   plan writer; it emits redacted command order, blocker codes, and operator
   input names without contacting public endpoints.

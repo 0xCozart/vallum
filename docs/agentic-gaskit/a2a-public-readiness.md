@@ -25,6 +25,14 @@ discovery files over loopback, applies the manifest-declared content headers,
 fetches the Agent Card and JWKS back locally, and still prints
 `publicHostingProven=false`.
 
+Operators can then write a redacted static-hosting review packet with
+`npm run a2a:write-static-hosting-review`. That command validates the same
+generated directory and emits schema version, kind, canonical public paths,
+required headers, command order, operator input names, and safety boundaries
+without printing configured public URLs, local output paths, key ids, report
+paths, credentials, response bodies, or raw artifact contents. It still reports
+`publicHostingProven=false` and `publicDiscoveryProven=false`.
+
 Operators can write a redacted local proof plan with
 `npm run a2a:write-public-proof-plan`. That command reads the same
 non-networked readiness gates and emits command order, blocker codes, operator
@@ -77,6 +85,10 @@ publicReady=false
 - Generated static discovery directories can be served and fetched over
   loopback with manifest-declared content headers after local artifact
   validation.
+- Generated static discovery directories can produce a redacted local
+  static-hosting review packet before upload, including canonical public
+  paths, required headers, command order, and public-proof boundaries without
+  exposing configured URLs or local paths.
 - A redacted local public proof plan can be generated from the current
   readiness gates before any operator-approved public probing.
 - The opt-in public discovery smoke exists for operator-approved public HTTPS
@@ -136,7 +148,7 @@ report paths, report contents, credentials, tokens, or secret-like values.
   rotation.
 - Deployed static discovery artifacts, endpoint ownership, or public discovery
   acceptance from local bundle generation, local file writing, local artifact
-  validation, or local loopback serving alone.
+  validation, local loopback serving, or local static-hosting review alone.
 - Production A2A task-route authentication.
 - Production extended-card access control.
 - Public streaming or webhook delivery by itself.
@@ -201,6 +213,24 @@ the manifest-declared content-type and cache metadata through local fetches,
 and redacts public URLs and key ids from formatted output. It is host-semantics
 proof only; public hosting still requires an operator-approved HTTPS endpoint,
 structured public discovery evidence, and external conformance review.
+
+Write a redacted static-hosting review packet for the generated directory:
+
+```bash
+npm run a2a:write-static-hosting-review -- \
+  --out-dir tmp/a2a-public \
+  --expected-public-base-url https://agents.example/a2a \
+  --expected-public-jwks-url https://agents.example/.well-known/jwks.json \
+  --out tmp/a2a-static-hosting-review.json
+```
+
+The review packet validates the local artifact bundle first, then records only
+reviewable metadata: schema version, kind, canonical public file paths,
+required response headers, command order, operator input names, and boundaries.
+It is safe for local handoff review but still reports
+`publicHostingProven=false` and `publicDiscoveryProven=false`; public proof
+requires hosting the files on an approved HTTPS endpoint and recording a
+structured public discovery report.
 
 ## Public Proof Plan
 

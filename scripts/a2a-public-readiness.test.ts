@@ -30,6 +30,8 @@ test("A2A public readiness reports local proof while public gates remain blocked
     assert.equal(findCheck(report, "local-static-discovery-artifact-validator").code, "A2A_STATIC_DISCOVERY_ARTIFACT_VALIDATOR_LOCAL_PROOF_CONFIGURED");
     assert.equal(findCheck(report, "local-static-discovery-host-smoke").status, "proven-local");
     assert.equal(findCheck(report, "local-static-discovery-host-smoke").code, "A2A_STATIC_DISCOVERY_LOCAL_HOST_SMOKE_CONFIGURED");
+    assert.equal(findCheck(report, "local-static-hosting-review").status, "proven-local");
+    assert.equal(findCheck(report, "local-static-hosting-review").code, "A2A_STATIC_HOSTING_REVIEW_LOCAL_PROOF_CONFIGURED");
     assert.equal(findCheck(report, "local-public-proof-plan").status, "proven-local");
     assert.equal(findCheck(report, "local-public-proof-plan").code, "A2A_PUBLIC_PROOF_PLAN_LOCAL_PROOF_CONFIGURED");
     assert.equal(findCheck(report, "public-agent-card-url").code, "A2A_PUBLIC_AGENT_CARD_URL_MISSING");
@@ -175,6 +177,7 @@ test("A2A public readiness accepts redacted public config and existing conforman
     assert.equal(findCheck(report, "local-static-discovery-artifact-writer").status, "proven-local");
     assert.equal(findCheck(report, "local-static-discovery-artifact-validator").status, "proven-local");
     assert.equal(findCheck(report, "local-static-discovery-host-smoke").status, "proven-local");
+    assert.equal(findCheck(report, "local-static-hosting-review").status, "proven-local");
     assert.equal(findCheck(report, "local-public-proof-plan").status, "proven-local");
     assert.equal(findCheck(report, "public-push-delivery").status, "blocked-conformance");
     assert.equal(findCheck(report, "public-push-delivery").code, "A2A_PUBLIC_PUSH_DELIVERY_REPORT_MISSING");
@@ -342,6 +345,7 @@ async function writeA2AEvidence(): Promise<string> {
     "scripts/check-a2a-static-discovery-bundle.ts",
     "scripts/smoke-a2a-static-discovery-local.ts",
     "scripts/write-a2a-static-discovery-bundle.ts",
+    "scripts/write-a2a-static-hosting-review.ts",
     "scripts/smoke-a2a-local-server.ts",
   ]) {
     await mkdir(dirname(join(cwd, path)), { recursive: true });

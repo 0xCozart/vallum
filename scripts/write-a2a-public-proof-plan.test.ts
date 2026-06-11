@@ -40,6 +40,7 @@ test("A2A public proof plan reports current blockers without configured values",
     assert.ok(plan.blockerCodes.includes("A2A_EXTERNAL_CONFORMANCE_REPORT_NOT_FOUND"));
     assert.ok(plan.readyApprovalCodes.includes("A2A_PUBLIC_TASK_AUTH_DECISION_PRESENT"));
     assert.ok(plan.requiredOperatorInputs.includes("A2A_PUBLIC_DISCOVERY_REPORT"));
+    assert.ok(plan.commands.some((command) => command.id === "write-static-hosting-review" && !command.contactsPublicNetwork));
     assert.ok(plan.commands.some((command) => command.id === "smoke-public-discovery" && command.contactsPublicNetwork));
     assert.doesNotMatch(formatted, /agents\.example|oauth2|missing-discovery-report|missing-push-report|missing-conformance-report/);
   } finally {
@@ -84,6 +85,7 @@ async function writeA2AEvidence(): Promise<string> {
     "scripts/check-a2a-static-discovery-bundle.ts",
     "scripts/smoke-a2a-static-discovery-local.ts",
     "scripts/write-a2a-static-discovery-bundle.ts",
+    "scripts/write-a2a-static-hosting-review.ts",
     "scripts/smoke-a2a-local-server.ts",
   ]) {
     await mkdir(dirname(join(cwd, path)), { recursive: true });

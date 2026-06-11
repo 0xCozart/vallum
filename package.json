@@ -32,6 +32,7 @@
     "a2a:write-public-proof-plan": "npm run build && tsx scripts/write-a2a-public-proof-plan.ts",
     "a2a:write-static-discovery-bundle": "npm run build && tsx scripts/write-a2a-static-discovery-bundle.ts",
     "a2a:check-static-discovery-bundle": "npm run build && tsx scripts/check-a2a-static-discovery-bundle.ts",
+    "a2a:write-static-hosting-review": "npm run build && tsx scripts/write-a2a-static-hosting-review.ts",
     "smoke:a2a-static-discovery-local": "npm run build && tsx scripts/smoke-a2a-static-discovery-local.ts",
     "smoke:marketplace-read-model": "npm run build && tsx scripts/smoke-marketplace-read-model.ts",
     "smoke:iota-names-live": "npm run build && tsx scripts/smoke-iota-names-live.ts",

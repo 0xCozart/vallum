@@ -58,6 +58,10 @@ It also includes the first Agentic GasKit implementation slices:
 - local static A2A discovery loopback host smoke for serving validated
   `.well-known` files with manifest-declared headers before public hosting
   review, without proving public hosting
+- local static A2A hosting review artifact writer for validating generated
+  discovery artifacts and emitting redacted canonical paths, required headers,
+  command order, operator input names, and proof boundaries before public
+  hosting review, without proving public hosting or public discovery
 - local A2A Agent Card JWS signing and trusted-key verification smoke proof
 - local A2A task/message operation helpers and smoke proof
 - local A2A HTTP-shaped handler and smoke proof for public discovery plus
@@ -96,8 +100,9 @@ It also includes the first Agentic GasKit implementation slices:
   hardening, local callback host allowlisting, local retry/attempt
   observability, local durable attempt evidence, local delivery queueing, a
   local injected-transport worker,
-  redacted structured public discovery, public push delivery, and external
-  conformance report inputs, and external conformance blockers
+  redacted static-hosting review, structured public discovery, public push
+  delivery, external conformance report inputs, and external conformance
+  blockers
 - opt-in public A2A discovery smoke for operator-approved public HTTPS Agent
   Card and JWKS probing with optional structured report output, excluded from
   default local verification
@@ -215,6 +220,9 @@ roadmap unless later slices implement and verify them.
 - A2A static discovery local host smoke:
   `scripts/smoke-a2a-static-discovery-local.ts`,
   `scripts/smoke-a2a-static-discovery-local.test.ts`
+- A2A static hosting review:
+  `scripts/write-a2a-static-hosting-review.ts`,
+  `scripts/write-a2a-static-hosting-review.test.ts`
 - Product status proof: `docs/agentic-gaskit/product-status.md`,
   `scripts/check-product-status.ts`, `scripts/product-status.test.ts`
 - Launch readiness evidence:

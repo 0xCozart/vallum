@@ -52,6 +52,7 @@ const REQUIRED_SOURCE_PATHS = [
   "scripts/check-a2a-static-discovery-bundle.ts",
   "scripts/smoke-a2a-static-discovery-local.ts",
   "scripts/write-a2a-static-discovery-bundle.ts",
+  "scripts/write-a2a-static-hosting-review.ts",
   "scripts/smoke-a2a-local-server.ts",
 ] as const;
 
@@ -71,6 +72,7 @@ export async function checkA2APublicReadiness(
     localStaticDiscoveryArtifactWriterSupport(),
     localStaticDiscoveryArtifactValidatorSupport(),
     localStaticDiscoveryLocalHostSupport(),
+    localStaticHostingReviewSupport(),
     localPublicProofPlanSupport(),
     checkPublicUrl(
       "public-agent-card-url",
@@ -345,6 +347,17 @@ function localStaticDiscoveryLocalHostSupport(): A2APublicReadinessCheck {
     message: "A2A static discovery artifacts can be served and fetched over loopback with manifest-declared headers after local artifact validation.",
     evidence: "npm run smoke:a2a-static-discovery-local -- --out-dir <dir> --expected-public-base-url <url> --expected-public-jwks-url <url>",
     next: "Keep this as local host-semantics proof only until an operator-approved public HTTPS endpoint serves the artifacts and structured public discovery evidence is accepted.",
+  };
+}
+
+function localStaticHostingReviewSupport(): A2APublicReadinessCheck {
+  return {
+    id: "local-static-hosting-review",
+    status: "proven-local",
+    code: "A2A_STATIC_HOSTING_REVIEW_LOCAL_PROOF_CONFIGURED",
+    message: "A2A static discovery artifacts can produce a redacted local hosting-review packet with canonical paths, required headers, command order, and public-proof boundaries.",
+    evidence: "npm run a2a:write-static-hosting-review -- --out-dir <dir> --expected-public-base-url <url> --expected-public-jwks-url <url> --out <review.json>",
+    next: "Keep this as local review evidence only until an operator-approved public HTTPS endpoint serves the artifacts and structured public discovery evidence is accepted.",
   };
 }
 

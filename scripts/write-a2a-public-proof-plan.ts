@@ -80,6 +80,12 @@ const PLAN_COMMANDS: readonly A2APublicProofPlanCommand[] = [
     requiresOperatorApproval: false,
   },
   {
+    id: "write-static-hosting-review",
+    command: "npm run a2a:write-static-hosting-review -- --out-dir <dir> --expected-public-base-url <url> --expected-public-jwks-url <url> --out <review.json>",
+    contactsPublicNetwork: false,
+    requiresOperatorApproval: false,
+  },
+  {
     id: "smoke-public-discovery",
     command: "npm run smoke:a2a-public-discovery -- --report <local-report-path>",
     contactsPublicNetwork: true,

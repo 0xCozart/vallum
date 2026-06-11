@@ -162,6 +162,10 @@ test("A2A static discovery bundle tools are opt-in and excluded from local verif
     "npm run build && tsx scripts/check-a2a-static-discovery-bundle.ts",
   );
   assert.equal(
+    packageJson.scripts?.["a2a:write-static-hosting-review"],
+    "npm run build && tsx scripts/write-a2a-static-hosting-review.ts",
+  );
+  assert.equal(
     packageJson.scripts?.["smoke:a2a-static-discovery-local"],
     "npm run build && tsx scripts/smoke-a2a-static-discovery-local.ts",
   );
@@ -171,6 +175,9 @@ test("A2A static discovery bundle tools are opt-in and excluded from local verif
   assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /check-static-discovery-bundle/);
   assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /check-static-discovery-bundle/);
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /check-static-discovery-bundle/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /write-static-hosting-review/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /write-static-hosting-review/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /write-static-hosting-review/);
   assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /a2a-static-discovery-local/);
   assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /a2a-static-discovery-local/);
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /a2a-static-discovery-local/);

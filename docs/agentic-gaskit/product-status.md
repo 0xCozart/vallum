@@ -13,7 +13,7 @@ surface in one machine-checkable place:
 - A2A public-readiness wiring for local proof, local authenticated extended
   Agent Card access, local public JWKS serving, local static discovery bundle
   generation, local static discovery artifact writing and validation, local
-  static discovery loopback host smoke, local loopback streaming, local push
+  static discovery loopback host smoke, local static hosting review, local loopback streaming, local push
   notification configuration, local injected push delivery, local opt-in push
   HTTP transport, callback URL admission hardening, callback host allowlisting,
   local retry/attempt observability, local durable attempt evidence, local
