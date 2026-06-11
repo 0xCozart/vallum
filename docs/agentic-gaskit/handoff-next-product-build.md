@@ -29,6 +29,20 @@ new scope and its unresolved gates.
 - `upstream` fetches from `https://github.com/0xCozart/iota-gaskit.git`.
 - `upstream` push is disabled.
 
+Latest live-read-only evidence refresh:
+
+- On 2026-06-11 at 05:29:30Z, `npm run proof:testnet-digest:live` passed.
+- The command performed a read-only IOTA testnet RPC lookup for the documented
+  public digest `2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H`.
+- Result: `verified=true`, `effectsStatus=success`, `checkpoint=210668352`,
+  `timestampMs=1777961597133` (`2026-05-05T06:13:17.133Z`).
+- This did not read `.env`, use sponsor credentials, sign, reserve gas,
+  execute a transaction, start Gas Station, or prove current sponsor funding.
+- `npm run proof:live-status` and `npm run proof:operator-gates` still report
+  missing `.env`, IOTA Names config, IOTA Identity config, VC trust-policy
+  config, public A2A proof, npm publication, payment/provider proof,
+  production marketplace, custody, and device-safety blockers.
+
 Recent commits to know:
 
 - `dcb3a86` feat: add a2a static discovery bundle

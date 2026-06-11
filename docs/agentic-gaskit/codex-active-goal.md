@@ -34,6 +34,14 @@ webhook infrastructure, live IOTA proof, npm publication, payment/provider,
 marketplace, custody, device-safety, and external conformance claims remain
 blocked.
 
+As of the latest live-read-only refresh on 2026-06-11, the existing documented
+public IOTA testnet digest was successfully retrieved from the default IOTA
+testnet RPC with `effectsStatus=success`, `checkpoint=210668352`, and
+transaction timestamp `2026-05-05T06:13:17.133Z`. This confirms current
+read-only RPC reachability for the documented digest only. It does not prove a
+new sponsored transaction, local `.env` readiness, current sponsor wallet
+funding, current Gas Station availability, or production readiness.
+
 The next continuation should choose the next safe roadmap slice from
 `docs/agentic-gaskit/full-roadmap-execution-goal.md` and
 `docs/agentic-gaskit/handoff-next-product-build.md`. Good next candidates are
