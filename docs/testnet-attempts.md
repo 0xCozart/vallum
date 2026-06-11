@@ -149,3 +149,42 @@ transactionDigest=2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H
 ```
 
 Outcome: the real IOTA testnet sponsored transaction path is complete end-to-end through local policy gateway, local Gas Station, and testnet RPC.
+
+## 2026-06-11 upstream diagnostic report gate
+
+Local `.env` is present and `npm run readiness:testnet` passes non-networked
+configuration validation. A sanitized upstream diagnostic report path was added
+so future proof gates can distinguish `.env` shape from current Gas Station
+availability.
+
+Command run:
+
+```bash
+npm run diagnose:gas-station -- --skip-reserve --report tmp/gaskit/testnet-upstream-diagnostic.json
+```
+
+Sanitized diagnostic result:
+
+```text
+gasStationUrl=http://127.0.0.1:9527
+iotaRpcUrl=https://api.testnet.iota.cafe
+bearerTokenConfigured=true
+fail: Gas Station root fetch failed
+fail: Gas Station /v1/health fetch failed
+ok: IOTA RPC iota_getLatestCheckpointSequenceNumber HTTP 200 {"jsonrpc":"2.0","id":1,"result":"226298093"}
+skip: reserve_gas compatibility probe
+report=tmp/gaskit/testnet-upstream-diagnostic.json
+```
+
+`npm run proof:live-status`, `npm run proof:product-status`, `npm run
+proof:operator-gates`, and `npm run proof:launch-readiness` now include
+`testnet-upstream` as a separate gate. Current state is
+`TESTNET_UPSTREAM_REPORT_FAILED`: IOTA testnet RPC is reachable, but the
+configured loopback Gas Station is not reachable and reserve_gas compatibility
+has not been proven in the current session.
+
+Outcome: no sponsored transaction was attempted. The next required operator
+action is to start or point `GAS_STATION_URL` at a reachable funded Gas Station,
+rerun the diagnostic without `--skip-reserve` to produce a passing sanitized
+report, then run `npm run execute:testnet-demo` only with explicit operator
+intent.

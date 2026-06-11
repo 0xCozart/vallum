@@ -56,12 +56,16 @@ As of the latest local testnet-readiness refresh on 2026-06-11, `.env` is
 populated outside Git with generated local testnet-readiness values and
 `npm run readiness:testnet` passes. `npm run proof:live-status` and
 `npm run proof:operator-gates` now report testnet readiness as configured /
-ready-to-run. `npm run diagnose:gas-station -- --skip-reserve` reached the
-configured IOTA testnet RPC with HTTP 200 and latest checkpoint `226294570`,
-but the configured local Gas Station loopback root and `/v1/health` endpoint
-were unreachable. This does not prove a new sponsored transaction, current
-sponsor funding, Gas Station availability, IOTA Names/Identity/VC live proof,
-or production readiness.
+ready-to-run. The follow-up `testnet-upstream` gate now requires a sanitized
+diagnostic report proving IOTA RPC, Gas Station reachability, and reserve_gas
+compatibility before fresh sponsored execution is treated as ready. The latest
+`npm run diagnose:gas-station -- --skip-reserve --report
+tmp/gaskit/testnet-upstream-diagnostic.json` reached the configured IOTA
+testnet RPC with HTTP 200 and latest checkpoint `226298093`, but the
+configured local Gas Station loopback root and `/v1/health` endpoint were
+unreachable. Current gate code is `TESTNET_UPSTREAM_REPORT_FAILED`. This does
+not prove a new sponsored transaction, current sponsor funding, Gas Station
+availability, IOTA Names/Identity/VC live proof, or production readiness.
 
 The next continuation should choose the next safe roadmap slice from
 `docs/agentic-gaskit/full-roadmap-execution-goal.md` and

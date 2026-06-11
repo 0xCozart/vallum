@@ -26,21 +26,28 @@ readiness:testnet` passes non-networked readiness. `npm run proof:live-status`
 now reports:
 
 - `TESTNET_READINESS_CONFIG_PRESENT`
+- `TESTNET_UPSTREAM_REPORT_FAILED`
 - `IOTA_NAMES_LIVE_CONFIG_MISSING`
 - `IOTA_IDENTITY_LIVE_CONFIG_MISSING`
 - `VC_TRUST_POLICY_CONFIG_MISSING`
 
 The configured IOTA testnet RPC endpoint also responded to
-`npm run diagnose:gas-station -- --skip-reserve` with HTTP 200 and a latest
+`npm run diagnose:gas-station -- --skip-reserve --report
+tmp/gaskit/testnet-upstream-diagnostic.json` with HTTP 200 and a latest
 checkpoint response. The same diagnostic could not reach the configured local
-Gas Station root or `/v1/health` endpoint at loopback. This means the next
-testnet execution boundary is local Gas Station availability and sponsor
+Gas Station root or `/v1/health` endpoint at loopback, wrote a sanitized
+ignored report, and `npm run proof:live-status` now classifies that evidence as
+`TESTNET_UPSTREAM_REPORT_FAILED`. This means the next testnet execution
+boundary is local Gas Station availability, reserve compatibility, and sponsor
 funding, not `.env` shape.
 
 ## What The Command Proves
 
 - local testnet readiness configuration is present and structurally valid, or
   the exact readiness blocker ids are listed
+- sanitized testnet upstream diagnostic report status is present and proves
+  IOTA RPC, Gas Station reachability, and reserve_gas compatibility, or the
+  exact upstream report blocker is listed
 - IOTA Names live smoke configuration is present and uses an HTTPS or loopback
   GraphQL endpoint, or the exact missing variables are listed
 - IOTA Identity live smoke configuration is present and uses an HTTPS or
@@ -69,6 +76,7 @@ files:
 
 ```bash
 npm run readiness:testnet
+npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run smoke:iota-names-live
 npm run smoke:iota-identity-live
 ```

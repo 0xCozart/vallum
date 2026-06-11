@@ -3360,3 +3360,82 @@ Escalation triggers:
   subtest count.
 - Any request to put live, publication, payment, public A2A, marketplace,
   custody, or physical-device commands in the fast profile.
+
+## Slice 7.7: Testnet Upstream Diagnostic Report Gate
+
+User-visible outcome:
+Operators and future agents can distinguish local `.env` readiness from current
+IOTA RPC, Gas Station reachability, and reserve_gas compatibility evidence
+before attempting a fresh sponsored testnet transaction.
+
+Likely files:
+
+- `scripts/diagnose-gas-station-upstream.ts`
+- `scripts/testnet-upstream-report.ts`
+- `scripts/check-live-proof-status.ts`
+- `scripts/check-product-status.ts`
+- `scripts/check-launch-readiness.ts`
+- `scripts/check-operator-live-gates.ts`
+- `scripts/live-proof-status.test.ts`
+- `scripts/product-status.test.ts`
+- `scripts/launch-readiness.test.ts`
+- `scripts/operator-live-gates.test.ts`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
+- `docs/agentic-gaskit/codex-active-goal.md`
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+- `docs/testnet-attempts.md`
+- `docs/CODEBASE_MAP.md`
+
+Acceptance criteria:
+
+- `npm run diagnose:gas-station -- --report <ignored-json-path>` writes a
+  sanitized JSON report without storing bearer tokens, keypairs, app keys, raw
+  request bodies, raw upstream response bodies, or private paths.
+- The report records schema version, kind, observation time, Gas Station root
+  status, Gas Station `/v1/health` status, IOTA RPC status, reserve_gas probe
+  status, and overall pass/fail.
+- `npm run proof:live-status` includes a non-networked `testnet-upstream` gate
+  that reads the configured report path and fails closed on missing, invalid,
+  stale, failed, or reserve-skipped reports.
+- `npm run proof:product-status`, `npm run proof:launch-readiness`, and
+  `npm run proof:operator-gates` surface `testnet-upstream` as a separate
+  blocker from `testnet-readiness`.
+- A passing upstream report requires current IOTA RPC reachability, Gas Station
+  reachability, and reserve_gas compatibility.
+- The live sponsored execution command remains opt-in and is not added to
+  `verify:local`, `verify:fast`, or `grant:check`.
+
+Verification:
+
+- Focused live-proof, product-status, launch-readiness, operator-gate, and
+  package-script tests.
+- `npm run build`.
+- `npm run diagnose:gas-station -- --skip-reserve --report
+  tmp/gaskit/testnet-upstream-diagnostic.json` on the current machine.
+- `npm run proof:live-status`.
+- `npm run proof:product-status`.
+- `npm run proof:launch-readiness`.
+- `npm run proof:operator-gates`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+
+Dependencies:
+Slices 7.1-7.5 and local `.env` testnet-readiness setup.
+
+Risk:
+Medium. A diagnostic report can be mistaken for sponsored execution unless the
+report gate remains separate from `execute:testnet-demo` and requires reserve
+compatibility before it can pass.
+
+Escalation triggers:
+
+- Any request to run `execute:testnet-demo` without a passing upstream report
+  and explicit operator intent.
+- Any request to commit local diagnostic reports or `.env` values.
+- Any request to treat a skipped reserve probe as fresh sponsored execution
+  readiness.

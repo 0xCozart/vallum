@@ -139,6 +139,12 @@ Confirmed current state:
   non-networked profile audit, so ordinary build/test/improve loops can run a
   bounded subset while `verify:local` and `grant:check` remain the full
   reviewer/release/launch evidence gates.
+  Slice 7.7 adds a sanitized testnet upstream diagnostic report gate. Local
+  `.env` readiness now remains separate from current IOTA RPC reachability,
+  Gas Station root/health reachability, and reserve_gas compatibility proof.
+  The latest current-machine report reaches IOTA testnet RPC but fails Gas
+  Station loopback reachability, so fresh sponsored execution remains blocked
+  by `TESTNET_UPSTREAM_REPORT_FAILED`.
   Slice 4.10 adds local loopback A2A SSE streaming proof for
   `POST /message:stream`; Slice 4.11 adds local A2A push notification
   configuration CRUD that rejects webhook credential storage and unsafe

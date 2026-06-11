@@ -20,16 +20,76 @@ test("live proof status reports exact blockers without secret values", async () 
       report.checks.map((check) => [check.id, check.status, check.code]),
       [
         ["testnet-readiness", "blocked", "TESTNET_ENV_FILE_MISSING"],
+        ["testnet-upstream", "blocked", "TESTNET_UPSTREAM_REPORT_MISSING"],
         ["iota-names-live", "blocked", "IOTA_NAMES_LIVE_CONFIG_MISSING"],
         ["iota-identity-live", "blocked", "IOTA_IDENTITY_LIVE_CONFIG_MISSING"],
         ["vc-validation-live", "blocked", "VC_TRUST_POLICY_CONFIG_MISSING"],
       ],
     );
+    assert.match(formatted, /GASKIT_TESTNET_UPSTREAM_REPORT/);
     assert.match(formatted, /IOTA_NAMES_GRAPHQL_URL/);
     assert.match(formatted, /IOTA_IDENTITY_PROOF_ENDPOINT/);
     assert.match(formatted, /IOTA_IDENTITY_TRUSTED_ISSUER_DIDS/);
     assert.match(formatted, /\.env/);
     assert.doesNotMatch(formatted, /private|mnemonic|bearer|token|secret|iotaprivkey|local-secret/i);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("live proof status marks a passing testnet upstream diagnostic report as ready without printing its path", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  try {
+    await writeFile(join(cwd, "upstream-report.json"), JSON.stringify({
+      schemaVersion: 1,
+      kind: "agentic-gaskit.testnet-upstream-diagnostic",
+      observedAt: new Date().toISOString(),
+      gasStationRoot: { configured: true, ok: true, status: 200 },
+      gasStationV1Health: { configured: true, ok: false, status: 404 },
+      iotaRpc: { configured: true, ok: true, status: 200 },
+      reserveGas: { skipped: false, ok: true, status: 200 },
+      ok: true,
+    }));
+    const report = await checkLiveProofStatus({
+      cwd,
+      env: {
+        GASKIT_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
+      },
+    });
+    const formatted = formatLiveProofStatusReport(report);
+    const upstream = report.checks.find((check) => check.id === "testnet-upstream");
+
+    assert.equal(upstream?.status, "ready");
+    assert.equal(upstream?.code, "TESTNET_UPSTREAM_REPORT_VALID");
+    assert.doesNotMatch(formatted, /upstream-report\.json/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("live proof status blocks skipped reserve diagnostic reports", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  try {
+    await writeFile(join(cwd, "upstream-report.json"), JSON.stringify({
+      schemaVersion: 1,
+      kind: "agentic-gaskit.testnet-upstream-diagnostic",
+      observedAt: new Date().toISOString(),
+      gasStationRoot: { configured: true, ok: true, status: 200 },
+      gasStationV1Health: { configured: true, ok: false, status: 404 },
+      iotaRpc: { configured: true, ok: true, status: 200 },
+      reserveGas: { skipped: true, ok: false },
+      ok: true,
+    }));
+    const report = await checkLiveProofStatus({
+      cwd,
+      env: {
+        GASKIT_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
+      },
+    });
+    const upstream = report.checks.find((check) => check.id === "testnet-upstream");
+
+    assert.equal(upstream?.status, "blocked");
+    assert.equal(upstream?.code, "TESTNET_UPSTREAM_REPORT_RESERVE_SKIPPED");
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }

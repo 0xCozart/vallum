@@ -1,20 +1,29 @@
-import { access } from "node:fs/promises";
-import { resolve } from "node:path";
+import { access, mkdir, writeFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
 
 import { loadEnvFile } from "../apps/policy-gateway-service/src/readiness.js";
+import {
+  TESTNET_UPSTREAM_REPORT_KIND,
+  TESTNET_UPSTREAM_REPORT_SCHEMA_VERSION,
+  type TestnetUpstreamDiagnosticReport,
+  type TestnetUpstreamEndpointCheck,
+  type TestnetUpstreamReserveCheck,
+} from "./testnet-upstream-report.js";
 
 interface CliOptions {
   envFile: string;
   help: boolean;
+  reportPath?: string;
   skipReserve: boolean;
 }
 
-const usage = `usage: npm exec tsx -- scripts/diagnose-gas-station-upstream.ts [--env-file <path>] [--skip-reserve]
+const usage = `usage: npm exec tsx -- scripts/diagnose-gas-station-upstream.ts [--env-file <path>] [--skip-reserve] [--report <path>]
 
 Checks the configured live Gas Station boundary without printing secrets:
 - GAS_STATION_URL reachability and health endpoints
 - IOTA_RPC_URL JSON-RPC connectivity
 - optional minimal reserve_gas compatibility probe using the configured bearer token
+- optional sanitized JSON diagnostic report output
 
 The reserve probe uses a small gas_budget and should only be run against a funded, intended testnet Gas Station.`;
 
@@ -26,6 +35,13 @@ function parseArgs(argv: string[]): CliOptions {
       const value = argv[index + 1];
       if (!value) throw new Error("--env-file requires a path.");
       options.envFile = value;
+      index += 1;
+      continue;
+    }
+    if (arg === "--report") {
+      const value = argv[index + 1];
+      if (!value) throw new Error("--report requires a path.");
+      options.reportPath = value;
       index += 1;
       continue;
     }
@@ -74,15 +90,27 @@ async function fetchJson(url: string, init?: RequestInit): Promise<{ ok: boolean
   return { ok: response.ok, status: response.status, body };
 }
 
-async function checkHttp(name: string, url: string, init?: RequestInit): Promise<boolean> {
+async function checkHttp(name: string, url: string, init?: RequestInit): Promise<TestnetUpstreamEndpointCheck> {
   try {
     const result = await fetchJson(url, init);
     console.log(`${result.ok ? "ok" : "fail"}: ${name} HTTP ${result.status} ${summarizeJson(result.body)}`);
-    return result.ok;
+    return { configured: true, ok: result.ok, status: result.status };
   } catch (error) {
     console.log(`fail: ${name} ${error instanceof Error ? error.message : "request failed"}`);
-    return false;
+    return { configured: true, ok: false };
   }
+}
+
+async function checkReserveGas(url: string, init: RequestInit): Promise<TestnetUpstreamReserveCheck> {
+  const result = await checkHttp("Gas Station reserve_gas compatibility probe", url, init);
+  return { skipped: false, ok: result.ok, status: result.status };
+}
+
+async function writeReport(path: string, report: TestnetUpstreamDiagnosticReport): Promise<void> {
+  const resolved = resolve(process.cwd(), path);
+  await mkdir(dirname(resolved), { recursive: true });
+  await writeFile(resolved, `${JSON.stringify(report, null, 2)}\n`, { mode: 0o600 });
+  console.log(`report=${path}`);
 }
 
 async function main(): Promise<number> {
@@ -116,38 +144,57 @@ async function main(): Promise<number> {
   console.log(`bearerTokenConfigured=${Boolean(token)}`);
 
   let ok = true;
+  let gasStationRoot: TestnetUpstreamEndpointCheck = { configured: Boolean(gasStationUrl), ok: false };
+  let gasStationV1Health: TestnetUpstreamEndpointCheck = { configured: Boolean(gasStationUrl), ok: false };
+  let iotaRpc: TestnetUpstreamEndpointCheck = { configured: Boolean(rpcUrl), ok: false };
+  let reserveGas: TestnetUpstreamReserveCheck = { skipped: options.skipReserve, ok: false };
+
   if (!gasStationUrl) {
     console.log("fail: GAS_STATION_URL is not configured");
     ok = false;
   } else {
-    const healthOk = await checkHttp("Gas Station root", `${gasStationUrl}/`);
-    const v1HealthOk = await checkHttp("Gas Station /v1/health", `${gasStationUrl}/v1/health`);
-    ok = (healthOk || v1HealthOk) && ok;
+    gasStationRoot = await checkHttp("Gas Station root", `${gasStationUrl}/`);
+    gasStationV1Health = await checkHttp("Gas Station /v1/health", `${gasStationUrl}/v1/health`);
+    ok = (gasStationRoot.ok || gasStationV1Health.ok) && ok;
   }
 
   if (!rpcUrl) {
     console.log("fail: IOTA_RPC_URL is not configured");
     ok = false;
   } else {
-    const rpcOk = await checkHttp("IOTA RPC iota_getLatestCheckpointSequenceNumber", rpcUrl, {
+    iotaRpc = await checkHttp("IOTA RPC iota_getLatestCheckpointSequenceNumber", rpcUrl, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "iota_getLatestCheckpointSequenceNumber", params: [] }),
     });
-    ok = rpcOk && ok;
+    ok = iotaRpc.ok && ok;
   }
 
   if (!options.skipReserve && gasStationUrl) {
     const headers: Record<string, string> = { "content-type": "application/json" };
     if (token) headers.authorization = `Bearer ${token}`;
-    const reserveOk = await checkHttp("Gas Station reserve_gas compatibility probe", `${gasStationUrl}/v1/reserve_gas`, {
+    reserveGas = await checkReserveGas(`${gasStationUrl}/v1/reserve_gas`, {
       method: "POST",
       headers,
       body: JSON.stringify({ gas_budget: 50000000, reserve_duration_secs: 120 }),
     });
-    ok = reserveOk && ok;
+    ok = reserveGas.ok && ok;
   } else if (options.skipReserve) {
     console.log("skip: reserve_gas compatibility probe");
+    reserveGas = { skipped: true, ok: false };
+  }
+
+  if (options.reportPath) {
+    await writeReport(options.reportPath, {
+      schemaVersion: TESTNET_UPSTREAM_REPORT_SCHEMA_VERSION,
+      kind: TESTNET_UPSTREAM_REPORT_KIND,
+      observedAt: new Date().toISOString(),
+      gasStationRoot,
+      gasStationV1Health,
+      iotaRpc,
+      reserveGas,
+      ok,
+    });
   }
 
   return ok ? 0 : 1;

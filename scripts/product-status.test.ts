@@ -33,11 +33,12 @@ test("product status reports local proof gates and explicit live blockers withou
     assert.equal(report.complete, false);
     assert.equal(report.localProofOk, true);
     assert.deepEqual(
-      report.checks.slice(0, 6).map((check) => [check.id, check.status, check.code]),
+      report.checks.slice(0, 7).map((check) => [check.id, check.status, check.code]),
       [
         ["local-verification", "proven-local", "LOCAL_VERIFY_SURFACE_CONFIGURED"],
         ["package-release-local", "proven-local", "PACKAGE_RELEASE_GATES_CONFIGURED"],
         ["testnet-readiness", "blocked-live", "TESTNET_ENV_FILE_MISSING"],
+        ["testnet-upstream", "blocked-live", "TESTNET_UPSTREAM_REPORT_MISSING"],
         ["iota-names-live", "blocked-live", "IOTA_NAMES_LIVE_CONFIG_MISSING"],
         ["iota-identity-live", "blocked-live", "IOTA_IDENTITY_LIVE_CONFIG_MISSING"],
         ["vc-validation-live", "blocked-live", "VC_TRUST_POLICY_CONFIG_MISSING"],
@@ -73,11 +74,22 @@ test("product status marks configured live gates ready without contacting endpoi
         "GAS_STATION_BEARER_TOKEN=fake-upstream-bearer-value-with-enough-entropy",
       ].join("\n"),
     );
+    await writeFile(join(cwd, "upstream-report.json"), JSON.stringify({
+      schemaVersion: 1,
+      kind: "agentic-gaskit.testnet-upstream-diagnostic",
+      observedAt: new Date().toISOString(),
+      gasStationRoot: { configured: true, ok: true, status: 200 },
+      gasStationV1Health: { configured: true, ok: false, status: 404 },
+      iotaRpc: { configured: true, ok: true, status: 200 },
+      reserveGas: { skipped: false, ok: true, status: 200 },
+      ok: true,
+    }));
 
     const report = await checkProductStatus({
       cwd,
       scripts: completeScripts(),
       env: {
+        GASKIT_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
         IOTA_NAMES_GRAPHQL_URL: "https://graphql.testnet.example/iota",
         IOTA_NAMES_NAME: "researcher.demo.iota",
         IOTA_NAMES_EXPECTED_ADDRESS: "0x1111111111111111111111111111111111111111111111111111111111111111",
@@ -95,6 +107,7 @@ test("product status marks configured live gates ready without contacting endpoi
     assert.equal(report.complete, false);
     assert.equal(report.localProofOk, true);
     assert.equal(report.checks.find((check) => check.id === "testnet-readiness")?.status, "ready-live");
+    assert.equal(report.checks.find((check) => check.id === "testnet-upstream")?.status, "ready-live");
     assert.equal(report.checks.find((check) => check.id === "iota-names-live")?.status, "ready-live");
     assert.equal(report.checks.find((check) => check.id === "iota-identity-live")?.status, "ready-live");
     assert.equal(report.checks.find((check) => check.id === "vc-validation-live")?.status, "ready-live");

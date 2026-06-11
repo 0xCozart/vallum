@@ -34,7 +34,7 @@ operator-approved proof.
 
 | Area | Current claim | Status boundary |
 | --- | --- | --- |
-| Phase 1 sponsored policy MVP | Local signer-reference wallets, manifests, policy-gated sponsorship, MCP tools, escrow, receipts, documented public testnet digest evidence, and local testnet-readiness config are proven by local checks. | Local proof plus documented prior testnet digest only; new sponsored execution still requires local Gas Station availability, sponsor funding, and explicit operator intent. |
+| Phase 1 sponsored policy MVP | Local signer-reference wallets, manifests, policy-gated sponsorship, MCP tools, escrow, receipts, documented public testnet digest evidence, local testnet-readiness config, and a sanitized upstream diagnostic report path are proven by local checks. | Local proof plus documented prior testnet digest only; new sponsored execution still requires a passing `testnet-upstream` report proving Gas Station reachability and reserve_gas compatibility, sponsor funding, and explicit operator intent. |
 | Phase 2 identity and VC | Profiles, local resolvers, mock Names/Identity adapters, cache behavior, and VC trust policy are locally proven. | Blocked on IOTA Names, IOTA Identity, and VC live-proof configuration. |
 | Phase 3 contract workflows | Escrow, receipt, pay-per-call, data-license, service-bounty, reputation-receipt, and subscription workflows are locally proven. | Physical device access remains safety-gated. |
 | Phase 4 standards bridges | x402, AP2, and A2A mappings are locally proven with fail-closed behavior. A2A public-readiness proof now reports local proof, local authenticated extended-card access, local public JWKS serving, local static discovery bundle generation, local loopback streaming, local push notification configuration, local injected push delivery, local opt-in push HTTP transport, callback URL admission hardening, callback host allowlisting, local retry/attempt observability, local durable attempt evidence, local delivery queueing, a local injected-transport worker, public hosting inputs, redacted structured public discovery report classification, redacted structured public push delivery report classification, and structured external conformance blockers. An opt-in public discovery smoke can probe approved public Agent Card/JWKS config and emit the discovery report. | Blocked on live payment/provider proof, public A2A hosting acceptance, production auth/key management, accepted public discovery evidence, accepted public push webhook delivery evidence, and external conformance. |
@@ -60,6 +60,7 @@ npm run proof:product-status
 npm run proof:live-status
 npm run proof:testnet-digest
 npm run proof:testnet-digest:live
+npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run proof:a2a-public-readiness
 npm run verify:fast
 npm run proof:verification-profiles

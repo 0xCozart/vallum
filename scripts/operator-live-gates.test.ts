@@ -35,6 +35,8 @@ test("operator live gates report current blockers without secret values", async 
     assert.equal(findGate(report, "iota-names-live").contactsLiveService, true);
     assert.equal(findGate(report, "iota-identity-live").status, "requires-approval");
     assert.equal(findGate(report, "testnet-readiness").status, "blocked-config");
+    assert.equal(findGate(report, "testnet-upstream").status, "blocked-config");
+    assert.equal(findGate(report, "testnet-upstream").command, "npm run diagnose:gas-station");
     assert.equal(findGate(report, "npm-registry-publication").status, "requires-approval");
     assert.equal(
       findGate(report, "public-a2a-hosting").command,
@@ -71,6 +73,12 @@ test("operator live gates require approval for configured live endpoint smokes",
   const report = await checkOperatorLiveGates({
     productStatus: productStatusFixture([
       {
+        id: "testnet-upstream",
+        status: "ready-live",
+        code: "TESTNET_UPSTREAM_REPORT_VALID",
+        message: "Testnet upstream diagnostic report proves current IOTA RPC, Gas Station, and reserve_gas compatibility.",
+      },
+      {
         id: "iota-names-live",
         status: "ready-live",
         code: "IOTA_NAMES_LIVE_CONFIG_PRESENT",
@@ -85,7 +93,7 @@ test("operator live gates require approval for configured live endpoint smokes",
     ]),
   });
 
-  for (const id of ["iota-names-live", "iota-identity-live"]) {
+  for (const id of ["testnet-upstream", "iota-names-live", "iota-identity-live"]) {
     const gate = findGate(report, id);
     assert.equal(gate.status, "requires-approval");
     assert.equal(gate.approvalRequired, true);

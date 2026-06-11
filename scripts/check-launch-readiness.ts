@@ -58,11 +58,13 @@ const AREA_DEFINITIONS = [
       "npm run smoke:agent-escrow",
       "npm run proof:testnet-digest",
       "npm run proof:testnet-digest:live",
+      "npm run diagnose:gas-station",
+      "npm run execute:testnet-demo",
       "npm run verify:local",
     ],
-    productCheckIds: [],
+    productCheckIds: ["testnet-upstream"],
     fallbackStatus: "proven-local",
-    next: "Keep live IOTA execution behind configured testnet readiness and operator approval.",
+    next: "Keep live IOTA execution behind configured testnet readiness, passing upstream diagnostics, and operator approval.",
   },
   {
     id: "phase-2-identity-and-vc",
@@ -198,6 +200,7 @@ const AREA_DEFINITIONS = [
     ],
     productCheckIds: [
       "testnet-readiness",
+      "testnet-upstream",
       "npm-registry-publication",
       "public-a2a-hosting",
       "live-payment-provider",

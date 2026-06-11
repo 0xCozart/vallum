@@ -41,6 +41,7 @@ const GATE_COMMANDS: Record<string, string | undefined> = {
   "local-verification": "npm run verify:local",
   "package-release-local": "npm run pack:check && npm run smoke:package-install && npm run publish:dry-run",
   "testnet-readiness": "npm run readiness:testnet",
+  "testnet-upstream": "npm run diagnose:gas-station",
   "iota-names-live": "npm run smoke:iota-names-live",
   "iota-identity-live": "npm run smoke:iota-identity-live",
   "vc-validation-live": "npm run smoke:iota-identity-live",
@@ -53,6 +54,7 @@ const GATE_COMMANDS: Record<string, string | undefined> = {
 };
 
 const LIVE_SERVICE_GATES = new Set([
+  "testnet-upstream",
   "iota-names-live",
   "iota-identity-live",
   "npm-registry-publication",
@@ -62,6 +64,7 @@ const LIVE_SERVICE_GATES = new Set([
 ]);
 
 const APPROVAL_REQUIRED_GATES = new Set([
+  "testnet-upstream",
   "iota-names-live",
   "iota-identity-live",
   "npm-registry-publication",

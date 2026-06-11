@@ -7,6 +7,10 @@ import {
   loadEnvFile,
   type ReadinessCheck,
 } from "../apps/policy-gateway-service/src/readiness.js";
+import {
+  loadTestnetUpstreamReport,
+  validateTestnetUpstreamReport,
+} from "./testnet-upstream-report.js";
 
 export type LiveProofStatus = "ready" | "blocked";
 
@@ -55,6 +59,7 @@ const VC_TRUST_POLICY_STATUS_TYPES = new Set([
   "StatusList2021Entry",
 ]);
 const LIVE_TESTNET_ENV_FILE = ".env";
+const TESTNET_UPSTREAM_REPORT_ENV = "GASKIT_TESTNET_UPSTREAM_REPORT";
 
 export async function checkLiveProofStatus(
   options: CheckLiveProofStatusOptions = {},
@@ -63,17 +68,65 @@ export async function checkLiveProofStatus(
   const envFile = options.envFile ?? LIVE_TESTNET_ENV_FILE;
   const cwd = options.cwd ?? process.cwd();
   const fileEnv = await loadOptionalEnvFile(envFile, cwd);
+  const mergedEnv = mergeEnv(fileEnv, env);
   const checks: LiveProofCheck[] = [
     await checkTestnetReadinessStatus(envFile, cwd),
-    checkIotaNamesStatus(mergeEnv(fileEnv, env)),
-    checkIotaIdentityStatus(mergeEnv(fileEnv, env)),
-    checkVcTrustPolicyStatus(mergeEnv(fileEnv, env)),
+    await checkTestnetUpstreamStatus(mergedEnv, cwd),
+    checkIotaNamesStatus(mergedEnv),
+    checkIotaIdentityStatus(mergedEnv),
+    checkVcTrustPolicyStatus(mergedEnv),
   ];
 
   return {
     ok: checks.every((check) => check.status === "ready"),
     checks,
   };
+}
+
+async function checkTestnetUpstreamStatus(
+  env: Record<string, string | undefined>,
+  cwd: string,
+): Promise<LiveProofCheck> {
+  const reportPath = readEnv(env, TESTNET_UPSTREAM_REPORT_ENV);
+  if (!reportPath) {
+    return {
+      id: "testnet-upstream",
+      status: "blocked",
+      code: "TESTNET_UPSTREAM_REPORT_MISSING",
+      missing: [TESTNET_UPSTREAM_REPORT_ENV],
+      message: "No sanitized testnet upstream diagnostic report is configured.",
+      next: "Run npm run diagnose:gas-station -- --report <ignored-json-path> after Gas Station is intentionally online; use --skip-reserve only for reachability triage.",
+    };
+  }
+
+  try {
+    const report = await loadTestnetUpstreamReport(resolve(cwd, reportPath));
+    const validation = validateTestnetUpstreamReport(report);
+    if (validation.ok) {
+      return {
+        id: "testnet-upstream",
+        status: "ready",
+        code: validation.code,
+        message: validation.message,
+        next: "With explicit operator intent, run npm run execute:testnet-demo to prove a fresh sponsored testnet transaction.",
+      };
+    }
+    return {
+      id: "testnet-upstream",
+      status: "blocked",
+      code: validation.code,
+      message: validation.message,
+      next: "Bring the configured Gas Station upstream online, prove reserve_gas compatibility, regenerate the sanitized report, then rerun this gate.",
+    };
+  } catch {
+    return {
+      id: "testnet-upstream",
+      status: "blocked",
+      code: "TESTNET_UPSTREAM_REPORT_INVALID",
+      message: "Configured testnet upstream diagnostic report could not be loaded or validated.",
+      next: "Regenerate the report with npm run diagnose:gas-station -- --report <ignored-json-path> without committing or printing secrets.",
+    };
+  }
 }
 
 export function formatLiveProofStatusReport(report: LiveProofStatusReport): string {

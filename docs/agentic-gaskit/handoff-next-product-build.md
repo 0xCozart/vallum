@@ -43,11 +43,13 @@ Latest live-read-only evidence refresh:
   readiness, and `npm run proof:live-status` / `npm run proof:operator-gates`
   now classify `testnet-readiness` as `TESTNET_READINESS_CONFIG_PRESENT` /
   `ready-to-run`.
-- `npm run diagnose:gas-station -- --skip-reserve` reached the configured IOTA
-  testnet RPC with HTTP 200 and latest checkpoint `226294570`, but the
+- `npm run diagnose:gas-station -- --skip-reserve --report
+  tmp/gaskit/testnet-upstream-diagnostic.json` reached the configured IOTA
+  testnet RPC with HTTP 200 and latest checkpoint `226298093`, but the
   configured local Gas Station root and `/v1/health` endpoint at loopback were
-  unreachable. This did not reserve gas, spend gas, sign, or execute a
-  transaction.
+  unreachable. This wrote a sanitized ignored diagnostic report, did not
+  reserve gas, spend gas, sign, or execute a transaction, and proof gates now
+  classify `testnet-upstream` as `TESTNET_UPSTREAM_REPORT_FAILED`.
 - Remaining live blockers still include local Gas Station availability,
   sponsor funding/current sponsored execution proof, IOTA Names config, IOTA
   Identity config, VC trust-policy config, public A2A proof, npm publication,
@@ -70,11 +72,11 @@ Latest full local verification refresh:
   tracked/staged/untracked text files with 0 findings.
 - Final reports still intentionally show `product status not-complete`,
   `launch readiness not-ready`, and `operator live gates blocked`.
-- Remaining blockers are still live Gas Station availability, sponsor
-  funding/current sponsored execution proof, missing IOTA Names config, missing
-  IOTA Identity config, missing VC trust-policy config, public A2A proof, npm
-  publication, payment/provider proof, production marketplace, custody, and
-  device-safety gates.
+- Remaining blockers are still `testnet-upstream` / live Gas Station
+  availability, sponsor funding/current sponsored execution proof, missing
+  IOTA Names config, missing IOTA Identity config, missing VC trust-policy
+  config, public A2A proof, npm publication, payment/provider proof,
+  production marketplace, custody, and device-safety gates.
 
 Recent commits to know:
 

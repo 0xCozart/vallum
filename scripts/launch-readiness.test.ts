@@ -18,7 +18,7 @@ test("launch readiness maps local evidence to live and production blockers", asy
 
   assert.equal(report.launchReady, false);
   assert.equal(report.localEvidenceOk, true);
-  assert.equal(report.areas.find((area) => area.id === "phase-1-sponsored-policy-mvp")?.status, "proven-local");
+  assert.equal(report.areas.find((area) => area.id === "phase-1-sponsored-policy-mvp")?.status, "blocked-live");
   assert.equal(report.areas.find((area) => area.id === "phase-2-identity-and-vc")?.status, "blocked-live");
   assert.equal(report.areas.find((area) => area.id === "phase-4-standards-bridges")?.status, "blocked-production");
   assert.equal(report.areas.find((area) => area.id === "phase-6-package-release")?.status, "blocked-production");
@@ -127,6 +127,7 @@ async function writeEvidenceTree(cwd: string): Promise<void> {
 function completeProductStatus(): ProductStatusReport {
   const checks = [
     "testnet-readiness",
+    "testnet-upstream",
     "iota-names-live",
     "iota-identity-live",
     "vc-validation-live",
@@ -160,6 +161,12 @@ function productStatusWithLiveBlockers(): ProductStatusReport {
         status: "blocked-live",
         code: "TESTNET_ENV_FILE_MISSING",
         message: "Synthetic missing testnet env for launch-readiness mapping tests.",
+      },
+      {
+        id: "testnet-upstream",
+        status: "blocked-live",
+        code: "TESTNET_UPSTREAM_REPORT_MISSING",
+        message: "Synthetic missing upstream diagnostic report for launch-readiness mapping tests.",
       },
       {
         id: "iota-names-live",
