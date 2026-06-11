@@ -72,12 +72,16 @@ It also includes the first Agentic GasKit implementation slices:
   or raw transport errors
 - local file-backed A2A push notification delivery queueing with sanitized
   delivery envelopes, public headers, and redacted task payloads
+- local A2A push notification delivery worker that claims one sanitized queued
+  job, uses an explicitly injected transport, records status-only attempt
+  evidence, and completes or fails the local queue entry
 - non-networked A2A public-readiness proof for local A2A evidence, public
   hosting inputs, production JWKS/auth decisions, local authenticated extended
   cards, local loopback streaming, local push configuration, local injected
   push delivery, local opt-in push HTTP transport, local callback URL admission
   hardening, local callback host allowlisting, local retry/attempt
-  observability, local durable attempt evidence, local delivery queueing,
+  observability, local durable attempt evidence, local delivery queueing, a
+  local injected-transport worker,
   redacted structured public discovery, public push delivery, and external
   conformance report inputs, and external conformance blockers
 - opt-in public A2A discovery smoke for operator-approved public HTTPS Agent

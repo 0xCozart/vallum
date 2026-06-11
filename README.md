@@ -169,7 +169,7 @@ Latest local verification and prior live proof:
   local injected push delivery, local opt-in push HTTP transport, local
   callback URL admission hardening, callback host allowlisting, local
   retry/attempt observability, local durable attempt evidence, local delivery
-  queueing, public hosting inputs, redacted public discovery report classification, public push delivery structured-report
+  queueing, a local injected-transport worker, public hosting inputs, redacted public discovery report classification, public push delivery structured-report
   classification, and external conformance structured-report blockers.
 - `npm run smoke:a2a-public-discovery`: opt-in public A2A Agent Card and JWKS
   discovery smoke exists for operator-approved public HTTPS configuration; it

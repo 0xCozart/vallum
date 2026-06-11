@@ -76,12 +76,19 @@ export interface A2APushNotificationDeliveryQueueEntry {
   readonly enqueuedAt: string;
   readonly claimedAt?: string;
   readonly completedAt?: string;
-  readonly status: "queued" | "claimed" | "completed";
+  readonly failedAt?: string;
+  readonly status: "queued" | "claimed" | "completed" | "failed";
   readonly request: A2APushNotificationDeliveryRequest;
 }
 
 export interface A2APushNotificationDeliveryQueueResult {
   readonly entries: readonly A2APushNotificationDeliveryQueueEntry[];
+}
+
+export interface A2APushNotificationDeliveryWorkerResult {
+  readonly status: "empty" | "delivered" | "failed";
+  readonly entry?: A2APushNotificationDeliveryQueueEntry;
+  readonly attempt?: A2APushNotificationDeliveryAttempt;
 }
 
 export interface A2APushNotificationAttemptStore {
@@ -243,6 +250,19 @@ export class JsonFileA2APushNotificationDeliveryQueue {
     return true;
   }
 
+  fail(id: string, options: { readonly now?: Date } = {}): boolean {
+    const entries = this.#read();
+    const index = entries.findIndex((entry) => entry.id === id && entry.status !== "completed" && entry.status !== "failed");
+    if (index < 0) return false;
+    entries[index] = sanitizeQueueEntry({
+      ...entries[index],
+      status: "failed",
+      failedAt: (options.now ?? new Date()).toISOString(),
+    });
+    this.#write(entries);
+    return true;
+  }
+
   #read(): A2APushNotificationDeliveryQueueEntry[] {
     if (!existsSync(this.#filePath)) return [];
     const raw = readFileSync(this.#filePath, "utf8");
@@ -396,6 +416,52 @@ export function queueA2APushNotificationDeliveries(options: {
     { enqueuedAt: (options.now ?? (() => new Date()))() },
   ));
   return { entries };
+}
+
+export async function processNextA2APushNotificationDelivery(options: {
+  readonly queue: JsonFileA2APushNotificationDeliveryQueue;
+  readonly transport: A2APushNotificationTransport;
+  readonly attemptStore?: A2APushNotificationAttemptStore;
+  readonly now?: () => Date;
+}): Promise<A2APushNotificationDeliveryWorkerResult> {
+  const observedAt = (options.now ?? (() => new Date()))();
+  const entry = options.queue.claim({ now: observedAt });
+  if (!entry) return { status: "empty" };
+
+  try {
+    const response = await options.transport(entry.request);
+    const delivered = response.status >= 200 && response.status <= 299;
+    const attempt = {
+      configId: entry.request.config.id,
+      taskId: entry.request.config.taskId,
+      url: entry.request.url,
+      attemptNumber: 1,
+      observedAt: observedAt.toISOString(),
+      status: delivered ? "delivered" : "failed",
+      httpStatus: response.status,
+      ...(delivered ? {} : { errorCode: "A2A_PUSH_TRANSPORT_FAILED" }),
+    } satisfies A2APushNotificationDeliveryAttempt;
+    options.attemptStore?.record(attempt);
+    if (delivered) {
+      options.queue.complete(entry.id, { now: observedAt });
+      return { status: "delivered", entry: options.queue.list().find((candidate) => candidate.id === entry.id), attempt };
+    }
+    options.queue.fail(entry.id, { now: observedAt });
+    return { status: "failed", entry: options.queue.list().find((candidate) => candidate.id === entry.id), attempt };
+  } catch {
+    const attempt = {
+      configId: entry.request.config.id,
+      taskId: entry.request.config.taskId,
+      url: entry.request.url,
+      attemptNumber: 1,
+      observedAt: observedAt.toISOString(),
+      status: "failed",
+      errorCode: "A2A_PUSH_TRANSPORT_FAILED",
+    } satisfies A2APushNotificationDeliveryAttempt;
+    options.attemptStore?.record(attempt);
+    options.queue.fail(entry.id, { now: observedAt });
+    return { status: "failed", entry: options.queue.list().find((candidate) => candidate.id === entry.id), attempt };
+  }
 }
 
 export function buildA2APushNotificationDeliveryRequest(
@@ -609,6 +675,7 @@ function sanitizeQueueEntry(entry: A2APushNotificationDeliveryQueueEntry): A2APu
     enqueuedAt: validAttemptIsoDate(entry.enqueuedAt, "queue enqueue time"),
     ...(entry.claimedAt === undefined ? {} : { claimedAt: validAttemptIsoDate(entry.claimedAt, "queue claim time") }),
     ...(entry.completedAt === undefined ? {} : { completedAt: validAttemptIsoDate(entry.completedAt, "queue completion time") }),
+    ...(entry.failedAt === undefined ? {} : { failedAt: validAttemptIsoDate(entry.failedAt, "queue failure time") }),
     status: validQueueStatus(entry.status),
     request: sanitizeDeliveryRequest(entry.request),
   };
@@ -695,7 +762,7 @@ function validAttemptStatus(value: unknown): A2APushNotificationDeliveryAttempt[
 }
 
 function validQueueStatus(value: unknown): A2APushNotificationDeliveryQueueEntry["status"] {
-  if (value === "queued" || value === "claimed" || value === "completed") return value;
+  if (value === "queued" || value === "claimed" || value === "completed" || value === "failed") return value;
   throw new A2APushNotificationError("A2A_PUSH_CONFIG_INVALID", "A2A push delivery queue status is invalid.");
 }
 

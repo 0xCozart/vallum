@@ -2521,6 +2521,79 @@ Escalation triggers:
   response bodies, raw transport errors, signer refs, wallet internals, or
   payment secrets in queued jobs.
 
+## Slice 4.25: A2A Push Local Delivery Worker
+
+User-visible outcome:
+Operators get a local A2A push delivery worker primitive that processes one
+sanitized queued job with an explicitly injected transport and records
+status-only attempt evidence before any public webhook worker is considered.
+
+Likely files:
+
+- `packages/standards/src/a2aPush.ts`
+- `packages/standards/src/a2aPush.test.ts`
+- `scripts/check-a2a-public-readiness.ts`
+- `scripts/a2a-public-readiness.test.ts`
+- `scripts/check-product-status.ts`
+- `scripts/check-launch-readiness.ts`
+- `docs/agentic-gaskit/a2a-public-readiness.md`
+- `docs/agentic-gaskit/external-api-notes.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/overview.md`
+- `docs/CODEBASE_MAP.md`
+- `README.md`
+- `docs/reviewer-walkthrough.md`
+
+Acceptance criteria:
+
+- The worker claims the next queued local delivery job only when an injected
+  transport is supplied.
+- Successful 2xx transport responses record a delivered attempt and mark the
+  queue entry complete.
+- Non-2xx responses or thrown transport errors record a failed status-only
+  attempt and mark the queue entry failed.
+- Empty queues return a no-op result.
+- Worker results and durable attempt files do not persist raw task prompts,
+  bearer values, signer refs, wallet internals, payment secrets, webhook
+  credentials, authorization headers, cookie headers, response bodies, or raw
+  transport error text.
+- A2A public-readiness, product-status, launch-readiness, and public docs
+  classify this as local worker proof only, not public webhook operation,
+  public delivery proof, endpoint ownership proof, production auth, production
+  observability, or external conformance.
+
+Verification:
+
+- Focused `packages/standards/src/a2aPush.test.ts`.
+- Focused A2A public-readiness tests.
+- Product-status tests.
+- Launch-readiness tests.
+- Operator-gate tests.
+- Reviewer-docs regression tests.
+- `npm run proof:a2a-public-readiness`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slice 4.24.
+
+Risk:
+Medium to high. A local worker can be mistaken for public webhook operation or
+production delivery infrastructure if the docs and status gates do not keep
+those claims blocked.
+
+Escalation triggers:
+
+- Any request to operate public webhooks, prove endpoint ownership, store
+  webhook credentials, claim public push delivery, or treat the injected local
+  worker as production auth or observability evidence.
+- Any request to persist raw task prompts, response bodies, raw transport
+  errors, authorization/cookie headers, signer refs, wallet internals, or
+  payment secrets in worker output or attempt evidence.
+
 ## Slice 5.1: Marketplace Readiness Gate
 
 User-visible outcome:

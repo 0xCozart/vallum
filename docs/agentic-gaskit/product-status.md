@@ -15,9 +15,10 @@ surface in one machine-checkable place:
   configuration, local injected push delivery, local opt-in push HTTP
   transport, callback URL admission hardening, callback host allowlisting,
   local retry/attempt observability, local durable attempt evidence, local
-  delivery queueing, public hosting inputs, redacted structured public
-  discovery report classification, redacted structured public push delivery
-  report classification, and structured external conformance blockers;
+  delivery queueing, a local injected-transport worker, public hosting inputs,
+  redacted structured public discovery report classification, redacted
+  structured public push delivery report classification, and structured
+  external conformance blockers;
 - opt-in public A2A discovery/JWKS smoke wiring for operator-approved public
   HTTPS configuration, kept outside default local verification, with optional
   structured discovery report output;

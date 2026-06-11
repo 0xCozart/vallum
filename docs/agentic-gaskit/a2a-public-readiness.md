@@ -66,6 +66,10 @@ publicReady=false
   or raw transport errors.
 - Local push notification delivery requests can be queued as sanitized
   file-backed jobs with public headers and redacted task payloads.
+- A local push notification delivery worker can claim one sanitized queued job,
+  call an explicitly injected transport, record status-only attempt evidence,
+  and complete or fail the local queue entry without persisting raw transport
+  errors or response bodies.
 - Public push notification webhook delivery remains blocked unless an operator
   supplies an existing local structured public push delivery report after a
   dedicated approved public-infrastructure proof run.
@@ -93,7 +97,8 @@ report paths, report contents, credentials, tokens, or secret-like values.
 - Public streaming or webhook delivery by itself.
 - Production push delivery workers, production observability, auth, or SSRF
   infrastructure beyond the local callback URL admission, host allowlist
-  guards, local durable attempt evidence, and local delivery queue proof.
+  guards, local durable attempt evidence, local delivery queue proof, and local
+  injected-transport worker proof.
 - External A2A conformance.
 - Provider verification or production trust.
 

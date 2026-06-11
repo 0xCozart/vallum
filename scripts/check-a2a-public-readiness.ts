@@ -100,6 +100,7 @@ export async function checkA2APublicReadiness(
     localPushRetryObservabilitySupport(),
     localPushDurableAttemptEvidenceSupport(),
     localPushDeliveryQueueSupport(),
+    localPushDeliveryWorkerSupport(),
     await checkPublicPushDeliveryReport(cwd, env.A2A_PUBLIC_PUSH_DELIVERY_REPORT, {
       expectedPublicBaseUrl: env.A2A_PUBLIC_BASE_URL,
       now,
@@ -366,6 +367,17 @@ function localPushDeliveryQueueSupport(): A2APublicReadinessCheck {
     message: "A2A push notification delivery requests can be queued locally as sanitized file-backed jobs with public headers and redacted task payloads.",
     evidence: "node --import tsx --test packages/standards/src/a2aPush.test.ts",
     next: "Keep this as local queue proof only until public webhook workers, production authentication, endpoint ownership, production observability, and external conformance evidence exist.",
+  };
+}
+
+function localPushDeliveryWorkerSupport(): A2APublicReadinessCheck {
+  return {
+    id: "local-push-delivery-worker",
+    status: "proven-local",
+    code: "A2A_PUSH_DELIVERY_WORKER_LOCAL_PROOF_CONFIGURED",
+    message: "A2A push notification delivery workers can process one local queued job through an explicitly injected transport, record status-only attempts, and complete or fail the local queue entry.",
+    evidence: "node --import tsx --test packages/standards/src/a2aPush.test.ts",
+    next: "Keep this as local worker proof only until public webhook operation, production authentication, endpoint ownership, production observability, and external conformance evidence exist.",
   };
 }
 

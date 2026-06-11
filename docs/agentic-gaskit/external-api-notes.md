@@ -642,6 +642,14 @@ Current planning assumptions:
   does not operate public webhook workers, prove public delivery, store webhook
   credentials, prove endpoint ownership, or replace production authentication,
   observability, and conformance evidence.
+- On 2026-06-11, Slice 4.25 adds a local A2A push delivery worker primitive.
+  The worker claims one sanitized queued job, calls only an explicitly injected
+  transport, records status-only delivery-attempt evidence, and marks the local
+  queue entry complete or failed. It does not install a background service,
+  make default public network calls, operate public webhook infrastructure,
+  prove endpoint ownership, store webhook credentials, persist raw transport
+  errors or response bodies, or replace production authentication,
+  observability, and conformance evidence.
 
 Implementation checks:
 

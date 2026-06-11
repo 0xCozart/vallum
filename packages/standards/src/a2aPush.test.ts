@@ -13,6 +13,7 @@ import {
   createA2APushNotificationConfig,
   createA2APushHttpTransport,
   deliverA2APushNotifications,
+  processNextA2APushNotificationDelivery,
   queueA2APushNotificationDeliveries,
   type A2APushNotificationDeliveryRequest,
   type A2ATask,
@@ -227,6 +228,90 @@ test("A2A push delivery queue persists sanitized local jobs without webhook secr
       /A2A push notification URL must be public HTTPS/,
     );
     assert.doesNotMatch(await readFile(filePath, "utf8"), /should-not-store|authorization|cookie/i);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("A2A push local worker processes queued jobs with injected transport and safe attempts", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "agentic-gaskit-a2a-push-"));
+  const queuePath = join(dir, "queue.json");
+  const attemptsPath = join(dir, "attempts.jsonl");
+  try {
+    const store = new LocalA2APushNotificationStore();
+    const queue = new JsonFileA2APushNotificationDeliveryQueue(queuePath);
+    const attemptStore = new JsonlA2APushNotificationAttemptStore(attemptsPath);
+    createA2APushNotificationConfig({
+      store,
+      taskId: "task-push-1",
+      now,
+      value: {
+        id: "push-1",
+        url: "https://client.example.test/a2a/push",
+      },
+    });
+    queueA2APushNotificationDeliveries({ store, task: taskFixture(), queue, now: () => new Date("2026-06-11T12:00:03.000Z") });
+
+    const captured: A2APushNotificationDeliveryRequest[] = [];
+    const result = await processNextA2APushNotificationDelivery({
+      queue,
+      attemptStore,
+      now: () => new Date("2026-06-11T12:00:04.000Z"),
+      transport: (request) => {
+        captured.push(request);
+        return { status: 202 };
+      },
+    });
+
+    assert.equal(result.status, "delivered");
+    assert.equal(result.attempt?.status, "delivered");
+    assert.equal(result.attempt?.httpStatus, 202);
+    assert.equal(queue.list()[0]?.status, "completed");
+    assert.equal(captured.length, 1);
+    assert.equal(captured[0]?.headers.authorization, undefined);
+    assert.doesNotMatch(captured[0]?.json ?? "", /private prompt|Bearer abc|signer_ref_secret|wallet_secret|payment-secret/i);
+    assert.deepEqual(attemptStore.list(), [result.attempt]);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("A2A push local worker marks failed jobs without leaking raw transport errors", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "agentic-gaskit-a2a-push-"));
+  const queuePath = join(dir, "queue.json");
+  const attemptsPath = join(dir, "attempts.jsonl");
+  try {
+    const store = new LocalA2APushNotificationStore();
+    const queue = new JsonFileA2APushNotificationDeliveryQueue(queuePath);
+    const attemptStore = new JsonlA2APushNotificationAttemptStore(attemptsPath);
+    createA2APushNotificationConfig({
+      store,
+      taskId: "task-push-1",
+      now,
+      value: {
+        id: "push-1",
+        url: "https://client.example.test/a2a/push",
+      },
+    });
+    queueA2APushNotificationDeliveries({ store, task: taskFixture(), queue, now: () => new Date("2026-06-11T12:00:03.000Z") });
+
+    const result = await processNextA2APushNotificationDelivery({
+      queue,
+      attemptStore,
+      now: () => new Date("2026-06-11T12:00:04.000Z"),
+      transport: () => {
+        throw new Error("raw transport failed with Bearer should-not-store and private prompt");
+      },
+    });
+
+    assert.equal(result.status, "failed");
+    assert.equal(result.attempt?.status, "failed");
+    assert.equal(result.attempt?.errorCode, "A2A_PUSH_TRANSPORT_FAILED");
+    assert.equal(queue.list()[0]?.status, "failed");
+    const rawQueue = await readFile(queuePath, "utf8");
+    const rawAttempts = await readFile(attemptsPath, "utf8");
+    assert.doesNotMatch(`${rawQueue}\n${rawAttempts}`, /should-not-store|private prompt|Bearer abc|raw transport|signer_ref_secret|wallet_secret|payment-secret/i);
+    assert.equal((await processNextA2APushNotificationDelivery({ queue, transport: () => ({ status: 202 }) })).status, "empty");
   } finally {
     await rm(dir, { recursive: true, force: true });
   }

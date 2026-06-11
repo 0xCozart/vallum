@@ -124,6 +124,9 @@ Confirmed current state:
   production auth, and public delivery proof. Slice 4.24 adds local
   file-backed sanitized push delivery queueing while still deferring public
   webhook workers, production auth, endpoint ownership, production
+  observability, and public delivery proof. Slice 4.25 adds a local
+  injected-transport worker for one sanitized queued job while still deferring
+  public webhook operation, endpoint ownership, production auth, production
   observability, and public delivery proof.
   Slice 7.5 adds a fast deterministic verification profile plus a
   non-networked profile audit, so ordinary build/test/improve loops can run a
@@ -143,7 +146,8 @@ Confirmed current state:
   public-readiness approval; Slice 4.20 hardens local push callback URL
   admission against query-string credential smuggling; Slice 4.21 adds exact
   local callback-host allowlisting; Slice 4.23 adds local durable sanitized
-  push attempt evidence; Slice 4.24 adds local sanitized delivery queueing.
+  push attempt evidence; Slice 4.24 adds local sanitized delivery queueing;
+  Slice 4.25 adds a local injected-transport worker for one queued job.
   Public hosting acceptance, production keys/auth, public webhook
   workers/queues, persistent production observability, and external conformance
   blockers remain.
@@ -540,10 +544,11 @@ local loopback SSE streaming proof for `POST /message:stream`. Slice 4.11 adds
 local push notification configuration CRUD with webhook credential-storage and
 unsafe callback URL rejection. Slice 4.12 adds local authenticated extended
 Agent Card access. Slice 4.13 adds local injected push delivery envelopes.
-Slice 4.14 adds local mocked opt-in push HTTP transport proof. These slices are
-not public hosting, production key management, public streaming, public push
-webhook infrastructure proof, external conformance, or live A2A discovery
-proof.
+Slice 4.14 adds local mocked opt-in push HTTP transport proof. Slice 4.25 adds
+a local injected-transport delivery worker for one sanitized queued job. These
+slices are not public hosting, production key management, public streaming,
+public push webhook infrastructure proof, external conformance, or live A2A
+discovery proof.
 
 Acceptance criteria:
 
@@ -552,10 +557,11 @@ Acceptance criteria:
 - Public or local server proof serves canonical well-known Agent Card and
   task/message endpoints without leaking private metadata.
 - Auth requirements are explicit and fail closed.
-- Streaming, push notification configuration, injected push delivery, and the
-  opt-in push HTTP transport helper are implemented locally or documented as
-  unsupported capabilities; public webhook delivery infrastructure remains
-  blocked until separately implemented and verified.
+- Streaming, push notification configuration, injected push delivery, the
+  opt-in push HTTP transport helper, local durable attempt evidence, local
+  queueing, and the local injected-transport worker are implemented locally or
+  documented as unsupported capabilities; public webhook delivery
+  infrastructure remains blocked until separately implemented and verified.
 - External A2A conformance proof is recorded, or blocked with exact reason.
 - Public A2A readiness command reports exact local proof, config, unsupported
   capability, and external conformance blockers without printing configured
