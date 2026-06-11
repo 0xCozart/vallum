@@ -576,11 +576,21 @@ Current planning assumptions:
   conformance proof.
 - On 2026-06-11, Slice 4.16 adds a non-networked public push delivery evidence
   gate. Operators can provide `A2A_PUBLIC_PUSH_DELIVERY_REPORT` as a local path
-  after a separate approved public webhook proof run; the readiness command
-  checks only whether the file exists and redacts the configured path. This does
-  not generate public delivery evidence, contact public endpoints, run a worker,
-  persist a queue, store webhook credentials, prove production auth, or run
-  external conformance.
+  after a separate approved public webhook proof run; the initial readiness
+  command classified existence while redacting the configured path. Later
+  slices must keep that redaction boundary while tightening evidence quality.
+  This does not generate public delivery evidence, contact public endpoints, run
+  a worker, persist a queue, store webhook credentials, prove production auth,
+  or run external conformance.
+- On 2026-06-11, Slice 4.17 tightens the same readiness boundary by requiring
+  public push delivery and external conformance report files to be structured
+  JSON evidence with `schemaVersion: 1`, the expected kind, `result: "passed"`,
+  a recent `observedAt` timestamp, and matching configured public URL fields
+  when present. Empty, plain-text, malformed, failed, stale, wrong-kind, or
+  endpoint-mismatched reports remain blocked. This still does not fetch public
+  endpoints, post webhooks, run conformance tooling, publish JWKS, operate
+  workers, persist queues, or accept public A2A interoperability without
+  operator review.
 
 Implementation checks:
 

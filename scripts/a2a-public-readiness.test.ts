@@ -9,10 +9,12 @@ import {
   formatA2APublicReadinessReport,
 } from "./check-a2a-public-readiness.js";
 
+const NOW = new Date("2026-06-11T12:00:00.000Z");
+
 test("A2A public readiness reports local proof while public gates remain blocked", async () => {
   const cwd = await writeA2AEvidence();
   try {
-    const report = await checkA2APublicReadiness({ cwd, env: {}, scripts: completeScripts() });
+    const report = await checkA2APublicReadiness({ cwd, env: {}, scripts: completeScripts(), now: NOW });
     const formatted = formatA2APublicReadinessReport(report);
 
     assert.equal(report.localProofOk, true);
@@ -48,6 +50,7 @@ test("A2A public readiness fails local proof when commands or source evidence ar
       cwd,
       env: {},
       scripts: { "verify:local": "npm test && npm run smoke:a2a-well-known" },
+      now: NOW,
     });
     const local = findCheck(report, "local-a2a-proof");
 
@@ -75,6 +78,7 @@ test("A2A public readiness rejects unsafe public URLs without printing them", as
         A2A_PUBLIC_PUSH_DELIVERY_REPORT: "missing-push-secret-report.txt",
         A2A_EXTERNAL_CONFORMANCE_REPORT: "missing-secret-report.txt",
       },
+      now: NOW,
     });
     const formatted = formatA2APublicReadinessReport(report);
 
@@ -96,7 +100,15 @@ test("A2A public readiness rejects unsafe public URLs without printing them", as
 test("A2A public readiness accepts redacted public config and existing conformance report", async () => {
   const cwd = await writeA2AEvidence();
   try {
-    await writeFile(join(cwd, "a2a-conformance-report.txt"), "passed external client checks\n");
+    await writeJsonReport(join(cwd, "a2a-conformance-report.json"), {
+      schemaVersion: 1,
+      kind: "a2a-external-conformance",
+      result: "passed",
+      observedAt: NOW.toISOString(),
+      publicAgentCardUrl: "https://agents.example/.well-known/agent-card.json",
+      publicBaseUrl: "https://agents.example/a2a",
+      checks: ["agent-card", "task-route"],
+    });
     const report = await checkA2APublicReadiness({
       cwd,
       scripts: completeScripts(),
@@ -105,8 +117,9 @@ test("A2A public readiness accepts redacted public config and existing conforman
         A2A_PUBLIC_BASE_URL: "https://agents.example/a2a",
         A2A_PUBLIC_JWKS_URL: "https://agents.example/.well-known/jwks.json",
         A2A_PUBLIC_TASK_AUTH_DECISION: "oauth2",
-        A2A_EXTERNAL_CONFORMANCE_REPORT: "a2a-conformance-report.txt",
+        A2A_EXTERNAL_CONFORMANCE_REPORT: "a2a-conformance-report.json",
       },
+      now: NOW,
     });
     const formatted = formatA2APublicReadinessReport(report);
 
@@ -117,6 +130,7 @@ test("A2A public readiness accepts redacted public config and existing conforman
     assert.equal(findCheck(report, "production-jwks-url").status, "ready-approval");
     assert.equal(findCheck(report, "task-auth-decision").status, "ready-approval");
     assert.equal(findCheck(report, "external-conformance").status, "ready-approval");
+    assert.equal(findCheck(report, "external-conformance").code, "A2A_EXTERNAL_CONFORMANCE_REPORT_VALID");
     assert.equal(findCheck(report, "extended-agent-card").status, "proven-local");
     assert.equal(findCheck(report, "streaming").status, "proven-local");
     assert.equal(findCheck(report, "push-notification-configs").status, "proven-local");
@@ -134,8 +148,24 @@ test("A2A public readiness accepts redacted public config and existing conforman
 test("A2A public readiness accepts redacted public push delivery evidence after approved proof", async () => {
   const cwd = await writeA2AEvidence();
   try {
-    await writeFile(join(cwd, "a2a-conformance-report.txt"), "passed external client checks\n");
-    await writeFile(join(cwd, "a2a-public-push-report.txt"), "delivered public push callback status=202\n");
+    await writeJsonReport(join(cwd, "a2a-conformance-report.json"), {
+      schemaVersion: 1,
+      kind: "a2a-external-conformance",
+      result: "passed",
+      observedAt: NOW.toISOString(),
+      publicAgentCardUrl: "https://agents.example/.well-known/agent-card.json",
+      publicBaseUrl: "https://agents.example/a2a",
+      checks: ["agent-card", "task-route"],
+    });
+    await writeJsonReport(join(cwd, "a2a-public-push-report.json"), {
+      schemaVersion: 1,
+      kind: "a2a-public-push-delivery",
+      result: "passed",
+      observedAt: NOW.toISOString(),
+      publicBaseUrl: "https://agents.example/a2a",
+      callbackStatus: 202,
+      attempts: 1,
+    });
     const report = await checkA2APublicReadiness({
       cwd,
       scripts: completeScripts(),
@@ -144,9 +174,10 @@ test("A2A public readiness accepts redacted public push delivery evidence after 
         A2A_PUBLIC_BASE_URL: "https://agents.example/a2a",
         A2A_PUBLIC_JWKS_URL: "https://agents.example/.well-known/jwks.json",
         A2A_PUBLIC_TASK_AUTH_DECISION: "oauth2",
-        A2A_PUBLIC_PUSH_DELIVERY_REPORT: "a2a-public-push-report.txt",
-        A2A_EXTERNAL_CONFORMANCE_REPORT: "a2a-conformance-report.txt",
+        A2A_PUBLIC_PUSH_DELIVERY_REPORT: "a2a-public-push-report.json",
+        A2A_EXTERNAL_CONFORMANCE_REPORT: "a2a-conformance-report.json",
       },
+      now: NOW,
     });
     const formatted = formatA2APublicReadinessReport(report);
 
@@ -154,9 +185,83 @@ test("A2A public readiness accepts redacted public push delivery evidence after 
     assert.equal(report.publicReady, true);
     assert.match(formatted, /Agentic GasKit A2A public readiness ready-for-approval/);
     assert.equal(findCheck(report, "public-push-delivery").status, "ready-approval");
-    assert.equal(findCheck(report, "public-push-delivery").code, "A2A_PUBLIC_PUSH_DELIVERY_REPORT_PRESENT");
+    assert.equal(findCheck(report, "public-push-delivery").code, "A2A_PUBLIC_PUSH_DELIVERY_REPORT_VALID");
     assert.equal(findCheck(report, "external-conformance").status, "ready-approval");
     assert.doesNotMatch(formatted, /agents\.example|a2a-public-push-report|a2a-conformance-report|oauth2/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("A2A public readiness rejects malformed or endpoint-mismatched structured reports", async () => {
+  const cwd = await writeA2AEvidence();
+  try {
+    await writeFile(join(cwd, "a2a-conformance-report.json"), "passed external client checks\n");
+    await writeJsonReport(join(cwd, "a2a-public-push-report.json"), {
+      schemaVersion: 1,
+      kind: "a2a-public-push-delivery",
+      result: "passed",
+      observedAt: NOW.toISOString(),
+      publicBaseUrl: "https://other.example/a2a",
+    });
+    const report = await checkA2APublicReadiness({
+      cwd,
+      scripts: completeScripts(),
+      env: {
+        A2A_PUBLIC_AGENT_CARD_URL: "https://agents.example/.well-known/agent-card.json",
+        A2A_PUBLIC_BASE_URL: "https://agents.example/a2a",
+        A2A_PUBLIC_JWKS_URL: "https://agents.example/.well-known/jwks.json",
+        A2A_PUBLIC_TASK_AUTH_DECISION: "oauth2",
+        A2A_PUBLIC_PUSH_DELIVERY_REPORT: "a2a-public-push-report.json",
+        A2A_EXTERNAL_CONFORMANCE_REPORT: "a2a-conformance-report.json",
+      },
+      now: NOW,
+    });
+    const formatted = formatA2APublicReadinessReport(report);
+
+    assert.equal(report.publicReady, false);
+    assert.equal(
+      findCheck(report, "public-push-delivery").code,
+      "A2A_PUBLIC_PUSH_DELIVERY_REPORT_PUBLIC_BASE_URL_MISMATCH",
+    );
+    assert.equal(findCheck(report, "external-conformance").code, "A2A_EXTERNAL_CONFORMANCE_REPORT_INVALID_JSON");
+    assert.doesNotMatch(formatted, /agents\.example|other\.example|a2a-public-push-report|a2a-conformance-report/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("A2A public readiness rejects stale structured reports", async () => {
+  const cwd = await writeA2AEvidence();
+  try {
+    await writeJsonReport(join(cwd, "a2a-conformance-report.json"), {
+      schemaVersion: 1,
+      kind: "a2a-external-conformance",
+      result: "passed",
+      observedAt: "2026-04-01T12:00:00.000Z",
+      publicAgentCardUrl: "https://agents.example/.well-known/agent-card.json",
+      publicBaseUrl: "https://agents.example/a2a",
+    });
+    const report = await checkA2APublicReadiness({
+      cwd,
+      scripts: completeScripts(),
+      env: {
+        A2A_PUBLIC_AGENT_CARD_URL: "https://agents.example/.well-known/agent-card.json",
+        A2A_PUBLIC_BASE_URL: "https://agents.example/a2a",
+        A2A_PUBLIC_JWKS_URL: "https://agents.example/.well-known/jwks.json",
+        A2A_PUBLIC_TASK_AUTH_DECISION: "oauth2",
+        A2A_EXTERNAL_CONFORMANCE_REPORT: "a2a-conformance-report.json",
+      },
+      now: NOW,
+    });
+    const formatted = formatA2APublicReadinessReport(report);
+
+    assert.equal(report.publicReady, false);
+    assert.equal(
+      findCheck(report, "external-conformance").code,
+      "A2A_EXTERNAL_CONFORMANCE_REPORT_STALE_OR_INVALID_TIME",
+    );
+    assert.doesNotMatch(formatted, /agents\.example|a2a-conformance-report/);
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }
@@ -186,6 +291,10 @@ async function writeA2AEvidence(): Promise<string> {
     await writeFile(join(cwd, path), "export {};\n");
   }
   return cwd;
+}
+
+async function writeJsonReport(path: string, report: Record<string, unknown>): Promise<void> {
+  await writeFile(path, `${JSON.stringify(report, null, 2)}\n`);
 }
 
 function completeScripts(): Record<string, string | undefined> {

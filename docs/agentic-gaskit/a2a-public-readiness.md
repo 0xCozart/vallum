@@ -48,16 +48,21 @@ publicReady=false
   supported for explicitly injected transports with in-memory status-only
   attempt records.
 - Public push notification webhook delivery remains blocked unless an operator
-  supplies an existing local public push delivery report path after a dedicated
-  approved public-infrastructure proof run.
-- External conformance remains blocked unless an operator supplies a local
-  report path and that file exists.
+  supplies an existing local structured public push delivery report after a
+  dedicated approved public-infrastructure proof run.
+- External conformance remains blocked unless an operator supplies an existing
+  local structured conformance report after a dedicated approved proof run.
+- Structured reports must be JSON objects with `schemaVersion: 1`, the expected
+  `kind`, `result: "passed"`, a recent `observedAt` timestamp, and matching
+  public URL fields when those URLs are configured. Empty, plain-text,
+  malformed, failed, stale, wrong-kind, or endpoint-mismatched reports remain
+  blocked.
 
 ## Redaction Boundary
 
 The report prints command names, blocker codes, and generic evidence strings.
 It does not print configured public URLs, JWKS URLs, auth decisions, local
-report paths, credentials, tokens, or secret-like values.
+report paths, report contents, credentials, tokens, or secret-like values.
 
 ## What It Does Not Prove
 
@@ -86,3 +91,37 @@ The command can classify these optional inputs without contacting them:
 Supplying these values is not approval to operate public infrastructure. Treat a
 `ready-approval` line as input for a dedicated operator-approved public A2A
 proof slice, not as completion.
+
+## Structured Report Shape
+
+Public push delivery evidence uses:
+
+```json
+{
+  "schemaVersion": 1,
+  "kind": "a2a-public-push-delivery",
+  "result": "passed",
+  "observedAt": "2026-06-11T12:00:00.000Z",
+  "publicBaseUrl": "https://agents.example/a2a",
+  "callbackStatus": 202,
+  "attempts": 1
+}
+```
+
+External conformance evidence uses:
+
+```json
+{
+  "schemaVersion": 1,
+  "kind": "a2a-external-conformance",
+  "result": "passed",
+  "observedAt": "2026-06-11T12:00:00.000Z",
+  "publicAgentCardUrl": "https://agents.example/.well-known/agent-card.json",
+  "publicBaseUrl": "https://agents.example/a2a",
+  "checks": ["agent-card", "task-route"]
+}
+```
+
+The examples show shape only. Use operator-owned local paths outside committed
+files for real reports, and keep raw payloads, headers, callback tokens,
+bearer credentials, and private infrastructure details out of the report.

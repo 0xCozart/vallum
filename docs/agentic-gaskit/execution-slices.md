@@ -2051,6 +2051,70 @@ Escalation triggers:
   persist queue state, mark production delivery complete, or claim external
   conformance without operator-approved public infrastructure evidence.
 
+## Slice 4.17: A2A Public Evidence Report Schema Gate
+
+User-visible outcome:
+Agentic GasKit validates operator-supplied public A2A evidence reports as
+structured JSON review evidence instead of accepting any existing local file.
+
+Likely files:
+
+- `scripts/check-a2a-public-readiness.ts`
+- `scripts/a2a-public-readiness.test.ts`
+- `scripts/check-product-status.ts`
+- `scripts/check-launch-readiness.ts`
+- `docs/agentic-gaskit/a2a-public-readiness.md`
+- `docs/agentic-gaskit/external-api-notes.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/overview.md`
+- `docs/CODEBASE_MAP.md`
+- `README.md`
+
+Acceptance criteria:
+
+- Public push delivery and external conformance report paths are still
+  redacted, but the file content must be a JSON object with `schemaVersion: 1`,
+  the expected `kind`, `result: "passed"`, and a recent `observedAt`
+  timestamp.
+- When public base URL or public Agent Card URL configuration is present, the
+  structured report must match those configured URLs without printing them.
+- Empty, plain-text, malformed, failed, stale, wrong-kind, or
+  endpoint-mismatched reports remain `blocked-conformance`.
+- Valid structured reports can produce `ready-approval`, but that remains a
+  future human/operator review state rather than live public interoperability.
+- The readiness command remains non-networked and does not fetch public Agent
+  Cards, post webhooks, run conformance tooling, publish JWKS, operate workers,
+  persist queues, store credentials, or print report contents.
+
+Verification:
+
+- Focused A2A public-readiness tests.
+- Product-status tests.
+- Launch-readiness tests.
+- Operator-gate tests.
+- Reviewer-docs regression tests.
+- `npm run proof:a2a-public-readiness`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slice 4.16.
+
+Risk:
+Medium. The stricter report schema improves audit quality, but `ready-approval`
+can still be mistaken for live public interoperability unless docs and status
+reports keep public hosting, production auth/key management, public webhook
+infrastructure, and external conformance acceptance separate.
+
+Escalation triggers:
+
+- Any request to read or print raw report payloads, store credentials, call
+  public endpoints from the readiness command, or treat a structured report as
+  automatic public A2A completion without operator review.
+
 ## Slice 5.1: Marketplace Readiness Gate
 
 User-visible outcome:

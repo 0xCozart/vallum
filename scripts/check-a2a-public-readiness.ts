@@ -29,6 +29,7 @@ export interface A2APublicReadinessOptions {
   readonly cwd?: string;
   readonly env?: NodeJS.ProcessEnv | Record<string, string | undefined>;
   readonly scripts?: Record<string, string | undefined>;
+  readonly now?: Date;
 }
 
 const REQUIRED_LOCAL_COMMANDS = [
@@ -57,6 +58,7 @@ export async function checkA2APublicReadiness(
   const cwd = options.cwd ?? process.cwd();
   const env = options.env ?? process.env;
   const scripts = options.scripts ?? await loadPackageScripts(cwd);
+  const now = options.now ?? new Date();
   const checks = [
     await checkLocalA2AProof(cwd, scripts),
     checkPublicUrl(
@@ -87,8 +89,15 @@ export async function checkA2APublicReadiness(
     localPushDeliverySupport(),
     localPushHttpTransportSupport(),
     localPushRetryObservabilitySupport(),
-    await checkPublicPushDeliveryReport(cwd, env.A2A_PUBLIC_PUSH_DELIVERY_REPORT),
-    await checkConformanceReport(cwd, env.A2A_EXTERNAL_CONFORMANCE_REPORT),
+    await checkPublicPushDeliveryReport(cwd, env.A2A_PUBLIC_PUSH_DELIVERY_REPORT, {
+      expectedPublicBaseUrl: env.A2A_PUBLIC_BASE_URL,
+      now,
+    }),
+    await checkConformanceReport(cwd, env.A2A_EXTERNAL_CONFORMANCE_REPORT, {
+      expectedPublicAgentCardUrl: env.A2A_PUBLIC_AGENT_CARD_URL,
+      expectedPublicBaseUrl: env.A2A_PUBLIC_BASE_URL,
+      now,
+    }),
   ];
 
   return {
@@ -308,6 +317,10 @@ function localPushRetryObservabilitySupport(): A2APublicReadinessCheck {
 async function checkPublicPushDeliveryReport(
   cwd: string,
   value: string | undefined,
+  options: {
+    readonly expectedPublicBaseUrl: string | undefined;
+    readonly now: Date;
+  },
 ): Promise<A2APublicReadinessCheck> {
   if (!value || value.trim() === "") {
     return {
@@ -316,30 +329,38 @@ async function checkPublicPushDeliveryReport(
       code: "A2A_PUBLIC_PUSH_DELIVERY_REPORT_MISSING",
       message: "A2A public push webhook delivery evidence has not been supplied.",
       evidence: "missing=A2A_PUBLIC_PUSH_DELIVERY_REPORT",
-      next: "Provide a local public push delivery report path outside committed docs only after an operator-approved public webhook delivery proof run.",
+      next: "Provide a local structured public push delivery report path outside committed docs only after an operator-approved public webhook delivery proof run.",
     };
   }
 
   const reportPath = isAbsolute(value) ? value : resolve(cwd, value);
-  try {
-    await access(reportPath);
-  } catch {
+  const report = await readStructuredEvidenceReport(reportPath, {
+    kind: "a2a-public-push-delivery",
+    id: "public-push-delivery",
+    missingCode: "A2A_PUBLIC_PUSH_DELIVERY_REPORT_NOT_FOUND",
+    invalidCodePrefix: "A2A_PUBLIC_PUSH_DELIVERY_REPORT",
+    notFoundMessage: "A2A public push webhook delivery evidence path was configured but not found.",
+    invalidMessage: "A2A public push webhook delivery evidence is not a valid passing structured report.",
+    expectedPublicBaseUrl: options.expectedPublicBaseUrl,
+    now: options.now,
+  });
+  if (!report.ok) {
     return {
       id: "public-push-delivery",
       status: "blocked-conformance",
-      code: "A2A_PUBLIC_PUSH_DELIVERY_REPORT_NOT_FOUND",
-      message: "A2A public push webhook delivery evidence path was configured but not found.",
-      evidence: "configured-report-missing",
-      next: "Provide an existing local public push delivery report after an operator-approved public webhook delivery proof run.",
+      code: report.code,
+      message: report.message,
+      evidence: report.evidence,
+      next: report.next,
     };
   }
 
   return {
     id: "public-push-delivery",
     status: "ready-approval",
-    code: "A2A_PUBLIC_PUSH_DELIVERY_REPORT_PRESENT",
-    message: "A2A public push webhook delivery evidence path exists for a future approved review.",
-    evidence: "local-report-present-redacted",
+    code: "A2A_PUBLIC_PUSH_DELIVERY_REPORT_VALID",
+    message: "A2A public push webhook delivery evidence is a passing structured report for a future approved review.",
+    evidence: "local-structured-report-valid-redacted",
     next: "Review the report manually before accepting public push delivery claims.",
   };
 }
@@ -347,6 +368,11 @@ async function checkPublicPushDeliveryReport(
 async function checkConformanceReport(
   cwd: string,
   value: string | undefined,
+  options: {
+    readonly expectedPublicAgentCardUrl: string | undefined;
+    readonly expectedPublicBaseUrl: string | undefined;
+    readonly now: Date;
+  },
 ): Promise<A2APublicReadinessCheck> {
   if (!value || value.trim() === "") {
     return {
@@ -355,32 +381,203 @@ async function checkConformanceReport(
       code: "A2A_EXTERNAL_CONFORMANCE_REPORT_MISSING",
       message: "External A2A conformance evidence has not been supplied.",
       evidence: "missing=A2A_EXTERNAL_CONFORMANCE_REPORT",
-      next: "Provide a local conformance report path outside committed docs only after an operator-approved public A2A proof run.",
+      next: "Provide a local structured conformance report path outside committed docs only after an operator-approved public A2A proof run.",
     };
   }
 
   const reportPath = isAbsolute(value) ? value : resolve(cwd, value);
-  try {
-    await access(reportPath);
-  } catch {
+  const report = await readStructuredEvidenceReport(reportPath, {
+    kind: "a2a-external-conformance",
+    id: "external-conformance",
+    missingCode: "A2A_EXTERNAL_CONFORMANCE_REPORT_NOT_FOUND",
+    invalidCodePrefix: "A2A_EXTERNAL_CONFORMANCE_REPORT",
+    notFoundMessage: "External A2A conformance evidence path was configured but not found.",
+    invalidMessage: "External A2A conformance evidence is not a valid passing structured report.",
+    expectedPublicAgentCardUrl: options.expectedPublicAgentCardUrl,
+    expectedPublicBaseUrl: options.expectedPublicBaseUrl,
+    now: options.now,
+  });
+  if (!report.ok) {
     return {
       id: "external-conformance",
       status: "blocked-conformance",
-      code: "A2A_EXTERNAL_CONFORMANCE_REPORT_NOT_FOUND",
-      message: "External A2A conformance evidence path was configured but not found.",
-      evidence: "configured-report-missing",
-      next: "Provide an existing local conformance report after an operator-approved public A2A proof run.",
+      code: report.code,
+      message: report.message,
+      evidence: report.evidence,
+      next: report.next,
     };
   }
 
   return {
     id: "external-conformance",
     status: "ready-approval",
-    code: "A2A_EXTERNAL_CONFORMANCE_REPORT_PRESENT",
-    message: "External A2A conformance evidence path exists for a future approved review.",
-    evidence: "local-report-present-redacted",
+    code: "A2A_EXTERNAL_CONFORMANCE_REPORT_VALID",
+    message: "External A2A conformance evidence is a passing structured report for a future approved review.",
+    evidence: "local-structured-report-valid-redacted",
     next: "Review the report manually before accepting public A2A interoperability claims.",
   };
+}
+
+interface StructuredEvidenceValidationOptions {
+  readonly kind: "a2a-public-push-delivery" | "a2a-external-conformance";
+  readonly id: string;
+  readonly missingCode: string;
+  readonly invalidCodePrefix: string;
+  readonly notFoundMessage: string;
+  readonly invalidMessage: string;
+  readonly expectedPublicAgentCardUrl?: string;
+  readonly expectedPublicBaseUrl?: string;
+  readonly now: Date;
+}
+
+type StructuredEvidenceValidationResult = {
+  readonly ok: true;
+} | {
+  readonly ok: false;
+  readonly code: string;
+  readonly message: string;
+  readonly evidence: string;
+  readonly next: string;
+};
+
+async function readStructuredEvidenceReport(
+  reportPath: string,
+  options: StructuredEvidenceValidationOptions,
+): Promise<StructuredEvidenceValidationResult> {
+  let raw: string;
+  try {
+    await access(reportPath);
+    raw = await readFile(reportPath, "utf8");
+  } catch {
+    return structuredEvidenceFailure(
+      options.missingCode,
+      options.notFoundMessage,
+      "configured-report-missing",
+      "Provide an existing local structured report after an operator-approved proof run.",
+    );
+  }
+
+  if (raw.length > 64 * 1024) {
+    return structuredEvidenceFailure(
+      `${options.invalidCodePrefix}_TOO_LARGE`,
+      options.invalidMessage,
+      "configured-report-too-large",
+      "Provide a concise local structured report without raw payloads or credential material.",
+    );
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return structuredEvidenceFailure(
+      `${options.invalidCodePrefix}_INVALID_JSON`,
+      options.invalidMessage,
+      "configured-report-invalid-json",
+      "Provide a JSON structured evidence report generated after an operator-approved proof run.",
+    );
+  }
+
+  if (!isRecord(parsed)) {
+    return structuredEvidenceFailure(
+      `${options.invalidCodePrefix}_INVALID_SHAPE`,
+      options.invalidMessage,
+      "configured-report-invalid-shape",
+      "Provide a JSON object structured evidence report.",
+    );
+  }
+
+  if (parsed.schemaVersion !== 1) {
+    return structuredEvidenceFailure(
+      `${options.invalidCodePrefix}_UNSUPPORTED_SCHEMA`,
+      options.invalidMessage,
+      "configured-report-unsupported-schema",
+      "Provide a structured evidence report with schemaVersion=1.",
+    );
+  }
+
+  if (parsed.kind !== options.kind) {
+    return structuredEvidenceFailure(
+      `${options.invalidCodePrefix}_KIND_MISMATCH`,
+      options.invalidMessage,
+      "configured-report-kind-mismatch",
+      `Provide a ${options.kind} structured evidence report.`,
+    );
+  }
+
+  if (parsed.result !== "passed") {
+    return structuredEvidenceFailure(
+      `${options.invalidCodePrefix}_NOT_PASSED`,
+      options.invalidMessage,
+      "configured-report-not-passed",
+      "Provide only passing evidence from an operator-approved proof run.",
+    );
+  }
+
+  if (typeof parsed.observedAt !== "string" || !isRecentTimestamp(parsed.observedAt, options.now)) {
+    return structuredEvidenceFailure(
+      `${options.invalidCodePrefix}_STALE_OR_INVALID_TIME`,
+      options.invalidMessage,
+      "configured-report-stale-or-invalid-time",
+      "Provide a structured evidence report with an observedAt timestamp from the last 30 days.",
+    );
+  }
+
+  if (options.expectedPublicBaseUrl && isPublicUrl(options.expectedPublicBaseUrl)) {
+    if (parsed.publicBaseUrl !== options.expectedPublicBaseUrl) {
+      return structuredEvidenceFailure(
+        `${options.invalidCodePrefix}_PUBLIC_BASE_URL_MISMATCH`,
+        options.invalidMessage,
+        "configured-report-public-base-url-mismatch",
+        "Provide evidence for the same configured public base URL.",
+      );
+    }
+  }
+
+  if (options.expectedPublicAgentCardUrl && isPublicUrl(options.expectedPublicAgentCardUrl)) {
+    if (parsed.publicAgentCardUrl !== options.expectedPublicAgentCardUrl) {
+      return structuredEvidenceFailure(
+        `${options.invalidCodePrefix}_PUBLIC_AGENT_CARD_URL_MISMATCH`,
+        options.invalidMessage,
+        "configured-report-public-agent-card-url-mismatch",
+        "Provide evidence for the same configured public Agent Card URL.",
+      );
+    }
+  }
+
+  return { ok: true };
+}
+
+function structuredEvidenceFailure(
+  code: string,
+  message: string,
+  evidence: string,
+  next: string,
+): StructuredEvidenceValidationResult {
+  return {
+    ok: false,
+    code,
+    message,
+    evidence,
+    next,
+  };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isRecentTimestamp(value: string, now: Date): boolean {
+  const observedAt = new Date(value);
+  const observedMs = observedAt.getTime();
+  if (!Number.isFinite(observedMs)) return false;
+  const nowMs = now.getTime();
+  if (observedMs > nowMs + 60_000) return false;
+  return nowMs - observedMs <= 30 * 24 * 60 * 60 * 1000;
+}
+
+function isPublicUrl(value: string): boolean {
+  return parsePublicHttpsUrl(value) !== undefined;
 }
 
 function parsePublicHttpsUrl(value: string): URL | undefined {

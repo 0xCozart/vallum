@@ -14,8 +14,8 @@ surface in one machine-checkable place:
   Agent Card access, local loopback streaming, local push notification
   configuration, local injected push delivery, local opt-in push HTTP
   transport, local retry/attempt observability, public hosting inputs,
-  redacted public push delivery report classification, and external conformance
-  blockers;
+  redacted structured public push delivery report classification, and
+  structured external conformance blockers;
 - verification-profile wiring that keeps fast iteration separate from the full
   local evidence gate;
 - launch-readiness evidence matrix and operator live-gate runbook wiring;

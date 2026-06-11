@@ -127,8 +127,9 @@ Expected current result:
   streaming proof, local authenticated extended-card access, local push
   notification configuration, local injected push delivery, local opt-in push
   HTTP transport, local retry/attempt observability, public hosting input
-  blockers, redacted public push delivery report classification, and external
-  conformance blockers without contacting public endpoints;
+  blockers, redacted structured public push delivery report classification,
+  and structured external conformance blockers without contacting public
+  endpoints;
 - verification-profile proof reports the fast iteration profile and confirms
   reviewer/grant proof still uses the full local gate;
 - product-status proof reports local verification and package gates separately
