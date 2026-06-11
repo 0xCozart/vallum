@@ -3,6 +3,7 @@ import type { AgentActionPolicy } from "@iota-gaskit/policy-gateway";
 import { validAgentProfileFixture } from "@iota-gaskit/registry";
 import {
   A2A_AGENT_CARD_WELL_KNOWN_PATH,
+  A2A_HTTP_EXTENDED_AGENT_CARD_PATH,
   A2A_HTTP_SEND_MESSAGE_PATH,
   A2A_HTTP_TASKS_PATH,
   A2A_TASK_PROTOCOL_VERSION,
@@ -20,6 +21,8 @@ export interface A2AHttpDemoResult {
   readonly hiddenArtifacts: boolean;
   readonly listedCount: number;
   readonly canceledStatus: string;
+  readonly extendedAgentCardStatus: number;
+  readonly extendedAgentCardSkillCount: number;
   readonly pushConfigStatus: number;
   readonly pushConfigListCount: number;
   readonly pushConfigCredentialRejectionStatus: number;
@@ -54,6 +57,7 @@ export async function runA2AHttpDemo(): Promise<A2AHttpDemoResult> {
         ...validAgentProfileFixture().endpoints,
       ],
     },
+    extendedAgentCardProfile: extendedA2AProfileFixture(),
     taskAuthToken,
     taskPolicy: policy,
     now: () => now,
@@ -102,6 +106,11 @@ export async function runA2AHttpDemo(): Promise<A2AHttpDemoResult> {
     path: `/tasks/${encodeURIComponent(task.id)}:cancel`,
     headers: auth,
   }, options);
+  const extendedAgentCard = await handleLocalA2AHttpRequest({
+    method: "GET",
+    path: A2A_HTTP_EXTENDED_AGENT_CARD_PATH,
+    headers: auth,
+  }, options);
   const pushConfig = await handleLocalA2AHttpRequest({
     method: "POST",
     path: `/tasks/${encodeURIComponent(task.id)}/pushNotificationConfigs`,
@@ -140,6 +149,8 @@ export async function runA2AHttpDemo(): Promise<A2AHttpDemoResult> {
     hiddenArtifacts: !JSON.stringify(hidden.body).includes("demo-draft"),
     listedCount: isTaskListResponse(listed) ? listed.body.tasks.length : 0,
     canceledStatus: isTaskResponse(canceled) ? canceled.body.task.status.state : "unknown",
+    extendedAgentCardStatus: extendedAgentCard.status,
+    extendedAgentCardSkillCount: isAgentCardResponse(extendedAgentCard) ? agentCardSkillCount(extendedAgentCard.body) : 0,
     pushConfigStatus: pushConfig.status,
     pushConfigListCount: isPushConfigListResponse(pushConfigList) ? pushConfigList.body.configs.length : 0,
     pushConfigCredentialRejectionStatus: pushConfigCredentialRejection.status,
@@ -149,6 +160,7 @@ export async function runA2AHttpDemo(): Promise<A2AHttpDemoResult> {
       || responseLeaks(hidden)
       || responseLeaks(listed)
       || responseLeaks(canceled)
+      || responseLeaks(extendedAgentCard)
       || responseLeaks(pushConfig)
       || responseLeaks(pushConfigList)
       || responseLeaks(pushConfigCredentialRejection),
@@ -165,6 +177,8 @@ export function formatA2AHttpDemoResult(result: A2AHttpDemoResult): string {
     `hiddenArtifacts=${String(result.hiddenArtifacts)}`,
     `listed.count=${result.listedCount}`,
     `canceled.status=${result.canceledStatus}`,
+    `extendedAgentCard.status=${result.extendedAgentCardStatus}`,
+    `extendedAgentCard.skillCount=${result.extendedAgentCardSkillCount}`,
     `pushConfig.status=${result.pushConfigStatus}`,
     `pushConfig.listCount=${result.pushConfigListCount}`,
     `pushConfig.credentialRejectionStatus=${result.pushConfigCredentialRejectionStatus}`,
@@ -189,8 +203,43 @@ function sendBody(messageId: string) {
   };
 }
 
+function extendedA2AProfileFixture() {
+  const profile = validAgentProfileFixture();
+  return {
+    ...profile,
+    endpoints: [
+      { type: "a2a" as const, url: "https://agent.example.test/a2a" },
+      ...profile.endpoints,
+    ],
+    metadata: {
+      purpose: "extended-card-demo",
+      privateNote: "do-not-emit",
+    },
+    capabilities: [
+      ...profile.capabilities,
+      {
+        id: "research.deep-dive",
+        displayName: "Research deep dive",
+        contracts: ["escrow:v1"],
+        scopes: ["contract:escrow", "action:open_escrow", "mode:extended"],
+        credentialRefs: ["credential:research-deep-dive:v1"],
+      },
+    ],
+  };
+}
+
 function responseLeaks(response: A2AHttpResponse): boolean {
-  return /private prompt|Bearer abc|push-secret-token|push\.secret|signer_ref_demo_secret|wallet_demo_secret|payment-secret/i.test(response.json);
+  return /private prompt|privateNote|Bearer abc|push-secret-token|push\.secret|signer_ref_demo_secret|wallet_demo_secret|payment-secret|credential:research/i.test(response.json);
+}
+
+function isAgentCardResponse(response: A2AHttpResponse): response is A2AHttpResponse & {
+  readonly body: Extract<A2AHttpResponse["body"], { readonly kind: "agent-card" }>;
+} {
+  return response.status === 200 && "kind" in response.body && response.body.kind === "agent-card";
+}
+
+function agentCardSkillCount(body: Extract<A2AHttpResponse["body"], { readonly kind: "agent-card" }>): number {
+  return Array.isArray(body.skills) ? body.skills.length : 0;
 }
 
 function isTaskResponse(response: A2AHttpResponse): response is A2AHttpResponse & {

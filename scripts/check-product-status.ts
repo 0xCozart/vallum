@@ -188,7 +188,7 @@ function productionBlockers(): readonly ProductEvidenceCheck[] {
       id: "public-a2a-hosting",
       status: "blocked-production",
       code: "PUBLIC_A2A_HOSTING_UNPROVEN",
-      message: "A2A discovery, task routes, SSE streaming, and push notification configuration are proven locally and over loopback/local handler paths only; public readiness is reported locally, but no public hosting, production key distribution, push webhook delivery, or external conformance proof is complete.",
+      message: "A2A discovery, task routes, authenticated extended Agent Card access, SSE streaming, and push notification configuration are proven locally and over loopback/local handler paths only; public readiness is reported locally, but no public hosting, production key distribution, push webhook delivery, or external conformance proof is complete.",
       evidence: "npm run proof:a2a-public-readiness",
       next: "Use npm run proof:a2a-public-readiness to inspect exact public A2A blockers before any operator-approved public hosting/conformance slice.",
     },

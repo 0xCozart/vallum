@@ -7,6 +7,7 @@ import { validAgentProfileFixture } from "@iota-gaskit/registry";
 
 import {
   A2A_AGENT_CARD_WELL_KNOWN_PATH,
+  A2A_HTTP_EXTENDED_AGENT_CARD_PATH,
   A2A_HTTP_SEND_MESSAGE_PATH,
   A2A_HTTP_STREAM_MESSAGE_PATH,
   A2A_HTTP_TASKS_PATH,
@@ -49,6 +50,75 @@ test("local A2A HTTP handler serves public well-known Agent Card without task au
   assert.match(response.headers["content-type"] ?? "", /application\/a2a\+json/);
   assert.equal(response.body.kind, "agent-card");
   assert.doesNotMatch(response.json, /signer_ref|walletId|credential:|payment address/i);
+});
+
+test("local A2A HTTP handler serves authenticated extended Agent Card without leaking private profile fields", async () => {
+  const options = {
+    store: new LocalA2ATaskStore(),
+    agentCardProfile: a2aProfileFixture(),
+    extendedAgentCardProfile: extendedA2AProfileFixture(),
+    taskAuthToken: "local-a2a-token",
+    taskPolicy: policy,
+    now: () => now,
+  };
+
+  const publicCard = await handleLocalA2AHttpRequest({
+    method: "GET",
+    path: A2A_AGENT_CARD_WELL_KNOWN_PATH,
+  }, options);
+  const unauthorizedExtended = await handleLocalA2AHttpRequest({
+    method: "GET",
+    path: A2A_HTTP_EXTENDED_AGENT_CARD_PATH,
+  }, options);
+  const extended = await handleLocalA2AHttpRequest({
+    method: "GET",
+    path: A2A_HTTP_EXTENDED_AGENT_CARD_PATH,
+    headers: { authorization: "Bearer local-a2a-token" },
+  }, options);
+
+  assertAgentCardResponse(publicCard);
+  assert.equal(agentCardCapabilities(publicCard).extendedAgentCard, true);
+  assert.equal(JSON.stringify(publicCard.body).includes("research.deep-dive"), false);
+  assert.equal(unauthorizedExtended.status, 401);
+  assertAgentCardResponse(extended);
+  assert.equal(agentCardCapabilities(extended).extendedAgentCard, false);
+  assert.equal(JSON.stringify(extended.body).includes("research.deep-dive"), true);
+  assert.match(extended.headers["content-type"] ?? "", /application\/a2a\+json/);
+  assert.doesNotMatch(extended.json, /credential:|signer_ref|wallet_researcher|privateNote|payment-secret/i);
+});
+
+test("local A2A HTTP extended Agent Card fails closed when unsupported or method is wrong", async () => {
+  const options = {
+    store: new LocalA2ATaskStore(),
+    agentCardProfile: a2aProfileFixture(),
+    taskAuthToken: "local-a2a-token",
+    taskPolicy: policy,
+    now: () => now,
+  };
+  const auth = { authorization: "Bearer local-a2a-token" };
+
+  const publicCard = await handleLocalA2AHttpRequest({
+    method: "GET",
+    path: A2A_AGENT_CARD_WELL_KNOWN_PATH,
+  }, options);
+  const missingExtended = await handleLocalA2AHttpRequest({
+    method: "GET",
+    path: A2A_HTTP_EXTENDED_AGENT_CARD_PATH,
+    headers: auth,
+  }, options);
+  const wrongMethod = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: A2A_HTTP_EXTENDED_AGENT_CARD_PATH,
+    headers: auth,
+  }, options);
+
+  assertAgentCardResponse(publicCard);
+  assert.equal(agentCardCapabilities(publicCard).extendedAgentCard, false);
+  assert.equal(missingExtended.status, 501);
+  assert.match(missingExtended.json, /A2A_EXTENDED_AGENT_CARD_NOT_CONFIGURED/);
+  assert.equal(wrongMethod.status, 405);
+  assert.equal(wrongMethod.headers.allow, "GET");
+  assert.doesNotMatch(missingExtended.json, /research\.summary|signer_ref|credential:/i);
 });
 
 test("local A2A HTTP task endpoints fail closed when bearer auth is missing or unconfigured", async () => {
@@ -390,6 +460,27 @@ function a2aProfileFixture() {
   };
 }
 
+function extendedA2AProfileFixture() {
+  const profile = a2aProfileFixture();
+  return {
+    ...profile,
+    metadata: {
+      purpose: "extended-card-fixture",
+      privateNote: "do-not-emit",
+    },
+    capabilities: [
+      ...profile.capabilities,
+      {
+        id: "research.deep-dive",
+        displayName: "Research deep dive",
+        contracts: ["escrow:v1"],
+        scopes: ["contract:escrow", "action:open_escrow", "mode:extended"],
+        credentialRefs: ["credential:research-deep-dive:v1"],
+      },
+    ],
+  };
+}
+
 function assertSafeJson(response: A2AHttpResponse): void {
   assert.doesNotThrow(() => JSON.parse(response.json));
   assert.doesNotMatch(response.json, /not json|Bearer|signer_ref|private prompt/i);
@@ -405,6 +496,13 @@ function assertAgentCardResponse(response: A2AHttpResponse): asserts response is
 } {
   assert.equal(response.status, 200);
   assert.ok("kind" in response.body && response.body.kind === "agent-card");
+}
+
+function agentCardCapabilities(
+  response: A2AHttpResponse & { readonly body: Extract<A2AHttpResponse["body"], { readonly kind: "agent-card" }> },
+): { readonly extendedAgentCard?: boolean } {
+  assert.ok("capabilities" in response.body && typeof response.body.capabilities === "object" && response.body.capabilities !== null);
+  return response.body.capabilities as { readonly extendedAgentCard?: boolean };
 }
 
 function assertTaskResponse(response: A2AHttpResponse): asserts response is A2AHttpResponse & {

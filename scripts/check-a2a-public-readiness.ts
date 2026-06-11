@@ -81,6 +81,7 @@ export async function checkA2APublicReadiness(
       "A2A production JWKS URL must be HTTPS and non-loopback.",
     ),
     checkTaskAuthDecision(env.A2A_PUBLIC_TASK_AUTH_DECISION),
+    localExtendedAgentCardSupport(),
     localStreamingSupport(),
     localPushConfigurationSupport(),
     unsupported("push-delivery", "A2A_PUSH_DELIVERY_UNSUPPORTED", "A2A push notification webhook delivery remains unsupported in the current local server."),
@@ -243,6 +244,17 @@ function localStreamingSupport(): A2APublicReadinessCheck {
     message: "A2A streaming is locally supported by the loopback Node server through SSE task events.",
     evidence: "npm run smoke:a2a-local-server",
     next: "Keep this as local loopback streaming proof only until public hosting and external conformance evidence exists.",
+  };
+}
+
+function localExtendedAgentCardSupport(): A2APublicReadinessCheck {
+  return {
+    id: "extended-agent-card",
+    status: "proven-local",
+    code: "A2A_EXTENDED_AGENT_CARD_LOCAL_PROOF_CONFIGURED",
+    message: "A2A authenticated extended Agent Card access is locally supported by the HTTP boundary.",
+    evidence: "npm run smoke:a2a-http",
+    next: "Keep this as local authenticated-card proof only until public hosting, production auth, and external conformance evidence exist.",
   };
 }
 

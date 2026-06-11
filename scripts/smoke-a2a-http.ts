@@ -10,6 +10,9 @@ if (result.logLeaksSecretMaterial) {
 if (!result.hiddenArtifacts) {
   throw new Error("A2A HTTP demo exposed artifacts on the default task read path.");
 }
+if (result.extendedAgentCardStatus !== 200 || result.extendedAgentCardSkillCount < 2) {
+  throw new Error("A2A HTTP demo did not prove authenticated extended Agent Card access.");
+}
 if (result.pushConfigStatus !== 200 || result.pushConfigListCount !== 1) {
   throw new Error("A2A HTTP demo did not prove local push notification config storage.");
 }

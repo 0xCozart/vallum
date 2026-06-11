@@ -6,6 +6,7 @@ This demo does not start a public server or contact live A2A clients. It uses
 the pure local handler from `@iota-gaskit/standards` to prove:
 
 - public Agent Card discovery at `/.well-known/agent-card.json`;
+- bearer-authenticated extended Agent Card access at `/extendedAgentCard`;
 - bearer-authenticated task/message routes;
 - local task send/get/list/cancel semantics;
 - local push notification configuration create/list/get/delete semantics

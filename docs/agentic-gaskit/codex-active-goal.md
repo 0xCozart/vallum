@@ -22,6 +22,12 @@ create/list/get/delete through the HTTP-shaped handler without storing webhook
 credentials or delivering webhooks, while preserving public A2A hosting,
 production keys/auth, push webhook delivery, and external conformance blockers.
 
+The current in-progress continuation is Slice 4.12: A2A authenticated extended
+Agent Card local gate. It should prove local `/extendedAgentCard` access behind
+the existing bearer-authenticated A2A HTTP boundary while keeping public
+hosting, production keys/auth, push webhook delivery, and external conformance
+blockers explicit.
+
 The current continuation should choose the next safe roadmap slice from
 `docs/agentic-gaskit/full-roadmap-execution-goal.md` and
 `docs/agentic-gaskit/handoff-next-product-build.md`. Good next candidates are

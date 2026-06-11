@@ -83,7 +83,9 @@ Confirmed current state:
   without fetching public endpoints or operating a public A2A server. Slice
   4.10 adds local loopback SSE streaming proof while keeping public A2A
   blockers explicit. Slice 4.11 adds local push notification configuration
-  proof while keeping webhook delivery and public A2A blockers explicit.
+  proof while keeping webhook delivery and public A2A blockers explicit. Slice
+  4.12 adds local authenticated extended Agent Card proof while keeping public
+  hosting, production auth, and external conformance blockers explicit.
   Slice 7.5 adds a fast deterministic verification profile plus a
   non-networked profile audit, so ordinary build/test/improve loops can run a
   bounded subset while `verify:local` and `grant:check` remain the full
@@ -91,8 +93,9 @@ Confirmed current state:
   Slice 4.10 adds local loopback A2A SSE streaming proof for
   `POST /message:stream`; Slice 4.11 adds local A2A push notification
   configuration CRUD that rejects webhook credential storage and unsafe
-  callback URLs. Public hosting, production keys/auth, webhook delivery, and
-  external conformance blockers remain.
+  callback URLs; Slice 4.12 adds local authenticated extended Agent Card access.
+  Public hosting, production keys/auth, webhook delivery, and external
+  conformance blockers remain.
 - `docs/agentic-gaskit/handoff-next-product-build.md` says Slices 1.0, 1.1,
   1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.3,
   3.4, 3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 5.1, and 5.2 are

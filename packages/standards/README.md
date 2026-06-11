@@ -27,6 +27,8 @@ Current surface:
   manifest/policy metadata and log-safe redaction.
 - Local HTTP-shaped A2A handler for public Agent Card discovery and
   bearer-authenticated task send/get/list/cancel routes.
+- Authenticated local A2A extended Agent Card access through the HTTP-shaped
+  handler when an extended card is explicitly configured.
 - Local A2A push notification configuration CRUD that accepts public HTTPS
   callback URLs while rejecting webhook credential storage and unsafe local
   destinations.

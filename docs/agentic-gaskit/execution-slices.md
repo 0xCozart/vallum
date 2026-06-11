@@ -1684,6 +1684,83 @@ Escalation triggers:
   public A2A host, or claim external conformance without a separate
   operator-approved security and infrastructure slice.
 
+## Slice 4.12: A2A Authenticated Extended Agent Card Gate
+
+User-visible outcome:
+Agentic GasKit can locally serve an authenticated A2A extended Agent Card at
+`/extendedAgentCard` when configured, while the public Agent Card advertises
+extended-card availability and public A2A hosting/auth/conformance remain
+blocked.
+
+Likely files:
+
+- `packages/standards/src/a2aHttp.ts`
+- `packages/standards/src/a2aHttp.test.ts`
+- `examples/a2a-http/`
+- `scripts/smoke-a2a-http.ts`
+- `scripts/check-a2a-public-readiness.ts`
+- `scripts/a2a-public-readiness.test.ts`
+- `scripts/check-product-status.ts`
+- `scripts/check-launch-readiness.ts`
+- `docs/agentic-gaskit/a2a-public-readiness.md`
+- `docs/agentic-gaskit/external-api-notes.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/overview.md`
+- `docs/CODEBASE_MAP.md`
+- `README.md`
+
+Acceptance criteria:
+
+- Public `GET /.well-known/agent-card.json` advertises
+  `capabilities.extendedAgentCard: true` only when an extended card profile is
+  configured.
+- `GET /extendedAgentCard` requires the existing local A2A bearer auth
+  boundary.
+- `GET /extendedAgentCard` returns an Agent Card generated through the same
+  redaction and validation path as public cards.
+- Missing extended-card configuration fails closed without exposing skills,
+  profile details, signer refs, wallet internals, credential refs, or payment
+  material.
+- Unsupported methods return `405` with `Allow: GET`.
+- `npm run smoke:a2a-http` proves authenticated extended-card access and safe
+  output.
+- `npm run proof:a2a-public-readiness` reports local extended-card proof while
+  keeping public hosting, production JWKS/auth, webhook delivery, and external
+  conformance blockers explicit.
+- Product-status and launch-readiness wording no longer imply all
+  extended-card work is missing, but they still do not mark public A2A
+  interoperability complete.
+
+Verification:
+
+- Focused A2A HTTP handler, A2A HTTP demo, and public-readiness tests.
+- Product-status tests.
+- Launch-readiness tests.
+- Operator-gate tests.
+- Package-script wiring tests.
+- Reviewer-docs regression tests.
+- `npm run smoke:a2a-http`.
+- `npm run proof:a2a-public-readiness`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:local`.
+
+Dependencies:
+Slices 4.7 and 4.11.
+
+Risk:
+Medium. Extended cards can include more capability metadata than public cards,
+so local proof must keep the same private-field redaction and must not be
+described as production auth or public access control.
+
+Escalation triggers:
+
+- Any request to expose extended cards publicly, add production OAuth/mTLS
+  auth, fetch public hosts, or claim external conformance without an
+  operator-approved public infrastructure and auth slice.
+
 ## Slice 5.1: Marketplace Readiness Gate
 
 User-visible outcome:

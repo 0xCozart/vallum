@@ -33,6 +33,8 @@ publicReady=false
 - Public base URL and production JWKS URL are HTTPS and non-loopback.
 - Public task route authentication has an explicit decision: bearer, OAuth2,
   or mTLS.
+- Authenticated extended Agent Card access is locally supported through the A2A
+  HTTP boundary when an extended card is configured.
 - Local loopback SSE streaming proof is configured through the A2A local
   server smoke.
 - Local push notification configuration CRUD is supported through the A2A HTTP
@@ -55,6 +57,7 @@ report paths, credentials, tokens, or secret-like values.
 - Live public Agent Card discovery.
 - Production Agent Card key management or key rotation.
 - Production A2A task-route authentication.
+- Production extended-card access control.
 - Public streaming or webhook delivery.
 - External A2A conformance.
 - Provider verification or production trust.

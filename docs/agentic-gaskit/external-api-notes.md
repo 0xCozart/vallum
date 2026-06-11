@@ -535,6 +535,17 @@ Current planning assumptions:
   destinations, and does not deliver webhooks. Public push delivery, SSRF
   controls for outbound delivery, production task auth, public hosting, and
   external conformance remain blocked.
+- On 2026-06-11, Slice 4.12 rechecked the current A2A specification for the
+  Get Extended Agent Card operation. The current spec says
+  `/extendedAgentCard` is available only when
+  `AgentCard.capabilities.extendedAgentCard` is true, requires client
+  authentication using schemes declared in the public Agent Card, and must
+  enforce appropriate access controls. Slice 4.12 implements local
+  authenticated extended-card access through the HTTP-shaped handler only: the
+  public card advertises extended-card support when configured, the extended
+  route requires bearer auth, the extended card is generated through the same
+  public redaction path, and public hosting, production auth, production key
+  distribution, and external conformance remain blocked.
 
 Implementation checks:
 

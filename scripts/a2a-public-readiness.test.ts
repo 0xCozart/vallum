@@ -19,6 +19,8 @@ test("A2A public readiness reports local proof while public gates remain blocked
     assert.equal(report.publicReady, false);
     assert.equal(findCheck(report, "local-a2a-proof").status, "proven-local");
     assert.equal(findCheck(report, "public-agent-card-url").code, "A2A_PUBLIC_AGENT_CARD_URL_MISSING");
+    assert.equal(findCheck(report, "extended-agent-card").status, "proven-local");
+    assert.equal(findCheck(report, "extended-agent-card").code, "A2A_EXTENDED_AGENT_CARD_LOCAL_PROOF_CONFIGURED");
     assert.equal(findCheck(report, "streaming").status, "proven-local");
     assert.equal(findCheck(report, "streaming").code, "A2A_STREAMING_LOCAL_PROOF_CONFIGURED");
     assert.equal(findCheck(report, "push-notification-configs").status, "proven-local");
@@ -106,6 +108,7 @@ test("A2A public readiness accepts redacted public config and existing conforman
     assert.equal(findCheck(report, "production-jwks-url").status, "ready-approval");
     assert.equal(findCheck(report, "task-auth-decision").status, "ready-approval");
     assert.equal(findCheck(report, "external-conformance").status, "ready-approval");
+    assert.equal(findCheck(report, "extended-agent-card").status, "proven-local");
     assert.equal(findCheck(report, "streaming").status, "proven-local");
     assert.equal(findCheck(report, "push-notification-configs").status, "proven-local");
     assert.equal(findCheck(report, "push-delivery").status, "unsupported");

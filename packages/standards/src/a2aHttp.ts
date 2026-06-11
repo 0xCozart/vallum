@@ -83,6 +83,7 @@ export type A2AHttpErrorCode =
   | "A2A_AUTH_NOT_CONFIGURED"
   | "A2A_AUTH_REQUIRED"
   | "A2A_BODY_INVALID"
+  | "A2A_EXTENDED_AGENT_CARD_NOT_CONFIGURED"
   | "A2A_ROUTE_NOT_FOUND"
   | "A2A_METHOD_NOT_ALLOWED"
   | "A2A_VERSION_NOT_SUPPORTED"
@@ -94,6 +95,8 @@ export interface LocalA2AHttpHandlerOptions {
   readonly store: LocalA2ATaskStore;
   readonly agentCardProfile?: unknown;
   readonly agentCardOptions?: A2AAgentCardWellKnownOptions;
+  readonly extendedAgentCardProfile?: unknown;
+  readonly extendedAgentCardOptions?: A2AAgentCardWellKnownOptions;
   readonly taskAuthToken?: string;
   readonly taskPolicy?: AgentActionPolicy;
   readonly pushNotificationStore?: LocalA2APushNotificationStore;
@@ -112,6 +115,7 @@ interface SendMessageBody {
 
 export const A2A_HTTP_SEND_MESSAGE_PATH = "/message:send" as const;
 export const A2A_HTTP_STREAM_MESSAGE_PATH = "/message:stream" as const;
+export const A2A_HTTP_EXTENDED_AGENT_CARD_PATH = "/extendedAgentCard" as const;
 export const A2A_HTTP_TASKS_PATH = "/tasks" as const;
 
 export async function handleLocalA2AHttpRequest(
@@ -123,8 +127,7 @@ export async function handleLocalA2AHttpRequest(
 
   if (url.pathname === A2A_AGENT_CARD_WELL_KNOWN_PATH) {
     return handleAgentCardRequest(method, url.pathname, options.agentCardProfile, {
-      ...options.agentCardOptions,
-      now: options.agentCardOptions?.now ?? options.now?.(),
+      ...publicAgentCardOptions(options),
     });
   }
 
@@ -143,6 +146,11 @@ export async function handleLocalA2AHttpRequest(
   }
 
   try {
+    if (url.pathname === A2A_HTTP_EXTENDED_AGENT_CARD_PATH) {
+      if (method !== "GET") return methodNotAllowed(["GET"]);
+      return handleExtendedAgentCardRequest(options);
+    }
+
     const pushRoute = matchPushNotificationRoute(url.pathname);
     if (pushRoute) return handlePushNotificationRoute(method, url, request, options, pushRoute);
 
@@ -204,6 +212,21 @@ export async function handleLocalA2AHttpRequest(
   }
 }
 
+function publicAgentCardOptions(options: LocalA2AHttpHandlerOptions): A2AAgentCardWellKnownOptions {
+  const base = {
+    ...options.agentCardOptions,
+    now: options.agentCardOptions?.now ?? options.now?.(),
+  };
+  if (options.extendedAgentCardProfile === undefined) return base;
+  return {
+    ...base,
+    capabilities: {
+      ...base.capabilities,
+      extendedAgentCard: true,
+    },
+  };
+}
+
 function handleAgentCardRequest(
   method: string,
   path: string,
@@ -228,6 +251,26 @@ function handleAgentCardRequest(
     body: JSON.parse(response.json) as A2AHttpResponseBody,
     json: response.json,
   };
+}
+
+function handleExtendedAgentCardRequest(options: LocalA2AHttpHandlerOptions): A2AHttpResponse {
+  if (options.extendedAgentCardProfile === undefined) {
+    return errorResponse(
+      501,
+      "A2A_EXTENDED_AGENT_CARD_NOT_CONFIGURED",
+      "A2A extended Agent Card is not configured for this local Agentic GasKit server.",
+    );
+  }
+
+  return handleAgentCardRequest(
+    "GET",
+    A2A_AGENT_CARD_WELL_KNOWN_PATH,
+    options.extendedAgentCardProfile,
+    {
+      ...options.extendedAgentCardOptions,
+      now: options.extendedAgentCardOptions?.now ?? options.now?.(),
+    },
+  );
 }
 
 async function handleSendMessage(
