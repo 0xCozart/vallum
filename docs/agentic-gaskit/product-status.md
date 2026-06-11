@@ -12,6 +12,8 @@ surface in one machine-checkable place:
 - documented public testnet digest evidence wiring;
 - A2A public-readiness wiring for local proof, public hosting inputs,
   unsupported streaming/push capabilities, and external conformance blockers;
+- verification-profile wiring that keeps fast iteration separate from the full
+  local evidence gate;
 - launch-readiness evidence matrix and operator live-gate runbook wiring;
 - live/testnet readiness, IOTA Names, IOTA Identity, and VC proof status from
   `npm run proof:live-status`;
@@ -42,7 +44,10 @@ marketplace, or safety work before those claims can be made.
 ## What It Proves
 
 - `npm run verify:local` is wired to deterministic local tests, Move tests,
-  local smokes, package checks, docs, secrets, and product evidence gates.
+  local smokes, package checks, verification-profile audit, docs, secrets, and
+  product evidence gates.
+- `npm run verify:fast` exists for bounded deterministic iteration and is not
+  treated as launch evidence by itself.
 - Package release proof remains local: pack dry-runs, local tarball
   install/import, and opt-in publish dry-run.
 - Live/testnet gates are either ready to run with safe local configuration or
@@ -68,9 +73,11 @@ Use the audit output to choose the next gate:
 
 ```bash
 npm run verify:local
+npm run verify:fast
 npm run proof:testnet-digest
 npm run proof:testnet-digest:live
 npm run proof:a2a-public-readiness
+npm run proof:verification-profiles
 npm run proof:live-status
 npm run proof:launch-readiness
 npm run proof:operator-gates

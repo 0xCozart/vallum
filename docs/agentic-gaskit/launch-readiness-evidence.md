@@ -40,7 +40,7 @@ operator-approved proof.
 | Phase 4 standards bridges | x402, AP2, and A2A mappings are locally proven with fail-closed behavior. A2A public-readiness proof now reports local proof, public hosting inputs, unsupported streaming/push capabilities, and external conformance blockers. | Blocked on live payment/provider proof, public A2A hosting, streaming/push support, and external conformance. |
 | Phase 5 marketplace/operator | Marketplace read-model evidence proves local labels, policy compatibility, receipt access control, and dispute bundle redaction. | Production marketplace, provider verification, moderation, custody, and live settlement remain blocked. |
 | Phase 6 package release | Packages are locally packable, installable from tarballs, and dry-run publishable. | Registry publication, account ownership, provenance, and registry install proof remain blocked. |
-| Packet H final product status | Product status, launch-readiness, and operator live-gate reports are executable. | The active goal remains open while blockers remain. |
+| Packet H final product status | Product status, launch-readiness, operator live-gate, and verification-profile reports are executable. | The fast profile is iteration-only; the active goal remains open while blockers remain. |
 
 ## What It Does Not Do
 
@@ -61,6 +61,8 @@ npm run proof:live-status
 npm run proof:testnet-digest
 npm run proof:testnet-digest:live
 npm run proof:a2a-public-readiness
+npm run verify:fast
+npm run proof:verification-profiles
 npm run proof:operator-gates
 npm run readiness:testnet
 npm run verify:local

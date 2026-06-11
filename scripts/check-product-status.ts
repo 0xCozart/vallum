@@ -56,6 +56,7 @@ const LOCAL_VERIFY_REQUIRED_PARTS = [
   "npm run pack:check",
   "npm run smoke:package-install",
   "npm run proof:a2a-public-readiness",
+  "npm run proof:verification-profiles",
   "npm run proof:product-status",
   "npm run proof:launch-readiness",
   "npm run proof:operator-gates",
@@ -126,7 +127,7 @@ function checkLocalVerificationCoverage(scripts: Record<string, string | undefin
     id: "local-verification",
     status: "proven-local",
     code: "LOCAL_VERIFY_SURFACE_CONFIGURED",
-    message: "The local verification script covers deterministic tests, Move tests, local smokes, package checks, docs, secrets, and this product-status gate.",
+    message: "The local verification script covers deterministic tests, Move tests, local smokes, package checks, verification-profile audit, docs, secrets, and this product-status gate.",
     evidence: "npm run verify:local",
   };
 }

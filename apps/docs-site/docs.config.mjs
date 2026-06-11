@@ -132,6 +132,12 @@ export default {
           description: "Non-networked operator runbook classifying live, production, publication, custody, and safety gates before execution."
         },
         {
+          title: "Verification Profiles",
+          source: "docs/agentic-gaskit/verification-profiles.md",
+          slug: "agentic-verification-profiles",
+          description: "Fast and full local verification profiles for iteration, handoff, reviewer, and launch evidence."
+        },
+        {
           title: "Local Dirty Work Review",
           source: "docs/agentic-gaskit/local-dirty-work-review.md",
           slug: "agentic-local-dirty-work-review",

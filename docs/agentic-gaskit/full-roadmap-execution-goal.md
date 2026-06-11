@@ -1,6 +1,6 @@
 # Codex Goal: Full Roadmap Execution To Working Agentic GasKit Product
 
-Last updated: 2026-06-10.
+Last updated: 2026-06-11.
 
 ## Goal Pointer
 
@@ -81,6 +81,10 @@ Confirmed current state:
   local A2A proof, public hosting inputs, production JWKS/auth decisions,
   unsupported streaming/push capabilities, and external conformance blockers
   without fetching public endpoints or operating a public A2A server.
+  Slice 7.5 adds a fast deterministic verification profile plus a
+  non-networked profile audit, so ordinary build/test/improve loops can run a
+  bounded subset while `verify:local` and `grant:check` remain the full
+  reviewer/release/launch evidence gates.
 - `docs/agentic-gaskit/handoff-next-product-build.md` says Slices 1.0, 1.1,
   1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.3,
   3.4, 3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 5.1, and 5.2 are
@@ -607,7 +611,8 @@ gate: local verification checks documented digest evidence, while the optional
 live command performs a read-only transaction lookup against IOTA testnet.
 Slice 4.9 adds a non-networked A2A public-readiness gate so public A2A hosting
 and conformance blockers are inspectable before any live interoperability
-claim.
+claim. Slice 7.5 adds a fast deterministic verification profile for iteration
+and a profile audit that preserves `verify:local` as the full evidence gate.
 
 Acceptance criteria:
 
@@ -626,6 +631,8 @@ Acceptance criteria:
 - Operator live-gate command reports which gates are blocked by configuration,
   ready for non-networked local checks, require explicit live/operator
   approval, remain production-blocked, or are safety-deferred.
+- Verification-profile command reports whether the fast iteration path is
+  bounded and whether `verify:local` plus `grant:check` remain full-gate proof.
 - Testnet digest proof reports documented public IOTA testnet transaction
   evidence locally, and its opt-in live lookup remains read-only without gas
   spend, sponsor credentials, signing, or transaction execution.

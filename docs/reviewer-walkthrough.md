@@ -95,6 +95,7 @@ npm run grant:check
 For faster spot checks, reviewers can also run individual commands:
 
 ```bash
+npm run verify:fast
 npm test
 npm run typecheck
 npm run smoke:local
@@ -103,6 +104,7 @@ npm run smoke:demo-browser
 npm run readiness:testnet:example
 npm run proof:testnet-digest
 npm run proof:a2a-public-readiness
+npm run proof:verification-profiles
 npm run pack:check
 npm run proof:product-status
 npm run proof:launch-readiness
@@ -124,6 +126,8 @@ Expected current result:
 - A2A public-readiness proof reports local A2A evidence, public hosting input
   blockers, unsupported streaming/push capabilities, and external conformance
   blockers without contacting public endpoints;
+- verification-profile proof reports the fast iteration profile and confirms
+  reviewer/grant proof still uses the full local gate;
 - product-status proof reports local verification and package gates separately
   from live/testnet, publication, marketplace, custody, A2A hosting, payment,
   and device-safety blockers;

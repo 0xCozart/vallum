@@ -130,12 +130,13 @@ The current scaffold verifies successfully locally:
 
 ```bash
 npm install
+npm run verify:fast
 npm run verify:local
 ```
 
 Latest local verification and prior live proof:
 
-- `npm test`: 392 deterministic TypeScript tests passed locally after Slice 4.9.
+- `npm test`: 397 deterministic TypeScript tests passed locally after Slice 7.5.
 - `npm run contracts:test`: 33 Move escrow/receipt/pay-per-call/data-license/service-bounty/reputation-receipt/subscription contract tests passed locally.
 - `npm run typecheck`: passed locally.
 - `npm run smoke:local`: deterministic local gateway smoke passed locally, including policy simulation, sanitized event, local usage read-model, file-backed usage event-store replay, and authenticated local operator usage API checks.
@@ -165,6 +166,11 @@ Latest local verification and prior live proof:
 - `npm run proof:a2a-public-readiness`: deterministic non-networked A2A
   public-readiness gate reports local proof, public hosting inputs, unsupported
   streaming/push capabilities, and external conformance blockers.
+- `npm run verify:fast`: deterministic fast iteration profile for build,
+  TypeScript tests, docs check, secret scan, and non-networked status gates.
+- `npm run proof:verification-profiles`: deterministic non-networked profile
+  audit confirms `verify:fast` stays bounded and `verify:local` remains the
+  full release/reviewer gate.
 - `npm run pack:check`: workspace package dry-runs completed locally.
 - `npm run smoke:package-install`: deterministic local tarball install/import
   smoke passed for 11 public workspace packages.
@@ -187,7 +193,8 @@ See `docs/testnet-attempts.md`, `docs/agentic-gaskit/product-status.md`,
 `docs/agentic-gaskit/launch-readiness-evidence.md`,
 `docs/agentic-gaskit/testnet-digest-proof.md`,
 `docs/agentic-gaskit/a2a-public-readiness.md`,
-`docs/agentic-gaskit/operator-live-gates.md`, and
+`docs/agentic-gaskit/operator-live-gates.md`,
+`docs/agentic-gaskit/verification-profiles.md`, and
 `docs/reviewer-walkthrough.md` for exact evidence.
 
 ## External showcase dApps

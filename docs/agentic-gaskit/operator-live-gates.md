@@ -37,6 +37,7 @@ hosts, marketplace systems, or physical devices.
 ## What It Helps With
 
 - Shows which local proof gates are already configured.
+- Shows that fast iteration remains separate from the full local proof gate.
 - Shows whether testnet readiness is blocked by missing local config.
 - Shows which live smokes would contact external services and require explicit
   operator intent.
@@ -68,6 +69,8 @@ npm run proof:launch-readiness
 npm run proof:testnet-digest
 npm run proof:testnet-digest:live
 npm run proof:a2a-public-readiness
+npm run verify:fast
+npm run proof:verification-profiles
 npm run proof:operator-gates
 npm run readiness:testnet
 ```

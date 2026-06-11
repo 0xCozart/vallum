@@ -71,8 +71,25 @@ test("A2A public readiness proof is non-networked and wired into local verificat
   );
   assert.match(
     packageJson.scripts?.["verify:local"] ?? "",
-    /npm run smoke:package-install && npm run proof:a2a-public-readiness && npm run proof:product-status/,
+    /npm run smoke:package-install && npm run proof:a2a-public-readiness && npm run proof:verification-profiles && npm run proof:product-status/,
   );
+});
+
+test("verification profiles keep fast iteration separate from the full local gate", () => {
+  assert.equal(
+    packageJson.scripts?.["proof:verification-profiles"],
+    "npm run build && tsx scripts/check-verification-profiles.ts",
+  );
+  assert.equal(
+    packageJson.scripts?.["verify:fast"],
+    "npm run build && npm test && npm run docs:check && npm run secrets:scan && npm run proof:product-status && npm run proof:launch-readiness && npm run proof:operator-gates",
+  );
+  assert.match(
+    packageJson.scripts?.["verify:local"] ?? "",
+    /npm run proof:a2a-public-readiness && npm run proof:verification-profiles && npm run proof:product-status/,
+  );
+  assert.equal(packageJson.scripts?.["grant:check"], "npm run verify:local");
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /contracts:test|pack:check|publish:dry-run|execute:testnet-demo/);
 });
 
 test("root local verification includes deterministic secret scan after package checks", () => {
@@ -80,7 +97,7 @@ test("root local verification includes deterministic secret scan after package c
 
   assert.match(
     localVerify,
-    /npm run readiness:testnet:example && npm run proof:testnet-digest && npm run pack:check && npm run smoke:package-install && npm run proof:a2a-public-readiness && npm run proof:product-status && npm run proof:launch-readiness && npm run proof:operator-gates && npm run docs:check && npm run secrets:scan/,
+    /npm run readiness:testnet:example && npm run proof:testnet-digest && npm run pack:check && npm run smoke:package-install && npm run proof:a2a-public-readiness && npm run proof:verification-profiles && npm run proof:product-status && npm run proof:launch-readiness && npm run proof:operator-gates && npm run docs:check && npm run secrets:scan/,
   );
   assert.equal(packageJson.scripts?.["grant:check"], "npm run verify:local");
   assert.equal(packageJson.scripts?.["secrets:scan"], "tsx scripts/scan-secrets.ts");
@@ -222,7 +239,7 @@ test("product status is non-networked and wired into local verification", () => 
   );
   assert.match(
     packageJson.scripts?.["verify:local"] ?? "",
-    /npm run smoke:package-install && npm run proof:a2a-public-readiness && npm run proof:product-status && npm run proof:launch-readiness && npm run proof:operator-gates && npm run docs:check/,
+    /npm run smoke:package-install && npm run proof:a2a-public-readiness && npm run proof:verification-profiles && npm run proof:product-status && npm run proof:launch-readiness && npm run proof:operator-gates && npm run docs:check/,
   );
 });
 

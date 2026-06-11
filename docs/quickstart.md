@@ -8,6 +8,7 @@ Goal: a developer can clone the repo, verify the policy gateway and demo dApp lo
 
 ```bash
 npm install
+npm run verify:fast
 npm test
 npm run typecheck
 npm run smoke:local
@@ -16,10 +17,15 @@ npm run smoke:demo-browser
 npm run readiness:testnet:example
 npm run proof:testnet-digest
 npm run proof:a2a-public-readiness
+npm run proof:verification-profiles
 npm run proof:product-status
 npm run proof:launch-readiness
 npm run proof:operator-gates
 ```
+
+`npm run verify:fast` is the bounded iteration profile. Use
+`npm run verify:local` before accepting a slice, handoff, release claim, or
+reviewer-facing proof.
 
 ## Local policy gateway smoke path
 

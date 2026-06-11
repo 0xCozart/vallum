@@ -2071,3 +2071,80 @@ Escalation triggers:
 - Any request to treat a successful digest lookup as proof of current sponsor
   credentials, production custody, package publication, marketplace launch, or
   fresh transaction execution.
+
+## Slice 7.5: Verification Profile Speed Gate
+
+User-visible outcome:
+Developers and reviewers have a faster deterministic iteration command for
+ordinary build/test/improve loops, while the full local verification gate
+remains the only reviewer, release, handoff, and launch evidence surface.
+
+Likely files:
+
+- `scripts/check-verification-profiles.ts`
+- `scripts/verification-profiles.test.ts`
+- `scripts/check-product-status.ts`
+- `scripts/check-launch-readiness.ts`
+- `scripts/package-scripts.test.ts`
+- `scripts/product-status.test.ts`
+- `scripts/launch-readiness.test.ts`
+- `scripts/reviewer-docs.test.ts`
+- `docs/agentic-gaskit/verification-profiles.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
+- `docs/agentic-gaskit/codex-active-goal.md`
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+- `docs/milestone-0-proof.md`
+- `docs/reviewer-walkthrough.md`
+- `docs/quickstart.md`
+- `docs/overview.md`
+- `docs/CODEBASE_MAP.md`
+- `README.md`
+- `apps/docs-site/docs.config.mjs`
+- `package.json`
+
+Acceptance criteria:
+
+- `npm run verify:fast` exists for bounded deterministic iteration.
+- `verify:fast` includes build, TypeScript tests, docs check, secret scan, and
+  non-networked product-status, launch-readiness, and operator-gate reports.
+- `verify:fast` does not run Move tests, product smokes, package dry-runs,
+  publication dry-runs, live testnet commands, live IOTA Names/Identity smokes,
+  payment/provider commands, public A2A hosting, or physical-device commands.
+- `npm run proof:verification-profiles` reports the fast profile, confirms the
+  full `verify:local` gate is preserved, and confirms `grant:check` still uses
+  `verify:local`.
+- `npm run verify:local` includes the verification-profile audit before
+  product-status, launch-readiness, and operator-gates.
+- Docs explain that `verify:fast` is not launch evidence by itself.
+
+Verification:
+
+- Focused verification-profile tests.
+- Product-status tests.
+- Launch-readiness tests.
+- Package-script wiring tests.
+- Reviewer-docs regression tests.
+- `npm run proof:verification-profiles`.
+- `npm run verify:fast`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:local`.
+
+Dependencies:
+Slices 7.1-7.4 and Slice 4.9.
+
+Risk:
+Medium. A fast command can be mistaken for release evidence unless
+`grant:check`, product-status, launch-readiness, and docs keep the full gate
+explicit.
+
+Escalation triggers:
+
+- Any request to replace `verify:local` or `grant:check` with `verify:fast`.
+- Any request to remove safety-critical negative tests merely to reduce the
+  subtest count.
+- Any request to put live, publication, payment, public A2A, marketplace,
+  custody, or physical-device commands in the fast profile.

@@ -68,6 +68,9 @@ It also includes the first Agentic GasKit implementation slices:
 - non-networked operator live-gate runbook that classifies config blockers,
   approval-required live commands, production blockers, and safety deferrals
   before execution
+- fast verification profile plus non-networked verification-profile audit that
+  keeps day-to-day iteration bounded while preserving `verify:local` as the
+  full reviewer/release/launch evidence gate
 - local read-only marketplace evidence package with provider labels, policy
   compatibility, receipt access control, and dispute evidence bundle smoke
 - package namespace and release metadata strategy for the current
@@ -141,6 +144,10 @@ roadmap unless later slices implement and verify them.
   `docs/agentic-gaskit/operator-live-gates.md`,
   `scripts/check-operator-live-gates.ts`,
   `scripts/operator-live-gates.test.ts`
+- Verification profiles:
+  `docs/agentic-gaskit/verification-profiles.md`,
+  `scripts/check-verification-profiles.ts`,
+  `scripts/verification-profiles.test.ts`
 - IOTA Identity live smoke:
   `scripts/smoke-iota-identity-live.ts`,
   `scripts/iota-identity-live-smoke.test.ts`
@@ -239,6 +246,8 @@ Safe local checks:
 - `npm run proof:product-status`
 - `npm run proof:launch-readiness`
 - `npm run proof:operator-gates`
+- `npm run verify:fast`
+- `npm run proof:verification-profiles`
 - `npm run secrets:scan`
 
 Full local proof:
