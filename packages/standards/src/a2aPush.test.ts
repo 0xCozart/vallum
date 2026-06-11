@@ -3,7 +3,9 @@ import { test } from "node:test";
 
 import {
   LocalA2APushNotificationStore,
+  buildA2APushNotificationDeliveryRequest,
   createA2APushNotificationConfig,
+  createA2APushHttpTransport,
   deliverA2APushNotifications,
   type A2APushNotificationDeliveryRequest,
   type A2ATask,
@@ -79,6 +81,117 @@ test("A2A push delivery skips without transport and isolates transport failures"
   assert.equal(failed.attempts[0]?.errorCode, "A2A_PUSH_TRANSPORT_FAILED");
   assert.equal(JSON.stringify(failed).includes("should-not-print"), false);
 });
+
+test("A2A push HTTP transport posts sanitized delivery requests without auth headers", async () => {
+  const config = createConfigFixture();
+  const request = {
+    ...buildA2APushNotificationDeliveryRequest(config, taskFixture()),
+    headers: {
+      ...buildA2APushNotificationDeliveryRequest(config, taskFixture()).headers,
+      authorization: "Bearer should-not-send",
+      cookie: "session=should-not-send",
+    },
+  };
+  const captured: Array<{ readonly url: string; readonly init: RequestInit }> = [];
+  const transport = createA2APushHttpTransport({
+    fetch: async (url, init) => {
+      captured.push({ url: String(url), init: init ?? {} });
+      return new Response(null, { status: 204 });
+    },
+    timeoutMs: 25,
+  });
+
+  const response = await transport(request);
+
+  assert.equal(response.status, 204);
+  assert.equal(captured.length, 1);
+  assert.equal(captured[0]?.url, "https://client.example.test/a2a/push");
+  assert.equal(captured[0]?.init.method, "POST");
+  assert.equal(captured[0]?.init.redirect, "manual");
+  const headers = captured[0]?.init.headers as Record<string, string>;
+  assert.match(headers["content-type"] ?? "", /application\/a2a\+json/);
+  assert.equal(headers["a2a-version"], "1.0");
+  assert.equal(headers.authorization, undefined);
+  assert.equal(headers.cookie, undefined);
+  assert.doesNotMatch(String(captured[0]?.init.body ?? ""), /private prompt|Bearer abc|should-not-send|signer_ref_secret|wallet_secret|payment-secret/i);
+});
+
+test("A2A push HTTP transport rejects unsafe URLs before fetch", async () => {
+  let called = false;
+  const config = createConfigFixture();
+  const safeRequest = buildA2APushNotificationDeliveryRequest(config, taskFixture());
+  const transport = createA2APushHttpTransport({
+    fetch: async () => {
+      called = true;
+      return new Response(null, { status: 204 });
+    },
+  });
+
+  await assert.rejects(
+    async () => transport({
+      ...safeRequest,
+      url: "https://127.0.0.1/a2a/push",
+    }),
+    /A2A push notification URL must be public HTTPS/,
+  );
+  assert.equal(called, false);
+});
+
+test("A2A push HTTP transport reports redirects and timeouts as failed delivery without leaking errors", async () => {
+  const store = new LocalA2APushNotificationStore();
+  createA2APushNotificationConfig({
+    store,
+    taskId: "task-push-1",
+    now,
+    value: {
+      id: "push-1",
+      url: "https://client.example.test/a2a/push",
+    },
+  });
+
+  const redirectResult = await deliverA2APushNotifications({
+    store,
+    task: taskFixture(),
+    transport: createA2APushHttpTransport({
+      fetch: async (_url, init) => {
+        assert.equal(init?.redirect, "manual");
+        return new Response("", { status: 302 });
+      },
+    }),
+  });
+  const timeoutResult = await deliverA2APushNotifications({
+    store,
+    task: taskFixture(),
+    transport: createA2APushHttpTransport({
+      timeoutMs: 1,
+      fetch: (_url, init) => new Promise<Response>((_resolve, reject) => {
+        init?.signal?.addEventListener("abort", () => {
+          reject(new Error("timeout with Bearer should-not-print"));
+        });
+      }),
+    }),
+  });
+
+  assert.equal(redirectResult.attempts[0]?.status, "failed");
+  assert.equal(redirectResult.attempts[0]?.httpStatus, 302);
+  assert.equal(redirectResult.attempts[0]?.errorCode, "A2A_PUSH_TRANSPORT_FAILED");
+  assert.equal(timeoutResult.attempts[0]?.status, "failed");
+  assert.equal(timeoutResult.attempts[0]?.errorCode, "A2A_PUSH_TRANSPORT_FAILED");
+  assert.equal(JSON.stringify(timeoutResult).includes("should-not-print"), false);
+});
+
+function createConfigFixture() {
+  const store = new LocalA2APushNotificationStore();
+  return createA2APushNotificationConfig({
+    store,
+    taskId: "task-push-1",
+    now,
+    value: {
+      id: "push-1",
+      url: "https://client.example.test/a2a/push",
+    },
+  });
+}
 
 function taskFixture(): A2ATask {
   return {

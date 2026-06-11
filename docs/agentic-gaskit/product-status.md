@@ -12,8 +12,9 @@ surface in one machine-checkable place:
 - documented public testnet digest evidence wiring;
 - A2A public-readiness wiring for local proof, local authenticated extended
   Agent Card access, local loopback streaming, local push notification
-  configuration, local injected push delivery, public hosting inputs, public
-  webhook delivery blockers, and external conformance blockers;
+  configuration, local injected push delivery, local opt-in push HTTP
+  transport, public hosting inputs, public webhook delivery blockers, and
+  external conformance blockers;
 - verification-profile wiring that keeps fast iteration separate from the full
   local evidence gate;
 - launch-readiness evidence matrix and operator live-gate runbook wiring;

@@ -85,6 +85,7 @@ export async function checkA2APublicReadiness(
     localStreamingSupport(),
     localPushConfigurationSupport(),
     localPushDeliverySupport(),
+    localPushHttpTransportSupport(),
     blockedPublicPushDelivery(),
     await checkConformanceReport(cwd, env.A2A_EXTERNAL_CONFORMANCE_REPORT),
   ];
@@ -281,12 +282,23 @@ function localPushDeliverySupport(): A2APublicReadinessCheck {
   };
 }
 
+function localPushHttpTransportSupport(): A2APublicReadinessCheck {
+  return {
+    id: "local-push-http-transport",
+    status: "proven-local",
+    code: "A2A_PUSH_HTTP_TRANSPORT_LOCAL_PROOF_CONFIGURED",
+    message: "A2A push notification HTTP transport is locally supported as an explicitly injected helper with safe URL checks, timeout handling, manual redirect handling, and status-only results.",
+    evidence: "node --import tsx --test packages/standards/src/a2aPush.test.ts",
+    next: "Keep this as local mocked transport proof only until public webhook infrastructure, delivery observability, and external conformance evidence exist.",
+  };
+}
+
 function blockedPublicPushDelivery(): A2APublicReadinessCheck {
   return {
     id: "public-push-delivery",
     status: "blocked-conformance",
     code: "A2A_PUBLIC_PUSH_DELIVERY_PROOF_MISSING",
-    message: "A2A public push webhook delivery remains blocked until outbound delivery infrastructure, SSRF controls, production auth, and external conformance evidence exist.",
+    message: "A2A public push webhook delivery remains blocked until outbound delivery infrastructure, production SSRF controls, production auth, and external conformance evidence exist.",
     evidence: "public-delivery-proof-missing",
     next: "Run only in a dedicated operator-approved public webhook delivery slice.",
   };

@@ -41,6 +41,9 @@ publicReady=false
   boundary without storing webhook credentials.
 - Local push notification delivery envelopes are supported through an injected
   transport without default outbound webhook calls.
+- Local push notification HTTP transport is supported as an explicitly
+  constructed helper with safe URL checks, manual redirect handling, timeout
+  handling, no stored webhook credentials, and status-only results.
 - Public push notification webhook delivery remains blocked until a dedicated
   security and public-infrastructure slice implements and verifies it.
 - External conformance remains blocked unless an operator supplies a local
@@ -60,6 +63,7 @@ report paths, credentials, tokens, or secret-like values.
 - Production A2A task-route authentication.
 - Production extended-card access control.
 - Public streaming or webhook delivery.
+- Production push delivery retry, observability, auth, or SSRF infrastructure.
 - External A2A conformance.
 - Provider verification or production trust.
 

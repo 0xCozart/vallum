@@ -47,6 +47,11 @@ export type A2APushNotificationTransport = (
   request: A2APushNotificationDeliveryRequest,
 ) => A2APushNotificationTransportResponse | Promise<A2APushNotificationTransportResponse>;
 
+export interface A2APushHttpTransportOptions {
+  readonly fetch?: typeof fetch;
+  readonly timeoutMs?: number;
+}
+
 export interface A2APushNotificationDeliveryAttempt {
   readonly configId: string;
   readonly taskId: string;
@@ -222,6 +227,34 @@ export function buildA2APushNotificationDeliveryRequest(
   };
 }
 
+export function createA2APushHttpTransport(
+  options: A2APushHttpTransportOptions = {},
+): A2APushNotificationTransport {
+  const fetchImpl = options.fetch ?? globalThis.fetch;
+  if (typeof fetchImpl !== "function") {
+    throw new A2APushNotificationError("A2A_PUSH_CONFIG_INVALID", "A2A push HTTP transport requires fetch support.");
+  }
+  const timeoutMs = normalizeTimeoutMs(options.timeoutMs);
+
+  return async (request) => {
+    const url = safeWebhookUrl(request.url);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetchImpl(url, {
+        method: request.method,
+        headers: publicDeliveryHeaders(request.headers),
+        body: request.json,
+        redirect: "manual",
+        signal: controller.signal,
+      });
+      return { status: response.status };
+    } finally {
+      clearTimeout(timeout);
+    }
+  };
+}
+
 function parsePushNotificationConfig(
   taskId: string,
   value: unknown,
@@ -300,6 +333,31 @@ function optionalString(value: unknown, path: string): string | undefined {
     throw new A2APushNotificationError("A2A_PUSH_CONFIG_INVALID", `${path} must be a non-empty string when present.`);
   }
   return value.trim();
+}
+
+function normalizeTimeoutMs(value: number | undefined): number {
+  if (value === undefined) return 5000;
+  if (!Number.isFinite(value) || value <= 0) {
+    throw new A2APushNotificationError("A2A_PUSH_CONFIG_INVALID", "A2A push HTTP transport timeout must be positive.");
+  }
+  return Math.floor(value);
+}
+
+function publicDeliveryHeaders(headers: Record<string, string>): Record<string, string> {
+  const result: Record<string, string> = {};
+  for (const [name, value] of Object.entries(headers)) {
+    const normalized = name.trim().toLowerCase();
+    if (
+      normalized === "authorization"
+      || normalized === "proxy-authorization"
+      || normalized === "cookie"
+      || normalized === "set-cookie"
+    ) {
+      continue;
+    }
+    result[normalized] = value;
+  }
+  return result;
 }
 
 function isUnsafeWebhookHost(hostname: string): boolean {

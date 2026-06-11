@@ -34,6 +34,10 @@ Current surface:
   destinations.
 - Local injected A2A push delivery envelopes that POST sanitized task payloads
   through an explicit transport without default outbound webhook calls.
+- Opt-in A2A push HTTP transport helper that posts sanitized task payloads only
+  when explicitly injected, rejects unsafe callback URLs before network
+  contact, does not emit authorization headers, uses manual redirect handling,
+  applies a timeout, and returns status-only results.
 - Loopback-only Node HTTP server helper for deterministic local A2A discovery
   and task route smoke proof, with explicit unsafe opt-in required for
   non-loopback binds.
@@ -41,6 +45,6 @@ Current surface:
 This package does not operate a production x402 facilitator, replace AP2, hold
 payment credentials, sign payment payloads, submit live settlement
 transactions, operate a live public A2A task/message server, publish public A2A
-discovery, deliver public A2A push/webhook updates, prove external A2A
+discovery, prove public A2A push/webhook infrastructure, prove external A2A
 conformance or live A2A discovery, provide production Agent Card key
 management, or replace the A2A protocol.

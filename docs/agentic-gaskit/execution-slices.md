@@ -1839,6 +1839,80 @@ Escalation triggers:
   credentials, operate a public A2A host, or claim external conformance without
   a separate operator-approved security and infrastructure slice.
 
+## Slice 4.14: A2A Push HTTP Transport Safety Gate
+
+User-visible outcome:
+Agentic GasKit has an opt-in A2A push notification HTTP transport helper that
+can be locally tested against mocked `fetch`, while public webhook delivery,
+default outbound delivery, webhook credentials, production auth, public
+hosting, and external conformance remain blocked until operator-approved
+infrastructure proof exists.
+
+Likely files:
+
+- `packages/standards/src/a2aPush.ts`
+- `packages/standards/src/a2aPush.test.ts`
+- `scripts/check-a2a-public-readiness.ts`
+- `scripts/a2a-public-readiness.test.ts`
+- `scripts/check-product-status.ts`
+- `scripts/check-launch-readiness.ts`
+- `docs/agentic-gaskit/a2a-public-readiness.md`
+- `docs/agentic-gaskit/external-api-notes.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/overview.md`
+- `docs/CODEBASE_MAP.md`
+- `README.md`
+
+Acceptance criteria:
+
+- The HTTP transport helper must be explicitly constructed and injected; no
+  default outbound webhook delivery is added to task routes.
+- The helper reuses the same safe public HTTPS callback URL boundary as push
+  config creation and rejects unsafe destinations before calling `fetch`.
+- The helper posts the sanitized A2A task payload with the existing A2A media
+  type and protocol-version headers.
+- The helper does not add authorization headers or store webhook credentials.
+- The helper disables redirects or treats redirects as failure, applies a
+  bounded timeout, and returns only status-level delivery evidence.
+- Tests prove successful mocked delivery, unsafe URL rejection before network
+  contact, redirect/failure handling, timeout handling, and no secret-looking
+  material in emitted requests or results.
+- `npm run proof:a2a-public-readiness` reports local opt-in HTTP transport
+  readiness separately from external public webhook proof, which remains
+  blocked.
+- Product-status and launch-readiness wording make clear that public webhook
+  infrastructure proof remains missing.
+
+Verification:
+
+- Focused A2A push and public-readiness tests.
+- Product-status tests.
+- Launch-readiness tests.
+- Operator-gate tests.
+- Reviewer-docs regression tests.
+- `npm run proof:a2a-public-readiness`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:local`.
+
+Dependencies:
+Slice 4.13.
+
+Risk:
+High. A safe-looking HTTP helper can become a production webhook delivery
+claim unless it remains opt-in, locally mocked, credential-free, and separated
+from public endpoint proof, SSRF controls beyond static URL validation,
+production auth, retry policy, observability, and conformance evidence.
+
+Escalation triggers:
+
+- Any request to enable the HTTP transport by default in task routes, store
+  callback credentials, follow redirects, fetch DNS/IP ranges for full SSRF
+  proof, operate a public A2A host, run an external conformance suite, or claim
+  public webhook delivery without operator-approved infrastructure evidence.
+
 ## Slice 5.1: Marketplace Readiness Gate
 
 User-visible outcome:

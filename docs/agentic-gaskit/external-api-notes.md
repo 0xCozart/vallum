@@ -556,6 +556,15 @@ Current planning assumptions:
   default outbound webhook calls, public hosting, production auth, public
   webhook delivery, SSRF hardening for real outbound workers, and external
   conformance remain blocked.
+- On 2026-06-11, Slice 4.14 rechecked the same A2A push delivery boundary and
+  adds an opt-in HTTP transport helper for local mocked proof. The helper
+  validates public HTTPS callback URLs before calling `fetch`, sends sanitized
+  task payloads with A2A media-type and protocol-version headers, strips
+  authorization-like headers, disables automatic redirect following, applies a
+  bounded timeout, and returns only HTTP status evidence. It is not configured
+  by default in task routes and does not prove public webhook infrastructure,
+  production auth, production SSRF protection beyond static URL validation,
+  retry/observability infrastructure, or external conformance.
 
 Implementation checks:
 
