@@ -69,7 +69,9 @@ Confirmed current state:
   local proof, live/testnet readiness, package publication, A2A hosting,
   payment, marketplace, custody, and device-safety claim boundaries, and a
   non-networked launch-readiness evidence matrix that maps roadmap areas to
-  source evidence, local commands, blocker codes, and next gates.
+  source evidence, local commands, blocker codes, and next gates, plus a
+  non-networked operator live-gate runbook that classifies config blockers,
+  approval-required live commands, production blockers, and safety deferrals.
 - `docs/agentic-gaskit/handoff-next-product-build.md` says Slices 1.0, 1.1,
   1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.3,
   3.4, 3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 5.1, and 5.2 are
@@ -582,7 +584,10 @@ one machine-checkable command. It does not replace configured live/testnet
 proof or final launch-readiness review; it prevents local proof from being
 overclaimed as product completion. Slice 7.2 adds a non-networked
 launch-readiness evidence matrix that maps each major roadmap area to source
-evidence, local proof commands, blocker codes, and next gates.
+evidence, local proof commands, blocker codes, and next gates. Slice 7.3 adds
+a non-networked operator live-gate runbook that converts those blockers into
+run-ready, config-blocked, approval-required, production-blocked, and
+safety-deferred execution gates.
 
 Acceptance criteria:
 
@@ -598,6 +603,9 @@ Acceptance criteria:
   publication, marketplace, custody, public A2A hosting, payment, or device
   safety blocker remains, and fails local evidence if required source paths are
   missing.
+- Operator live-gate command reports which gates are blocked by configuration,
+  ready for non-networked local checks, require explicit live/operator
+  approval, remain production-blocked, or are safety-deferred.
 - Production, custody, mainnet, real payment, provider verification, and
   marketplace launch claims are either proven with explicit approval or labeled
   blocked.
@@ -608,6 +616,7 @@ Verification:
 - `npm run readiness:testnet`
 - `npm run proof:product-status`
 - `npm run proof:launch-readiness`
+- `npm run proof:operator-gates`
 - Relevant IOTA testnet commands with local credentials, if available.
 - `git diff --check`
 - Final hardening audit against verification and planning docs.
@@ -643,6 +652,9 @@ blocked with owner-facing rationale:
 - `npm run proof:launch-readiness` maps every major roadmap area to source
   evidence, local proof commands, blocker codes, and next gates without hiding
   local evidence gaps or live/production blockers.
+- `npm run proof:operator-gates` classifies remaining live/testnet,
+  publication, public A2A, payment, marketplace, custody, and safety gates
+  without hiding required operator approval or external-service contact.
 - IOTA testnet readiness and any relevant testnet proof have been run where
   local credentials/config exist, or the blocker is recorded exactly.
 - Every completed slice has a handoff with commands, manual checks, evidence,

@@ -9,7 +9,7 @@ surface in one machine-checkable place:
 
 - local verification and package release gates that are configured in this
   checkout;
-- launch-readiness evidence matrix wiring;
+- launch-readiness evidence matrix and operator live-gate runbook wiring;
 - live/testnet readiness, IOTA Names, IOTA Identity, and VC proof status from
   `npm run proof:live-status`;
 - production-only blockers such as npm registry publication, public A2A
@@ -39,7 +39,7 @@ marketplace, or safety work before those claims can be made.
 ## What It Proves
 
 - `npm run verify:local` is wired to deterministic local tests, Move tests,
-  local smokes, package checks, docs, secrets, and this product-status gate.
+  local smokes, package checks, docs, secrets, and product evidence gates.
 - Package release proof remains local: pack dry-runs, local tarball
   install/import, and opt-in publish dry-run.
 - Live/testnet gates are either ready to run with safe local configuration or
@@ -67,6 +67,7 @@ Use the audit output to choose the next gate:
 npm run verify:local
 npm run proof:live-status
 npm run proof:launch-readiness
+npm run proof:operator-gates
 npm run readiness:testnet
 ```
 

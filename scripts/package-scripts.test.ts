@@ -53,7 +53,7 @@ test("root local verification includes deterministic secret scan after package c
 
   assert.match(
     localVerify,
-    /npm run pack:check && npm run smoke:package-install && npm run proof:product-status && npm run proof:launch-readiness && npm run docs:check && npm run secrets:scan/,
+    /npm run pack:check && npm run smoke:package-install && npm run proof:product-status && npm run proof:launch-readiness && npm run proof:operator-gates && npm run docs:check && npm run secrets:scan/,
   );
   assert.equal(packageJson.scripts?.["grant:check"], "npm run verify:local");
   assert.equal(packageJson.scripts?.["secrets:scan"], "tsx scripts/scan-secrets.ts");
@@ -195,7 +195,7 @@ test("product status is non-networked and wired into local verification", () => 
   );
   assert.match(
     packageJson.scripts?.["verify:local"] ?? "",
-    /npm run smoke:package-install && npm run proof:product-status && npm run proof:launch-readiness && npm run docs:check/,
+    /npm run smoke:package-install && npm run proof:product-status && npm run proof:launch-readiness && npm run proof:operator-gates && npm run docs:check/,
   );
 });
 
@@ -206,7 +206,18 @@ test("launch readiness is non-networked and wired into local verification", () =
   );
   assert.match(
     packageJson.scripts?.["verify:local"] ?? "",
-    /npm run proof:product-status && npm run proof:launch-readiness && npm run docs:check/,
+    /npm run proof:product-status && npm run proof:launch-readiness && npm run proof:operator-gates && npm run docs:check/,
+  );
+});
+
+test("operator live gates are non-networked and wired into local verification", () => {
+  assert.equal(
+    packageJson.scripts?.["proof:operator-gates"],
+    "npm run build && tsx scripts/check-operator-live-gates.ts",
+  );
+  assert.match(
+    packageJson.scripts?.["verify:local"] ?? "",
+    /npm run proof:launch-readiness && npm run proof:operator-gates && npm run docs:check/,
   );
 });
 

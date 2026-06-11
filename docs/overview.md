@@ -33,6 +33,9 @@ readiness, publication, marketplace, custody, A2A hosting, payment, and device
 safety claim boundaries without contacting live services.
 The launch-readiness evidence matrix maps each major roadmap area to source
 evidence, local commands, blocker codes, and next gates.
+The operator live-gate report classifies which remaining gates are blocked by
+configuration, require explicit approval, remain production-blocked, or are
+safety-deferred before execution.
 
 If terms like gas, sponsor wallet, package ID, or IOTA Gas Station are new, start with [IOTA and GasKit Basics](concepts.md).
 
@@ -102,6 +105,7 @@ The official Gas Station is the sponsorship engine. GasKit is the app integratio
 | Live proof status | `npm run proof:live-status` reports testnet, IOTA Names, IOTA Identity, and VC proof readiness or blockers without contacting live services or printing configured values. | [Live Proof Status](agentic-gaskit/live-proof-status.md) |
 | Product status proof | `npm run proof:product-status` reports the current product evidence boundary: local proof configured, live/testnet gates ready or blocked, and production-only claims still blocked or safety-gated. | [Product Status Proof](agentic-gaskit/product-status.md) |
 | Launch readiness evidence | `npm run proof:launch-readiness` maps roadmap areas to evidence paths, local commands, blocker codes, and safe next gates without contacting live services. | [Launch Readiness Evidence](agentic-gaskit/launch-readiness-evidence.md) |
+| Operator live gates | `npm run proof:operator-gates` classifies remaining live/testnet, publication, public A2A, payment, marketplace, custody, and safety gates before execution. | [Operator Live Gates](agentic-gaskit/operator-live-gates.md) |
 | A2A bridge | Local Agent Card mapping, signed-card verification helpers, `/.well-known/agent-card.json` response helpers, local/mock task/message operation helpers, a local HTTP-shaped handler, and a loopback HTTP server smoke expose sanitized profile and task metadata with bearer-authenticated task routes, without live public discovery, streaming, push notifications, production key management, or external conformance proof. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
 | Marketplace evidence | Local `@iota-gaskit/marketplace` read model consumes registry profiles, policy compatibility, contract template metadata, receipts, manifests, and standards evidence to prove access-controlled receipt views and redacted dispute bundles without production marketplace operation. | [Marketplace Readiness](marketplace-readiness.md) |
 | Package release strategy | The prerelease package strategy keeps `@iota-gaskit/*` package names, keeps the monorepo root private, checks public package metadata mechanically, proves local tarball install/import, provides opt-in pack and publish dry-run gates, and defers any `@agentic-gaskit/*` rename to a dedicated compatibility slice. | [Package Release Strategy](agentic-gaskit/package-release-strategy.md) |

@@ -60,6 +60,9 @@ It also includes the first Agentic GasKit implementation slices:
   safety claim boundaries
 - non-networked launch-readiness evidence matrix that maps roadmap areas to
   source evidence, local commands, blocker codes, and next gates
+- non-networked operator live-gate runbook that classifies config blockers,
+  approval-required live commands, production blockers, and safety deferrals
+  before execution
 - local read-only marketplace evidence package with provider labels, policy
   compatibility, receipt access control, and dispute evidence bundle smoke
 - package namespace and release metadata strategy for the current
@@ -123,6 +126,10 @@ roadmap unless later slices implement and verify them.
 - Launch readiness evidence:
   `docs/agentic-gaskit/launch-readiness-evidence.md`,
   `scripts/check-launch-readiness.ts`, `scripts/launch-readiness.test.ts`
+- Operator live gates:
+  `docs/agentic-gaskit/operator-live-gates.md`,
+  `scripts/check-operator-live-gates.ts`,
+  `scripts/operator-live-gates.test.ts`
 - IOTA Identity live smoke:
   `scripts/smoke-iota-identity-live.ts`,
   `scripts/iota-identity-live-smoke.test.ts`
@@ -218,6 +225,7 @@ Safe local checks:
 - `npm run proof:live-status`
 - `npm run proof:product-status`
 - `npm run proof:launch-readiness`
+- `npm run proof:operator-gates`
 - `npm run secrets:scan`
 
 Full local proof:

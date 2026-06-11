@@ -114,6 +114,12 @@ export default {
           description: "Non-networked launch-readiness matrix mapping roadmap areas to evidence, commands, blockers, and next gates."
         },
         {
+          title: "Operator Live Gates",
+          source: "docs/agentic-gaskit/operator-live-gates.md",
+          slug: "agentic-operator-live-gates",
+          description: "Non-networked operator runbook classifying live, production, publication, custody, and safety gates before execution."
+        },
+        {
           title: "Local Dirty Work Review",
           source: "docs/agentic-gaskit/local-dirty-work-review.md",
           slug: "agentic-local-dirty-work-review",

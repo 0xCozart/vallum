@@ -16,6 +16,7 @@ npm run smoke:demo-browser
 npm run readiness:testnet:example
 npm run proof:product-status
 npm run proof:launch-readiness
+npm run proof:operator-gates
 ```
 
 ## Local policy gateway smoke path

@@ -1830,3 +1830,79 @@ Escalation triggers:
 - Any request to bypass live/testnet proof, production marketplace gates,
   registry publication proof, public A2A proof, custody review, payment proof,
   or device safety approval.
+
+## Slice 7.3: Operator Live-Gate Runbook
+
+User-visible outcome:
+Operators and future agents have one non-networked command that converts the
+current product-status blockers into an executable live-gate runbook before any
+testnet, endpoint, publication, payment, marketplace, custody, or device action
+is attempted.
+
+Likely files:
+
+- `scripts/check-operator-live-gates.ts`
+- `scripts/operator-live-gates.test.ts`
+- `scripts/check-product-status.ts`
+- `scripts/check-launch-readiness.ts`
+- `scripts/package-scripts.test.ts`
+- `scripts/reviewer-docs.test.ts`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
+- `docs/agentic-gaskit/codex-active-goal.md`
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+- `package.json`
+
+Acceptance criteria:
+
+- `npm run proof:operator-gates` builds first and exits successfully after
+  producing a report.
+- The command does not contact IOTA services, IOTA Names, IOTA Identity, npm,
+  payment providers, public A2A endpoints, marketplace systems, or physical
+  devices.
+- The report imports product-status checks and classifies gates as
+  `proven-local`, `ready-to-run`, `blocked-config`, `requires-approval`,
+  `blocked-production`, or `deferred-safety`.
+- Testnet readiness can be `ready-to-run` for the non-networked readiness
+  command when local config is present.
+- Configured IOTA Names and IOTA Identity endpoint smokes remain
+  `requires-approval` because they contact live services.
+- Publication, public A2A, payment/provider, marketplace, custody, and
+  physical-device gates remain approval-gated, production-blocked, or
+  safety-deferred until dedicated slices record stronger evidence.
+- Output lists command names and next gates without printing configured
+  endpoint URLs, names, addresses, profile paths, credentials, tokens, OTPs, or
+  secret-like values.
+- `npm run verify:local` includes the operator-gates proof after
+  launch-readiness and before docs/secret checks.
+- Docs explain that operator-gates is a runbook, not live proof or approval.
+
+Verification:
+
+- Focused operator live-gate tests.
+- Product-status tests.
+- Launch-readiness tests.
+- Package-script wiring tests.
+- Reviewer-docs regression tests.
+- `npm run proof:operator-gates`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:local`.
+
+Dependencies:
+Slice 7.2.
+
+Risk:
+Medium. A runbook can be mistaken for approval to run live endpoints or
+publish packages unless approval, external-contact, and safety flags remain
+explicit.
+
+Escalation triggers:
+
+- Any request to make `proof:operator-gates` execute live commands directly.
+- Any request to run configured live endpoint, npm publication, payment,
+  public A2A, marketplace, custody, or device commands without explicit
+  operator intent and a dedicated proof slice.

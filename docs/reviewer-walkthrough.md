@@ -104,6 +104,7 @@ npm run readiness:testnet:example
 npm run pack:check
 npm run proof:product-status
 npm run proof:launch-readiness
+npm run proof:operator-gates
 npm run secrets:scan
 ```
 
@@ -121,6 +122,8 @@ Expected current result:
   and device-safety blockers;
 - launch-readiness proof maps each roadmap area to source evidence, local
   commands, blocker codes, and next gates;
+- operator live-gate proof classifies config blockers, approval-required live
+  commands, production blockers, and safety deferrals before execution;
 - tracked-file secret scan passes.
 
 Important source and test files:

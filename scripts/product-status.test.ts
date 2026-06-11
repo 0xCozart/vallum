@@ -129,6 +129,7 @@ test("product status fails the local proof surface when required commands are mi
     assert.match(local?.evidence ?? "", /npm run contracts:test/);
     assert.match(local?.evidence ?? "", /npm run proof:product-status/);
     assert.match(local?.evidence ?? "", /npm run proof:launch-readiness/);
+    assert.match(local?.evidence ?? "", /npm run proof:operator-gates/);
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }
@@ -178,6 +179,7 @@ function completeScripts(overrides: Record<string, string | undefined> = {}): Re
       "npm run smoke:package-install",
       "npm run proof:product-status",
       "npm run proof:launch-readiness",
+      "npm run proof:operator-gates",
       "npm run docs:check",
       "npm run secrets:scan",
     ].join(" && "),

@@ -173,12 +173,15 @@ const AREA_DEFINITIONS = [
     evidencePaths: [
       "docs/agentic-gaskit/product-status.md",
       "scripts/check-product-status.ts",
+      "docs/agentic-gaskit/operator-live-gates.md",
+      "scripts/check-operator-live-gates.ts",
       "docs/agentic-gaskit/full-roadmap-execution-goal.md",
       "docs/agentic-gaskit/handoff-next-product-build.md",
     ],
     commands: [
       "npm run proof:product-status",
       "npm run proof:launch-readiness",
+      "npm run proof:operator-gates",
       "npm run verify:local",
     ],
     productCheckIds: [

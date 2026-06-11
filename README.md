@@ -120,6 +120,9 @@ The repo currently includes:
 - local marketplace read model for provider labels, policy compatibility,
   receipt access control, and dispute evidence bundles without production
   marketplace operation.
+- non-networked product-status, launch-readiness, and operator live-gate
+  reports that separate local proof from live/testnet, publication, public A2A,
+  payment, marketplace, custody, and safety blockers.
 
 ## Current proof status
 
@@ -132,7 +135,7 @@ npm run verify:local
 
 Latest local verification and prior live proof:
 
-- `npm test`: 376 deterministic TypeScript tests passed locally after Slice 7.2.
+- `npm test`: 381 deterministic TypeScript tests passed locally after Slice 7.3.
 - `npm run contracts:test`: 33 Move escrow/receipt/pay-per-call/data-license/service-bounty/reputation-receipt/subscription contract tests passed locally.
 - `npm run typecheck`: passed locally.
 - `npm run smoke:local`: deterministic local gateway smoke passed locally, including policy simulation, sanitized event, local usage read-model, file-backed usage event-store replay, and authenticated local operator usage API checks.
@@ -165,13 +168,17 @@ Latest local verification and prior live proof:
 - `npm run proof:launch-readiness`: deterministic non-networked
   launch-readiness evidence matrix maps roadmap areas to source evidence,
   local commands, blocker codes, and next gates.
+- `npm run proof:operator-gates`: deterministic non-networked operator
+  runbook classifies live/testnet, publication, public A2A, payment,
+  marketplace, custody, and safety gates before execution.
 - `npm run publish:dry-run`: opt-in npm publish dry-run completed locally for
   public workspaces; no package was published.
 - Prior `npm run execute:testnet-demo`: real sponsored IOTA testnet execute succeeded through the local policy gateway and Gas Station; public digest `2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H`.
 - secret-oriented scan over tracked project files is wired into `npm run secrets:scan` and `npm run verify:local`.
 
 See `docs/testnet-attempts.md`, `docs/agentic-gaskit/product-status.md`,
-`docs/agentic-gaskit/launch-readiness-evidence.md`, and
+`docs/agentic-gaskit/launch-readiness-evidence.md`,
+`docs/agentic-gaskit/operator-live-gates.md`, and
 `docs/reviewer-walkthrough.md` for exact evidence.
 
 ## External showcase dApps

@@ -1,0 +1,70 @@
+# Operator Live Gates
+
+`npm run proof:operator-gates` is a non-networked operator runbook for the
+remaining Agentic GasKit live and production gates.
+
+It reads the product-status proof and classifies each gate as:
+
+- `proven-local` for deterministic local evidence that is already wired;
+- `ready-to-run` for non-networked commands that can run once local config is
+  present;
+- `blocked-config` for missing local testnet, IOTA Names, IOTA Identity, or VC
+  trust-policy configuration;
+- `requires-approval` for live endpoint, registry, payment, public hosting,
+  marketplace, custody, or device gates that need explicit operator approval or
+  a dedicated slice;
+- `blocked-production` for production claims without enough design or proof;
+- `deferred-safety` for physical-device access until a separate safety design
+  is approved.
+
+Run it from the repository root:
+
+```bash
+npm run proof:operator-gates
+```
+
+Expected status in an unconfigured checkout:
+
+```text
+Agentic GasKit operator live gates blocked
+allGatesClear=false
+```
+
+The command exits successfully when it can produce the report. It does not
+contact IOTA, IOTA Names, IOTA Identity, npm, payment providers, public A2A
+hosts, marketplace systems, or physical devices.
+
+## What It Helps With
+
+- Shows which local proof gates are already configured.
+- Shows whether testnet readiness is blocked by missing local config.
+- Shows which live smokes would contact external services and require explicit
+  operator intent.
+- Keeps package publication, public A2A hosting, live payment/provider proof,
+  production marketplace, custody, and physical-device access out of automatic
+  local verification claims.
+- Reports command names and next gates without printing configured endpoints,
+  profile paths, names, addresses, credentials, tokens, or secret-like values.
+
+## What It Does Not Do
+
+- It does not run `npm run smoke:iota-names-live`.
+- It does not run `npm run smoke:iota-identity-live`.
+- It does not run `npm publish`.
+- It does not operate public A2A hosting, live payment providers, production
+  marketplace flows, production custody, or physical devices.
+- It does not change `launchReady=false` while product-status blockers remain.
+
+## Next Commands
+
+Use this report with the other proof gates:
+
+```bash
+npm run proof:product-status
+npm run proof:launch-readiness
+npm run proof:operator-gates
+npm run readiness:testnet
+```
+
+Only run live commands after operator-owned local credentials are configured
+outside the repo and the operator explicitly intends to run that proof.

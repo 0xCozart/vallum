@@ -84,7 +84,7 @@ npm run verify:local
 `verify:local` currently expands to:
 
 ```text
-npm test && npm run contracts:test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp && npm run smoke:demo-browser && npm run smoke:agent-escrow && npm run smoke:paid-mcp-tool && npm run smoke:data-license && npm run smoke:service-bounty && npm run smoke:reputation-receipt && npm run smoke:subscription && npm run smoke:a2a-well-known && npm run smoke:a2a-signed-card && npm run smoke:a2a-task-message && npm run smoke:a2a-http && npm run smoke:a2a-local-server && npm run smoke:marketplace-read-model && npm run readiness:testnet:example && npm run pack:check && npm run smoke:package-install && npm run proof:product-status && npm run proof:launch-readiness && npm run docs:check && npm run secrets:scan
+npm test && npm run contracts:test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp && npm run smoke:demo-browser && npm run smoke:agent-escrow && npm run smoke:paid-mcp-tool && npm run smoke:data-license && npm run smoke:service-bounty && npm run smoke:reputation-receipt && npm run smoke:subscription && npm run smoke:a2a-well-known && npm run smoke:a2a-signed-card && npm run smoke:a2a-task-message && npm run smoke:a2a-http && npm run smoke:a2a-local-server && npm run smoke:marketplace-read-model && npm run readiness:testnet:example && npm run pack:check && npm run smoke:package-install && npm run proof:product-status && npm run proof:launch-readiness && npm run proof:operator-gates && npm run docs:check && npm run secrets:scan
 ```
 
 `grant:check` remains as a compatibility alias for grant-reviewer workflows.
@@ -92,8 +92,8 @@ npm test && npm run contracts:test && npm run typecheck && npm run smoke:local &
 Latest local `npm test` result:
 
 ```text
-tests 376
-pass 376
+tests 381
+pass 381
 fail 0
 cancelled 0
 skipped 0
@@ -165,6 +165,9 @@ Readiness and package tests verify:
 - secret-like values are hidden in readiness output;
 - `.env.example` intentionally documents placeholders while real readiness fails on placeholders;
 - workspace package build and `npm pack --dry-run` succeed for publishable packages, with package READMEs and safe prerelease publish metadata present locally;
+- product-status, launch-readiness, and operator live-gate reports classify
+  local proof, config blockers, approval-required live commands, production
+  blockers, and safety deferrals without contacting external services;
 - `npm run execute:testnet-demo` builds and submits a real sponsored testnet transaction when operator-owned live configuration is present.
 
 ## Secret-oriented scan
