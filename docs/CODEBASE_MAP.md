@@ -60,11 +60,14 @@ It also includes the first Agentic GasKit implementation slices:
 - local opt-in A2A push notification HTTP transport with safe URL checks,
   manual redirect handling, timeout handling, no stored webhook credentials,
   and status-only delivery results
+- local A2A push notification retry and in-memory attempt observability for
+  explicitly injected transports, without request bodies or credential material
 - non-networked A2A public-readiness proof for local A2A evidence, public
   hosting inputs, production JWKS/auth decisions, local authenticated extended
   cards, local loopback streaming, local push configuration, local injected
-  push delivery, local opt-in push HTTP transport, public webhook delivery
-  blockers, and external conformance blockers
+  push delivery, local opt-in push HTTP transport, local retry/attempt
+  observability, public webhook delivery blockers, and external conformance
+  blockers
 - opt-in IOTA Names GraphQL live resolution smoke with an exact missing-config
   blocker path
 - non-networked live proof status command for testnet, IOTA Names, IOTA

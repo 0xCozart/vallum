@@ -126,9 +126,9 @@ Expected current result:
 - A2A public-readiness proof reports local A2A evidence, local loopback
   streaming proof, local authenticated extended-card access, local push
   notification configuration, local injected push delivery, local opt-in push
-  HTTP transport, public hosting input blockers, public webhook delivery
-  blockers, and external conformance blockers without contacting public
-  endpoints;
+  HTTP transport, local retry/attempt observability, public hosting input
+  blockers, public webhook delivery blockers, and external conformance blockers
+  without contacting public endpoints;
 - verification-profile proof reports the fast iteration profile and confirms
   reviewer/grant proof still uses the full local gate;
 - product-status proof reports local verification and package gates separately

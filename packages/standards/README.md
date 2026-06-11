@@ -38,6 +38,9 @@ Current surface:
   when explicitly injected, rejects unsafe callback URLs before network
   contact, does not emit authorization headers, uses manual redirect handling,
   applies a timeout, and returns status-only results.
+- Local A2A push retry and in-memory attempt observability for explicitly
+  injected transports, recording status-only attempt metadata without request
+  bodies or credential material.
 - Loopback-only Node HTTP server helper for deterministic local A2A discovery
   and task route smoke proof, with explicit unsafe opt-in required for
   non-loopback binds.
@@ -45,6 +48,6 @@ Current surface:
 This package does not operate a production x402 facilitator, replace AP2, hold
 payment credentials, sign payment payloads, submit live settlement
 transactions, operate a live public A2A task/message server, publish public A2A
-discovery, prove public A2A push/webhook infrastructure, prove external A2A
-conformance or live A2A discovery, provide production Agent Card key
-management, or replace the A2A protocol.
+discovery, prove public A2A push/webhook infrastructure, operate production
+push queues/workers, prove external A2A conformance or live A2A discovery,
+provide production Agent Card key management, or replace the A2A protocol.

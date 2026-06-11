@@ -86,6 +86,7 @@ export async function checkA2APublicReadiness(
     localPushConfigurationSupport(),
     localPushDeliverySupport(),
     localPushHttpTransportSupport(),
+    localPushRetryObservabilitySupport(),
     blockedPublicPushDelivery(),
     await checkConformanceReport(cwd, env.A2A_EXTERNAL_CONFORMANCE_REPORT),
   ];
@@ -290,6 +291,17 @@ function localPushHttpTransportSupport(): A2APublicReadinessCheck {
     message: "A2A push notification HTTP transport is locally supported as an explicitly injected helper with safe URL checks, timeout handling, manual redirect handling, and status-only results.",
     evidence: "node --import tsx --test packages/standards/src/a2aPush.test.ts",
     next: "Keep this as local mocked transport proof only until public webhook infrastructure, delivery observability, and external conformance evidence exist.",
+  };
+}
+
+function localPushRetryObservabilitySupport(): A2APublicReadinessCheck {
+  return {
+    id: "local-push-retry-observability",
+    status: "proven-local",
+    code: "A2A_PUSH_RETRY_OBSERVABILITY_LOCAL_PROOF_CONFIGURED",
+    message: "A2A push notification retry and delivery-attempt observability are locally supported for explicitly injected transports with in-memory status-only attempt records.",
+    evidence: "node --import tsx --test packages/standards/src/a2aPush.test.ts",
+    next: "Keep this as local in-memory proof only until public webhook workers, persistent queues, production observability, and external conformance evidence exist.",
   };
 }
 

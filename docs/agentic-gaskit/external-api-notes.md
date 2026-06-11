@@ -565,6 +565,15 @@ Current planning assumptions:
   by default in task routes and does not prove public webhook infrastructure,
   production auth, production SSRF protection beyond static URL validation,
   retry/observability infrastructure, or external conformance.
+- On 2026-06-11, Slice 4.15 rechecked the same A2A push delivery boundary and
+  adds local retry plus in-memory delivery-attempt observability for explicitly
+  injected transports. Attempt records include status-only metadata such as
+  config id, task id, attempt number, HTTP status or error code, observed time,
+  and next retry time; they do not include request bodies, webhook credentials,
+  authorization headers, signer refs, wallet internals, payment material, or
+  private prompt text. This is not a public delivery worker, persistent queue,
+  production observability system, production auth design, or external
+  conformance proof.
 
 Implementation checks:
 

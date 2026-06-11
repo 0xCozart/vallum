@@ -1913,6 +1913,75 @@ Escalation triggers:
   proof, operate a public A2A host, run an external conformance suite, or claim
   public webhook delivery without operator-approved infrastructure evidence.
 
+## Slice 4.15: A2A Push Delivery Retry Observability Gate
+
+User-visible outcome:
+Agentic GasKit can locally prove retry and delivery-attempt observability for
+A2A push notification delivery through explicitly injected transports, while
+public webhook delivery workers, default outbound delivery, webhook
+credentials, production auth, public hosting, and external conformance remain
+blocked.
+
+Likely files:
+
+- `packages/standards/src/a2aPush.ts`
+- `packages/standards/src/a2aPush.test.ts`
+- `scripts/check-a2a-public-readiness.ts`
+- `scripts/a2a-public-readiness.test.ts`
+- `scripts/check-product-status.ts`
+- `scripts/check-launch-readiness.ts`
+- `docs/agentic-gaskit/a2a-public-readiness.md`
+- `docs/agentic-gaskit/external-api-notes.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/overview.md`
+- `docs/CODEBASE_MAP.md`
+- `README.md`
+
+Acceptance criteria:
+
+- Retry is opt-in and applies only to explicitly supplied transports.
+- Default delivery behavior remains a single attempt so existing HTTP route
+  semantics do not create background retries.
+- Retry attempts stop after first success or configured max attempts.
+- Retry metadata records config id, task id, status, HTTP status/error code,
+  attempt number, observed time, and next retry time without request bodies,
+  bearer headers, signer refs, wallet internals, payment material, or private
+  prompt text.
+- Retry delay calculation is bounded and deterministic in tests.
+- Attempt recording is local and in-memory only.
+- `npm run proof:a2a-public-readiness` reports local retry/observability proof
+  separately from public webhook infrastructure proof, which remains blocked.
+
+Verification:
+
+- Focused A2A push and public-readiness tests.
+- Product-status tests.
+- Launch-readiness tests.
+- Operator-gate tests.
+- Reviewer-docs regression tests.
+- `npm run proof:a2a-public-readiness`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:local`.
+
+Dependencies:
+Slice 4.14.
+
+Risk:
+High. Retry and observability primitives can be mistaken for a production
+delivery worker unless the implementation stays local, in-memory, opt-in,
+credential-free, and separated from public endpoint proof, persistent queues,
+production auth, full SSRF protection, and conformance evidence.
+
+Escalation triggers:
+
+- Any request to run a background delivery worker, persist webhook attempts,
+  store callback credentials, contact public endpoints by default, claim
+  production delivery observability, or mark public webhook delivery complete
+  without operator-approved infrastructure evidence.
+
 ## Slice 5.1: Marketplace Readiness Gate
 
 User-visible outcome:

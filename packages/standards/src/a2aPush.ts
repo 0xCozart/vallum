@@ -56,6 +56,9 @@ export interface A2APushNotificationDeliveryAttempt {
   readonly configId: string;
   readonly taskId: string;
   readonly url: string;
+  readonly attemptNumber?: number;
+  readonly observedAt?: string;
+  readonly nextRetryAt?: string;
   readonly status: "delivered" | "failed" | "skipped";
   readonly httpStatus?: number;
   readonly errorCode?: "A2A_PUSH_TRANSPORT_UNCONFIGURED" | "A2A_PUSH_TRANSPORT_FAILED";
@@ -63,6 +66,10 @@ export interface A2APushNotificationDeliveryAttempt {
 
 export interface A2APushNotificationDeliveryResult {
   readonly attempts: readonly A2APushNotificationDeliveryAttempt[];
+}
+
+export interface A2APushNotificationAttemptStore {
+  record(attempt: A2APushNotificationDeliveryAttempt): void;
 }
 
 export type A2APushNotificationErrorCode =
@@ -112,6 +119,18 @@ export class LocalA2APushNotificationStore {
     const deleted = taskConfigs.delete(id);
     if (taskConfigs.size === 0) this.#configs.delete(taskId);
     return deleted;
+  }
+}
+
+export class LocalA2APushNotificationAttemptStore implements A2APushNotificationAttemptStore {
+  readonly #attempts: A2APushNotificationDeliveryAttempt[] = [];
+
+  record(attempt: A2APushNotificationDeliveryAttempt): void {
+    this.#attempts.push(clone(attempt));
+  }
+
+  list(): readonly A2APushNotificationDeliveryAttempt[] {
+    return this.#attempts.map((attempt) => clone(attempt));
   }
 }
 
@@ -166,41 +185,66 @@ export async function deliverA2APushNotifications(options: {
   readonly store: LocalA2APushNotificationStore;
   readonly task: A2ATask;
   readonly transport?: A2APushNotificationTransport;
+  readonly attemptStore?: A2APushNotificationAttemptStore;
+  readonly maxAttempts?: number;
+  readonly retryDelayMs?: number;
+  readonly now?: () => Date;
 }): Promise<A2APushNotificationDeliveryResult> {
   const configs = options.store.list(options.task.id).configs;
   const attempts: A2APushNotificationDeliveryAttempt[] = [];
+  const maxAttempts = normalizeMaxAttempts(options.maxAttempts);
+  const retryDelayMs = normalizeRetryDelayMs(options.retryDelayMs);
+  const now = options.now ?? (() => new Date());
   for (const config of configs) {
     const request = buildA2APushNotificationDeliveryRequest(config, options.task);
     if (!options.transport) {
-      attempts.push({
+      const attempt = {
         configId: config.id,
         taskId: config.taskId,
         url: config.url,
+        attemptNumber: 1,
+        observedAt: now().toISOString(),
         status: "skipped",
         errorCode: "A2A_PUSH_TRANSPORT_UNCONFIGURED",
-      });
+      } satisfies A2APushNotificationDeliveryAttempt;
+      recordPushAttempt(attempt, attempts, options.attemptStore);
       continue;
     }
 
-    try {
-      const response = await options.transport(request);
-      const delivered = response.status >= 200 && response.status <= 299;
-      attempts.push({
-        configId: config.id,
-        taskId: config.taskId,
-        url: config.url,
-        status: delivered ? "delivered" : "failed",
-        httpStatus: response.status,
-        ...(delivered ? {} : { errorCode: "A2A_PUSH_TRANSPORT_FAILED" }),
-      });
-    } catch {
-      attempts.push({
-        configId: config.id,
-        taskId: config.taskId,
-        url: config.url,
-        status: "failed",
-        errorCode: "A2A_PUSH_TRANSPORT_FAILED",
-      });
+    for (let attemptNumber = 1; attemptNumber <= maxAttempts; attemptNumber += 1) {
+      try {
+        const response = await options.transport(request);
+        const delivered = response.status >= 200 && response.status <= 299;
+        const observedAt = now();
+        const attempt = {
+          configId: config.id,
+          taskId: config.taskId,
+          url: config.url,
+          attemptNumber,
+          observedAt: observedAt.toISOString(),
+          status: delivered ? "delivered" : "failed",
+          httpStatus: response.status,
+          ...(delivered ? {} : {
+            errorCode: "A2A_PUSH_TRANSPORT_FAILED",
+            ...(attemptNumber < maxAttempts ? { nextRetryAt: addMilliseconds(observedAt, retryDelayMs).toISOString() } : {}),
+          }),
+        } satisfies A2APushNotificationDeliveryAttempt;
+        recordPushAttempt(attempt, attempts, options.attemptStore);
+        if (delivered) break;
+      } catch {
+        const observedAt = now();
+        const attempt = {
+          configId: config.id,
+          taskId: config.taskId,
+          url: config.url,
+          attemptNumber,
+          observedAt: observedAt.toISOString(),
+          status: "failed",
+          errorCode: "A2A_PUSH_TRANSPORT_FAILED",
+          ...(attemptNumber < maxAttempts ? { nextRetryAt: addMilliseconds(observedAt, retryDelayMs).toISOString() } : {}),
+        } satisfies A2APushNotificationDeliveryAttempt;
+        recordPushAttempt(attempt, attempts, options.attemptStore);
+      }
     }
   }
   return { attempts };
@@ -341,6 +385,35 @@ function normalizeTimeoutMs(value: number | undefined): number {
     throw new A2APushNotificationError("A2A_PUSH_CONFIG_INVALID", "A2A push HTTP transport timeout must be positive.");
   }
   return Math.floor(value);
+}
+
+function normalizeMaxAttempts(value: number | undefined): number {
+  if (value === undefined) return 1;
+  if (!Number.isFinite(value) || value <= 0) {
+    throw new A2APushNotificationError("A2A_PUSH_CONFIG_INVALID", "A2A push delivery max attempts must be positive.");
+  }
+  return Math.floor(value);
+}
+
+function normalizeRetryDelayMs(value: number | undefined): number {
+  if (value === undefined) return 1000;
+  if (!Number.isFinite(value) || value < 0) {
+    throw new A2APushNotificationError("A2A_PUSH_CONFIG_INVALID", "A2A push delivery retry delay must be zero or positive.");
+  }
+  return Math.floor(value);
+}
+
+function addMilliseconds(value: Date, milliseconds: number): Date {
+  return new Date(value.getTime() + milliseconds);
+}
+
+function recordPushAttempt(
+  attempt: A2APushNotificationDeliveryAttempt,
+  attempts: A2APushNotificationDeliveryAttempt[],
+  store: A2APushNotificationAttemptStore | undefined,
+): void {
+  attempts.push(attempt);
+  store?.record(attempt);
 }
 
 function publicDeliveryHeaders(headers: Record<string, string>): Record<string, string> {

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  LocalA2APushNotificationAttemptStore,
   LocalA2APushNotificationStore,
   buildA2APushNotificationDeliveryRequest,
   createA2APushNotificationConfig,
@@ -80,6 +81,81 @@ test("A2A push delivery skips without transport and isolates transport failures"
   assert.equal(failed.attempts[0]?.status, "failed");
   assert.equal(failed.attempts[0]?.errorCode, "A2A_PUSH_TRANSPORT_FAILED");
   assert.equal(JSON.stringify(failed).includes("should-not-print"), false);
+});
+
+test("A2A push delivery retries only when configured and records safe attempt metadata", async () => {
+  const store = new LocalA2APushNotificationStore();
+  const attemptStore = new LocalA2APushNotificationAttemptStore();
+  createA2APushNotificationConfig({
+    store,
+    taskId: "task-push-1",
+    now,
+    value: {
+      id: "push-1",
+      url: "https://client.example.test/a2a/push",
+    },
+  });
+  let calls = 0;
+  let nowCalls = 0;
+  const dates = [
+    new Date("2026-06-11T12:00:01.000Z"),
+    new Date("2026-06-11T12:00:02.000Z"),
+  ];
+
+  const result = await deliverA2APushNotifications({
+    store,
+    task: taskFixture(),
+    attemptStore,
+    maxAttempts: 2,
+    retryDelayMs: 250,
+    now: () => dates[Math.min(nowCalls++, dates.length - 1)] ?? now,
+    transport: () => {
+      calls += 1;
+      return { status: calls === 1 ? 503 : 202 };
+    },
+  });
+
+  assert.equal(calls, 2);
+  assert.equal(result.attempts.length, 2);
+  assert.equal(result.attempts[0]?.status, "failed");
+  assert.equal(result.attempts[0]?.attemptNumber, 1);
+  assert.equal(result.attempts[0]?.httpStatus, 503);
+  assert.equal(result.attempts[0]?.nextRetryAt, "2026-06-11T12:00:01.250Z");
+  assert.equal(result.attempts[1]?.status, "delivered");
+  assert.equal(result.attempts[1]?.attemptNumber, 2);
+  assert.equal(result.attempts[1]?.httpStatus, 202);
+  assert.equal(result.attempts[1]?.nextRetryAt, undefined);
+  assert.deepEqual(attemptStore.list(), result.attempts);
+  assert.doesNotMatch(JSON.stringify(attemptStore.list()), /private prompt|Bearer abc|signer_ref_secret|wallet_secret|payment-secret|json|body/i);
+});
+
+test("A2A push delivery does not retry by default", async () => {
+  const store = new LocalA2APushNotificationStore();
+  createA2APushNotificationConfig({
+    store,
+    taskId: "task-push-1",
+    now,
+    value: {
+      id: "push-1",
+      url: "https://client.example.test/a2a/push",
+    },
+  });
+  let calls = 0;
+
+  const result = await deliverA2APushNotifications({
+    store,
+    task: taskFixture(),
+    transport: () => {
+      calls += 1;
+      return { status: 503 };
+    },
+  });
+
+  assert.equal(calls, 1);
+  assert.equal(result.attempts.length, 1);
+  assert.equal(result.attempts[0]?.status, "failed");
+  assert.equal(result.attempts[0]?.attemptNumber, 1);
+  assert.equal(result.attempts[0]?.nextRetryAt, undefined);
 });
 
 test("A2A push HTTP transport posts sanitized delivery requests without auth headers", async () => {
