@@ -105,7 +105,7 @@ async function checkGasStationRuntimeStatus(
       status: "ready",
       code: report.code,
       message: report.message,
-      next: "Start the local Gas Station Compose stack if needed, then run npm run diagnose:gas-station -- --report <ignored-json-path>.",
+      next: "Start the local Gas Station through Docker Compose or npm run gas-station:docker-direct -- --execute if needed, then run npm run diagnose:gas-station -- --report <ignored-json-path>.",
     };
   }
 
@@ -114,7 +114,7 @@ async function checkGasStationRuntimeStatus(
     status: "blocked",
     code: report.code,
     message: report.message,
-    next: "Run npm run gas-station:render-config, enable Docker daemon/Compose for this workspace, then rerun npm run gas-station:runtime-preflight.",
+    next: "Run npm run gas-station:render-config, enable the Docker daemon and either Compose or direct Docker fallback for this workspace, then rerun npm run gas-station:runtime-preflight.",
   };
 }
 

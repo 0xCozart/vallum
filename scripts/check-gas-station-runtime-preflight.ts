@@ -39,6 +39,7 @@ export type GasStationRuntimeCommandRunner = (
 export interface CheckGasStationRuntimePreflightOptions {
   readonly configPath?: string;
   readonly cwd?: string;
+  readonly directDockerFallback?: boolean;
   readonly runner?: GasStationRuntimeCommandRunner;
 }
 
@@ -51,6 +52,7 @@ export async function checkGasStationRuntimePreflight(
   const cwd = options.cwd ?? process.cwd();
   const runner = options.runner ?? createExecRunner(cwd);
   const configPath = options.configPath ?? DEFAULT_CONFIG_PATH;
+  const directDockerFallback = options.directDockerFallback ?? true;
   const checks: GasStationRuntimePreflightCheck[] = [
     await checkLocalConfig(cwd, configPath),
     await checkCommand(runner, {
@@ -99,6 +101,20 @@ export async function checkGasStationRuntimePreflight(
     (check.id === "docker-compose-plugin" || check.id === "docker-compose-standalone")
     && check.status === "ready"
   );
+  const directReady = directDockerFallback
+    && localConfig.status === "ready"
+    && dockerClient.status === "ready"
+    && dockerDaemon.status === "ready";
+
+  checks.push({
+    id: "docker-direct-runtime",
+    status: directReady ? "ready" : "blocked",
+    code: directReady ? "DOCKER_DIRECT_RUNTIME_READY" : "DOCKER_DIRECT_RUNTIME_UNAVAILABLE",
+    message: directReady
+      ? "Direct Docker runtime fallback is available without Docker Compose."
+      : "Direct Docker runtime fallback is unavailable until local config, Docker client, and Docker daemon are ready.",
+    command: "npm run gas-station:docker-direct -- --dry-run",
+  });
 
   if (localConfig.status !== "ready") {
     return blocked("GAS_STATION_LOCAL_CONFIG_MISSING", "Rendered local Gas Station config is missing.", checks);
@@ -109,14 +125,16 @@ export async function checkGasStationRuntimePreflight(
   if (dockerDaemon.status !== "ready") {
     return blocked("GAS_STATION_DOCKER_DAEMON_UNAVAILABLE", "Docker daemon is not reachable.", checks);
   }
-  if (!composeReady) {
+  if (!composeReady && !directReady) {
     return blocked("GAS_STATION_DOCKER_COMPOSE_MISSING", "No Docker Compose command is available.", checks);
   }
 
   return {
     ready: true,
     code: "GAS_STATION_RUNTIME_READY",
-    message: "Local Gas Station runtime prerequisites are present.",
+    message: composeReady
+      ? "Local Gas Station runtime prerequisites are present through Docker Compose."
+      : "Local Gas Station runtime prerequisites are present through direct Docker fallback.",
     checks,
   };
 }

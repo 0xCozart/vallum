@@ -141,7 +141,7 @@ The official Gas Station is the sponsorship engine. GasKit is the app integratio
 | Policy gateway | App auth, allowlists, quotas, wallet denial, simulation, reserve proxying, execute proxying, and safe errors are implemented for local proof. | [Policy Gateway](policy.md) |
 | SDK | Backend client helpers cover policy simulation, reserve, execute, typed errors, and malformed-response handling. | [TypeScript SDK](sdk.md) |
 | Usage visibility | Sanitized decision events, in-memory usage snapshots, JSONL replay, and a local authenticated operator usage API exist as foundations. | [Observability](observability.md) |
-| Testnet proof | A real sponsored IOTA testnet execute has been documented, but fresh live proof still requires operator-owned local credentials, local Gas Station runtime readiness, upstream diagnostics, and explicit operator intent. | [Testnet Readiness](testnet-readiness.md) |
+| Testnet proof | A real sponsored IOTA testnet execute has been documented, but fresh live proof still requires operator-owned local credentials, local Gas Station runtime readiness through Compose or direct Docker, upstream diagnostics, and explicit operator intent. | [Testnet Readiness](testnet-readiness.md) |
 
 ## What Is Still Roadmap
 

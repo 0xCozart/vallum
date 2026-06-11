@@ -3791,3 +3791,81 @@ Escalation triggers:
 - Any request to commit rendered local Gas Station config or diagnostic reports.
 - Any request to run `execute:testnet-demo` before runtime preflight, upstream
   diagnostics, and explicit operator intent are all present.
+
+## Slice 7.10: Direct Docker Gas Station Fallback
+
+User-visible outcome:
+Operators can start the local Gas Station stack on machines where Docker is
+available but Docker Compose is not installed. The default command prints a
+sanitized dry-run plan; actual container startup remains opt-in.
+
+Likely files:
+
+- `scripts/gas-station-docker-direct.ts`
+- `scripts/gas-station-docker-direct.test.ts`
+- `scripts/check-gas-station-runtime-preflight.ts`
+- `scripts/check-gas-station-runtime-preflight.test.ts`
+- `scripts/package-scripts.test.ts`
+- `package.json`
+- `docs/deployment.md`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/CODEBASE_MAP.md`
+- `README.md`
+
+Acceptance criteria:
+
+- `npm run gas-station:docker-direct` builds first and defaults to
+  `--dry-run`.
+- The dry-run prints container, network, image, loopback port, and redacted
+  mount/auth metadata only; it does not print `.env` values, signer material,
+  bearer tokens, raw Docker output, or absolute local config paths.
+- `--execute` remains explicit and may start Redis and Gas Station containers
+  on a loopback-bound local Docker network.
+- `npm run gas-station:runtime-preflight` can report ready through direct
+  Docker fallback when the ignored local config, Docker client, and Docker
+  daemon are ready but Compose is unavailable.
+- The direct Docker command remains excluded from `verify:fast`,
+  `verify:local`, and `grant:check` because it depends on local Docker state
+  and `--execute` can start containers.
+- Public docs describe this as local runtime readiness only, not Gas Station
+  HTTP health, reserve_gas compatibility, sponsor funding, or sponsored
+  execution proof.
+
+Verification:
+
+- Focused direct-Docker, runtime-preflight, live-proof, product-status,
+  launch-readiness, operator-gate, and package-script tests.
+- `npm run gas-station:docker-direct -- --dry-run`.
+- `npm run gas-station:runtime-preflight` on the current machine, recording
+  the typed status without printing local secrets.
+- `npm run proof:live-status`.
+- `npm run proof:product-status`.
+- `npm run proof:launch-readiness`.
+- `npm run proof:operator-gates`.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+
+Dependencies:
+Slices 7.8-7.9 and local `.env` testnet-readiness setup.
+
+Risk:
+Medium. A direct Docker helper can be mistaken for deployment automation unless
+the default remains dry-run and execution stays opt-in. Runtime readiness can
+also be mistaken for live upstream proof unless it remains separated from
+diagnostics and sponsored execution.
+
+Escalation triggers:
+
+- Any request to run `gas-station:docker-direct -- --execute` without
+  operator intent to pull/start local containers.
+- Any request to bind Redis or Gas Station off loopback.
+- Any request to print local `.env`, rendered config, Docker output that may
+  include secret-like values, or raw upstream errors.
+- Any request to treat direct Docker dry-run or preflight success as live
+  Gas Station availability, reserve_gas compatibility, or sponsored execution
+  proof.

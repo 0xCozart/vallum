@@ -59,7 +59,7 @@ test("Gas Station runtime preflight blocks when Docker daemon is unavailable", a
   }
 });
 
-test("Gas Station runtime preflight blocks when no Compose command is available", async () => {
+test("Gas Station runtime preflight passes through direct Docker fallback when Compose is unavailable", async () => {
   const cwd = await writeConfigFixture();
   try {
     const report = await checkGasStationRuntimePreflight({
@@ -72,10 +72,33 @@ test("Gas Station runtime preflight blocks when no Compose command is available"
       }),
     });
 
-    assert.equal(report.ready, false);
-    assert.equal(report.code, "GAS_STATION_DOCKER_COMPOSE_MISSING");
+    assert.equal(report.ready, true);
+    assert.equal(report.code, "GAS_STATION_RUNTIME_READY");
     assert.equal(findCheck(report, "docker-compose-plugin").status, "blocked");
     assert.equal(findCheck(report, "docker-compose-standalone").status, "blocked");
+    assert.equal(findCheck(report, "docker-direct-runtime").code, "DOCKER_DIRECT_RUNTIME_READY");
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("Gas Station runtime preflight blocks on missing Compose when direct Docker fallback is disabled", async () => {
+  const cwd = await writeConfigFixture();
+  try {
+    const report = await checkGasStationRuntimePreflight({
+      cwd,
+      directDockerFallback: false,
+      runner: runnerFixture({
+        "docker --version": true,
+        "docker info --format {{json .ServerVersion}}": true,
+        "docker compose version": false,
+        "docker-compose version": false,
+      }),
+    });
+
+    assert.equal(report.ready, false);
+    assert.equal(report.code, "GAS_STATION_DOCKER_COMPOSE_MISSING");
+    assert.equal(findCheck(report, "docker-direct-runtime").status, "blocked");
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }

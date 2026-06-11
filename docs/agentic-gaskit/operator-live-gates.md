@@ -39,8 +39,9 @@ hosts, marketplace systems, or physical devices.
 - Shows which local proof gates are already configured.
 - Shows that fast iteration remains separate from the full local proof gate.
 - Shows whether testnet readiness is blocked by missing local config.
-- Separates rendered local Gas Station config from local Docker/Compose runtime
-  readiness using the `gas-station-runtime` preflight gate.
+- Separates rendered local Gas Station config from local Docker runtime
+  readiness using the `gas-station-runtime` preflight gate, including the
+  direct Docker fallback when Compose is unavailable.
 - Separates local testnet `.env` readiness from live Gas Station upstream
   readiness using the sanitized `testnet-upstream` diagnostic report gate.
 - Shows which live smokes would contact external services and require explicit
@@ -83,6 +84,7 @@ npm run proof:operator-gates
 npm run readiness:testnet
 npm run gas-station:render-config
 npm run gas-station:runtime-preflight
+npm run gas-station:docker-direct -- --dry-run
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
 ```
 

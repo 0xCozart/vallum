@@ -63,6 +63,19 @@ test("gas station runtime preflight builds before checking Docker runtime", () =
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /gas-station:runtime-preflight/);
 });
 
+test("direct Docker Gas Station fallback builds and stays opt-in", () => {
+  const dockerDirect = packageJson.scripts?.["gas-station:docker-direct"];
+
+  assert.equal(
+    dockerDirect,
+    "npm run build && tsx scripts/gas-station-docker-direct.ts",
+    "npm run gas-station:docker-direct must not depend on pre-existing ignored dist artifacts",
+  );
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /gas-station:docker-direct/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /gas-station:docker-direct/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /gas-station:docker-direct/);
+});
+
 test("local docker compose wires official Gas Station behind loopback ports", () => {
   assert.match(localDockerCompose, /image: \$\{IOTA_GAS_STATION_IMAGE:-iotaledger\/gas-station:latest\}/);
   assert.match(localDockerCompose, /"--config-path", "\/app\/config.yaml"/);

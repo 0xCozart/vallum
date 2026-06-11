@@ -216,9 +216,12 @@ Latest local verification and prior live proof:
   runbook classifies live/testnet, publication, public A2A, payment,
   marketplace, custody, and safety gates before execution.
 - `npm run gas-station:runtime-preflight`: local-only preflight checks the
-  ignored rendered Gas Station config, Docker client, Docker daemon, and Docker
-  Compose availability before upstream diagnostics; it does not start
-  containers, contact IOTA services, or reserve gas.
+  ignored rendered Gas Station config, Docker client, Docker daemon, and either
+  Docker Compose or the direct Docker fallback before upstream diagnostics; it
+  does not start containers, contact IOTA services, or reserve gas.
+- `npm run gas-station:docker-direct -- --dry-run`: local-only sanitized direct
+  Docker plan for starting Redis and Gas Station when Compose is unavailable;
+  `--execute` is opt-in because it may pull images and start containers.
 - `npm run publish:dry-run`: opt-in npm publish dry-run completed locally for
   public workspaces; no package was published.
 - Prior `npm run execute:testnet-demo`: real sponsored IOTA testnet execute succeeded through the local policy gateway and Gas Station; public digest `2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H`.
@@ -491,7 +494,7 @@ npm run typecheck
 npm run smoke:local
 ```
 
-For live proof, configure the local policy gateway and Gas Station with operator-owned testnet credentials, then run `npm run execute:testnet-demo`. The command is intentionally opt-in and excluded from CI because it contacts live services and consumes sponsored testnet gas.
+For live proof, configure the local policy gateway and Gas Station with operator-owned testnet credentials, run `npm run gas-station:runtime-preflight`, start the local Gas Station through Compose or the direct Docker fallback, then run `npm run execute:testnet-demo`. The execute command is intentionally opt-in and excluded from CI because it contacts live services and consumes sponsored testnet gas.
 
 ## Security posture
 
