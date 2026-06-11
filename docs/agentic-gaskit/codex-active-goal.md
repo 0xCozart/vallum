@@ -16,24 +16,21 @@ local proof as live IOTA testnet, production marketplace, public scoring,
 public A2A discovery, production key management, or provider-verification
 proof.
 
-As of the latest completed update, Slice 4.25 is complete: A2A push local
-delivery worker. Local A2A push delivery requests can now be queued as
-sanitized file-backed jobs and processed one at a time by a local worker
-primitive that only calls an explicitly injected transport. Successful 2xx
-responses record delivered status-only attempt evidence and complete the local
-queue entry. Non-2xx responses or thrown transport errors record failed
-status-only attempt evidence and mark the local queue entry failed without
-persisting raw transport error text. The queue and worker do not persist raw
-private prompt text, bearer values, signer refs, wallet internals, payment
-secrets, webhook credentials, authorization/cookie headers, response bodies, or
-raw transport errors. `npm run proof:a2a-public-readiness` reports
-`A2A_PUSH_DELIVERY_WORKER_LOCAL_PROOF_CONFIGURED` as local worker proof. This
-does not send A2A task messages to public endpoints by default, operate a
-background worker service, post real public webhook callbacks, prove endpoint
-ownership, store webhook credentials, run external A2A conformance, publish
-JWKS, prove production key rotation, or prove public push delivery. Public
-hosting acceptance, production keys/auth, public webhook infrastructure, live
-IOTA proof, and external conformance claims remain blocked.
+As of the latest completed update, Slice 4.26 is complete: A2A local JWKS
+hosting helper. Agentic GasKit can now create a local
+`/.well-known/jwks.json` response for explicitly configured Agent Card signing
+public keys and the local loopback A2A Node server can serve that JWKS route
+when public keys are supplied. The helper rejects empty key sets, blank key
+ids, private key objects, private JWK fields, and secret-like JWK fields before
+response generation. `npm run proof:a2a-public-readiness` reports
+`A2A_PUBLIC_JWKS_LOCAL_PROOF_CONFIGURED` as local JWKS hosting support. This
+does not deploy public JWKS hosting, prove endpoint ownership, store private
+keys, prove production key rotation, accept public discovery evidence, run
+external A2A conformance, prove public push delivery, or prove live IOTA
+behavior. Public hosting acceptance, production keys/auth, public webhook
+infrastructure, live IOTA proof, npm publication, payment/provider,
+marketplace, custody, device-safety, and external conformance claims remain
+blocked.
 
 The next continuation should choose the next safe roadmap slice from
 `docs/agentic-gaskit/full-roadmap-execution-goal.md` and

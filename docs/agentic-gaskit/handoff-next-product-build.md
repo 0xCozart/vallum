@@ -11,7 +11,7 @@ Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5,
 2.6, 2.7, 2.8,
 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7,
 4.8, 4.9, 4.10, 4.11, 4.12, 4.13, 4.14, 4.15, 4.16, 4.17, 4.18, 4.19, 4.20,
-4.21, 4.22, 4.23, 4.24, 4.25, 5.1, 5.2, 6.1, 6.2, 6.3, 7.1, 7.2, 7.3, 7.4, and 7.5 are implemented,
+4.21, 4.22, 4.23, 4.24, 4.25, 4.26, 5.1, 5.2, 6.1, 6.2, 6.3, 7.1, 7.2, 7.3, 7.4, and 7.5 are implemented,
 reviewed, locally verified, or explicitly deferred with a verified hardening
 gate.
 Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
@@ -31,6 +31,8 @@ new scope and its unresolved gates.
 
 Recent commits to know:
 
+- `3e0dfa1` feat: add a2a local jwks hosting
+- `cda63e9` docs: record a2a local delivery worker handoff
 - `ea3cfa3` feat: add a2a push local delivery worker
 - `98b82fb` feat: add a2a push local delivery queue
 - `8a118cd` feat: add a2a push durable attempt evidence
@@ -72,6 +74,108 @@ Recent commits to know:
 - `fe5a6ee` docs: record agentic gaskit github remote
 - `b2d9928` chore: migrate reviewed gaskit local changes
 - `3b34cef` docs: create agentic gaskit migration fork
+
+## Completed Slice 4.26: A2A Local JWKS Hosting Helper
+
+Implementation commit: `3e0dfa1` (`feat: add a2a local jwks hosting`).
+
+What changed:
+
+- Added `packages/registry/src/a2aJwks.ts` with
+  `createA2APublicJwksResponse` and `handleA2APublicJwksRequest`.
+- Added `A2A_JWKS_WELL_KNOWN_PATH` for canonical `/.well-known/jwks.json`
+  routing.
+- JWKS responses expose public signing key metadata only and set `kid`,
+  `use: "sig"`, and `alg: "EdDSA"`.
+- The JWKS helper rejects empty key sets, blank key ids, private key objects,
+  standard private JWK fields, and secret-like JWK fields before response
+  generation.
+- The local A2A Node server can serve `/.well-known/jwks.json` only when
+  `publicJwks` is explicitly configured; unconfigured JWKS requests return a
+  safe unavailable response.
+- Existing Agent Card, task route, streaming, and local push behavior remains
+  unchanged.
+- `npm run proof:a2a-public-readiness` now reports
+  `A2A_PUBLIC_JWKS_LOCAL_PROOF_CONFIGURED` as local JWKS hosting support.
+- Product-status, launch-readiness, README, overview, reviewer docs, package
+  READMEs, external API notes, codebase map, public-readiness docs, full
+  roadmap goal, and execution slices now describe this as local JWKS hosting
+  support, not deployed public JWKS hosting, endpoint ownership, production key
+  management, key rotation approval, public discovery acceptance, or external
+  conformance.
+- A local scope record exists at
+  `tmp/apex-workflow/a2a-local-jwks-hosting-slice-4-26-scope.md`. The file is
+  local workflow state and not a committed Apex artifact.
+
+Commands run:
+
+```bash
+npm run build -w @iota-gaskit/registry
+node --import tsx --test packages/registry/src/a2aJwks.test.ts packages/standards/src/a2aNodeServer.test.ts scripts/a2a-public-readiness.test.ts scripts/product-status.test.ts scripts/launch-readiness.test.ts scripts/operator-live-gates.test.ts scripts/reviewer-docs.test.ts
+npm run proof:a2a-public-readiness
+npm run typecheck
+npm run docs:check
+npm run secrets:scan
+git diff --check
+npm run verify:fast
+```
+
+Verification result:
+
+- Focused JWKS/server/readiness/status/launch/operator/reviewer regression
+  tests passed with 40 tests.
+- `npm run proof:a2a-public-readiness` passed with `localProofOk=true`,
+  `publicReady=false`, `A2A_PUBLIC_JWKS_LOCAL_PROOF_CONFIGURED`, missing public
+  URL/JWKS/auth config, missing structured public discovery report, missing
+  structured public push delivery report, and missing structured external
+  conformance report.
+- `npm run typecheck` passed.
+- `npm run docs:check` passed: 37 HTML pages from 36 Markdown sources.
+- `npm run secrets:scan` passed: 327 tracked/staged/untracked text files,
+  findings 0.
+- `git diff --check` passed.
+- `npm run verify:fast` passed, including build, 416 TypeScript tests, docs
+  check, secret scan, product-status, launch-readiness, and operator-gate
+  reports.
+
+Hardening notes:
+
+- This is local JWKS hosting support only. It is not deployed public JWKS
+  hosting, public A2A discovery acceptance, endpoint ownership proof,
+  production key management, key rotation approval, or external A2A
+  conformance.
+- No private key material is stored, logged, documented, or emitted by the JWKS
+  helper.
+- No live public A2A command was run in this slice because no
+  operator-approved public A2A config was supplied.
+- No IOTA/testnet command, npm publish, payment-provider call, or production
+  marketplace action was run for this slice.
+- Apex profile still has `setup.reviewNeeded: true`; this slice does not claim
+  Apex verification.
+
+Known unproven claims:
+
+- No public A2A endpoint or public JWKS URL was probed in the current checkout.
+- No public A2A hosting run, endpoint ownership proof, production
+  key-distribution acceptance, key-rotation/revocation proof, or production
+  task-route auth proof exists.
+- No real public push webhook delivery was attempted.
+- No external A2A conformance tool was run and no structured conformance report
+  was accepted in this unconfigured checkout.
+- No configured IOTA Names, IOTA Identity, or VC trust-policy proof passed.
+- No package is published to npm and no registry install/provenance/account
+  ownership proof exists.
+- No live payment/provider settlement, production marketplace, provider
+  verification, custody/KMS, recovery export, or physical device access proof
+  exists.
+
+Next safe slice:
+
+- Use the local JWKS support in an operator-approved public A2A
+  hosting/JWKS/auth/conformance run with real public config, or choose another
+  explicit live gate such as IOTA Names/Identity/VC, npm release,
+  payment/provider, marketplace, custody, or device-safety design before
+  claiming launch readiness.
 
 ## Completed Slice 4.25: A2A Push Local Delivery Worker
 
