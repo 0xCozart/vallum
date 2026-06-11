@@ -46,6 +46,10 @@ test("operator live gates report current blockers without secret values", async 
     assert.equal(findGate(report, "testnet-upstream").command, "npm run diagnose:gas-station");
     assert.equal(findGate(report, "npm-registry-publication").status, "requires-approval");
     assert.equal(
+      findGate(report, "npm-registry-publication").command,
+      "npm run proof:package-publication-readiness && operator-approved npm publish workflow",
+    );
+    assert.equal(
       findGate(report, "public-a2a-hosting").command,
       "npm run proof:a2a-public-readiness && npm run smoke:a2a-public-discovery",
     );

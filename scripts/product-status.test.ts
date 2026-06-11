@@ -32,6 +32,7 @@ test("product status reports local proof gates and explicit live blockers withou
       env: {},
       gasStationRuntimeReport: blockedGasStationRuntime(),
       scripts: completeScripts(),
+      packagePublicationReadiness: blockedPackagePublicationReadiness(),
       paymentProviderReadiness: blockedPaymentProviderReadiness(),
     });
     const formatted = formatProductStatusReport(report);
@@ -53,6 +54,7 @@ test("product status reports local proof gates and explicit live blockers withou
     );
     assert.match(formatted, /not-complete/);
     assert.match(formatted, /NPM_PUBLICATION_UNRUN/);
+    assert.match(formatted, /npm run proof:package-publication-readiness/);
     assert.match(formatted, /PUBLIC_A2A_HOSTING_UNPROVEN/);
     assert.match(formatted, /LIVE_PAYMENT_PROVIDER_UNPROVEN/);
     assert.match(formatted, /npm run proof:payment-provider-readiness/);
@@ -97,6 +99,7 @@ test("product status marks configured live gates ready without contacting endpoi
     const report = await checkProductStatus({
       cwd,
       scripts: completeScripts(),
+      packagePublicationReadiness: blockedPackagePublicationReadiness(),
       gasStationRuntimeReport: readyGasStationRuntime(),
       env: {
         GASKIT_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
@@ -127,6 +130,49 @@ test("product status marks configured live gates ready without contacting endpoi
       formatted,
       /graphql\.testnet\.example|identity\.testnet\.example|researcher\.json|fake-testnet-sponsor-key|fake-gas-station-auth|jwt-secret|fake-upstream-bearer/,
     );
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("product status can mark package publication report ready for approval without exposing report values", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-product-status-"));
+  try {
+    const report = await checkProductStatus({
+      cwd,
+      env: {},
+      gasStationRuntimeReport: blockedGasStationRuntime(),
+      scripts: completeScripts(),
+      packagePublicationReadiness: {
+        localProofOk: true,
+        liveReady: true,
+        packageNames: ["@iota-gaskit/sdk"],
+        checks: [
+          {
+            id: "local-package-publication-proof",
+            status: "proven-local",
+            code: "PACKAGE_PUBLICATION_LOCAL_PROOF_CONFIGURED",
+            message: "Local package publication proof exists.",
+            next: "Keep local proof current.",
+          },
+          {
+            id: "npm-registry-publication-report",
+            status: "ready-approval",
+            code: "PACKAGE_PUBLICATION_REPORT_VALID",
+            message: "Structured report is valid.",
+            evidence: "local-structured-report-valid-redacted",
+            next: "Review manually.",
+          },
+        ],
+      },
+    });
+    const formatted = formatProductStatusReport(report);
+    const publication = report.checks.find((check) => check.id === "npm-registry-publication");
+
+    assert.equal(publication?.status, "ready-live");
+    assert.equal(publication?.code, "PACKAGE_PUBLICATION_REPORT_VALID");
+    assert.match(formatted, /PACKAGE_PUBLICATION_REPORT_VALID/);
+    assert.doesNotMatch(formatted, /registry-install|provenance-review|rollback-review|package-publication-report/);
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }
@@ -286,6 +332,31 @@ function blockedPaymentProviderReadiness() {
         code: "PAYMENT_PROVIDER_LIVE_REPORT_MISSING",
         message: "Structured report is missing.",
         evidence: "missing=PAYMENT_PROVIDER_LIVE_REPORT",
+        next: "Provide a redacted structured report.",
+      },
+    ],
+  };
+}
+
+function blockedPackagePublicationReadiness() {
+  return {
+    localProofOk: true,
+    liveReady: false,
+    packageNames: ["@iota-gaskit/sdk"],
+    checks: [
+      {
+        id: "local-package-publication-proof",
+        status: "proven-local" as const,
+        code: "PACKAGE_PUBLICATION_LOCAL_PROOF_CONFIGURED",
+        message: "Local package publication proof exists.",
+        next: "Keep local proof current.",
+      },
+      {
+        id: "npm-registry-publication-report",
+        status: "blocked-config" as const,
+        code: "PACKAGE_PUBLICATION_REPORT_MISSING",
+        message: "Structured report is missing.",
+        evidence: "missing=PACKAGE_PUBLICATION_REPORT",
         next: "Provide a redacted structured report.",
       },
     ],

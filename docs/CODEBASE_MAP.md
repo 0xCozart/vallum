@@ -151,6 +151,9 @@ It also includes the first Agentic GasKit implementation slices:
   `@iota-gaskit/*` prerelease line
 - opt-in package publish dry-run gate for public workspace packages
 - local package install smoke for packed public workspace tarballs
+- non-networked package publication readiness gate for local release proof plus
+  an operator-supplied redacted structured npm publication report path before
+  manual approval of registry publication claims
 - device access safety gate that blocks physical-device implementation and
   limits any future proof to virtual or simulated resources until a separate
   approved safety design exists
@@ -195,6 +198,7 @@ roadmap unless later slices implement and verify them.
 - Package release strategy: `docs/agentic-gaskit/package-release-strategy.md`,
   `scripts/package-publish-dry-run.ts`,
   `scripts/smoke-package-install.ts`,
+  `scripts/check-package-publication-readiness.ts`,
   `scripts/package-install-smoke.test.ts`,
   `scripts/package-publish-dry-run.test.ts`,
   `scripts/package-publish.test.ts`, `scripts/package-scripts.test.ts`

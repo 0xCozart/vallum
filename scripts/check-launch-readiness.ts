@@ -167,11 +167,12 @@ const AREA_DEFINITIONS = [
   },
   {
     id: "phase-6-package-release",
-    claim: "Packages are locally packable, installable from tarballs, and dry-run publishable; registry publication remains operator-gated.",
+    claim: "Packages are locally packable, installable from tarballs, dry-run publishable, and checked by a non-networked publication-readiness gate; registry publication remains operator-gated.",
     evidencePaths: [
       "docs/agentic-gaskit/package-release-strategy.md",
       "scripts/package-publish-dry-run.ts",
       "scripts/smoke-package-install.ts",
+      "scripts/check-package-publication-readiness.ts",
       "scripts/package-publish.test.ts",
       "scripts/package-install-smoke.test.ts",
     ],
@@ -179,10 +180,11 @@ const AREA_DEFINITIONS = [
       "npm run pack:check",
       "npm run smoke:package-install",
       "npm run publish:dry-run",
+      "npm run proof:package-publication-readiness",
     ],
     productCheckIds: ["npm-registry-publication"],
     fallbackStatus: "proven-local",
-    next: "Run a dedicated release slice with registry credentials, provenance decisions, 2FA handling, and rollback notes before publication claims.",
+    next: "Run package publication readiness, then run a dedicated release slice with registry credentials, provenance decisions, 2FA handling, registry install proof, and rollback notes before publication claims.",
   },
   {
     id: "packet-h-final-product-status",

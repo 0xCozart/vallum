@@ -85,6 +85,26 @@ together. It does not prove npm registry installability, package-name
 availability, account ownership, provenance, install behavior for partial
 package sets, or downstream application compatibility.
 
+`npm run proof:package-publication-readiness` adds a non-networked registry
+publication readiness gate:
+
+- checks the local package release docs, dry-run helper, install smoke helper,
+  package metadata tests, and script wiring;
+- verifies every current public workspace is included in `pack:check`;
+- keeps `publish:dry-run` and package publication readiness out of
+  `verify:fast`, `verify:local`, and `grant:check`;
+- blocks npm registry publication claims unless `PACKAGE_PUBLICATION_REPORT`
+  points to an ignored redacted structured report from an operator-approved
+  publication proof.
+
+The structured report must be status-only JSON with `schemaVersion=1`,
+`kind=agentic-gaskit.package-publication-proof`, `result=passed`,
+`registry=npm`, a recent `observedAt`, every current public package name, and
+check ids for pack dry-run, local tarball install, npm publish dry-run,
+registry install, provenance review, and rollback review. It must not include
+npm tokens, OTPs, npmrc contents, credentials, authorization headers, raw
+registry responses, signatures, or local secret paths.
+
 ## Explicit Non-Claims
 
 No package is claimed as published to npm today.

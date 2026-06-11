@@ -32,6 +32,10 @@ surface in one machine-checkable place:
 - payment-provider proof-plan wiring that writes a redacted non-networked
   command/report checklist before any operator-approved x402/AP2 provider proof
   is attempted;
+- package-publication readiness wiring that checks local package release docs,
+  pack dry-runs, tarball install smoke, opt-in publish dry-run, and accepts only
+  an operator-supplied redacted structured npm publication report path before
+  moving registry evidence to manual review;
 - launch-readiness evidence matrix and operator live-gate runbook wiring;
 - live/testnet readiness, local Gas Station runtime preflight status,
   sanitized testnet upstream diagnostic report status, IOTA Names, IOTA
@@ -68,7 +72,8 @@ marketplace, or safety work before those claims can be made.
 - `npm run verify:fast` exists for bounded deterministic iteration and is not
   treated as launch evidence by itself.
 - Package release proof remains local: pack dry-runs, local tarball
-  install/import, and opt-in publish dry-run.
+  install/import, opt-in publish dry-run, and a non-networked package
+  publication readiness gate.
 - Live/testnet gates are either ready to run with safe local configuration,
   local Gas Station runtime prerequisites, and sanitized upstream evidence, or
   blocked with exact missing/runtime/report check ids.
@@ -77,7 +82,9 @@ marketplace, or safety work before those claims can be made.
 
 ## What It Does Not Prove
 
-- Real npm publication or registry installation.
+- Real npm publication or registry installation unless
+  `npm run proof:package-publication-readiness` validates an ignored structured
+  report and the operator manually accepts it.
 - Fresh sponsored IOTA testnet execution unless `testnet-readiness`,
   `gas-station-runtime`, and `testnet-upstream` are ready and
   `npm run execute:testnet-demo` passes with explicit operator intent.
@@ -110,6 +117,7 @@ npm run a2a:write-static-discovery-bundle -- --agent-card <signed-card.json> --j
 npm run a2a:check-static-discovery-bundle -- --out-dir <dir> --expected-public-base-url <url> --expected-public-jwks-url <url>
 npm run smoke:a2a-static-discovery-local -- --out-dir <dir> --expected-public-base-url <url> --expected-public-jwks-url <url>
 npm run proof:a2a-public-readiness
+npm run proof:package-publication-readiness
 npm run proof:payment-provider-readiness
 npm run payment:write-provider-proof-plan -- --out tmp/gaskit/payment-provider-proof-plan.json
 npm run proof:verification-profiles

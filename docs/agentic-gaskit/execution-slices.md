@@ -3369,6 +3369,72 @@ Escalation triggers:
 - Any external consumer compatibility guarantee, package provenance decision,
   real publish, package rename, or registry ownership check.
 
+## Slice 6.4: Package Publication Readiness Gate
+
+User-visible outcome:
+Release operators have a non-networked readiness command that separates local
+package release proof from real npm registry publication and accepts only a
+redacted structured operator report before publication claims move to manual
+review.
+
+Likely files:
+
+- `scripts/check-package-publication-readiness.ts`
+- `scripts/package-publication-readiness.test.ts`
+- `scripts/check-product-status.ts`
+- `scripts/check-launch-readiness.ts`
+- `scripts/check-operator-live-gates.ts`
+- `scripts/package-scripts.test.ts`
+- `docs/agentic-gaskit/package-release-strategy.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/CODEBASE_MAP.md`
+- `package.json`
+
+Acceptance criteria:
+
+- `npm run proof:package-publication-readiness` builds first and does not
+  contact npm or run `npm publish`.
+- The readiness command checks package release docs, dry-run helper, local
+  install smoke helper, package tests, public workspace coverage in
+  `pack:check`, and opt-in publish dry-run wiring.
+- `publish:dry-run` and package publication readiness stay outside
+  `verify:fast`, `verify:local`, and `grant:check`.
+- Missing `PACKAGE_PUBLICATION_REPORT` keeps registry publication blocked with
+  an exact blocker code.
+- A valid structured report requires status-only npm publication evidence with
+  every current public package name, recent observation time, registry install,
+  provenance review, and rollback review checks.
+- Unsafe report fields such as tokens, OTPs, npmrc contents, credentials,
+  headers, signatures, or raw payloads are rejected.
+- Product status, launch readiness, and operator gate reports point npm
+  publication at the readiness command without claiming real publication.
+
+Verification:
+
+- Focused package-publication readiness tests.
+- Product-status, launch-readiness, operator-gate, and package-script tests.
+- `npm run proof:package-publication-readiness`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slice 6.3.
+
+Risk:
+Medium. A publication-readiness report can be mistaken for real registry
+publication unless it stays redacted, opt-in, and manually reviewed.
+
+Escalation triggers:
+
+- Any request to run real `npm publish`.
+- Any npm token, OTP, npm organization ownership, provenance signing,
+  registry install, package-name transfer, namespace rename, or rollback
+  decision.
+
 ## Slice 7.1: Product Status Proof Gate
 
 User-visible outcome:

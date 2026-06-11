@@ -46,6 +46,7 @@
     "proof:testnet-digest:live": "npm run build && tsx scripts/check-testnet-digest-proof.ts --live",
     "proof:a2a-public-readiness": "npm run build && tsx scripts/check-a2a-public-readiness.ts",
     "proof:payment-provider-readiness": "npm run build && tsx scripts/check-payment-provider-readiness.ts",
+    "proof:package-publication-readiness": "npm run build && tsx scripts/check-package-publication-readiness.ts",
     "payment:write-provider-proof-plan": "npm run build && tsx scripts/write-payment-provider-proof-plan.ts",
     "proof:verification-profiles": "npm run build && tsx scripts/check-verification-profiles.ts",
     "readiness:testnet": "npm run build && tsx scripts/check-testnet-readiness.ts",

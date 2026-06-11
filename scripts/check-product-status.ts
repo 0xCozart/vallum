@@ -7,6 +7,10 @@ import {
   checkPaymentProviderReadiness,
   type PaymentProviderReadinessReport,
 } from "./check-payment-provider-readiness.js";
+import {
+  checkPackagePublicationReadiness,
+  type PackagePublicationReadinessReport,
+} from "./check-package-publication-readiness.js";
 import type {
   GasStationRuntimeCommandRunner,
   GasStationRuntimePreflightReport,
@@ -39,6 +43,7 @@ export interface ProductStatusOptions {
   readonly env?: NodeJS.ProcessEnv | Record<string, string | undefined>;
   readonly gasStationRuntimeReport?: GasStationRuntimePreflightReport;
   readonly gasStationRuntimeRunner?: GasStationRuntimeCommandRunner;
+  readonly packagePublicationReadiness?: PackagePublicationReadinessReport;
   readonly paymentProviderReadiness?: PaymentProviderReadinessReport;
   readonly scripts?: Record<string, string | undefined>;
 }
@@ -88,12 +93,17 @@ export async function checkProductStatus(options: ProductStatusOptions = {}): Pr
     cwd,
     env: options.env,
   });
+  const packagePublicationReadiness = options.packagePublicationReadiness ?? await checkPackagePublicationReadiness({
+    cwd,
+    env: options.env,
+    scripts,
+  });
 
   const checks: ProductEvidenceCheck[] = [
     checkLocalVerificationCoverage(scripts),
     checkPackageReleaseCoverage(scripts),
     ...liveStatus.checks.map(mapLiveProofCheck),
-    ...productionBlockers(paymentProviderReadiness),
+    ...productionBlockers(paymentProviderReadiness, packagePublicationReadiness),
   ];
 
   return {
@@ -195,15 +205,12 @@ function mapLiveProofCheck(check: LiveProofCheck): ProductEvidenceCheck {
   };
 }
 
-function productionBlockers(paymentProviderReadiness: PaymentProviderReadinessReport): readonly ProductEvidenceCheck[] {
+function productionBlockers(
+  paymentProviderReadiness: PaymentProviderReadinessReport,
+  packagePublicationReadiness: PackagePublicationReadinessReport,
+): readonly ProductEvidenceCheck[] {
   return [
-    {
-      id: "npm-registry-publication",
-      status: "blocked-production",
-      code: "NPM_PUBLICATION_UNRUN",
-      message: "Packages are locally packable and installable from tarballs, but no npm registry publication or registry install proof has been run.",
-      next: "Run a dedicated operator-approved release slice with registry credentials, provenance decisions, 2FA handling, and rollback notes.",
-    },
+    packagePublicationCheck(packagePublicationReadiness),
     {
       id: "public-a2a-hosting",
       status: "blocked-production",
@@ -235,6 +242,41 @@ function productionBlockers(paymentProviderReadiness: PaymentProviderReadinessRe
       next: "Replace the safety gate only after physical safety, provider accountability, revocation, emergency stop, privacy, and incident response are approved.",
     },
   ];
+}
+
+function packagePublicationCheck(readiness: PackagePublicationReadinessReport): ProductEvidenceCheck {
+  if (readiness.liveReady) {
+    return {
+      id: "npm-registry-publication",
+      status: "ready-live",
+      code: "PACKAGE_PUBLICATION_REPORT_VALID",
+      message: "Local package release proof exists and an operator-supplied structured npm publication report is valid for manual review.",
+      evidence: "npm run proof:package-publication-readiness",
+      next: "Manually review the ignored structured report before accepting npm publication and registry installability claims.",
+    };
+  }
+
+  if (!readiness.localProofOk) {
+    const local = readiness.checks.find((check) => check.id === "local-package-publication-proof");
+    return {
+      id: "npm-registry-publication",
+      status: "blocked-production",
+      code: local?.code ?? "PACKAGE_PUBLICATION_LOCAL_PROOF_INCOMPLETE",
+      message: "Local package publication source, script, or package coverage is incomplete, so npm registry readiness cannot be evaluated.",
+      evidence: "npm run proof:package-publication-readiness",
+      next: local?.next ?? "Restore local package release proof, then rerun package publication readiness.",
+    };
+  }
+
+  const live = readiness.checks.find((check) => check.id === "npm-registry-publication-report");
+  return {
+    id: "npm-registry-publication",
+    status: "blocked-production",
+    code: "NPM_PUBLICATION_UNRUN",
+    message: `Packages are locally packable, installable from tarballs, and dry-run publishable; npm registry publication proof remains blocked by ${live?.code ?? "PACKAGE_PUBLICATION_REPORT_MISSING"}.`,
+    evidence: "npm run proof:package-publication-readiness",
+    next: "Run a dedicated operator-approved npm publication proof, save a redacted structured report outside tracked files, set PACKAGE_PUBLICATION_REPORT, and rerun readiness/status gates.",
+  };
 }
 
 function paymentProviderCheck(readiness: PaymentProviderReadinessReport): ProductEvidenceCheck {
