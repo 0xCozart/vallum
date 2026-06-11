@@ -70,6 +70,7 @@ npm run proof:a2a-public-readiness
 npm run verify:fast
 npm run proof:verification-profiles
 npm run proof:operator-gates
+npm run operator:write-live-gate-report
 npm run readiness:testnet
 npm run verify:local
 ```

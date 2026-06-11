@@ -1,12 +1,14 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 
 import {
   checkOperatorLiveGates,
+  formatOperatorLiveGateArtifact,
   formatOperatorLiveGateReport,
+  writeOperatorLiveGateArtifact,
   type OperatorLiveGateReport,
 } from "./check-operator-live-gates.js";
 import type { ProductStatusReport } from "./check-product-status.js";
@@ -159,6 +161,76 @@ test("operator live gates can clear only when every product check is local-prove
   assert.equal(report.allGatesClear, true);
   assert.equal(report.localOnly, true);
   assert.deepEqual(report.gates.map((gate) => gate.status), ["proven-local", "proven-local"]);
+});
+
+test("operator live gate artifact reports blockers without configured values", async () => {
+  const artifact = await writeOperatorLiveGateArtifact({
+    now: new Date("2026-06-11T12:00:00.000Z"),
+    productStatus: productStatusFixture([
+      {
+        id: "iota-names-live",
+        status: "ready-live",
+        code: "IOTA_NAMES_LIVE_CONFIG_PRESENT",
+        message: "IOTA Names live smoke configuration is present.",
+      },
+      {
+        id: "public-a2a-hosting",
+        status: "blocked-production",
+        code: "PUBLIC_A2A_HOSTING_UNPROVEN",
+        message: "Public A2A hosting is not proven.",
+      },
+    ]),
+    env: {
+      IOTA_NAMES_GRAPHQL_URL: "https://graphql.testnet.example/iota",
+      IOTA_NAMES_NAME: "researcher.demo.iota",
+      IOTA_NAMES_EXPECTED_ADDRESS: "0x1111111111111111111111111111111111111111111111111111111111111111",
+    },
+  });
+  const formatted = formatOperatorLiveGateArtifact(artifact);
+
+  assert.equal(artifact.schemaVersion, 1);
+  assert.equal(artifact.kind, "operator-live-gate-report");
+  assert.equal(artifact.generatedAt, "2026-06-11T12:00:00.000Z");
+  assert.equal(artifact.allGatesClear, false);
+  assert.equal(artifact.localOnly, false);
+  assert.ok(artifact.blockerCodes.includes("PUBLIC_A2A_HOSTING_UNPROVEN"));
+  assert.ok(artifact.blockerCodes.includes("IOTA_NAMES_LIVE_CONFIG_PRESENT"));
+  assert.ok(artifact.approvalRequiredGateIds.includes("iota-names-live"));
+  assert.ok(artifact.liveServiceGateIds.includes("iota-names-live"));
+  assert.ok(artifact.gates.some((gate) => gate.command === "npm run smoke:iota-names-live"));
+  assert.doesNotMatch(formatted, /graphql\.testnet\.example|researcher\.demo\.iota/);
+  assert.doesNotMatch(formatted, /0x1111111111111111111111111111111111111111111111111111111111111111/);
+});
+
+test("operator live gate artifact can be written as a local redacted file", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-operator-artifact-"));
+  try {
+    const artifact = await writeOperatorLiveGateArtifact({
+      cwd,
+      now: new Date("2026-06-11T12:00:00.000Z"),
+      outFile: "tmp/gaskit/operator-live-gates.json",
+      productStatus: productStatusFixture([
+        {
+          id: "testnet-upstream",
+          status: "blocked-live",
+          code: "TESTNET_UPSTREAM_REPORT_FAILED",
+          message: "Testnet upstream diagnostic report did not pass.",
+        },
+      ]),
+    });
+    const outFile = join(cwd, "tmp/gaskit/operator-live-gates.json");
+    const raw = await readFile(outFile, "utf8");
+    const written = JSON.parse(raw) as typeof artifact;
+    const mode = (await stat(outFile)).mode & 0o777;
+
+    assert.equal(mode, 0o600);
+    assert.equal(written.kind, "operator-live-gate-report");
+    assert.deepEqual(written.blockerCodes, artifact.blockerCodes);
+    assert.ok(written.blockerCodes.includes("TESTNET_UPSTREAM_REPORT_FAILED"));
+    assert.doesNotMatch(raw, /tmp\/gaskit\/operator-live-gates\.json/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
 });
 
 function findGate(report: OperatorLiveGateReport, id: string) {

@@ -1,3 +1,5 @@
+import { mkdir, writeFile } from "node:fs/promises";
+import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
@@ -35,12 +37,36 @@ export interface OperatorLiveGateReport {
   readonly gates: readonly OperatorLiveGate[];
 }
 
+export interface OperatorLiveGateArtifact {
+  readonly schemaVersion: 1;
+  readonly kind: "operator-live-gate-report";
+  readonly generatedAt: string;
+  readonly allGatesClear: boolean;
+  readonly localOnly: boolean;
+  readonly blockerCodes: readonly string[];
+  readonly approvalRequiredGateIds: readonly string[];
+  readonly liveServiceGateIds: readonly string[];
+  readonly gates: readonly OperatorLiveGate[];
+  readonly boundaries: readonly string[];
+}
+
 export interface OperatorLiveGateOptions {
   readonly cwd?: string;
   readonly env?: NodeJS.ProcessEnv | Record<string, string | undefined>;
   readonly gasStationRuntimeReport?: GasStationRuntimePreflightReport;
   readonly gasStationRuntimeRunner?: GasStationRuntimeCommandRunner;
   readonly productStatus?: ProductStatusReport;
+}
+
+export interface WriteOperatorLiveGateArtifactOptions extends OperatorLiveGateOptions {
+  readonly now?: Date;
+  readonly outFile?: string;
+}
+
+interface CliOptions {
+  readonly help: boolean;
+  readonly json: boolean;
+  readonly outFile?: string;
 }
 
 const GATE_COMMANDS: Record<string, string | undefined> = {
@@ -82,6 +108,19 @@ const APPROVAL_REQUIRED_GATES = new Set([
   "physical-device-access",
 ]);
 
+const ARTIFACT_BOUNDARIES = [
+  "This report is non-networked and does not run live proof commands.",
+  "Gates with contactsLiveService=true require explicit operator approval before execution.",
+  "Do not commit generated reports, live proof artifacts, credentials, tokens, private keys, raw transaction bytes, user signatures, response bodies, or secret local paths.",
+  "allGatesClear=false means the product is not launch-ready.",
+] as const;
+
+const usage = `usage: npm exec tsx -- scripts/check-operator-live-gates.ts [--json] [--out <path>]
+
+Reports the current non-networked operator live gates.
+--json prints a redacted machine-readable artifact.
+--out writes the same JSON artifact to a local file with mode 0600.`;
+
 export async function checkOperatorLiveGates(
   options: OperatorLiveGateOptions = {},
 ): Promise<OperatorLiveGateReport> {
@@ -98,6 +137,44 @@ export async function checkOperatorLiveGates(
     localOnly: gates.every((gate) => !gate.contactsLiveService),
     gates,
   };
+}
+
+export async function writeOperatorLiveGateArtifact(
+  options: WriteOperatorLiveGateArtifactOptions = {},
+): Promise<OperatorLiveGateArtifact> {
+  const cwd = options.cwd ?? process.cwd();
+  const report = await checkOperatorLiveGates(options);
+  const artifact = buildOperatorLiveGateArtifact(report, options.now ?? new Date());
+  if (options.outFile) {
+    const outFile = isAbsolute(options.outFile) ? options.outFile : resolve(cwd, options.outFile);
+    await mkdir(dirname(outFile), { recursive: true });
+    await writeFile(outFile, `${formatOperatorLiveGateArtifact(artifact)}\n`, { mode: 0o600 });
+  }
+  return artifact;
+}
+
+export function buildOperatorLiveGateArtifact(
+  report: OperatorLiveGateReport,
+  now: Date = new Date(),
+): OperatorLiveGateArtifact {
+  const blockedGates = report.gates.filter((gate) => gate.status !== "proven-local" && gate.status !== "ready-to-run");
+
+  return {
+    schemaVersion: 1,
+    kind: "operator-live-gate-report",
+    generatedAt: now.toISOString(),
+    allGatesClear: report.allGatesClear,
+    localOnly: report.localOnly,
+    blockerCodes: blockedGates.map((gate) => gate.code),
+    approvalRequiredGateIds: report.gates.filter((gate) => gate.approvalRequired).map((gate) => gate.id),
+    liveServiceGateIds: report.gates.filter((gate) => gate.contactsLiveService).map((gate) => gate.id),
+    gates: report.gates,
+    boundaries: ARTIFACT_BOUNDARIES,
+  };
+}
+
+export function formatOperatorLiveGateArtifact(artifact: OperatorLiveGateArtifact): string {
+  return JSON.stringify(artifact, null, 2);
 }
 
 export function formatOperatorLiveGateReport(report: OperatorLiveGateReport): string {
@@ -169,7 +246,56 @@ function defaultNext(check: ProductEvidenceCheck): string {
   return "Keep this gate open until a dedicated approved slice records stronger evidence.";
 }
 
+function parseArgs(argv: readonly string[]): CliOptions {
+  const options: { help: boolean; json: boolean; outFile?: string } = {
+    help: false,
+    json: false,
+  };
+
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+    if (arg === "--json") {
+      options.json = true;
+      continue;
+    }
+    if (arg === "--out") {
+      const value = argv[index + 1];
+      if (!value) throw new Error("--out requires a path.");
+      options.outFile = value;
+      index += 1;
+      continue;
+    }
+    if (arg === "--help" || arg === "-h") {
+      options.help = true;
+      continue;
+    }
+    throw new Error(`Unknown argument: ${arg}`);
+  }
+
+  return options;
+}
+
 async function main(): Promise<number> {
+  let options: CliOptions;
+  try {
+    options = parseArgs(process.argv.slice(2));
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : "Invalid arguments.");
+    return 2;
+  }
+
+  if (options.help) {
+    console.log(usage);
+    return 0;
+  }
+
+  if (options.json || options.outFile) {
+    const artifact = await writeOperatorLiveGateArtifact({ outFile: options.outFile });
+    console.log(formatOperatorLiveGateArtifact(artifact));
+    if (options.outFile) console.log("wroteReport=true");
+    return 0;
+  }
+
   const report = await checkOperatorLiveGates();
   console.log(formatOperatorLiveGateReport(report));
   return 0;

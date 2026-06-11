@@ -142,6 +142,16 @@ test("A2A public proof plan is non-networked and opt-in", () => {
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /write-public-proof-plan/);
 });
 
+test("operator live gate report writer is non-networked and opt-in", () => {
+  assert.equal(
+    packageJson.scripts?.["operator:write-live-gate-report"],
+    "npm run build && tsx scripts/check-operator-live-gates.ts --json --out tmp/gaskit/operator-live-gates.json",
+  );
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /write-live-gate-report/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /write-live-gate-report/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /write-live-gate-report/);
+});
+
 test("A2A static discovery bundle tools are opt-in and excluded from local verification", () => {
   assert.equal(
     packageJson.scripts?.["a2a:write-static-discovery-bundle"],

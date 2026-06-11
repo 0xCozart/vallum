@@ -127,7 +127,8 @@ The repo currently includes:
   marketplace operation.
 - non-networked product-status, launch-readiness, and operator live-gate
   reports that separate local proof from live/testnet, publication, public A2A,
-  payment, marketplace, custody, and safety blockers.
+  payment, marketplace, custody, and safety blockers, plus an opt-in redacted
+  JSON handoff artifact for operator live-gate review.
 
 ## Current proof status
 
@@ -218,6 +219,8 @@ Latest local verification and prior live proof:
 - `npm run proof:operator-gates`: deterministic non-networked operator
   runbook classifies live/testnet, publication, public A2A, payment,
   marketplace, custody, and safety gates before execution.
+- `npm run operator:write-live-gate-report`: writes the same redacted
+  non-networked operator-gate classification to an ignored local JSON artifact.
 - `npm run gas-station:runtime-preflight`: local-only preflight checks the
   ignored rendered Gas Station config, Docker client, Docker daemon, and either
   Docker Compose or the direct Docker fallback before upstream diagnostics; it

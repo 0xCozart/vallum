@@ -23,6 +23,19 @@ Run it from the repository root:
 npm run proof:operator-gates
 ```
 
+To write the same redacted classification as a local JSON artifact for an
+operator handoff or live-proof prep session, run:
+
+```bash
+npm run operator:write-live-gate-report
+```
+
+The artifact is written under `tmp/gaskit/`, which is ignored by Git. It
+contains gate ids, blocker codes, approval flags, live-service flags, command
+names, messages, and next steps. It does not include configured endpoint
+values, names, addresses, profile paths, credentials, tokens, response bodies,
+or secret local paths.
+
 Expected status in an unconfigured checkout:
 
 ```text
@@ -53,6 +66,8 @@ hosts, marketplace systems, or physical devices.
   `npm run proof:a2a-public-readiness` command before any public endpoint is
   probed, then at `npm run smoke:a2a-public-discovery` only after
   operator-approved public HTTPS configuration exists.
+- Can write a redacted local JSON report for handoff/audit evidence before
+  any live command is approved.
 - Reports command names and next gates without printing configured endpoints,
   profile paths, names, addresses, credentials, tokens, or secret-like values.
 
@@ -66,6 +81,8 @@ hosts, marketplace systems, or physical devices.
 - It does not operate public A2A hosting, live payment providers, production
   marketplace flows, production custody, or physical devices.
 - It does not change `launchReady=false` while product-status blockers remain.
+- The JSON artifact does not prove any live endpoint, package publication,
+  payment provider, marketplace, custody, or physical-device claim.
 
 ## Next Commands
 
@@ -81,6 +98,7 @@ npm run smoke:a2a-public-discovery
 npm run verify:fast
 npm run proof:verification-profiles
 npm run proof:operator-gates
+npm run operator:write-live-gate-report
 npm run readiness:testnet
 npm run gas-station:render-config
 npm run gas-station:runtime-preflight

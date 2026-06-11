@@ -125,7 +125,8 @@ It also includes the first Agentic GasKit implementation slices:
   source evidence, local commands, blocker codes, and next gates
 - non-networked operator live-gate runbook that classifies config blockers,
   approval-required live commands, production blockers, and safety deferrals
-  before execution
+  before execution, plus an opt-in redacted local JSON artifact writer for
+  handoff/audit evidence before any live command is approved
 - fast verification profile plus non-networked verification-profile audit that
   keeps day-to-day iteration bounded while preserving `verify:local` as the
   full reviewer/release/launch evidence gate
