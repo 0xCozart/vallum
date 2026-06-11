@@ -142,6 +142,16 @@ test("payment provider readiness proof is non-networked and opt-in", () => {
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /payment-provider-readiness/);
 });
 
+test("payment provider proof plan is non-networked and opt-in", () => {
+  assert.equal(
+    packageJson.scripts?.["payment:write-provider-proof-plan"],
+    "npm run build && tsx scripts/write-payment-provider-proof-plan.ts",
+  );
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /write-provider-proof-plan/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /write-provider-proof-plan/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /write-provider-proof-plan/);
+});
+
 test("A2A public proof plan is non-networked and opt-in", () => {
   assert.equal(
     packageJson.scripts?.["a2a:write-public-proof-plan"],

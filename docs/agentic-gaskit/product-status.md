@@ -29,6 +29,9 @@ surface in one machine-checkable place:
 - payment-provider readiness wiring that checks local x402/AP2 source and test
   proof, then accepts only an operator-supplied redacted structured report path
   before moving live payment/provider evidence to manual review;
+- payment-provider proof-plan wiring that writes a redacted non-networked
+  command/report checklist before any operator-approved x402/AP2 provider proof
+  is attempted;
 - launch-readiness evidence matrix and operator live-gate runbook wiring;
 - live/testnet readiness, local Gas Station runtime preflight status,
   sanitized testnet upstream diagnostic report status, IOTA Names, IOTA
@@ -108,6 +111,7 @@ npm run a2a:check-static-discovery-bundle -- --out-dir <dir> --expected-public-b
 npm run smoke:a2a-static-discovery-local -- --out-dir <dir> --expected-public-base-url <url> --expected-public-jwks-url <url>
 npm run proof:a2a-public-readiness
 npm run proof:payment-provider-readiness
+npm run payment:write-provider-proof-plan -- --out tmp/gaskit/payment-provider-proof-plan.json
 npm run proof:verification-profiles
 npm run proof:live-status
 npm run proof:launch-readiness

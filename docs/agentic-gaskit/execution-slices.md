@@ -3045,6 +3045,81 @@ Escalation triggers:
 - Any request to treat proof-plan generation as public A2A readiness,
   production auth approval, endpoint ownership proof, or external conformance.
 
+## Slice 4.32: Payment Provider Proof Plan Packet
+
+User-visible outcome:
+Operators can generate a redacted, non-networked payment-provider proof plan
+that turns the x402/AP2 readiness gate into command order, required structured
+report shape, blocker codes, operator input names, and safety boundaries before
+any live facilitator, processor, AP2 participant, or settlement path is used.
+
+Likely files:
+
+- `scripts/write-payment-provider-proof-plan.ts`
+- `scripts/write-payment-provider-proof-plan.test.ts`
+- `scripts/check-payment-provider-readiness.ts`
+- `scripts/payment-provider-readiness.test.ts`
+- `scripts/package-scripts.test.ts`
+- `package.json`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/agentic-gaskit/execution-slices.md`
+- `docs/CODEBASE_MAP.md`
+- `docs/overview.md`
+
+Acceptance criteria:
+
+- `npm run payment:write-provider-proof-plan` builds first and contacts no
+  payment providers, public endpoints, IOTA services, or Gas Station
+  endpoints.
+- The command reuses `proof:payment-provider-readiness` classification and
+  emits a JSON plan with schema version, status, command order,
+  `contactsPaymentProvider` flags, blocker codes, ready-approval codes,
+  required operator input names, required structured report fields, required
+  structured report check ids, checks, and safety boundaries.
+- The plan can be written to a local ignored output path with `--out`.
+- The plan does not print configured report paths, provider endpoints, payment
+  credentials, authorization headers, payment instruments, raw payloads, raw
+  response bodies, settlement ids, user signatures, private keys, bearer
+  tokens, or local secret paths.
+- Payment-provider readiness remains blocked until an operator-approved
+  structured report exists and passes validation.
+- The command remains excluded from `verify:fast`, `verify:local`, and
+  `grant:check` because it is an operator planning artifact, not a default
+  proof gate.
+
+Verification:
+
+- Focused payment proof-plan tests.
+- Focused payment-provider readiness tests.
+- Focused package-script tests.
+- `npm run payment:write-provider-proof-plan`.
+- `npm run proof:payment-provider-readiness`.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slice 4.1, Slice 4.2, and the payment-provider readiness gate.
+
+Risk:
+Medium to high. A proof plan can be mistaken for live settlement proof unless
+it remains non-networked, redacted, and explicitly separate from facilitator,
+processor, AP2 participant, and settlement evidence.
+
+Escalation triggers:
+
+- Any request to have the proof-plan command call live payment providers.
+- Any request to print configured report paths, provider endpoints, payment
+  credentials, authorization headers, payment instruments, raw payloads,
+  response bodies, settlement ids, private keys, bearer tokens, or report
+  contents.
+- Any request to treat proof-plan generation as live payment/provider proof,
+  production settlement proof, AP2 conformance, or payment processor approval.
+
 ## Slice 5.1: Marketplace Readiness Gate
 
 User-visible outcome:

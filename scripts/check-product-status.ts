@@ -268,7 +268,7 @@ function paymentProviderCheck(readiness: PaymentProviderReadinessReport): Produc
     code: "LIVE_PAYMENT_PROVIDER_UNPROVEN",
     message: `x402 and AP2 flows are locally proven only; live facilitator, processor, or settlement proof remains blocked by ${live?.code ?? "PAYMENT_PROVIDER_LIVE_REPORT_MISSING"}.`,
     evidence: "npm run proof:payment-provider-readiness",
-    next: "Run a dedicated operator-approved payment-provider proof, save a redacted structured report outside tracked files, set PAYMENT_PROVIDER_LIVE_REPORT, and rerun readiness/status gates.",
+    next: "Run npm run payment:write-provider-proof-plan, complete a dedicated operator-approved payment-provider proof, save a redacted structured report outside tracked files, set PAYMENT_PROVIDER_LIVE_REPORT, and rerun readiness/status gates.",
   };
 }
 

@@ -80,7 +80,7 @@ const GATE_COMMANDS: Record<string, string | undefined> = {
   "vc-validation-live": "npm run smoke:iota-identity-live",
   "npm-registry-publication": "operator-approved npm publish workflow",
   "public-a2a-hosting": "npm run proof:a2a-public-readiness && npm run smoke:a2a-public-discovery",
-  "live-payment-provider": "npm run proof:payment-provider-readiness",
+  "live-payment-provider": "npm run payment:write-provider-proof-plan && npm run proof:payment-provider-readiness",
   "production-marketplace": "dedicated production marketplace readiness slice",
   "production-custody": "dedicated custody/security design slice",
   "physical-device-access": "dedicated physical device safety design slice",

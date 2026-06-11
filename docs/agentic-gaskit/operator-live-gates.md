@@ -65,6 +65,10 @@ hosts, marketplace systems, or physical devices.
 - Points live payment/provider review at the non-networked
   `npm run proof:payment-provider-readiness` command, which validates local
   x402/AP2 proof plus an ignored structured report before manual acceptance.
+- Lets operators prepare that review with
+  `npm run payment:write-provider-proof-plan`, a redacted local plan that lists
+  command order, required report fields, approval boundaries, and blocker
+  codes without running provider calls.
 - Points public A2A hosting/conformance review at the non-networked
   `npm run proof:a2a-public-readiness` command before any public endpoint is
   probed, then at `npm run smoke:a2a-public-discovery` only after
@@ -100,6 +104,7 @@ npm run proof:testnet-digest
 npm run proof:testnet-digest:live
 npm run proof:a2a-public-readiness
 npm run proof:payment-provider-readiness
+npm run payment:write-provider-proof-plan -- --out tmp/gaskit/payment-provider-proof-plan.json
 npm run smoke:a2a-public-discovery
 npm run verify:fast
 npm run proof:verification-profiles
