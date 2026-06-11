@@ -130,7 +130,11 @@ Confirmed current state:
   observability, and public delivery proof. Slice 4.26 adds local public JWKS
   response and loopback route support for Agent Card signing keys while still
   deferring deployed public JWKS hosting, endpoint ownership, key rotation,
-  production key management, and public discovery acceptance.
+  production key management, and public discovery acceptance. Slice 4.27 adds
+  local static discovery bundle generation for signed Agent Card plus public
+  JWKS JSON artifacts while still deferring public hosting, endpoint ownership,
+  key rotation, production key management, public discovery acceptance, and
+  external conformance.
   Slice 7.5 adds a fast deterministic verification profile plus a
   non-networked profile audit, so ordinary build/test/improve loops can run a
   bounded subset while `verify:local` and `grant:check` remain the full
@@ -151,7 +155,9 @@ Confirmed current state:
   local callback-host allowlisting; Slice 4.23 adds local durable sanitized
   push attempt evidence; Slice 4.24 adds local sanitized delivery queueing;
   Slice 4.25 adds a local injected-transport worker for one queued job; Slice
-  4.26 adds local public JWKS serving support for public signing keys.
+  4.26 adds local public JWKS serving support for public signing keys; Slice
+  4.27 adds local static discovery bundle generation for signed Agent Card and
+  public JWKS artifacts.
   Public hosting acceptance, production keys/auth, public webhook
   workers/queues, persistent production observability, and external conformance
   blockers remain.
@@ -550,10 +556,11 @@ unsafe callback URL rejection. Slice 4.12 adds local authenticated extended
 Agent Card access. Slice 4.13 adds local injected push delivery envelopes.
 Slice 4.14 adds local mocked opt-in push HTTP transport proof. Slice 4.25 adds
 a local injected-transport delivery worker for one sanitized queued job. Slice
-4.26 adds local public JWKS serving support for public signing keys. These
-slices are not deployed public hosting, production key management, key
-rotation approval, public streaming, public push webhook infrastructure proof,
-external conformance, or live A2A discovery proof.
+4.26 adds local public JWKS serving support for public signing keys. Slice 4.27
+adds local static discovery bundle generation for signed Agent Card and public
+JWKS JSON artifacts. These slices are not deployed public hosting, production
+key management, key rotation approval, public streaming, public push webhook
+infrastructure proof, external conformance, or live A2A discovery proof.
 
 Acceptance criteria:
 
@@ -565,10 +572,10 @@ Acceptance criteria:
 - Auth requirements are explicit and fail closed.
 - Streaming, push notification configuration, injected push delivery, the
   opt-in push HTTP transport helper, local durable attempt evidence, local
-  queueing, the local injected-transport worker, and local public JWKS serving
-  are implemented locally or documented as unsupported capabilities; public
-  webhook delivery infrastructure remains blocked until separately implemented
-  and verified.
+  queueing, the local injected-transport worker, local public JWKS serving, and
+  local static discovery bundle generation are implemented locally or
+  documented as unsupported capabilities; public webhook delivery
+  infrastructure remains blocked until separately implemented and verified.
 - External A2A conformance proof is recorded, or blocked with exact reason.
 - Public A2A readiness command reports exact local proof, config, unsupported
   capability, and external conformance blockers without printing configured

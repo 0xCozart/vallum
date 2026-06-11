@@ -87,9 +87,10 @@ local pay-per-call, data-license, service-bounty, reputation-receipt, and
 subscription workflows, bounded local IOTA Identity verification cache helpers,
 local VC trust-policy evaluation, an opt-in IOTA Identity live proof harness,
 and local A2A well-known Agent Card response proof plus local/mock A2A
-signed Agent Card proof, task/message operation helpers, a local A2A
-HTTP-shaped boundary, a loopback HTTP server smoke proof, and a local
-read-only marketplace evidence model.
+signed Agent Card proof, local public JWKS and static discovery bundle
+helpers, task/message operation helpers, a local A2A HTTP-shaped boundary, a
+loopback HTTP server smoke proof, and a local read-only marketplace evidence
+model.
 
 Some production surfaces remain planned roadmap work, including the full
 dashboard UI, production persistence, production monitoring, package
@@ -136,7 +137,7 @@ npm run verify:local
 
 Latest local verification and prior live proof:
 
-- `npm test`: 397 deterministic TypeScript tests passed locally after Slice 7.5.
+- `npm test`: 420 deterministic TypeScript tests passed locally after Slice 4.27.
 - `npm run contracts:test`: 33 Move escrow/receipt/pay-per-call/data-license/service-bounty/reputation-receipt/subscription contract tests passed locally.
 - `npm run typecheck`: passed locally.
 - `npm run smoke:local`: deterministic local gateway smoke passed locally, including policy simulation, sanitized event, local usage read-model, file-backed usage event-store replay, and authenticated local operator usage API checks.
@@ -165,14 +166,14 @@ Latest local verification and prior live proof:
   lookup exists; it does not spend gas or use sponsor credentials.
 - `npm run proof:a2a-public-readiness`: deterministic non-networked A2A
   public-readiness gate reports local proof, local authenticated extended-card
-  access, local public JWKS serving, local loopback streaming, local push
-  notification configuration, local injected push delivery, local opt-in push
-  HTTP transport, local callback URL admission hardening, callback host
-  allowlisting, local retry/attempt observability, local durable attempt
-  evidence, local delivery queueing, a local injected-transport worker, public
-  hosting inputs, redacted public discovery report classification, public push
-  delivery structured-report classification, and external conformance
-  structured-report blockers.
+  access, local public JWKS serving, local static discovery bundle generation,
+  local loopback streaming, local push notification configuration, local
+  injected push delivery, local opt-in push HTTP transport, local callback URL
+  admission hardening, callback host allowlisting, local retry/attempt
+  observability, local durable attempt evidence, local delivery queueing, a
+  local injected-transport worker, public hosting inputs, redacted public
+  discovery report classification, public push delivery structured-report
+  classification, and external conformance structured-report blockers.
 - `npm run smoke:a2a-public-discovery`: opt-in public A2A Agent Card and JWKS
   discovery smoke exists for operator-approved public HTTPS configuration; it
   can emit a structured discovery report for readiness review, is not part of

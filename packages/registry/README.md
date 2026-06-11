@@ -17,10 +17,13 @@ Current surface:
   `/.well-known/agent-card.json` path.
 - Local public JWKS response helpers for Agent Card signing public keys at the
   canonical `/.well-known/jwks.json` path.
+- Local static A2A discovery bundle generation for signed Agent Card and public
+  JWKS JSON artifacts at canonical well-known paths.
 
 This package is local-first today. It does not resolve live IOTA Names,
 validate live IOTA Identity credentials, run A2A task/message operations, host
 public A2A discovery, prove external A2A conformance, provide production key
-management or key rotation, or contact testnet/mainnet services. The identity cache records
+management or key rotation, deploy static discovery artifacts, or contact
+testnet/mainnet services. The identity cache records
 only successful local/mock verification evidence and does not turn mock
 credentials into live credential validation.

@@ -40,6 +40,10 @@ publicReady=false
   or mTLS.
 - Local JWKS responses can be served for explicitly configured public signing
   keys without exposing private key material.
+- Local static discovery bundles can package a signed Agent Card and public
+  JWKS JSON response at canonical well-known paths, with the Agent Card
+  signature `jku` bound to the configured public JWKS URL and every signing key
+  id present in JWKS.
 - The opt-in public discovery smoke exists for operator-approved public HTTPS
   Agent Card and JWKS probing, but the non-networked readiness command does not
   run it. Readiness remains blocked unless an operator supplies a structured
@@ -95,6 +99,8 @@ report paths, report contents, credentials, tokens, or secret-like values.
 - Live public Agent Card discovery.
 - Deployed public JWKS hosting, production Agent Card key management, or key
   rotation.
+- Deployed static discovery artifacts, endpoint ownership, or public discovery
+  acceptance from local bundle generation alone.
 - Production A2A task-route authentication.
 - Production extended-card access control.
 - Public streaming or webhook delivery by itself.

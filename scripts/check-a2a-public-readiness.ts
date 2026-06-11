@@ -44,6 +44,7 @@ const REQUIRED_SOURCE_PATHS = [
   "packages/registry/src/a2aCard.ts",
   "packages/registry/src/a2aWellKnown.ts",
   "packages/registry/src/a2aJwks.ts",
+  "packages/registry/src/a2aDiscoveryBundle.ts",
   "packages/standards/src/a2a.ts",
   "packages/standards/src/a2aHttp.ts",
   "packages/standards/src/a2aNodeServer.ts",
@@ -63,6 +64,7 @@ export async function checkA2APublicReadiness(
   const checks = [
     await checkLocalA2AProof(cwd, scripts),
     localPublicJwksHostingSupport(),
+    localStaticDiscoveryBundleSupport(),
     checkPublicUrl(
       "public-agent-card-url",
       env.A2A_PUBLIC_AGENT_CARD_URL,
@@ -292,6 +294,17 @@ function localPublicJwksHostingSupport(): A2APublicReadinessCheck {
     message: "A2A public JWKS responses can be served locally with explicitly configured public key material only.",
     evidence: "node --import tsx --test packages/registry/src/a2aJwks.test.ts packages/standards/src/a2aNodeServer.test.ts",
     next: "Keep this as local JWKS hosting support only until an operator-approved public HTTPS JWKS URL, endpoint ownership, key rotation policy, and structured public discovery evidence exist.",
+  };
+}
+
+function localStaticDiscoveryBundleSupport(): A2APublicReadinessCheck {
+  return {
+    id: "local-static-discovery-bundle",
+    status: "proven-local",
+    code: "A2A_STATIC_DISCOVERY_BUNDLE_LOCAL_PROOF_CONFIGURED",
+    message: "A2A static discovery bundles can package signed Agent Card and public JWKS JSON artifacts for canonical well-known paths using public key material only.",
+    evidence: "node --import tsx --test packages/registry/src/a2aDiscoveryBundle.test.ts packages/registry/src/a2aJwks.test.ts",
+    next: "Keep this as local deployable-artifact support only until an operator-approved public host serves the bundle and structured public discovery evidence is accepted.",
   };
 }
 

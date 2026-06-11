@@ -2671,6 +2671,81 @@ Escalation triggers:
 - Any request to treat a locally served JWKS as production key rotation,
   revocation, or external conformance evidence.
 
+## Slice 4.27: A2A Static Discovery Bundle
+
+User-visible outcome:
+Operators get a local static discovery bundle primitive that packages a signed
+Agent Card and public JWKS response as deployable
+`/.well-known/agent-card.json` and `/.well-known/jwks.json` artifacts before
+any public A2A hosting proof is attempted.
+
+Likely files:
+
+- `packages/registry/src/a2aDiscoveryBundle.ts`
+- `packages/registry/src/a2aDiscoveryBundle.test.ts`
+- `packages/registry/src/index.ts`
+- `packages/registry/README.md`
+- `scripts/check-a2a-public-readiness.ts`
+- `scripts/a2a-public-readiness.test.ts`
+- `scripts/check-product-status.ts`
+- `scripts/check-launch-readiness.ts`
+- `docs/agentic-gaskit/a2a-public-readiness.md`
+- `docs/agentic-gaskit/external-api-notes.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
+- `docs/overview.md`
+- `docs/CODEBASE_MAP.md`
+- `README.md`
+- `docs/reviewer-walkthrough.md`
+
+Acceptance criteria:
+
+- The bundle contains exactly the canonical Agent Card and JWKS paths.
+- Bundle content types and cache headers are explicit.
+- The helper requires public HTTPS URLs without credentials, query strings,
+  fragments, loopback hosts, or private network hosts.
+- The signed Agent Card must reference the configured public JWKS URL through
+  signature `jku` values.
+- Every signing key id must have a matching public JWKS key.
+- The helper fails closed when signatures are missing, JWKS URL binding is
+  mismatched, signing key ids are absent from JWKS, private/secret-like fields
+  are present, or JWKS paths are non-canonical.
+- Public-readiness, product-status, launch-readiness, and public docs classify
+  this as local static bundle support only, not deployed public hosting,
+  endpoint ownership, production key management, key rotation approval, public
+  discovery acceptance, or external conformance.
+
+Verification:
+
+- Focused `packages/registry/src/a2aDiscoveryBundle.test.ts`.
+- Focused `packages/registry/src/a2aJwks.test.ts`.
+- Focused A2A public-readiness tests.
+- Product-status tests.
+- Launch-readiness tests.
+- Operator-gate tests.
+- Reviewer-docs regression tests.
+- `npm run proof:a2a-public-readiness`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slice 4.26.
+
+Risk:
+Medium. Static bundle generation can be mistaken for deployed public A2A
+hosting if docs/status gates do not keep endpoint ownership, production key
+management, public discovery acceptance, and conformance blocked.
+
+Escalation triggers:
+
+- Any request to write deployment artifacts to disk by default, store private
+  keys, expose private JWK fields, commit key material, bind a public server,
+  claim endpoint ownership, or accept public discovery from this local bundle
+  alone.
+
 ## Slice 5.1: Marketplace Readiness Gate
 
 User-visible outcome:

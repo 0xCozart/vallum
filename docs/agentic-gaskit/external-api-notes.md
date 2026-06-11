@@ -657,6 +657,15 @@ Current planning assumptions:
   deploy public JWKS hosting, prove endpoint ownership, implement production
   key rotation, store private keys, or replace structured public discovery,
   production key management, or conformance evidence.
+- On 2026-06-11, Slice 4.27 adds a local static A2A discovery bundle helper
+  that packages a signed Agent Card and public JWKS JSON response for
+  `/.well-known/agent-card.json` and `/.well-known/jwks.json`. It validates
+  public HTTPS URLs, binds Agent Card signature `jku` values to the configured
+  public JWKS URL, requires every signing key id to appear in JWKS, rejects
+  private or secret-like fields, and performs no file writes or live network
+  calls. It does not deploy public hosting, prove endpoint ownership, implement
+  key rotation, or replace public discovery, production key management, or
+  conformance evidence.
 
 Implementation checks:
 
