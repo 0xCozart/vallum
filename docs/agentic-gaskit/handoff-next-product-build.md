@@ -66,6 +66,8 @@ Latest live-read-only evidence refresh:
 
 Latest local A2A artifact update:
 
+- Implementation commit: `65dfb42` (`feat: add a2a static discovery artifact
+  writer`).
 - Slice 4.28 adds `npm run a2a:write-static-discovery-bundle`, an opt-in local
   artifact writer for already-signed public Agent Card JSON and public JWKS
   JSON.
@@ -115,6 +117,8 @@ Latest full local verification refresh:
 
 Recent commits to know:
 
+- `65dfb42` feat: add a2a static discovery artifact writer
+- `1315b05` feat: add local gas station config renderer
 - `dcb3a86` feat: add a2a static discovery bundle
 - `3e0dfa1` feat: add a2a local jwks hosting
 - `cda63e9` docs: record a2a local delivery worker handoff
