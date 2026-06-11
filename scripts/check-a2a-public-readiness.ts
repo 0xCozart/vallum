@@ -71,6 +71,7 @@ export async function checkA2APublicReadiness(
     localStaticDiscoveryArtifactWriterSupport(),
     localStaticDiscoveryArtifactValidatorSupport(),
     localStaticDiscoveryLocalHostSupport(),
+    localPublicProofPlanSupport(),
     checkPublicUrl(
       "public-agent-card-url",
       env.A2A_PUBLIC_AGENT_CARD_URL,
@@ -344,6 +345,17 @@ function localStaticDiscoveryLocalHostSupport(): A2APublicReadinessCheck {
     message: "A2A static discovery artifacts can be served and fetched over loopback with manifest-declared headers after local artifact validation.",
     evidence: "npm run smoke:a2a-static-discovery-local -- --out-dir <dir> --expected-public-base-url <url> --expected-public-jwks-url <url>",
     next: "Keep this as local host-semantics proof only until an operator-approved public HTTPS endpoint serves the artifacts and structured public discovery evidence is accepted.",
+  };
+}
+
+function localPublicProofPlanSupport(): A2APublicReadinessCheck {
+  return {
+    id: "local-public-proof-plan",
+    status: "proven-local",
+    code: "A2A_PUBLIC_PROOF_PLAN_LOCAL_PROOF_CONFIGURED",
+    message: "A2A public proof planning can produce a redacted local operator checklist from current readiness gates without contacting public endpoints.",
+    evidence: "npm run a2a:write-public-proof-plan",
+    next: "Keep this as local planning evidence only; public discovery, public push delivery, and external conformance still require operator-approved proof runs and structured reports.",
   };
 }
 

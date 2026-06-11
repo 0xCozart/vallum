@@ -18,7 +18,7 @@ unclear sequencing, unsafe payment assumptions, or disconnected modules.
 
 | Raw term | Normalized product term | Confidence | Execution assumption |
 | --- | --- | --- | --- |
-| what is in the docs folder | `docs/agentic-gaskit/source-thesis.md` thesis | High | Treat this as the raw thesis, now interpreted alongside existing IOTA GasKit. |
+| what is in the docs folder | Public Agentic GasKit product direction | High | Treat the public roadmap as the durable source and keep raw thesis notes local-only. |
 | Codex goal | Active planning objective and durable roadmap artifacts | High | Convert into local docs and executable slices. |
 | infra | SDK, policy gateway, MCP server, contract templates, registry, dashboard, tests | High | Build in phases, not all at once. |
 | existing GasKit | GasKit code inherited from `github.com/0xCozart/iota-gaskit` | High | Reuse as the core Gas Station sponsorship toolkit inside this fork. |
@@ -225,8 +225,9 @@ Exit gate:
 An implementer can clone the repo, install dependencies, run tests, run a local
 policy gateway, and run contract tests without any product module being complete.
 
-PRD:
-`docs/agentic-gaskit/prds/phase-0-foundation.md`
+Public phase summary:
+Foundation work covers repository setup, build harness, dependency strategy,
+local/testnet workflow, documentation conventions, and test structure.
 
 ### Phase 1: Sponsored Policy MVP
 
@@ -241,8 +242,9 @@ A local demo can show an agent opening escrow for a paid task with denied
 negative cases for unknown agent, missing manifest, over-budget spend, expired
 mandate, disallowed contract, and missing simulation.
 
-PRD:
-`docs/agentic-gaskit/prds/phase-1-sponsored-policy-mvp.md`
+Public phase summary:
+Sponsored policy work covers MCP/SDK action requests, signed manifests, policy
+checks, sponsor-gas boundaries, wallet signer references, escrow, and receipts.
 
 ### Phase 2: Identity And Registry
 
@@ -256,8 +258,10 @@ with wallet, owner, DID, capabilities, MCP/A2A endpoint, allowed contracts,
 payment methods, signer reference, policy pointer, revocation status, and
 reputation pointer.
 
-PRD:
-`docs/agentic-gaskit/prds/phase-2-identity-registry.md`
+Public phase summary:
+Identity and registry work covers validated agent profiles, names, DID-style
+identity evidence, credentials, capabilities, endpoints, payment metadata,
+policy pointers, revocation, and reputation references.
 
 ### Phase 3: Contract Block Library
 
@@ -273,8 +277,10 @@ device access remains blocked by
 `docs/agentic-gaskit/device-access-safety-gate.md` until a separate owner
 approved safety design exists.
 
-PRD:
-`docs/agentic-gaskit/prds/phase-3-contract-block-library.md`
+Public phase summary:
+Contract block work covers reusable local/testnet contract templates for agent
+service workflows while keeping physical device access under a separate safety
+gate.
 
 ### Phase 4: Standards Bridges
 
@@ -287,8 +293,9 @@ An external paid API/tool flow can negotiate payment through x402 or a mocked
 facilitator, anchor receipt/contract state on IOTA, and expose A2A-compatible
 metadata without bypassing policy controls.
 
-PRD:
-`docs/agentic-gaskit/prds/phase-4-standards-bridges.md`
+Public phase summary:
+Standards bridge work covers local x402, AP2, and A2A-compatible flows without
+bypassing GasKit policy controls.
 
 ### Phase 5: Marketplace
 
@@ -302,14 +309,17 @@ The marketplace can onboard a provider, publish a verified agent profile, show
 pricing/contracts/reputation, execute a paid escrow/pay-per-call workflow, and
 surface dispute evidence.
 
-PRD:
-`docs/agentic-gaskit/prds/phase-5-marketplace.md`
+Public phase summary:
+Marketplace work covers local read models and readiness evidence before any
+production provider onboarding, settlement, moderation, or public marketplace
+claims.
 
 ## Design Improvement Loop
 
 Run this loop before each phase and after each major slice:
 
-1. Extract: reread the owning PRD and source thesis section.
+1. Extract: reread the public roadmap section and local-only planning notes if
+   they exist in this workspace.
 2. Verify external APIs: refresh official protocol docs for any touched
    integration.
 3. Narrow: choose one vertical slice with one observable outcome.

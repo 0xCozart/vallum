@@ -192,6 +192,9 @@ Latest local verification and prior live proof:
   generated static discovery directory; it serves the validated `.well-known`
   files locally with manifest-declared headers and fetches them back without
   proving public hosting.
+- `npm run a2a:write-public-proof-plan`: opt-in non-networked public A2A proof
+  plan writer; it emits redacted command order, blocker codes, and operator
+  input names without contacting public endpoints.
 - `npm run smoke:a2a-public-discovery`: opt-in public A2A Agent Card and JWKS
   discovery smoke exists for operator-approved public HTTPS configuration; it
   can emit a structured discovery report for readiness review, is not part of
@@ -292,12 +295,11 @@ deploy/
   docker-compose/         # Local deployment templates
   gas-station/            # Safe Gas Station config templates
 docs/
-  agentic-gaskit/          # Agentic migration plan, roadmap, PRDs, wallet safety, and slices
+  agentic-gaskit/          # Public agentic migration plan, roadmap, safety, status, and slices
   architecture.md
   demo-script.md
   deployment.md
   product-requirements.md
-  continuation-brief-2026-04-26.md
   reviewer-walkthrough.md
   observability.md
   policy.md
@@ -533,7 +535,8 @@ A future managed service may later provide:
 - SLA-backed monitoring;
 - compliance exports.
 
-Those managed-service features are separate from the self-hostable open-source core. See `docs/managed-service-roadmap.md`.
+Those managed-service features are separate from the self-hostable open-source core and are not part of the public
+open-source package.
 
 ## License
 

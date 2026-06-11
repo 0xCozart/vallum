@@ -104,16 +104,16 @@ status --short --branch` is clean or intentionally explained.
 ### Blocker: Missing External API Refresh Step
 
 Failure mode:
-Implementation uses stale snippets from `docs/agentic-gaskit/source-thesis.md` for IOTA Names,
-Gas Station, Identity, MCP, x402, AP2, or A2A.
+Implementation uses stale local notes for IOTA Names, Gas Station, Identity,
+MCP, x402, AP2, or A2A.
 
 Impact:
 Agents may build invalid adapters or unsafe assumptions into core modules.
 
 Fix:
-Phase 0 must create or refresh `docs/agentic-gaskit/external-api-notes.md` from current
-official docs before scaffold decisions that depend on external tooling and
-before any integration slice.
+Integration slices must refresh current official docs before scaffold decisions
+that depend on external tooling and before any provider-facing integration
+slice.
 
 Validation:
 Each adapter PR must cite the exact docs/API version it implements.
@@ -366,9 +366,10 @@ Use this checklist before marking the active goal complete:
 - `docs/CODEBASE_MAP.md` exists and orients future agents.
 - `docs/agentic-gaskit/roadmap.md` defines objective, architecture, module
   ownership, phase roadmap, and design loop.
-- `docs/agentic-gaskit/prds/` contains Phase 0 through Phase 5 PRDs.
-- `docs/agentic-gaskit/module-specs.md` covers core package/app ownership, non-ownership,
-  acceptance, and verification.
+- `docs/agentic-gaskit/product-status.md` separates local proof from live,
+  production, publication, and safety blockers.
+- `docs/agentic-gaskit/launch-readiness-evidence.md` maps roadmap areas to
+  evidence, commands, blockers, and next gates.
 - `docs/agentic-gaskit/execution-slices.md` contains vertical work packets with dependencies,
   acceptance criteria, verification, risk, and escalation triggers.
 - `docs/agentic-gaskit/verification-hardening.md` contains invariants, gates, risk findings,

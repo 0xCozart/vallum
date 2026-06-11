@@ -25,6 +25,13 @@ discovery files over loopback, applies the manifest-declared content headers,
 fetches the Agent Card and JWKS back locally, and still prints
 `publicHostingProven=false`.
 
+Operators can write a redacted local proof plan with
+`npm run a2a:write-public-proof-plan`. That command reads the same
+non-networked readiness gates and emits command order, blocker codes, operator
+input names, and safety boundaries without printing configured URLs, auth
+decisions, report paths, key ids, credentials, response bodies, or report
+contents.
+
 When an operator has approved public A2A infrastructure and supplied local
 configuration, `npm run smoke:a2a-public-discovery` is the opt-in networked
 probe for public Agent Card and JWKS discovery. It is not part of local
@@ -70,6 +77,8 @@ publicReady=false
 - Generated static discovery directories can be served and fetched over
   loopback with manifest-declared content headers after local artifact
   validation.
+- A redacted local public proof plan can be generated from the current
+  readiness gates before any operator-approved public probing.
 - The opt-in public discovery smoke exists for operator-approved public HTTPS
   Agent Card and JWKS probing, but the non-networked readiness command does not
   run it. Readiness remains blocked unless an operator supplies a structured
@@ -192,6 +201,26 @@ the manifest-declared content-type and cache metadata through local fetches,
 and redacts public URLs and key ids from formatted output. It is host-semantics
 proof only; public hosting still requires an operator-approved HTTPS endpoint,
 structured public discovery evidence, and external conformance review.
+
+## Public Proof Plan
+
+Generate a redacted local operator plan before any public A2A proof run:
+
+```bash
+npm run a2a:write-public-proof-plan
+```
+
+To write the JSON artifact to a local ignored path:
+
+```bash
+npm run a2a:write-public-proof-plan -- --out tmp/a2a-public-proof-plan.json
+```
+
+The plan includes command order, `contactsPublicNetwork` flags, remaining
+blocker codes, `ready-approval` codes, operator input variable names, and
+safety boundaries. It is still local planning evidence only. It does not fetch
+public URLs, validate public hosting, deliver push webhooks, run external
+conformance tools, or approve production auth/key management.
 
 ## Opt-In Public Discovery Smoke
 

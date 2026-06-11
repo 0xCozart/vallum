@@ -62,7 +62,7 @@ Reusable open-source Gas Station tooling can reduce integration time, increase p
 
 IOTA already has the core primitive. GasKit packages the repeatable deployment, policy, usage, SDK, dashboard, monitoring, and documentation layers required for real applications.
 
-This aligns with the IOTA open-source development grant category because it produces reusable developer infrastructure for the IOTA ecosystem. It is useful for dApp teams, enterprise teams, hackathon builders, infrastructure operators, wallet/app developers, and identity/notarization/RWA/supply-chain/trade applications.
+This produces reusable developer infrastructure for the IOTA ecosystem. It is useful for dApp teams, enterprise teams, hackathon builders, infrastructure operators, wallet/app developers, and identity/notarization/RWA/supply-chain/trade applications.
 
 ## 4. Product Goals
 
@@ -70,11 +70,11 @@ This aligns with the IOTA open-source development grant category because it prod
 2. Make sponsored transactions safer to operate: quotas, package allowlists, app keys, rate limits, and sponsor-wallet guardrails.
 3. Make gas sponsorship observable: usage by app, wallet, endpoint, package/function, status, and estimated spend.
 4. Make production deployment repeatable: deployment templates and production hardening guidance for Redis, KMS, secrets, TLS, reverse proxy, monitoring, and backup/restore.
-5. Produce grant-verifiable deliverables: every milestone has concrete acceptance criteria visible through GitHub, demo, docs, tests, and milestone videos.
+5. Produce verifiable deliverables: every milestone has concrete acceptance criteria visible through GitHub, demo, docs, tests, and product evidence.
 
 ## 5. Non-Goals
 
-The grant-funded MVP will not:
+The open-source MVP will not:
 
 - replace the official IOTA Gas Station component;
 - custody user funds;

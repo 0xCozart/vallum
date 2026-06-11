@@ -40,7 +40,7 @@ interface CliOptions {
 
 const REQUIRED_DOCS = [
   "docs/testnet-attempts.md",
-  "docs/milestone-0-proof.md",
+  "docs/agentic-gaskit/testnet-digest-proof.md",
   "docs/reviewer-walkthrough.md",
 ] as const;
 

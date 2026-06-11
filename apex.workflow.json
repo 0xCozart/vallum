@@ -18,7 +18,8 @@
     "executionTruth": [
       "docs/agentic-gaskit/migration-plan.md",
       "docs/CODEBASE_MAP.md",
-      "docs/milestone-0-proof.md",
+      "docs/agentic-gaskit/launch-readiness-evidence.md",
+      "docs/agentic-gaskit/testnet-digest-proof.md",
       "docs/reviewer-walkthrough.md",
       "docs/agentic-gaskit/verification-hardening.md"
     ]

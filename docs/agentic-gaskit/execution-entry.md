@@ -58,7 +58,6 @@ Non-goals for the first implementation pass:
    - `docs/CODEBASE_MAP.md`
    - `docs/agentic-gaskit/migration-plan.md`
    - `docs/agentic-gaskit/account-wallet-safety.md`
-   - `docs/agentic-gaskit/module-specs.md`
    - `docs/agentic-gaskit/execution-slices.md`
    - `docs/agentic-gaskit/verification-hardening.md`
 

@@ -147,7 +147,7 @@ async function writeDigestDocs(digest: string): Promise<string> {
   const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-testnet-digest-"));
   for (const path of [
     "docs/testnet-attempts.md",
-    "docs/milestone-0-proof.md",
+    "docs/agentic-gaskit/testnet-digest-proof.md",
     "docs/reviewer-walkthrough.md",
   ]) {
     const file = join(cwd, path);

@@ -132,6 +132,16 @@ test("A2A public discovery smoke is opt-in and excluded from local verification"
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /a2a-public-discovery/);
 });
 
+test("A2A public proof plan is non-networked and opt-in", () => {
+  assert.equal(
+    packageJson.scripts?.["a2a:write-public-proof-plan"],
+    "npm run build && tsx scripts/write-a2a-public-proof-plan.ts",
+  );
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /write-public-proof-plan/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /write-public-proof-plan/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /write-public-proof-plan/);
+});
+
 test("A2A static discovery bundle tools are opt-in and excluded from local verification", () => {
   assert.equal(
     packageJson.scripts?.["a2a:write-static-discovery-bundle"],
@@ -287,8 +297,10 @@ test("root docs scripts build the static hosted documentation site", () => {
 });
 
 test("workflow execution truth does not reference deleted milestone docs", () => {
-  assert.ok(apexProfile.authority?.executionTruth?.includes("docs/milestone-0-proof.md"));
+  assert.ok(apexProfile.authority?.executionTruth?.includes("docs/agentic-gaskit/launch-readiness-evidence.md"));
+  assert.ok(apexProfile.authority?.executionTruth?.includes("docs/agentic-gaskit/testnet-digest-proof.md"));
   assert.ok(apexProfile.authority?.executionTruth?.includes("docs/reviewer-walkthrough.md"));
+  assert.ok(!apexProfile.authority?.executionTruth?.includes("docs/milestone-0-proof.md"));
   assert.ok(!apexProfile.authority?.executionTruth?.includes("docs/grant-milestones.md"));
 });
 

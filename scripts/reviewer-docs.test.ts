@@ -6,14 +6,6 @@ import { fileURLToPath } from "node:url";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
-const grantFacingDocs = [
-  "docs/grant-application.md",
-  "docs/product-requirements.md",
-  "docs/grant-scope.md",
-  "docs/reviewer-walkthrough.md",
-  "docs/milestone-0-proof.md",
-] as const;
-
 const publicApiDocsAndExamples = [
   "README.md",
   "docs/quickstart.md",
@@ -35,35 +27,22 @@ function literalPattern(value: string): RegExp {
   return new RegExp(value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
 }
 
-test("milestone proof reflects the current verified local surface", async () => {
-  const [proof, readme] = await Promise.all([readDoc("docs/milestone-0-proof.md"), readDoc("README.md")]);
+test("launch evidence reflects the current public local proof surface", async () => {
+  const [proof, readme] = await Promise.all([
+    readDoc("docs/agentic-gaskit/launch-readiness-evidence.md"),
+    readDoc("README.md"),
+  ]);
 
-  assert.match(proof, /tests 397\s+pass 397\s+fail 0/s);
-  assert.doesNotMatch(proof, /tests 392\s+pass 392/s);
-  assert.doesNotMatch(proof, /tests 391\s+pass 391/s);
-  assert.doesNotMatch(proof, /tests 387\s+pass 387/s);
-  assert.doesNotMatch(proof, /tests 381\s+pass 381/s);
-  assert.doesNotMatch(proof, /tests 376\s+pass 376/s);
-  assert.doesNotMatch(proof, /tests 372\s+pass 372/s);
-  assert.doesNotMatch(proof, /tests 132\s+pass 132/s);
-  assert.doesNotMatch(proof, /tests 110\s+pass 110/s);
-  assert.doesNotMatch(proof, /tests 16\s+pass 16/s);
-  assert.doesNotMatch(proof, /tests 94\s+pass 94/s);
-  assert.doesNotMatch(proof, /tests 97\s+pass 97/s);
-  assert.doesNotMatch(proof, /tests 98\s+pass 98/s);
+  assert.match(proof, /npm run proof:launch-readiness/);
+  assert.match(proof, /localEvidenceOk=true/);
+  assert.match(proof, /launchReady=false/);
   assert.match(proof, /npm run verify:local/);
-  assert.match(proof, /npm test && npm run contracts:test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp && npm run smoke:demo-browser && npm run smoke:agent-escrow && npm run smoke:paid-mcp-tool && npm run smoke:data-license && npm run smoke:service-bounty && npm run smoke:reputation-receipt && npm run smoke:subscription && npm run smoke:a2a-well-known && npm run smoke:a2a-signed-card && npm run smoke:a2a-task-message && npm run smoke:a2a-http && npm run smoke:a2a-local-server && npm run smoke:marketplace-read-model && npm run readiness:testnet:example && npm run proof:testnet-digest && npm run pack:check && npm run smoke:package-install && npm run proof:a2a-public-readiness && npm run proof:verification-profiles && npm run proof:product-status && npm run proof:launch-readiness && npm run proof:operator-gates && npm run docs:check && npm run secrets:scan/);
-  assert.match(proof, /local policy simulation endpoint/);
-  assert.match(proof, /sanitized gateway decision events/);
-  assert.match(proof, /in-memory local usage read model/);
-  assert.match(proof, /file-backed usage event store/);
-  assert.match(proof, /Node backend and Next\.js API route examples/);
-  assert.match(proof, /workspace package build and `npm pack --dry-run` succeed/);
-  assert.match(proof, /package READMEs and safe prerelease publish metadata/);
+  assert.match(proof, /npm run proof:testnet-digest/);
+  assert.match(proof, /Phase 1 sponsored policy MVP/);
+  assert.match(proof, /Phase 6 package release/);
   assert.match(readme, /npm publish --dry-run --tag next --access public/);
   assert.match(readme, /Do not run a real `npm publish` without explicit operator approval/);
-  assert.match(proof, /real sponsored IOTA testnet execute path has been proven/);
-  assert.match(proof, /2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H/);
+  assert.match(readme, /2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H/);
 });
 
 test("README is product-first and avoids grant or funding framing", async () => {
@@ -132,6 +111,16 @@ test("hosted docs exclude internal planning and handoff sources", async () => {
     "docs/agentic-gaskit/handoff-next-product-build.md",
     "docs/agentic-gaskit/local-dirty-work-review.md",
     "docs/agentic-gaskit/planning-structure-audit.md",
+    "docs/agentic-gaskit/source-thesis.md",
+    "docs/agentic-gaskit/module-specs.md",
+    "docs/agentic-gaskit/external-api-notes.md",
+    "docs/agentic-gaskit/prds/",
+    "docs/grant-application.md",
+    "docs/grant-scope.md",
+    "docs/managed-service-roadmap.md",
+    "docs/team.md",
+    "docs/continuation-brief-2026-04-26.md",
+    "docs/milestone-0-proof.md",
   ]) {
     assert.doesNotMatch(config, literalPattern(source));
     assert.doesNotMatch(readme, literalPattern(source));
@@ -282,39 +271,6 @@ test("reviewer walkthrough points reviewers at runnable local proof paths", asyn
   assert.match(walkthrough, /gateway-local\/offline/);
 });
 
-test("grant-facing docs reflect publication status and open-source scope without budget tables", async () => {
-  const [readme, application, team] = await Promise.all([
-    readDoc("README.md"),
-    readDoc("docs/grant-application.md"),
-    readDoc("docs/team.md"),
-  ]);
-
-  for (const doc of [readme, application]) {
-    assert.doesNotMatch(doc, /\$49,000/);
-    assert.match(doc, /Package Publication|package publication|publication-ready artifacts/);
-  }
-
-  assert.doesNotMatch(application, /\| M1 Deployment Kit and Testnet Demo \| 2 weeks \| \$8,000 \|/);
-  assert.doesNotMatch(application, /Total ask/);
-  assert.doesNotMatch(application, /Recommended ask|\$39,000/);
-  assert.match(application, /Reviewer quick verification/);
-  assert.match(application, /not currently funded by another grant, employer, or customer contract/);
-  assert.match(application, /self-hostable, inspectable, forkable/);
-  assert.match(team, /0xCozart/);
-  assert.match(team, /documented public IOTA testnet sponsored execute evidence/);
-});
-
-test("grant-facing docs avoid stale private-hosted and package-publication overclaims", async () => {
-  for (const path of grantFacingDocs) {
-    const doc = await readDoc(path);
-
-    assert.doesNotMatch(doc, /\$49,000|49k|\$45,000-\$50,000/);
-    assert.doesNotMatch(doc, /private SaaS|hosted SaaS|closed managed SaaS/);
-    assert.doesNotMatch(doc, /currently published to npm|published to npm today|already published to npm/);
-    assert.doesNotMatch(doc, /dashboard UI is complete|complete production usage database|complete production stack/);
-  }
-});
-
 test("public docs and examples expose gasKitTransactionId instead of legacy aliases", async () => {
   for (const path of publicApiDocsAndExamples) {
     const doc = await readDoc(path);
@@ -348,37 +304,5 @@ test("reviewer checklist distinguishes completed local proofs from remaining liv
     "Production monitoring, alerts, and final demo video are complete.",
   ]) {
     assert.match(checklist, new RegExp(`- \\[ \\] ${remainingItem.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`));
-  }
-});
-
-test("continuation and grant docs do not contradict current local readiness progress", async () => {
-  const [brief, grantApplication] = await Promise.all([
-    readDoc("docs/continuation-brief-2026-04-26.md"),
-    readDoc("docs/grant-application.md"),
-  ]);
-
-  assert.match(brief, /Status update after grant-readiness and live testnet proof slices/);
-  assert.match(brief, /policy simulation endpoint is implemented/);
-  assert.match(brief, /SDK is proven against deterministic local gateway and demo smoke paths/);
-  assert.match(brief, /sanitized gateway decision events and in-memory local usage read model are implemented/);
-  assert.match(brief, /real sponsored IOTA testnet transaction has executed/);
-  assert.match(brief, /2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H/);
-
-  assert.match(grantApplication, /`npm test`: 132 deterministic tests passed, 0 failed/);
-  assert.match(grantApplication, /local gateway smoke/);
-  assert.match(grantApplication, /policy simulation/);
-  assert.match(grantApplication, /sanitized decision events/);
-  assert.match(grantApplication, /in-memory local usage read model/);
-  assert.match(grantApplication, /file-backed local JSONL usage event-store foundation/);
-  assert.match(grantApplication, /authenticated local operator usage API|operator usage API/);
-  assert.match(grantApplication, /real IOTA testnet sponsored execute path/);
-  assert.match(grantApplication, /2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H/);
-
-  for (const doc of [brief, grantApplication]) {
-    assert.doesNotMatch(doc, /16 tests passed/);
-    assert.doesNotMatch(doc, /110 deterministic tests passed/);
-    assert.doesNotMatch(doc, /not yet wired into a runnable HTTP proxy\/gateway path/);
-    assert.doesNotMatch(doc, /client wrappers exist, but they are not yet proven/);
-    assert.doesNotMatch(doc, /Policy simulation endpoint\./);
   }
 });

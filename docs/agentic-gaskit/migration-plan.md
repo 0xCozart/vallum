@@ -79,20 +79,18 @@ Required work:
 
 Status: migrated into `docs/agentic-gaskit/`.
 
-Migrated from `/home/sacred/code/agents`:
+Public product planning surfaces:
 
-- `docs/agentic-gaskit/source-thesis.md`
 - `docs/agentic-gaskit/roadmap.md`
 - `docs/agentic-gaskit/account-wallet-safety.md`
 - `docs/agentic-gaskit/execution-slices.md`
-- `docs/agentic-gaskit/module-specs.md`
 - `docs/agentic-gaskit/verification-hardening.md`
-- `docs/agentic-gaskit/external-api-notes.md`
-- `docs/agentic-gaskit/prds/*.md`
 
-Private Codex execution prompts, active goals, handoffs, and scratch audits are
-kept in ignored local paths so the open-source repository exposes product
-documentation rather than machine-local planning state.
+Private Codex execution prompts, active goals, handoffs, scratch audits, raw
+thesis notes, phase PRDs, module specs, external API notes, grant-era funding
+docs, team notes, and managed-service planning are kept in ignored local paths
+so the open-source repository exposes product documentation rather than
+machine-local or business planning state.
 
 Required normalization:
 

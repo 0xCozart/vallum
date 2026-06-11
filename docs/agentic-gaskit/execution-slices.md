@@ -8,10 +8,10 @@ requires a small supporting change.
 
 Global slice rules:
 
-- Start each slice by reading the owning PRD, `docs/agentic-gaskit/module-specs.md`,
-  and `docs/agentic-gaskit/verification-hardening.md`.
+- Start each slice by reading the owning public roadmap/status section and
+  `docs/agentic-gaskit/verification-hardening.md`.
 - Run `git status --short --branch` before editing and preserve unrelated work.
-- Refresh `docs/agentic-gaskit/external-api-notes.md` before any slice that touches IOTA,
+- Refresh current official provider documentation before any slice that touches IOTA,
   MCP, x402, AP2, A2A, package names, adapter interfaces, or protocol fields.
 - Complete one user/operator-visible outcome per slice.
 - End each slice with commands run, manual checks, evidence, risks, and commit
@@ -71,7 +71,7 @@ IOTA or external standards.
 
 Likely files:
 
-- `docs/agentic-gaskit/external-api-notes.md`
+- current official provider documentation
 - `README.md`
 
 Acceptance criteria:
@@ -108,7 +108,7 @@ Likely files:
 - `docs/CODEBASE_MAP.md`
 - `docs/agentic-gaskit/roadmap.md`
 - `docs/agentic-gaskit/account-wallet-safety.md`
-- `docs/agentic-gaskit/external-api-notes.md`
+- current official provider documentation
 
 Acceptance criteria:
 
@@ -504,7 +504,7 @@ Likely files:
 
 - `packages/registry/src/iotaNamesAdapter.ts`
 - `packages/registry/src/iotaIdentityAdapter.ts`
-- `docs/agentic-gaskit/external-api-notes.md`
+- current official provider documentation
 
 Acceptance criteria:
 
@@ -588,7 +588,7 @@ Likely files:
 - `scripts/iota-names-live-smoke.test.ts`
 - `packages/registry/src/iotaNamesAdapter.ts`
 - `docs/testnet-readiness.md`
-- `docs/agentic-gaskit/external-api-notes.md`
+- current official provider documentation
 
 Acceptance criteria:
 
@@ -1471,7 +1471,7 @@ Likely files:
 - `scripts/operator-live-gates.test.ts`
 - `scripts/reviewer-docs.test.ts`
 - `docs/agentic-gaskit/a2a-public-readiness.md`
-- `docs/agentic-gaskit/external-api-notes.md`
+- current official provider documentation
 - `docs/agentic-gaskit/product-status.md`
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
 - `docs/agentic-gaskit/operator-live-gates.md`
@@ -1547,7 +1547,7 @@ Likely files:
 - `scripts/a2a-public-readiness.test.ts`
 - `scripts/check-product-status.ts`
 - `docs/agentic-gaskit/a2a-public-readiness.md`
-- `docs/agentic-gaskit/external-api-notes.md`
+- current official provider documentation
 - `docs/agentic-gaskit/product-status.md`
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
 - `docs/overview.md`
@@ -1623,7 +1623,7 @@ Likely files:
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
 - `docs/agentic-gaskit/a2a-public-readiness.md`
-- `docs/agentic-gaskit/external-api-notes.md`
+- current official provider documentation
 - `docs/agentic-gaskit/product-status.md`
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
 - `docs/overview.md`
@@ -1699,7 +1699,7 @@ Likely files:
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
 - `docs/agentic-gaskit/a2a-public-readiness.md`
-- `docs/agentic-gaskit/external-api-notes.md`
+- current official provider documentation
 - `docs/agentic-gaskit/product-status.md`
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
 - `docs/overview.md`
@@ -1778,7 +1778,7 @@ Likely files:
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
 - `docs/agentic-gaskit/a2a-public-readiness.md`
-- `docs/agentic-gaskit/external-api-notes.md`
+- current official provider documentation
 - `docs/agentic-gaskit/product-status.md`
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
 - `docs/overview.md`
@@ -1853,7 +1853,7 @@ Likely files:
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
 - `docs/agentic-gaskit/a2a-public-readiness.md`
-- `docs/agentic-gaskit/external-api-notes.md`
+- current official provider documentation
 - `docs/agentic-gaskit/product-status.md`
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
 - `docs/overview.md`
@@ -1927,7 +1927,7 @@ Likely files:
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
 - `docs/agentic-gaskit/a2a-public-readiness.md`
-- `docs/agentic-gaskit/external-api-notes.md`
+- current official provider documentation
 - `docs/agentic-gaskit/product-status.md`
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
 - `docs/overview.md`
@@ -1993,7 +1993,7 @@ Likely files:
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
 - `docs/agentic-gaskit/a2a-public-readiness.md`
-- `docs/agentic-gaskit/external-api-notes.md`
+- current official provider documentation
 - `docs/agentic-gaskit/product-status.md`
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
 - `docs/overview.md`
@@ -2060,7 +2060,7 @@ Likely files:
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
 - `docs/agentic-gaskit/a2a-public-readiness.md`
-- `docs/agentic-gaskit/external-api-notes.md`
+- current official provider documentation
 - `docs/agentic-gaskit/product-status.md`
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
 - `docs/overview.md`
@@ -2125,7 +2125,7 @@ Likely files:
 - `scripts/check-product-status.ts`
 - `scripts/check-operator-live-gates.ts`
 - `docs/agentic-gaskit/a2a-public-readiness.md`
-- `docs/agentic-gaskit/external-api-notes.md`
+- current official provider documentation
 - `docs/agentic-gaskit/product-status.md`
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
 - `docs/agentic-gaskit/operator-live-gates.md`
@@ -2197,7 +2197,7 @@ Likely files:
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
 - `docs/agentic-gaskit/a2a-public-readiness.md`
-- `docs/agentic-gaskit/external-api-notes.md`
+- current official provider documentation
 - `docs/agentic-gaskit/product-status.md`
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
 - `docs/overview.md`
@@ -2265,7 +2265,7 @@ Likely files:
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
 - `docs/agentic-gaskit/a2a-public-readiness.md`
-- `docs/agentic-gaskit/external-api-notes.md`
+- current official provider documentation
 - `docs/agentic-gaskit/product-status.md`
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
 - `docs/overview.md`
@@ -2328,7 +2328,7 @@ Likely files:
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
 - `docs/agentic-gaskit/a2a-public-readiness.md`
-- `docs/agentic-gaskit/external-api-notes.md`
+- current official provider documentation
 - `docs/agentic-gaskit/product-status.md`
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
 - `docs/overview.md`
@@ -2394,7 +2394,7 @@ Likely files:
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
 - `docs/agentic-gaskit/a2a-public-readiness.md`
-- `docs/agentic-gaskit/external-api-notes.md`
+- current official provider documentation
 - `docs/agentic-gaskit/product-status.md`
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
 - `docs/overview.md`
@@ -2462,7 +2462,7 @@ Likely files:
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
 - `docs/agentic-gaskit/a2a-public-readiness.md`
-- `docs/agentic-gaskit/external-api-notes.md`
+- current official provider documentation
 - `docs/agentic-gaskit/product-status.md`
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
 - `docs/overview.md`
@@ -2533,7 +2533,7 @@ Likely files:
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
 - `docs/agentic-gaskit/a2a-public-readiness.md`
-- `docs/agentic-gaskit/external-api-notes.md`
+- current official provider documentation
 - `docs/agentic-gaskit/product-status.md`
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
 - `docs/overview.md`
@@ -2611,7 +2611,7 @@ Likely files:
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
 - `docs/agentic-gaskit/a2a-public-readiness.md`
-- `docs/agentic-gaskit/external-api-notes.md`
+- current official provider documentation
 - `docs/agentic-gaskit/product-status.md`
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
 - `docs/overview.md`
@@ -2686,7 +2686,7 @@ Likely files:
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
 - `docs/agentic-gaskit/a2a-public-readiness.md`
-- `docs/agentic-gaskit/external-api-notes.md`
+- current official provider documentation
 - `docs/agentic-gaskit/product-status.md`
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
 - `docs/overview.md`
@@ -2974,6 +2974,77 @@ Escalation triggers:
 - Any request to store private signing keys, webhook credentials, bearer
   tokens, public endpoint secrets, or raw response bodies in the smoke output.
 
+## Slice 4.31: A2A Public Proof Plan Packet
+
+User-visible outcome:
+Operators can generate a redacted, non-networked public A2A proof plan that
+turns current readiness gates into command order, blocker codes, operator input
+names, and safety boundaries before any public endpoint is probed.
+
+Likely files:
+
+- `scripts/write-a2a-public-proof-plan.ts`
+- `scripts/write-a2a-public-proof-plan.test.ts`
+- `scripts/check-a2a-public-readiness.ts`
+- `scripts/a2a-public-readiness.test.ts`
+- `scripts/package-scripts.test.ts`
+- `package.json`
+- `docs/agentic-gaskit/a2a-public-readiness.md`
+- `docs/agentic-gaskit/execution-slices.md`
+- `docs/CODEBASE_MAP.md`
+- `docs/overview.md`
+- `README.md`
+
+Acceptance criteria:
+
+- `npm run a2a:write-public-proof-plan` builds first and contacts no public
+  endpoints.
+- The command reuses `proof:a2a-public-readiness` classification and emits a
+  JSON plan with schema version, status, command order, `contactsPublicNetwork`
+  flags, blocker codes, `ready-approval` codes, required operator input names,
+  checks, and safety boundaries.
+- The plan can be written to a local ignored output path with `--out`.
+- The plan does not print configured public URLs, auth decisions, report paths,
+  key ids, credentials, response bodies, raw report contents, or local secret
+  paths.
+- A2A public-readiness reports the proof plan as local planning proof only and
+  keeps public discovery, public push delivery, external conformance,
+  production auth, and key-management claims blocked until operator-approved
+  structured evidence exists.
+- The command remains excluded from `verify:fast`, `verify:local`, and
+  `grant:check` because it is an operator planning artifact, not a default
+  proof gate.
+
+Verification:
+
+- Focused public proof-plan tests.
+- Focused A2A public-readiness tests.
+- Focused package-script tests.
+- `npm run a2a:write-public-proof-plan`.
+- `npm run proof:a2a-public-readiness`.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slices 4.19, 4.28, 4.29, and 4.30.
+
+Risk:
+Medium. A proof plan can be mistaken for public proof unless it remains
+non-networked, redacted, and explicitly separate from public discovery,
+public push delivery, and external conformance evidence.
+
+Escalation triggers:
+
+- Any request to have the proof-plan command probe public URLs.
+- Any request to print configured public URLs, auth decisions, local report
+  paths, key ids, credentials, raw payloads, response bodies, or report
+  contents.
+- Any request to treat proof-plan generation as public A2A readiness,
+  production auth approval, endpoint ownership proof, or external conformance.
+
 ## Slice 5.1: Marketplace Readiness Gate
 
 User-visible outcome:
@@ -3183,7 +3254,7 @@ Likely files:
 - `scripts/package-scripts.test.ts`
 - `scripts/reviewer-docs.test.ts`
 - `docs/agentic-gaskit/package-release-strategy.md`
-- `docs/milestone-0-proof.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
 - `package.json`
 
 Acceptance criteria:
@@ -3443,7 +3514,7 @@ Likely files:
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
 - `docs/agentic-gaskit/operator-live-gates.md`
 - `docs/testnet-readiness.md`
-- `docs/milestone-0-proof.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
 - `docs/reviewer-walkthrough.md`
 - `docs/quickstart.md`
 - `docs/overview.md`
@@ -3520,7 +3591,7 @@ Likely files:
 - `docs/agentic-gaskit/verification-profiles.md`
 - `docs/agentic-gaskit/product-status.md`
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
-- `docs/milestone-0-proof.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
 - `docs/reviewer-walkthrough.md`
 - `docs/quickstart.md`
 - `docs/overview.md`

@@ -23,7 +23,7 @@ npm run execute:testnet-demo
 
 Expected result: with operator-owned local credentials and a reachable IOTA Gas Station/testnet setup, this submits a sponsored transaction. This command is intentionally excluded from the deterministic grant check because it contacts live services and consumes sponsored testnet gas.
 
-Documented public IOTA testnet evidence already in the repo: digest `2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H` in `docs/milestone-0-proof.md` and `docs/testnet-attempts.md`.
+Documented public IOTA testnet evidence already in the repo: digest `2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H` in `docs/testnet-attempts.md` and `docs/agentic-gaskit/testnet-digest-proof.md`.
 
 External showcase evidence: [Gasless ProofDrop](https://proofdrop.xyz) is the separate M1 showcase dApp for the GasKit integration pattern. It has a hosted live testnet badge-claim proof for `0xd35b2cda222b21fcc7b6c46b00a5a172023d3de1f20c94a5ac553e290cf5f032::proofdrop_badge::claim_proof_badge` with public digest [`GRVtucGZkKZXsXG8HssCPGmRkWbiBom9NGWzJDcVspnF`](https://explorer.iota.org/txblock/GRVtucGZkKZXsXG8HssCPGmRkWbiBom9NGWzJDcVspnF?network=testnet). ProofDrop remains outside this repository.
 
@@ -32,15 +32,15 @@ External showcase evidence: [Gasless ProofDrop](https://proofdrop.xyz) is the se
 Read:
 
 - `README.md`
-- `docs/grant-scope.md`
-- `docs/managed-service-roadmap.md`
-- `docs/team.md`
+- `docs/overview.md`
+- `docs/product-requirements.md`
+- `docs/agentic-gaskit/roadmap.md`
 - External showcase: [proofdrop.xyz](https://proofdrop.xyz) and [github.com/0xCozart/ProofDrop](https://github.com/0xCozart/ProofDrop)
 
 What to verify:
 
 - GasKit is framed as an open-source toolkit around IOTA Gas Station.
-- The grant-funded core remains self-hostable and inspectable.
+- The open-source core remains self-hostable and inspectable.
 - Future managed hosting/support is separated from the grant MVP.
 - ProofDrop is linked as an external showcase, not copied into GasKit core.
 
@@ -198,14 +198,13 @@ What to verify:
 - the optional live testnet execute command and public digest evidence are documented in `docs/testnet-attempts.md`;
 - dashboard UI, production persistence, production monitoring, and final demo assets remain later milestone boundaries.
 
-## 6. Review grant plan and remaining work
+## 6. Review product plan and remaining work
 
 Read:
 
 - `docs/product-requirements.md`
-- `docs/continuation-brief-2026-04-26.md`
-- `docs/grant-application.md`
-- `docs/milestone-0-proof.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
 - `docs/demo-script.md`
 - `docs/reviewer-checklist.md`
 

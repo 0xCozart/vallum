@@ -3,10 +3,16 @@
 `npm run proof:testnet-digest` is a non-networked check for the public IOTA
 testnet transaction digest evidence already documented in this repo.
 
+Documented digest:
+
+```text
+2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H
+```
+
 It verifies that the known public digest appears in:
 
 - `docs/testnet-attempts.md`
-- `docs/milestone-0-proof.md`
+- `docs/agentic-gaskit/testnet-digest-proof.md`
 - `docs/reviewer-walkthrough.md`
 
 Run it from the repository root:

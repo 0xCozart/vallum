@@ -101,6 +101,8 @@ It also includes the first Agentic GasKit implementation slices:
 - opt-in public A2A discovery smoke for operator-approved public HTTPS Agent
   Card and JWKS probing with optional structured report output, excluded from
   default local verification
+- local redacted A2A public proof plan writer for turning current non-networked
+  readiness gates into an operator checklist before any public probing
 - opt-in IOTA Names GraphQL live resolution smoke with an exact missing-config
   blocker path
 - non-networked live proof status command for testnet, IOTA Names, IOTA
@@ -197,7 +199,9 @@ roadmap unless later slices implement and verify them.
   `scripts/testnet-digest-proof.test.ts`
 - A2A public readiness: `docs/agentic-gaskit/a2a-public-readiness.md`,
   `scripts/check-a2a-public-readiness.ts`,
-  `scripts/a2a-public-readiness.test.ts`
+  `scripts/write-a2a-public-proof-plan.ts`,
+  `scripts/a2a-public-readiness.test.ts`,
+  `scripts/write-a2a-public-proof-plan.test.ts`
 - A2A static discovery artifact writer:
   `scripts/write-a2a-static-discovery-bundle.ts`,
   `scripts/write-a2a-static-discovery-bundle.test.ts`
@@ -270,12 +274,14 @@ roadmap unless later slices implement and verify them.
 
 - Migration plan: `docs/agentic-gaskit/migration-plan.md`
 - Roadmap: `docs/agentic-gaskit/roadmap.md`
-- PRDs: `docs/agentic-gaskit/prds/`
 - Execution slices: `docs/agentic-gaskit/execution-slices.md`
-- Module specs: `docs/agentic-gaskit/module-specs.md`
 - Wallet safety: `docs/agentic-gaskit/account-wallet-safety.md`
 - Verification hardening: `docs/agentic-gaskit/verification-hardening.md`
-- Source thesis: `docs/agentic-gaskit/source-thesis.md`
+- Product status: `docs/agentic-gaskit/product-status.md`
+- Launch evidence: `docs/agentic-gaskit/launch-readiness-evidence.md`
+- Internal raw thesis, PRDs, module specs, external API notes, funding docs,
+  team notes, and local handoffs are intentionally ignored for the public
+  open-source repository.
 
 ## Future Targets
 
