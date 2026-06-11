@@ -16,21 +16,21 @@ local proof as live IOTA testnet, production marketplace, public scoring,
 public A2A discovery, production key management, or provider-verification
 proof.
 
-As of the latest completed update, Slice 4.23 is complete: A2A push durable
-attempt evidence. Local A2A push delivery attempts can now be written to a
-file-backed sanitized JSONL store containing status-only metadata: config id,
-task id, callback URL, attempt number, observed time, retry time, HTTP status,
-and safe error code. The store does not persist request JSON, task bodies,
-response bodies, raw transport errors, webhook credentials, signer refs, wallet
-internals, payment secrets, or private prompt text. `npm run
-proof:a2a-public-readiness` reports
-`A2A_PUSH_DURABLE_ATTEMPT_EVIDENCE_LOCAL_PROOF_CONFIGURED` as local durable
-attempt evidence. This does not send A2A task messages to public endpoints,
-post real webhook callbacks, run background workers, persist delivery queues,
-store webhook credentials, run external A2A conformance, publish JWKS, prove
-production key rotation, or prove public push delivery. Public hosting
-acceptance, production keys/auth, public webhook infrastructure, live IOTA
-proof, and external conformance claims remain blocked.
+As of the latest completed update, Slice 4.24 is complete: A2A push local
+delivery queue. Local A2A push delivery requests can now be written to a
+file-backed queue as sanitized jobs with public headers, redacted task
+payloads, and local claim/complete state. The queue rejects unsafe callback
+URLs before persistence and strips authorization/cookie-style headers. It does
+not persist raw private prompt text, bearer values, signer refs, wallet
+internals, payment secrets, webhook credentials, response bodies, or raw
+transport errors. `npm run proof:a2a-public-readiness` reports
+`A2A_PUSH_DELIVERY_QUEUE_LOCAL_PROOF_CONFIGURED` as local queue proof. This
+does not send A2A task messages to public endpoints, post real webhook
+callbacks, run background workers, prove endpoint ownership, store webhook
+credentials, run external A2A conformance, publish JWKS, prove production key
+rotation, or prove public push delivery. Public hosting acceptance, production
+keys/auth, public webhook infrastructure, live IOTA proof, and external
+conformance claims remain blocked.
 
 The next continuation should choose the next safe roadmap slice from
 `docs/agentic-gaskit/full-roadmap-execution-goal.md` and
