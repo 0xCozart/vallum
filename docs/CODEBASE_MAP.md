@@ -51,6 +51,9 @@ It also includes the first Agentic GasKit implementation slices:
   bearer-authenticated task routes
 - local A2A loopback HTTP server smoke proof for signed discovery and
   authenticated task routes
+- non-networked A2A public-readiness proof for local A2A evidence, public
+  hosting inputs, production JWKS/auth decisions, unsupported streaming/push
+  capabilities, and external conformance blockers
 - opt-in IOTA Names GraphQL live resolution smoke with an exact missing-config
   blocker path
 - non-networked live proof status command for testnet, IOTA Names, IOTA
@@ -126,6 +129,9 @@ roadmap unless later slices implement and verify them.
 - Testnet digest proof: `docs/agentic-gaskit/testnet-digest-proof.md`,
   `scripts/check-testnet-digest-proof.ts`,
   `scripts/testnet-digest-proof.test.ts`
+- A2A public readiness: `docs/agentic-gaskit/a2a-public-readiness.md`,
+  `scripts/check-a2a-public-readiness.ts`,
+  `scripts/a2a-public-readiness.test.ts`
 - Product status proof: `docs/agentic-gaskit/product-status.md`,
   `scripts/check-product-status.ts`, `scripts/product-status.test.ts`
 - Launch readiness evidence:
@@ -229,6 +235,7 @@ Safe local checks:
 - `npm run smoke:package-install`
 - `npm run proof:live-status`
 - `npm run proof:testnet-digest`
+- `npm run proof:a2a-public-readiness`
 - `npm run proof:product-status`
 - `npm run proof:launch-readiness`
 - `npm run proof:operator-gates`

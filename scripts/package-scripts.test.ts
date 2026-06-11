@@ -64,12 +64,23 @@ test("testnet digest proof has offline and opt-in live commands", () => {
   assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /npm run proof:testnet-digest:live/);
 });
 
+test("A2A public readiness proof is non-networked and wired into local verification", () => {
+  assert.equal(
+    packageJson.scripts?.["proof:a2a-public-readiness"],
+    "npm run build && tsx scripts/check-a2a-public-readiness.ts",
+  );
+  assert.match(
+    packageJson.scripts?.["verify:local"] ?? "",
+    /npm run smoke:package-install && npm run proof:a2a-public-readiness && npm run proof:product-status/,
+  );
+});
+
 test("root local verification includes deterministic secret scan after package checks", () => {
   const localVerify = packageJson.scripts?.["verify:local"] ?? "";
 
   assert.match(
     localVerify,
-    /npm run readiness:testnet:example && npm run proof:testnet-digest && npm run pack:check && npm run smoke:package-install && npm run proof:product-status && npm run proof:launch-readiness && npm run proof:operator-gates && npm run docs:check && npm run secrets:scan/,
+    /npm run readiness:testnet:example && npm run proof:testnet-digest && npm run pack:check && npm run smoke:package-install && npm run proof:a2a-public-readiness && npm run proof:product-status && npm run proof:launch-readiness && npm run proof:operator-gates && npm run docs:check && npm run secrets:scan/,
   );
   assert.equal(packageJson.scripts?.["grant:check"], "npm run verify:local");
   assert.equal(packageJson.scripts?.["secrets:scan"], "tsx scripts/scan-secrets.ts");
@@ -211,7 +222,7 @@ test("product status is non-networked and wired into local verification", () => 
   );
   assert.match(
     packageJson.scripts?.["verify:local"] ?? "",
-    /npm run smoke:package-install && npm run proof:product-status && npm run proof:launch-readiness && npm run proof:operator-gates && npm run docs:check/,
+    /npm run smoke:package-install && npm run proof:a2a-public-readiness && npm run proof:product-status && npm run proof:launch-readiness && npm run proof:operator-gates && npm run docs:check/,
   );
 });
 

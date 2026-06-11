@@ -108,6 +108,12 @@ export default {
           description: "Non-networked documented digest check plus opt-in read-only IOTA testnet lookup for public transaction evidence."
         },
         {
+          title: "A2A Public Readiness",
+          source: "docs/agentic-gaskit/a2a-public-readiness.md",
+          slug: "agentic-a2a-public-readiness",
+          description: "Non-networked A2A public-readiness gate for local proof, public hosting inputs, unsupported capabilities, and conformance blockers."
+        },
+        {
           title: "Product Status Proof",
           source: "docs/agentic-gaskit/product-status.md",
           slug: "agentic-product-status",

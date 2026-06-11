@@ -507,6 +507,16 @@ Current planning assumptions:
   for task routes, refuses non-loopback binds by default, and does not prove
   public hosting, live discovery, production key management, or external
   conformance.
+- On 2026-06-10, Slice 4.9 rechecked the current A2A specification and Agent
+  Discovery docs. The current public discovery guidance still centers on the
+  well-known Agent Card path
+  `https://{agent-server-domain}/.well-known/agent-card.json`, and the
+  specification still separates core task operations from optional streaming
+  and push-notification capabilities. Slice 4.9 adds a non-networked public
+  readiness gate only. It classifies local A2A proof, public HTTPS hosting
+  inputs, production JWKS/auth decisions, unsupported streaming/push
+  capabilities, and external conformance report evidence without fetching
+  public endpoints or operating a public server.
 
 Implementation checks:
 

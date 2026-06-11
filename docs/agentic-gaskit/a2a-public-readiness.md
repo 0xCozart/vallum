@@ -1,0 +1,69 @@
+# A2A Public Readiness
+
+`npm run proof:a2a-public-readiness` is a non-networked proof-boundary command
+for Agentic GasKit A2A interoperability claims.
+
+It does not fetch public Agent Cards, operate a public A2A server, publish JWKS
+material, run external conformance tools, enable streaming, or configure push
+notifications. Instead, it classifies the evidence needed before local A2A
+proof can be described as public A2A interoperability.
+
+Run it from the repository root:
+
+```bash
+npm run proof:a2a-public-readiness
+```
+
+Expected status in an unconfigured checkout:
+
+```text
+Agentic GasKit A2A public readiness blocked
+localProofOk=true
+publicReady=false
+```
+
+## What It Checks
+
+- Local A2A well-known, signed-card, task/message, HTTP, and loopback server
+  proof commands are wired into local verification.
+- Required local source evidence for Agent Card mapping, well-known serving,
+  HTTP task routes, and the loopback Node server exists.
+- A public Agent Card URL is configured only as HTTPS, non-loopback, and using
+  `/.well-known/agent-card.json`.
+- Public base URL and production JWKS URL are HTTPS and non-loopback.
+- Public task route authentication has an explicit decision: bearer, OAuth2,
+  or mTLS.
+- Streaming and push notifications remain explicitly unsupported until
+  dedicated slices implement and verify them.
+- External conformance remains blocked unless an operator supplies a local
+  report path and that file exists.
+
+## Redaction Boundary
+
+The report prints command names, blocker codes, and generic evidence strings.
+It does not print configured public URLs, JWKS URLs, auth decisions, local
+report paths, credentials, tokens, or secret-like values.
+
+## What It Does Not Prove
+
+- Public A2A hosting.
+- Live public Agent Card discovery.
+- Production Agent Card key management or key rotation.
+- Production A2A task-route authentication.
+- Streaming or push notification support.
+- External A2A conformance.
+- Provider verification or production trust.
+
+## Operator Inputs
+
+The command can classify these optional inputs without contacting them:
+
+- `A2A_PUBLIC_AGENT_CARD_URL`
+- `A2A_PUBLIC_BASE_URL`
+- `A2A_PUBLIC_JWKS_URL`
+- `A2A_PUBLIC_TASK_AUTH_DECISION`
+- `A2A_EXTERNAL_CONFORMANCE_REPORT`
+
+Supplying these values is not approval to operate public infrastructure. Treat a
+`ready-approval` line as input for a dedicated operator-approved public A2A
+proof slice, not as completion.

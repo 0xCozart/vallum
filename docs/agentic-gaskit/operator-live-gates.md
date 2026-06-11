@@ -43,6 +43,9 @@ hosts, marketplace systems, or physical devices.
 - Keeps package publication, public A2A hosting, live payment/provider proof,
   production marketplace, custody, and physical-device access out of automatic
   local verification claims.
+- Points public A2A hosting/conformance review at the non-networked
+  `npm run proof:a2a-public-readiness` command before any public endpoint is
+  operated.
 - Reports command names and next gates without printing configured endpoints,
   profile paths, names, addresses, credentials, tokens, or secret-like values.
 
@@ -64,6 +67,7 @@ npm run proof:product-status
 npm run proof:launch-readiness
 npm run proof:testnet-digest
 npm run proof:testnet-digest:live
+npm run proof:a2a-public-readiness
 npm run proof:operator-gates
 npm run readiness:testnet
 ```

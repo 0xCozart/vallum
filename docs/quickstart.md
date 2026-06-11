@@ -15,6 +15,7 @@ npm run smoke:demo-dapp
 npm run smoke:demo-browser
 npm run readiness:testnet:example
 npm run proof:testnet-digest
+npm run proof:a2a-public-readiness
 npm run proof:product-status
 npm run proof:launch-readiness
 npm run proof:operator-gates

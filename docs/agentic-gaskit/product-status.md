@@ -10,6 +10,8 @@ surface in one machine-checkable place:
 - local verification and package release gates that are configured in this
   checkout;
 - documented public testnet digest evidence wiring;
+- A2A public-readiness wiring for local proof, public hosting inputs,
+  unsupported streaming/push capabilities, and external conformance blockers;
 - launch-readiness evidence matrix and operator live-gate runbook wiring;
 - live/testnet readiness, IOTA Names, IOTA Identity, and VC proof status from
   `npm run proof:live-status`;
@@ -68,6 +70,7 @@ Use the audit output to choose the next gate:
 npm run verify:local
 npm run proof:testnet-digest
 npm run proof:testnet-digest:live
+npm run proof:a2a-public-readiness
 npm run proof:live-status
 npm run proof:launch-readiness
 npm run proof:operator-gates

@@ -77,6 +77,10 @@ Confirmed current state:
   docs, plus a separate opt-in read-only IOTA testnet lookup command that does
   not sign, sponsor, reserve gas, execute transactions, or use operator
   credentials.
+  Slice 4.9 adds a non-networked A2A public-readiness gate that classifies
+  local A2A proof, public hosting inputs, production JWKS/auth decisions,
+  unsupported streaming/push capabilities, and external conformance blockers
+  without fetching public endpoints or operating a public A2A server.
 - `docs/agentic-gaskit/handoff-next-product-build.md` says Slices 1.0, 1.1,
   1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.3,
   3.4, 3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 5.1, and 5.2 are
@@ -463,9 +467,11 @@ HTTP-shaped handler into an honestly scoped live interoperability path. Slice
 bearer-authenticated task routes. Slice 4.7 proves local JWS signing and
 trusted-key verification for Agent Cards. Slice 4.8 proves the same local
 handler behind a loopback HTTP server with signed discovery and authenticated
-task routes. These slices are not public hosting, production key management,
-streaming, push notification support, external conformance, or live A2A
-discovery proof.
+task routes. Slice 4.9 adds a non-networked public-readiness gate for local
+A2A proof, public hosting inputs, production JWKS/auth decisions, unsupported
+streaming/push capabilities, and external conformance evidence. These slices
+are not public hosting, production key management, streaming, push notification
+support, external conformance, or live A2A discovery proof.
 
 Acceptance criteria:
 
@@ -477,11 +483,15 @@ Acceptance criteria:
 - Streaming and push notification support are implemented or documented as
   unsupported capabilities.
 - External A2A conformance proof is recorded, or blocked with exact reason.
+- Public A2A readiness command reports exact local proof, config, unsupported
+  capability, and external conformance blockers without printing configured
+  values or contacting public endpoints.
 
 Verification:
 
 - Standards and registry tests.
 - Local server smoke.
+- `npm run proof:a2a-public-readiness`
 - External/client conformance command where available.
 - `npm run verify:local`
 
@@ -595,6 +605,9 @@ run-ready, config-blocked, approval-required, production-blocked, and
 safety-deferred execution gates. Slice 7.4 adds a public testnet digest proof
 gate: local verification checks documented digest evidence, while the optional
 live command performs a read-only transaction lookup against IOTA testnet.
+Slice 4.9 adds a non-networked A2A public-readiness gate so public A2A hosting
+and conformance blockers are inspectable before any live interoperability
+claim.
 
 Acceptance criteria:
 
@@ -630,6 +643,7 @@ Verification:
 - `npm run proof:testnet-digest`
 - `npm run proof:testnet-digest:live` when read-only IOTA testnet RPC lookup is
   intentionally being checked.
+- `npm run proof:a2a-public-readiness`
 - Relevant IOTA testnet commands with local credentials, if available.
 - `git diff --check`
 - Final hardening audit against verification and planning docs.
@@ -672,6 +686,9 @@ blocked with owner-facing rationale:
   evidence locally without network access, and any `proof:testnet-digest:live`
   result is recorded as read-only lookup evidence or an exact RPC/blocker
   reason.
+- `npm run proof:a2a-public-readiness` reports A2A public hosting,
+  production key distribution, task auth, streaming, push, and external
+  conformance blockers without operating public infrastructure.
 - IOTA testnet readiness and any relevant testnet proof have been run where
   local credentials/config exist, or the blocker is recorded exactly.
 - Every completed slice has a handoff with commands, manual checks, evidence,

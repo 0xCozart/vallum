@@ -122,6 +122,8 @@ const AREA_DEFINITIONS = [
       "packages/standards/src/a2a.ts",
       "packages/standards/src/a2aHttp.ts",
       "packages/standards/src/a2aNodeServer.ts",
+      "scripts/check-a2a-public-readiness.ts",
+      "docs/agentic-gaskit/a2a-public-readiness.md",
       "scripts/smoke-a2a-local-server.ts",
     ],
     commands: [
@@ -131,6 +133,7 @@ const AREA_DEFINITIONS = [
       "npm run smoke:a2a-task-message",
       "npm run smoke:a2a-http",
       "npm run smoke:a2a-local-server",
+      "npm run proof:a2a-public-readiness",
     ],
     productCheckIds: ["public-a2a-hosting", "live-payment-provider"],
     fallbackStatus: "proven-local",

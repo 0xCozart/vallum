@@ -102,6 +102,7 @@ npm run smoke:demo-dapp
 npm run smoke:demo-browser
 npm run readiness:testnet:example
 npm run proof:testnet-digest
+npm run proof:a2a-public-readiness
 npm run pack:check
 npm run proof:product-status
 npm run proof:launch-readiness
@@ -120,6 +121,9 @@ Expected current result:
 - testnet digest proof confirms the documented public digest evidence is present
   without contacting IOTA RPC;
 - package dry-runs complete for publishable workspace packages;
+- A2A public-readiness proof reports local A2A evidence, public hosting input
+  blockers, unsupported streaming/push capabilities, and external conformance
+  blockers without contacting public endpoints;
 - product-status proof reports local verification and package gates separately
   from live/testnet, publication, marketplace, custody, A2A hosting, payment,
   and device-safety blockers;

@@ -1,0 +1,149 @@
+import assert from "node:assert/strict";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
+import { test } from "node:test";
+
+import {
+  checkA2APublicReadiness,
+  formatA2APublicReadinessReport,
+} from "./check-a2a-public-readiness.js";
+
+test("A2A public readiness reports local proof while public gates remain blocked", async () => {
+  const cwd = await writeA2AEvidence();
+  try {
+    const report = await checkA2APublicReadiness({ cwd, env: {}, scripts: completeScripts() });
+    const formatted = formatA2APublicReadinessReport(report);
+
+    assert.equal(report.localProofOk, true);
+    assert.equal(report.publicReady, false);
+    assert.equal(findCheck(report, "local-a2a-proof").status, "proven-local");
+    assert.equal(findCheck(report, "public-agent-card-url").code, "A2A_PUBLIC_AGENT_CARD_URL_MISSING");
+    assert.equal(findCheck(report, "streaming").status, "unsupported");
+    assert.equal(findCheck(report, "push-notifications").status, "unsupported");
+    assert.equal(findCheck(report, "external-conformance").code, "A2A_EXTERNAL_CONFORMANCE_REPORT_MISSING");
+    assert.match(formatted, /Agentic GasKit A2A public readiness blocked/);
+    assert.doesNotMatch(formatted, /secret|token|private/i);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("A2A public readiness fails local proof when commands or source evidence are missing", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-a2a-readiness-"));
+  try {
+    const report = await checkA2APublicReadiness({
+      cwd,
+      env: {},
+      scripts: { "verify:local": "npm test && npm run smoke:a2a-well-known" },
+    });
+    const local = findCheck(report, "local-a2a-proof");
+
+    assert.equal(report.localProofOk, false);
+    assert.equal(local.status, "blocked-local");
+    assert.equal(local.code, "A2A_LOCAL_PROOF_INCOMPLETE");
+    assert.match(local.evidence ?? "", /npm run smoke:a2a-signed-card/);
+    assert.match(local.evidence ?? "", /packages\/standards\/src\/a2aHttp\.ts/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("A2A public readiness rejects unsafe public URLs without printing them", async () => {
+  const cwd = await writeA2AEvidence();
+  try {
+    const report = await checkA2APublicReadiness({
+      cwd,
+      scripts: completeScripts(),
+      env: {
+        A2A_PUBLIC_AGENT_CARD_URL: "http://localhost/.well-known/agent-card.json",
+        A2A_PUBLIC_BASE_URL: "https://127.0.0.1/a2a",
+        A2A_PUBLIC_JWKS_URL: "https://keys.localhost/jwks.json",
+        A2A_PUBLIC_TASK_AUTH_DECISION: "query-token-secret",
+        A2A_EXTERNAL_CONFORMANCE_REPORT: "missing-secret-report.txt",
+      },
+    });
+    const formatted = formatA2APublicReadinessReport(report);
+
+    assert.equal(findCheck(report, "public-agent-card-url").code, "A2A_PUBLIC_AGENT_CARD_URL_UNSAFE");
+    assert.equal(findCheck(report, "public-base-url").code, "A2A_PUBLIC_BASE_URL_UNSAFE");
+    assert.equal(findCheck(report, "production-jwks-url").code, "A2A_PUBLIC_JWKS_URL_UNSAFE");
+    assert.equal(findCheck(report, "task-auth-decision").code, "A2A_PUBLIC_TASK_AUTH_DECISION_UNSUPPORTED");
+    assert.equal(findCheck(report, "external-conformance").code, "A2A_EXTERNAL_CONFORMANCE_REPORT_NOT_FOUND");
+    assert.doesNotMatch(
+      formatted,
+      /localhost|127\.0\.0\.1|keys\.localhost|query-token-secret|missing-secret-report/,
+    );
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("A2A public readiness accepts redacted public config and existing conformance report", async () => {
+  const cwd = await writeA2AEvidence();
+  try {
+    await writeFile(join(cwd, "a2a-conformance-report.txt"), "passed external client checks\n");
+    const report = await checkA2APublicReadiness({
+      cwd,
+      scripts: completeScripts(),
+      env: {
+        A2A_PUBLIC_AGENT_CARD_URL: "https://agents.example/.well-known/agent-card.json",
+        A2A_PUBLIC_BASE_URL: "https://agents.example/a2a",
+        A2A_PUBLIC_JWKS_URL: "https://agents.example/.well-known/jwks.json",
+        A2A_PUBLIC_TASK_AUTH_DECISION: "oauth2",
+        A2A_EXTERNAL_CONFORMANCE_REPORT: "a2a-conformance-report.txt",
+      },
+    });
+    const formatted = formatA2APublicReadinessReport(report);
+
+    assert.equal(report.localProofOk, true);
+    assert.equal(report.publicReady, false, "streaming and push are still unsupported");
+    assert.equal(findCheck(report, "public-agent-card-url").status, "ready-approval");
+    assert.equal(findCheck(report, "public-base-url").status, "ready-approval");
+    assert.equal(findCheck(report, "production-jwks-url").status, "ready-approval");
+    assert.equal(findCheck(report, "task-auth-decision").status, "ready-approval");
+    assert.equal(findCheck(report, "external-conformance").status, "ready-approval");
+    assert.equal(findCheck(report, "streaming").status, "unsupported");
+    assert.doesNotMatch(formatted, /agents\.example|a2a-conformance-report|oauth2/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+function findCheck(
+  report: Awaited<ReturnType<typeof checkA2APublicReadiness>>,
+  id: string,
+) {
+  const check = report.checks.find((candidate) => candidate.id === id);
+  assert.ok(check, `expected ${id} check`);
+  return check;
+}
+
+async function writeA2AEvidence(): Promise<string> {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-a2a-readiness-"));
+  for (const path of [
+    "packages/registry/src/a2aCard.ts",
+    "packages/registry/src/a2aWellKnown.ts",
+    "packages/standards/src/a2a.ts",
+    "packages/standards/src/a2aHttp.ts",
+    "packages/standards/src/a2aNodeServer.ts",
+    "scripts/smoke-a2a-local-server.ts",
+  ]) {
+    await mkdir(dirname(join(cwd, path)), { recursive: true });
+    await writeFile(join(cwd, path), "export {};\n");
+  }
+  return cwd;
+}
+
+function completeScripts(): Record<string, string | undefined> {
+  return {
+    "verify:local": [
+      "npm test",
+      "npm run smoke:a2a-well-known",
+      "npm run smoke:a2a-signed-card",
+      "npm run smoke:a2a-task-message",
+      "npm run smoke:a2a-http",
+      "npm run smoke:a2a-local-server",
+    ].join(" && "),
+  };
+}

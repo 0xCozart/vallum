@@ -1451,6 +1451,89 @@ Escalation triggers:
   hosting, key rotation policy, live discovery, streaming, push notifications,
   or production A2A authentication decisions.
 
+## Slice 4.9: A2A Public Readiness Gate
+
+User-visible outcome:
+Operators and future agents have a non-networked readiness command that
+separates local A2A proof from public hosting, production key distribution,
+task authentication, streaming/push support, and external conformance evidence
+before anyone claims live A2A interoperability.
+
+Likely files:
+
+- `scripts/check-a2a-public-readiness.ts`
+- `scripts/a2a-public-readiness.test.ts`
+- `scripts/check-product-status.ts`
+- `scripts/check-launch-readiness.ts`
+- `scripts/check-operator-live-gates.ts`
+- `scripts/package-scripts.test.ts`
+- `scripts/product-status.test.ts`
+- `scripts/launch-readiness.test.ts`
+- `scripts/operator-live-gates.test.ts`
+- `scripts/reviewer-docs.test.ts`
+- `docs/agentic-gaskit/a2a-public-readiness.md`
+- `docs/agentic-gaskit/external-api-notes.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
+- `docs/agentic-gaskit/codex-active-goal.md`
+- `docs/agentic-gaskit/handoff-next-product-build.md`
+- `docs/overview.md`
+- `docs/CODEBASE_MAP.md`
+- `apps/docs-site/docs.config.mjs`
+- `package.json`
+
+Acceptance criteria:
+
+- `npm run proof:a2a-public-readiness` builds first and exits successfully
+  after producing a non-networked readiness report.
+- The command checks that local A2A proof commands and required source files
+  are wired without operating a public server.
+- Public Agent Card URL, public base URL, JWKS URL, task auth decision, and
+  external conformance report inputs are classified without printing configured
+  values or paths.
+- Public URLs must be HTTPS and non-loopback before they can be reported as
+  ready for operator approval.
+- Streaming and push notifications remain explicit unsupported capabilities
+  until a dedicated slice implements them.
+- External A2A conformance remains blocked unless an operator supplies a local
+  report path and the file exists.
+- `npm run verify:local` includes only the non-networked readiness command and
+  does not contact public A2A endpoints.
+- Product-status, launch-readiness, and operator-gate reports point to the
+  readiness command for the public A2A blocker without marking public A2A
+  hosting complete.
+
+Verification:
+
+- Focused A2A public readiness tests.
+- Product-status tests.
+- Launch-readiness tests.
+- Operator-gate tests.
+- Package-script wiring tests.
+- Reviewer-docs regression tests.
+- `npm run proof:a2a-public-readiness`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:local`.
+
+Dependencies:
+Slice 4.8.
+
+Risk:
+Medium to high. A readiness report can be mistaken for public interoperability
+unless it keeps public hosting, production keys, auth, streaming, push, and
+external conformance blockers explicit.
+
+Escalation triggers:
+
+- Any request to make the readiness command fetch public A2A endpoints.
+- Any request to mark public A2A hosting complete without operator-approved
+  public hosting evidence, production key distribution, auth decisions, and
+  external conformance evidence.
+
 ## Slice 5.1: Marketplace Readiness Gate
 
 User-visible outcome:

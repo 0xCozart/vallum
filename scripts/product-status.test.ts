@@ -131,6 +131,7 @@ test("product status fails the local proof surface when required commands are mi
     assert.match(local?.evidence ?? "", /npm run proof:launch-readiness/);
     assert.match(local?.evidence ?? "", /npm run proof:operator-gates/);
     assert.match(local?.evidence ?? "", /npm run proof:testnet-digest/);
+    assert.match(local?.evidence ?? "", /npm run proof:a2a-public-readiness/);
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }
@@ -179,6 +180,7 @@ function completeScripts(overrides: Record<string, string | undefined> = {}): Re
       "npm run proof:testnet-digest",
       "npm run pack:check",
       "npm run smoke:package-install",
+      "npm run proof:a2a-public-readiness",
       "npm run proof:product-status",
       "npm run proof:launch-readiness",
       "npm run proof:operator-gates",

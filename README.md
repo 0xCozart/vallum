@@ -135,7 +135,7 @@ npm run verify:local
 
 Latest local verification and prior live proof:
 
-- `npm test`: 387 deterministic TypeScript tests passed locally after Slice 7.4.
+- `npm test`: 392 deterministic TypeScript tests passed locally after Slice 4.9.
 - `npm run contracts:test`: 33 Move escrow/receipt/pay-per-call/data-license/service-bounty/reputation-receipt/subscription contract tests passed locally.
 - `npm run typecheck`: passed locally.
 - `npm run smoke:local`: deterministic local gateway smoke passed locally, including policy simulation, sanitized event, local usage read-model, file-backed usage event-store replay, and authenticated local operator usage API checks.
@@ -162,6 +162,9 @@ Latest local verification and prior live proof:
   the documented public testnet digest evidence is present in repo docs.
 - `npm run proof:testnet-digest:live`: opt-in read-only IOTA testnet digest
   lookup exists; it does not spend gas or use sponsor credentials.
+- `npm run proof:a2a-public-readiness`: deterministic non-networked A2A
+  public-readiness gate reports local proof, public hosting inputs, unsupported
+  streaming/push capabilities, and external conformance blockers.
 - `npm run pack:check`: workspace package dry-runs completed locally.
 - `npm run smoke:package-install`: deterministic local tarball install/import
   smoke passed for 11 public workspace packages.
@@ -183,6 +186,7 @@ Latest local verification and prior live proof:
 See `docs/testnet-attempts.md`, `docs/agentic-gaskit/product-status.md`,
 `docs/agentic-gaskit/launch-readiness-evidence.md`,
 `docs/agentic-gaskit/testnet-digest-proof.md`,
+`docs/agentic-gaskit/a2a-public-readiness.md`,
 `docs/agentic-gaskit/operator-live-gates.md`, and
 `docs/reviewer-walkthrough.md` for exact evidence.
 
@@ -291,6 +295,7 @@ Dry-run package checks:
 ```bash
 npm run pack:check
 npm run smoke:package-install
+npm run proof:a2a-public-readiness
 npm run publish:dry-run
 ```
 
