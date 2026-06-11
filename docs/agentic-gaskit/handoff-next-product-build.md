@@ -10,7 +10,7 @@ Continue actual Agentic GasKit product implementation in
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5,
 2.6, 2.7, 2.8,
 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7,
-4.8, 4.9, 4.10, 4.11, 4.12, 4.13, 4.14, 4.15, 4.16, 5.1, 5.2, 6.1, 6.2, 6.3,
+4.8, 4.9, 4.10, 4.11, 4.12, 4.13, 4.14, 4.15, 4.16, 4.17, 5.1, 5.2, 6.1, 6.2, 6.3,
 7.1, 7.2, 7.3, 7.4, and 7.5 are implemented, reviewed, locally verified, or
 explicitly deferred with a verified hardening gate.
 Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
@@ -30,6 +30,8 @@ new scope and its unresolved gates.
 
 Recent commits to know:
 
+- `e9a8d72` feat: validate a2a public evidence reports
+- `8704369` docs: record a2a public push evidence handoff
 - `8309fa3` feat: add a2a public push evidence gate
 - `6ba3906` docs: record a2a push retry observability handoff
 - `32a5e96` feat: add a2a push retry observability gate
@@ -58,6 +60,107 @@ Recent commits to know:
 - `fe5a6ee` docs: record agentic gaskit github remote
 - `b2d9928` chore: migrate reviewed gaskit local changes
 - `3b34cef` docs: create agentic gaskit migration fork
+
+## Completed Slice 4.17: A2A Public Evidence Report Schema Gate
+
+Implementation commit: `e9a8d72` (`feat: validate a2a public evidence reports`).
+
+What changed:
+
+- `npm run proof:a2a-public-readiness` now validates public push delivery and
+  external conformance report files as structured JSON evidence instead of
+  accepting any existing local file.
+- Structured reports must be JSON objects with `schemaVersion: 1`, the expected
+  `kind`, `result: "passed"`, and a recent `observedAt` timestamp.
+- Public push reports use `kind: "a2a-public-push-delivery"`.
+- External conformance reports use `kind: "a2a-external-conformance"`.
+- When public base URL or public Agent Card URL config is present, the report
+  must match the configured URL without printing it.
+- Empty, plain-text, malformed, failed, stale, wrong-kind, unsupported-schema,
+  too-large, or endpoint-mismatched reports remain `blocked-conformance`.
+- Valid structured reports produce `A2A_PUBLIC_PUSH_DELIVERY_REPORT_VALID` or
+  `A2A_EXTERNAL_CONFORMANCE_REPORT_VALID` and can move those checks to
+  `ready-approval`; this remains a review state, not a live public
+  interoperability claim.
+- README, overview, reviewer docs, product-status, launch-readiness,
+  external API notes, codebase map, public-readiness docs, and execution slices
+  now describe structured report validation.
+- A local scope record exists at
+  `tmp/apex-workflow/a2a-public-evidence-report-schema-slice-4-17-scope.md`.
+  The file is local workflow state and not a committed Apex artifact.
+
+Commands run:
+
+```bash
+node --import tsx --test scripts/a2a-public-readiness.test.ts
+npm run proof:a2a-public-readiness
+node --import tsx --test scripts/a2a-public-readiness.test.ts scripts/product-status.test.ts scripts/launch-readiness.test.ts scripts/operator-live-gates.test.ts scripts/reviewer-docs.test.ts
+npm run typecheck
+npm run docs:check
+npm run secrets:scan
+git diff --check
+npm run verify:fast
+```
+
+Verification result:
+
+- Focused A2A public-readiness tests passed with 7 tests.
+- Focused A2A/status/operator/reviewer regression tests passed with 32 tests.
+- `npm run proof:a2a-public-readiness` passed with `localProofOk=true`,
+  `publicReady=false`, `A2A_PUBLIC_PUSH_DELIVERY_REPORT_MISSING`, missing
+  public URL/JWKS/auth config, and missing external conformance report. The
+  command now asks for local structured report paths and still redacts operator
+  values.
+- `npm run typecheck` passed.
+- `npm run docs:check` passed: 37 HTML pages from 36 Markdown sources.
+- `npm run secrets:scan` passed: 323 tracked/staged/untracked text files,
+  findings 0.
+- `git diff --check` passed.
+- `npm run verify:fast` passed, including build, 413 TypeScript tests, docs
+  check, secret scan, product-status, launch-readiness, and operator-gate
+  reports.
+
+Hardening notes:
+
+- This is stricter evidence validation only. It does not generate public
+  evidence or contact public endpoints.
+- The readiness command still does not host public A2A endpoints, fetch public
+  Agent Cards, post webhooks, publish JWKS, run external conformance tools,
+  operate workers, persist queues, store webhook credentials, or print report
+  contents.
+- Report validation redacts configured URLs, auth decisions, report paths,
+  report contents, and secret-like values from formatted output.
+- No live/testnet command, public endpoint fetch, webhook POST, npm publish,
+  payment-provider call, or production marketplace action was run for this
+  slice.
+- Apex profile still has `setup.reviewNeeded: true`; this slice does not claim
+  Apex verification.
+
+Known unproven claims:
+
+- No public A2A endpoint was hosted or fetched.
+- No real public push webhook delivery was attempted.
+- No external A2A conformance tool was run and no report was accepted in this
+  unconfigured checkout.
+- No production push retry queue, worker, persistent observability,
+  authentication, allowlist, or SSRF infrastructure proof exists.
+- No production JWKS/key-distribution or production task-route auth proof
+  exists.
+- No configured IOTA Names, IOTA Identity, or VC trust-policy proof passed.
+- No package is published to npm and no registry install/provenance/account
+  ownership proof exists.
+- No live payment/provider settlement, production marketplace, provider
+  verification, custody/KMS, recovery export, or physical device access proof
+  exists.
+
+Next safe slice:
+
+- Choose an operator-approved public A2A hosting/JWKS/auth/conformance slice, a
+  real public webhook delivery infrastructure slice with auth, persistent retry,
+  observability, allowlisting, SSRF controls, and external endpoint proof, or
+  another explicit live gate such as IOTA Names/Identity/VC, npm release,
+  payment/provider, marketplace, custody, or device-safety design before
+  claiming launch readiness.
 
 ## Completed Slice 4.16: A2A Public Push Delivery Evidence Gate
 

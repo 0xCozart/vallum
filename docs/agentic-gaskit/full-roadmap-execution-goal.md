@@ -5,8 +5,8 @@ Last updated: 2026-06-11.
 ## Goal Pointer
 
 This is the active `/goal` target for continuing Agentic GasKit in
-`/home/sacred/code/agentic-gaskit` after completion of the local Slice 4.16 A2A
-Public Push Delivery Evidence Gate.
+`/home/sacred/code/agentic-gaskit` after completion of the local Slice 4.17 A2A
+Public Evidence Report Schema Gate.
 
 Primary continuation sources:
 
@@ -100,7 +100,10 @@ Confirmed current state:
   gate for `npm run proof:a2a-public-readiness` while keeping public endpoint
   hosting/fetching, webhook POSTs, background workers, persistent queues,
   credential storage, live IOTA proof, and external conformance blockers
-  explicit.
+  explicit. Slice 4.17 tightens that gate so public push delivery and external
+  conformance reports must be structured JSON evidence with schema version,
+  expected kind, passing result, recent observation time, and matching
+  configured public URL fields when present.
   Slice 7.5 adds a fast deterministic verification profile plus a
   non-networked profile audit, so ordinary build/test/improve loops can run a
   bounded subset while `verify:local` and `grant:check` remain the full
@@ -112,11 +115,13 @@ Confirmed current state:
   access; Slice 4.13 adds local injected push delivery envelopes; Slice 4.14
   adds local mocked opt-in push HTTP transport proof; Slice 4.15 adds local
   retry/attempt observability proof; Slice 4.16 adds redacted public push
-  delivery report classification for a future operator-approved review. Public
-  hosting, production keys/auth, public webhook workers/queues, persistent
-  production observability, and external conformance blockers remain.
+  delivery report classification for a future operator-approved review; Slice
+  4.17 adds structured public push/conformance report validation for that
+  review path. Public hosting, production keys/auth, public webhook
+  workers/queues, persistent production observability, and external conformance
+  blockers remain.
 - `docs/agentic-gaskit/handoff-next-product-build.md` records the latest
-  completed/deferred slice set, including Slice 4.16, with exact local
+  completed/deferred slice set, including Slice 4.17, with exact local
   verification evidence and remaining live, production, publication, custody,
   payment, A2A, marketplace, and safety blockers.
 - `docs/marketplace-readiness.md` permits marketplace requirements/design work
