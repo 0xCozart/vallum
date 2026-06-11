@@ -10,7 +10,7 @@ Continue actual Agentic GasKit product implementation in
 Slices 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5,
 2.6, 2.7, 2.8,
 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8,
-5.1, 5.2, 6.1, 6.2, 6.3, 7.1, and 7.2 are implemented, reviewed, locally
+5.1, 5.2, 6.1, 6.2, 6.3, 7.1, 7.2, and 7.3 are implemented, reviewed, locally
 verified, or explicitly deferred with a verified hardening gate.
 Slice 5.1 is a readiness gate, not a marketplace implementation approval. Use
 `docs/marketplace-readiness.md` before choosing the next slice. Do not start
@@ -29,8 +29,9 @@ new scope and its unresolved gates.
 
 Recent commits to know:
 
-- `69d55eb` feat: add product status proof gate
+- `6ea9306` feat: add operator live gate runbook
 - `9635c7d` feat: add launch readiness evidence matrix
+- `69d55eb` feat: add product status proof gate
 - `6d9e64f` feat: add package install smoke
 - `7ed27b1` feat: add package publish dry-run gate
 - `45bf716` feat: add iota identity live proof smoke
@@ -4045,3 +4046,114 @@ Next safe slice:
   and run one live gate; or choose a dedicated operator-approved release,
   public A2A, payment/provider, marketplace, custody, or device-safety design
   slice before claiming launch readiness.
+
+## Completed Slice 7.3: Operator Live-Gate Runbook
+
+Implementation commit: `6ea9306` (`feat: add operator live gate runbook`).
+
+What changed:
+
+- Added `npm run proof:operator-gates` as a non-networked operator runbook.
+- Added `scripts/check-operator-live-gates.ts`, which imports product-status
+  checks and classifies gates as `proven-local`, `ready-to-run`,
+  `blocked-config`, `requires-approval`, `blocked-production`, or
+  `deferred-safety`.
+- Added `scripts/operator-live-gates.test.ts` to prove current blocker
+  reporting, configured testnet readiness behavior, approval-required live
+  endpoint smokes, all-clear synthetic behavior, and output redaction.
+- Wired `npm run proof:operator-gates` into `npm run verify:local` after
+  launch-readiness and before docs/secrets.
+- Added `docs/agentic-gaskit/operator-live-gates.md` and docs-site navigation.
+- Updated launch-readiness Packet H evidence to include the operator-gate docs
+  and script.
+- Updated active goal, full roadmap goal, execution slices, codebase map,
+  product-status docs, launch-readiness docs, README, overview, quickstart,
+  reviewer walkthrough, milestone proof, package script tests, product-status
+  tests, launch-readiness tests, and reviewer-doc tests.
+
+Important boundary:
+
+- This is an execution runbook, not approval to run live commands.
+- It does not contact IOTA, IOTA Names, IOTA Identity, npm, payment providers,
+  public A2A hosts, marketplace systems, or physical devices.
+- Configured IOTA Names and IOTA Identity endpoint smokes are classified as
+  `requires-approval` because they contact live services.
+- `allGatesClear=false` is the correct current result while config,
+  production, approval, and safety blockers remain.
+
+Commands run:
+
+```bash
+node --import tsx --test scripts/operator-live-gates.test.ts scripts/product-status.test.ts scripts/launch-readiness.test.ts scripts/package-scripts.test.ts
+node --import tsx --test scripts/operator-live-gates.test.ts scripts/product-status.test.ts scripts/launch-readiness.test.ts scripts/package-scripts.test.ts scripts/reviewer-docs.test.ts
+npm run proof:operator-gates
+npm run docs:check
+npm run secrets:scan
+npm run typecheck
+npm test
+npm run proof:product-status
+npm run proof:launch-readiness
+npm run verify:local
+git diff --check
+```
+
+Verification result:
+
+- Current local env check found no `.env`, `.env.local`, or `.env.testnet`, and
+  no relevant live IOTA/IOTA Names/IOTA Identity environment variables set.
+- Focused operator/product/launch/package-script tests passed with 47 tests.
+- Focused operator/product/launch/package-script/reviewer-doc tests passed with
+  61 tests.
+- `npm run proof:operator-gates` passed and reported:
+  `allGatesClear=false`, `localOnly=false`, local verification and local
+  package gates as `proven-local`, testnet/IOTA Names/IOTA Identity/VC gates as
+  `blocked-config`, npm publication/public A2A/live payment/production
+  marketplace/production custody as `requires-approval`, and physical device
+  access as `deferred-safety`.
+- `npm run proof:product-status` passed with `localProofOk=true` and
+  `complete=false`.
+- `npm run proof:launch-readiness` passed with `localEvidenceOk=true` and
+  `launchReady=false`; Packet H now lists `npm run proof:operator-gates`.
+- `npm run docs:check` passed: 34 HTML pages from 33 Markdown sources.
+- `npm run secrets:scan` passed: 312 tracked/staged/untracked text files,
+  findings 0.
+- `npm run typecheck` passed.
+- `npm test` passed with 381 TypeScript tests.
+- `npm run verify:local` passed with 381 TypeScript tests, 33 Move tests,
+  typecheck, local gateway smoke, demo dApp smoke, browser smoke, agent escrow
+  smoke, paid MCP tool smoke, data-license smoke, service-bounty smoke,
+  reputation-receipt smoke, subscription smoke, A2A well-known smoke, A2A
+  signed-card smoke, A2A task/message smoke, A2A HTTP smoke, A2A local server
+  smoke, marketplace read-model smoke, testnet readiness example, package
+  dry-runs, package install smoke, product-status proof, launch-readiness proof,
+  operator-gates proof, docs check, and secret scan.
+- `git diff --check` passed.
+
+Hardening notes:
+
+- The runbook prints command names and blocker codes, not configured endpoint
+  URLs, IOTA Names, addresses, profile paths, credentials, tokens, OTPs, or
+  secret-like values.
+- Testnet readiness can be `ready-to-run` only for the non-networked
+  `npm run readiness:testnet` command when local config passes validation.
+- External-contact gates remain `requires-approval` even when config is
+  present.
+- Apex profile still has `setup.reviewNeeded: true`; this slice does not claim
+  Apex verification.
+
+Known unproven claims:
+
+- No `.env` exists, so configured IOTA testnet readiness remains blocked.
+- No configured live IOTA Names, IOTA Identity, or VC trust-policy proof passed.
+- No package is published to npm and no registry install/provenance/account
+  ownership proof exists.
+- No public A2A hosting, external conformance proof, live payment/provider
+  settlement, production marketplace, provider verification, custody/KMS,
+  recovery export, or physical device access proof exists.
+
+Next safe slice:
+
+- Provide operator-owned local `.env` plus IOTA Names/Identity/VC configuration
+  and run one explicitly approved live gate; or choose a dedicated
+  operator-approved release, public A2A, payment/provider, marketplace,
+  custody, or device-safety design slice before claiming launch readiness.
