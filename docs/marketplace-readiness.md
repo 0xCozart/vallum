@@ -117,6 +117,22 @@ The first safe marketplace-adjacent read-only package now proves how
 marketplace pages would consume existing registry, policy, contract metadata,
 receipt, and standards bridge outputs.
 
+`npm run proof:marketplace-readiness` now provides the non-networked production
+marketplace readiness gate. It checks local marketplace source, docs, tests,
+smoke wiring, package build coverage, and local verification coverage, then
+blocks production marketplace claims unless `MARKETPLACE_PRODUCTION_REPORT`
+points to an ignored redacted structured report from an operator-approved
+review.
+
+The structured report must be status-only JSON with `schemaVersion=1`,
+`kind=agentic-gaskit.marketplace-production-proof`, `result=passed`, a recent
+`observedAt`, `environment=testnet` or `environment=production`, and check ids
+for provider onboarding, provider verification, moderation/abuse response,
+session authorization, receipt access, payment settlement, dispute workflow,
+and operations/incident review. It must not include provider secrets, session
+data, payment credentials, authorization headers, raw payloads, signatures,
+private prompts, or local secret paths.
+
 Before any marketplace action can initiate a paid or sponsored workflow beyond
 local/mock demos, the repo still needs production API/session authorization,
 reviewer workflow, and provider-operation decisions. Before any live

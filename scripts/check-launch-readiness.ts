@@ -151,19 +151,21 @@ const AREA_DEFINITIONS = [
   },
   {
     id: "phase-5-marketplace-operator",
-    claim: "Marketplace evidence is local read-only proof for labels, policy compatibility, receipt access, and dispute bundles; production marketplace remains blocked.",
+    claim: "Marketplace evidence is local read-only proof for labels, policy compatibility, receipt access, and dispute bundles, with a non-networked production marketplace readiness gate; production marketplace remains blocked.",
     evidencePaths: [
       "packages/marketplace/src/index.ts",
       "scripts/smoke-marketplace-read-model.ts",
+      "scripts/check-marketplace-readiness.ts",
       "docs/marketplace-readiness.md",
     ],
     commands: [
       "npm test",
       "npm run smoke:marketplace-read-model",
+      "npm run proof:marketplace-readiness",
     ],
     productCheckIds: ["production-marketplace"],
     fallbackStatus: "proven-local",
-    next: "Resolve provider verification, moderation, session/API auth, live settlement, and operational gates before production marketplace work.",
+    next: "Run marketplace readiness, then resolve provider verification, moderation, session/API auth, live settlement, dispute workflow, and operational gates before production marketplace work.",
   },
   {
     id: "phase-6-package-release",

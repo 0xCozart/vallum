@@ -147,6 +147,10 @@ It also includes the first Agentic GasKit implementation slices:
   full reviewer/release/launch evidence gate
 - local read-only marketplace evidence package with provider labels, policy
   compatibility, receipt access control, and dispute evidence bundle smoke
+- non-networked marketplace production readiness gate for local read-model
+  proof plus an operator-supplied redacted structured production marketplace
+  report path before manual approval of provider, moderation, auth, settlement,
+  dispute, or operations claims
 - package namespace and release metadata strategy for the current
   `@iota-gaskit/*` prerelease line
 - opt-in package publish dry-run gate for public workspace packages
@@ -193,8 +197,9 @@ roadmap unless later slices implement and verify them.
 - Agent registry/profile schema, local resolver, and adapters:
   `packages/registry/src/`
 - Contract template metadata: `packages/contracts-metadata/src/`
-- Marketplace read model: `packages/marketplace/src/`,
-  `scripts/smoke-marketplace-read-model.ts`
+- Marketplace read model and readiness: `packages/marketplace/src/`,
+  `scripts/smoke-marketplace-read-model.ts`,
+  `scripts/check-marketplace-readiness.ts`
 - Package release strategy: `docs/agentic-gaskit/package-release-strategy.md`,
   `scripts/package-publish-dry-run.ts`,
   `scripts/smoke-package-install.ts`,

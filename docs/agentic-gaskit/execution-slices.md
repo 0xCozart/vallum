@@ -3207,6 +3207,78 @@ Escalation triggers:
   payment settlement, dispute moderation, custody, staking, bonding, or
   marketplace action execution.
 
+## Slice 5.3: Marketplace Production Readiness Gate
+
+User-visible outcome:
+Operators have a non-networked marketplace readiness command that separates
+local read-only marketplace evidence from production marketplace claims and
+accepts only a redacted structured operator report before those claims move to
+manual review.
+
+Likely files:
+
+- `scripts/check-marketplace-readiness.ts`
+- `scripts/marketplace-readiness.test.ts`
+- `scripts/check-product-status.ts`
+- `scripts/check-launch-readiness.ts`
+- `scripts/check-operator-live-gates.ts`
+- `scripts/package-scripts.test.ts`
+- `scripts/product-status.test.ts`
+- `docs/marketplace-readiness.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/CODEBASE_MAP.md`
+- `docs/overview.md`
+- `package.json`
+
+Acceptance criteria:
+
+- `npm run proof:marketplace-readiness` builds first and does not contact live
+  marketplace systems, payment providers, public endpoints, IOTA services, or
+  Gas Station endpoints.
+- The readiness command checks marketplace read-model source, tests, docs,
+  smoke wiring, package build coverage, and local verification coverage.
+- The command remains excluded from `verify:fast`, `verify:local`, and
+  `grant:check` because it is an operator production-readiness gate, not a
+  default local proof command.
+- Missing `MARKETPLACE_PRODUCTION_REPORT` keeps production marketplace blocked
+  with an exact blocker code.
+- A valid structured report requires status-only evidence for provider
+  onboarding, provider verification, moderation/abuse response, session auth,
+  receipt access, payment settlement, dispute workflow, and operations/incident
+  review.
+- Unsafe report fields such as provider secrets, session data, payment
+  credentials, authorization headers, signatures, raw payloads, private
+  prompts, or local secret paths are rejected.
+- Product status, launch readiness, and operator gates point production
+  marketplace work at the readiness command without claiming production
+  marketplace launch.
+
+Verification:
+
+- Focused marketplace readiness tests.
+- Product-status, launch-readiness, operator-gate, and package-script tests.
+- `npm run proof:marketplace-readiness`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slice 5.2.
+
+Risk:
+High. A marketplace readiness report can be mistaken for provider
+verification, public scoring, moderation approval, custody approval, or live
+settlement unless it stays redacted, opt-in, and manually reviewed.
+
+Escalation triggers:
+
+- Any production provider listing, provider verification, moderation action,
+  public scoring, live settlement, custody, staking, bonding, slashing,
+  public marketplace launch, or marketplace action execution.
+
 ## Slice 6.1: Package Namespace And Release Metadata Strategy
 
 User-visible outcome:

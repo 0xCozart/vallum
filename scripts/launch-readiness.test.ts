@@ -111,6 +111,7 @@ async function writeEvidenceTree(cwd: string): Promise<void> {
     "scripts/smoke-a2a-local-server.ts",
     "packages/marketplace/src/index.ts",
     "scripts/smoke-marketplace-read-model.ts",
+    "scripts/check-marketplace-readiness.ts",
     "docs/marketplace-readiness.md",
     "docs/agentic-gaskit/package-release-strategy.md",
     "scripts/package-publish-dry-run.ts",

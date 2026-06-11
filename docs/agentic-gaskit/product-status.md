@@ -36,6 +36,10 @@ surface in one machine-checkable place:
   pack dry-runs, tarball install smoke, opt-in publish dry-run, and accepts only
   an operator-supplied redacted structured npm publication report path before
   moving registry evidence to manual review;
+- marketplace readiness wiring that checks local read-model source, docs,
+  tests, smoke wiring, and accepts only an operator-supplied redacted structured
+  production marketplace report path before moving marketplace evidence to
+  manual review;
 - launch-readiness evidence matrix and operator live-gate runbook wiring;
 - live/testnet readiness, local Gas Station runtime preflight status,
   sanitized testnet upstream diagnostic report status, IOTA Names, IOTA
@@ -96,7 +100,8 @@ marketplace, or safety work before those claims can be made.
 - Public A2A hosting, production key management, external conformance, public
   push delivery, or production auth decisions.
 - Production marketplace, provider verification, moderation, public scoring, or
-  live settlement.
+  live settlement unless `npm run proof:marketplace-readiness` validates an
+  ignored structured report and the operator manually accepts it.
 - Production custody, KMS, recovery export, staking, bonding, slashing, or
   physical device access.
 
@@ -119,6 +124,7 @@ npm run smoke:a2a-static-discovery-local -- --out-dir <dir> --expected-public-ba
 npm run proof:a2a-public-readiness
 npm run proof:package-publication-readiness
 npm run proof:payment-provider-readiness
+npm run proof:marketplace-readiness
 npm run payment:write-provider-proof-plan -- --out tmp/gaskit/payment-provider-proof-plan.json
 npm run proof:verification-profiles
 npm run proof:live-status

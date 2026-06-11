@@ -11,6 +11,10 @@ import {
   checkPackagePublicationReadiness,
   type PackagePublicationReadinessReport,
 } from "./check-package-publication-readiness.js";
+import {
+  checkMarketplaceReadiness,
+  type MarketplaceReadinessReport,
+} from "./check-marketplace-readiness.js";
 import type {
   GasStationRuntimeCommandRunner,
   GasStationRuntimePreflightReport,
@@ -43,6 +47,7 @@ export interface ProductStatusOptions {
   readonly env?: NodeJS.ProcessEnv | Record<string, string | undefined>;
   readonly gasStationRuntimeReport?: GasStationRuntimePreflightReport;
   readonly gasStationRuntimeRunner?: GasStationRuntimeCommandRunner;
+  readonly marketplaceReadiness?: MarketplaceReadinessReport;
   readonly packagePublicationReadiness?: PackagePublicationReadinessReport;
   readonly paymentProviderReadiness?: PaymentProviderReadinessReport;
   readonly scripts?: Record<string, string | undefined>;
@@ -98,12 +103,17 @@ export async function checkProductStatus(options: ProductStatusOptions = {}): Pr
     env: options.env,
     scripts,
   });
+  const marketplaceReadiness = options.marketplaceReadiness ?? await checkMarketplaceReadiness({
+    cwd,
+    env: options.env,
+    scripts,
+  });
 
   const checks: ProductEvidenceCheck[] = [
     checkLocalVerificationCoverage(scripts),
     checkPackageReleaseCoverage(scripts),
     ...liveStatus.checks.map(mapLiveProofCheck),
-    ...productionBlockers(paymentProviderReadiness, packagePublicationReadiness),
+    ...productionBlockers(paymentProviderReadiness, packagePublicationReadiness, marketplaceReadiness),
   ];
 
   return {
@@ -208,6 +218,7 @@ function mapLiveProofCheck(check: LiveProofCheck): ProductEvidenceCheck {
 function productionBlockers(
   paymentProviderReadiness: PaymentProviderReadinessReport,
   packagePublicationReadiness: PackagePublicationReadinessReport,
+  marketplaceReadiness: MarketplaceReadinessReport,
 ): readonly ProductEvidenceCheck[] {
   return [
     packagePublicationCheck(packagePublicationReadiness),
@@ -220,13 +231,7 @@ function productionBlockers(
       next: "Use npm run proof:a2a-public-readiness to inspect blockers, then run npm run smoke:a2a-public-discovery only with operator-approved public A2A config.",
     },
     paymentProviderCheck(paymentProviderReadiness),
-    {
-      id: "production-marketplace",
-      status: "blocked-production",
-      code: "PRODUCTION_MARKETPLACE_BLOCKED",
-      message: "Marketplace work is limited to local read-model evidence; production provider onboarding, moderation, public scoring, custody, and settlement remain blocked.",
-      next: "Resolve the marketplace readiness gates before production marketplace UI/API work.",
-    },
+    marketplaceCheck(marketplaceReadiness),
     {
       id: "production-custody",
       status: "blocked-production",
@@ -242,6 +247,41 @@ function productionBlockers(
       next: "Replace the safety gate only after physical safety, provider accountability, revocation, emergency stop, privacy, and incident response are approved.",
     },
   ];
+}
+
+function marketplaceCheck(readiness: MarketplaceReadinessReport): ProductEvidenceCheck {
+  if (readiness.productionReady) {
+    return {
+      id: "production-marketplace",
+      status: "ready-live",
+      code: "MARKETPLACE_PRODUCTION_REPORT_VALID",
+      message: "Local marketplace read-model proof exists and an operator-supplied structured production marketplace report is valid for manual review.",
+      evidence: "npm run proof:marketplace-readiness",
+      next: "Manually review the ignored structured report before accepting production marketplace, provider verification, moderation, auth, settlement, or operations claims.",
+    };
+  }
+
+  if (!readiness.localProofOk) {
+    const local = readiness.checks.find((check) => check.id === "local-marketplace-read-model-proof");
+    return {
+      id: "production-marketplace",
+      status: "blocked-production",
+      code: local?.code ?? "MARKETPLACE_LOCAL_PROOF_INCOMPLETE",
+      message: "Local marketplace read-model source, docs, test, or script coverage is incomplete, so production marketplace readiness cannot be evaluated.",
+      evidence: "npm run proof:marketplace-readiness",
+      next: local?.next ?? "Restore local marketplace proof, then rerun marketplace readiness.",
+    };
+  }
+
+  const live = readiness.checks.find((check) => check.id === "production-marketplace-report");
+  return {
+    id: "production-marketplace",
+    status: "blocked-production",
+    code: "PRODUCTION_MARKETPLACE_BLOCKED",
+    message: `Marketplace work is limited to local read-model evidence; production provider onboarding, moderation, public scoring, custody, and settlement remain blocked by ${live?.code ?? "MARKETPLACE_PRODUCTION_REPORT_MISSING"}.`,
+    evidence: "npm run proof:marketplace-readiness",
+    next: "Complete a dedicated operator-approved production marketplace review, save a redacted structured report outside tracked files, set MARKETPLACE_PRODUCTION_REPORT, and rerun readiness/status gates.",
+  };
 }
 
 function packagePublicationCheck(readiness: PackagePublicationReadinessReport): ProductEvidenceCheck {

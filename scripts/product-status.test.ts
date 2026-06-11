@@ -32,6 +32,7 @@ test("product status reports local proof gates and explicit live blockers withou
       env: {},
       gasStationRuntimeReport: blockedGasStationRuntime(),
       scripts: completeScripts(),
+      marketplaceReadiness: blockedMarketplaceReadiness(),
       packagePublicationReadiness: blockedPackagePublicationReadiness(),
       paymentProviderReadiness: blockedPaymentProviderReadiness(),
     });
@@ -58,6 +59,8 @@ test("product status reports local proof gates and explicit live blockers withou
     assert.match(formatted, /PUBLIC_A2A_HOSTING_UNPROVEN/);
     assert.match(formatted, /LIVE_PAYMENT_PROVIDER_UNPROVEN/);
     assert.match(formatted, /npm run proof:payment-provider-readiness/);
+    assert.match(formatted, /PRODUCTION_MARKETPLACE_BLOCKED/);
+    assert.match(formatted, /npm run proof:marketplace-readiness/);
     assert.match(formatted, /DEVICE_ACCESS_SAFETY_DEFERRED/);
     assert.doesNotMatch(formatted, /local-secret|iotaprivkey|fake-private-key|seed-phrase|mnemonic-value/i);
   } finally {
@@ -99,6 +102,7 @@ test("product status marks configured live gates ready without contacting endpoi
     const report = await checkProductStatus({
       cwd,
       scripts: completeScripts(),
+      marketplaceReadiness: blockedMarketplaceReadiness(),
       packagePublicationReadiness: blockedPackagePublicationReadiness(),
       gasStationRuntimeReport: readyGasStationRuntime(),
       env: {
@@ -220,6 +224,48 @@ test("product status can mark payment provider report ready for approval without
   }
 });
 
+test("product status can mark marketplace report ready for approval without exposing report values", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-product-status-"));
+  try {
+    const report = await checkProductStatus({
+      cwd,
+      env: {},
+      gasStationRuntimeReport: blockedGasStationRuntime(),
+      scripts: completeScripts(),
+      marketplaceReadiness: {
+        localProofOk: true,
+        productionReady: true,
+        checks: [
+          {
+            id: "local-marketplace-read-model-proof",
+            status: "proven-local",
+            code: "MARKETPLACE_LOCAL_PROOF_CONFIGURED",
+            message: "Local marketplace proof exists.",
+            next: "Keep local proof current.",
+          },
+          {
+            id: "production-marketplace-report",
+            status: "ready-approval",
+            code: "MARKETPLACE_PRODUCTION_REPORT_VALID",
+            message: "Structured report is valid.",
+            evidence: "local-structured-report-valid-redacted",
+            next: "Review manually.",
+          },
+        ],
+      },
+    });
+    const formatted = formatProductStatusReport(report);
+    const marketplace = report.checks.find((check) => check.id === "production-marketplace");
+
+    assert.equal(marketplace?.status, "ready-live");
+    assert.equal(marketplace?.code, "MARKETPLACE_PRODUCTION_REPORT_VALID");
+    assert.match(formatted, /MARKETPLACE_PRODUCTION_REPORT_VALID/);
+    assert.doesNotMatch(formatted, /provider-verification-review|session-auth-review|marketplace-production-report/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
 test("product status fails the local proof surface when required commands are missing", async () => {
   const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-product-status-"));
   try {
@@ -310,6 +356,8 @@ function completeScripts(overrides: Record<string, string | undefined> = {}): Re
     "pack:check": "npm run build && npm pack --dry-run -w @iota-gaskit/sdk",
     "smoke:package-install": "npm run build && tsx scripts/smoke-package-install.ts",
     "publish:dry-run": "npm run build && tsx scripts/package-publish-dry-run.ts",
+    build: "npm run build -w @iota-gaskit/marketplace",
+    "smoke:marketplace-read-model": "npm run build && tsx scripts/smoke-marketplace-read-model.ts",
     ...overrides,
   };
 }
@@ -357,6 +405,30 @@ function blockedPackagePublicationReadiness() {
         code: "PACKAGE_PUBLICATION_REPORT_MISSING",
         message: "Structured report is missing.",
         evidence: "missing=PACKAGE_PUBLICATION_REPORT",
+        next: "Provide a redacted structured report.",
+      },
+    ],
+  };
+}
+
+function blockedMarketplaceReadiness() {
+  return {
+    localProofOk: true,
+    productionReady: false,
+    checks: [
+      {
+        id: "local-marketplace-read-model-proof",
+        status: "proven-local" as const,
+        code: "MARKETPLACE_LOCAL_PROOF_CONFIGURED",
+        message: "Local marketplace proof exists.",
+        next: "Keep local proof current.",
+      },
+      {
+        id: "production-marketplace-report",
+        status: "blocked-config" as const,
+        code: "MARKETPLACE_PRODUCTION_REPORT_MISSING",
+        message: "Structured report is missing.",
+        evidence: "missing=MARKETPLACE_PRODUCTION_REPORT",
         next: "Provide a redacted structured report.",
       },
     ],
