@@ -104,6 +104,16 @@ test("hosted docs exclude internal planning and handoff sources", async () => {
   ]);
 
   for (const source of [
+    "docs/private/",
+    "docs/local/",
+    "docs/**/private/",
+    "docs/**/local/",
+    "docs/**/*-private.md",
+    "docs/**/*-local.md",
+    "docs/**/*-handoff-*.md",
+    "docs/**/*-goal-*.md",
+    "docs/**/*-audit-*.md",
+    "docs/**/*-evidence-local.md",
     "docs/agentic-gaskit/codex-active-goal.md",
     "docs/agentic-gaskit/codex-execution-prompt.md",
     "docs/agentic-gaskit/end-to-end-goal.md",

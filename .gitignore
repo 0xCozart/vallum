@@ -58,6 +58,24 @@ docs/agentic-gaskit/*-handoff-local.md
 # planning artifacts after they are intentionally de-indexed in a dedicated
 # public-docs cleanup slice.
 docs/internal/
+docs/private/
+docs/local/
+docs/**/internal/
+docs/**/private/
+docs/**/local/
+docs/**/*-internal.md
+docs/**/*-private.md
+docs/**/*-local.md
+docs/**/*-scratch.md
+docs/**/*-draft.md
+docs/**/*-handoff.md
+docs/**/*-handoff-*.md
+docs/**/*-goal.md
+docs/**/*-goal-*.md
+docs/**/*-audit.md
+docs/**/*-audit-*.md
+docs/**/*-plan-local.md
+docs/**/*-evidence-local.md
 docs/agentic-gaskit/codex-active-goal.md
 docs/agentic-gaskit/codex-execution-prompt.md
 docs/agentic-gaskit/end-to-end-goal.md
