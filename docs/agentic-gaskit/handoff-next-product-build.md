@@ -95,6 +95,8 @@ Latest local A2A artifact update:
 
 Latest local A2A artifact validation update:
 
+- Implementation commit: `5bdf31e` (`feat: add a2a static discovery artifact
+  validator`).
 - Slice 4.29 adds `npm run a2a:check-static-discovery-bundle`, an opt-in local
   pre-hosting validator for generated static discovery directories.
 - The validator reads `a2a-discovery-bundle-manifest.json`,
@@ -144,6 +146,7 @@ Latest full local verification refresh:
 
 Recent commits to know:
 
+- `5bdf31e` feat: add a2a static discovery artifact validator
 - `65dfb42` feat: add a2a static discovery artifact writer
 - `1315b05` feat: add local gas station config renderer
 - `dcb3a86` feat: add a2a static discovery bundle
