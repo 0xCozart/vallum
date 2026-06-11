@@ -42,12 +42,6 @@ export default {
           description: "Start here to begin actual Agentic GasKit product implementation."
         },
         {
-          title: "Next Product Build Handoff",
-          source: "docs/agentic-gaskit/handoff-next-product-build.md",
-          slug: "agentic-next-product-build-handoff",
-          description: "Compact handoff for the next agent implementing the first product slice."
-        },
-        {
           title: "Migration Plan",
           source: "docs/agentic-gaskit/migration-plan.md",
           slug: "agentic-migration-plan",
@@ -137,12 +131,6 @@ export default {
           slug: "agentic-verification-profiles",
           description: "Fast and full local verification profiles for iteration, handoff, reviewer, and launch evidence."
         },
-        {
-          title: "Local Dirty Work Review",
-          source: "docs/agentic-gaskit/local-dirty-work-review.md",
-          slug: "agentic-local-dirty-work-review",
-          description: "Review of dirty source GasKit worktree changes and migration decisions for the Agentic fork."
-        }
       ]
     },
     {

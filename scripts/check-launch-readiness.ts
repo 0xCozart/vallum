@@ -191,8 +191,8 @@ const AREA_DEFINITIONS = [
       "scripts/check-operator-live-gates.ts",
       "docs/agentic-gaskit/verification-profiles.md",
       "scripts/check-verification-profiles.ts",
-      "docs/agentic-gaskit/full-roadmap-execution-goal.md",
-      "docs/agentic-gaskit/handoff-next-product-build.md",
+      "docs/agentic-gaskit/execution-slices.md",
+      "docs/CODEBASE_MAP.md",
     ],
     commands: [
       "npm run verify:fast",

@@ -61,7 +61,6 @@ Non-goals for the first implementation pass:
    - `docs/agentic-gaskit/module-specs.md`
    - `docs/agentic-gaskit/execution-slices.md`
    - `docs/agentic-gaskit/verification-hardening.md`
-   - `docs/agentic-gaskit/local-dirty-work-review.md`
 
 3. Run baseline local proof before editing:
 
@@ -186,5 +185,7 @@ Every implementation slice should end with:
 - next slice recommendation
 - commit hash
 
-Use `docs/agentic-gaskit/handoff-next-product-build.md` as the current
-continuation handoff.
+Record local continuation notes under ignored handoff or execution-manifest
+paths, such as `docs/agentic-gaskit/local-handoffs/` or
+`tmp/apex-workflow/`, rather than adding private Codex planning state to the
+public documentation site.

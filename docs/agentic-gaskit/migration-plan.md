@@ -87,11 +87,12 @@ Migrated from `/home/sacred/code/agents`:
 - `docs/agentic-gaskit/execution-slices.md`
 - `docs/agentic-gaskit/module-specs.md`
 - `docs/agentic-gaskit/verification-hardening.md`
-- `docs/agentic-gaskit/planning-structure-audit.md`
 - `docs/agentic-gaskit/external-api-notes.md`
-- `docs/agentic-gaskit/codex-execution-prompt.md`
-- `docs/agentic-gaskit/end-to-end-goal.md`
 - `docs/agentic-gaskit/prds/*.md`
+
+Private Codex execution prompts, active goals, handoffs, and scratch audits are
+kept in ignored local paths so the open-source repository exposes product
+documentation rather than machine-local planning state.
 
 Required normalization:
 

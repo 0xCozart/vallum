@@ -33,8 +33,11 @@ before changing package names, wallet behavior, MCP tools, gateway policy, or
 remote publishing. Existing GasKit sponsorship behavior remains the foundation;
 agent-specific behavior should be added in vertical slices.
 
-Current continuation handoff:
-[`docs/agentic-gaskit/handoff-next-product-build.md`](docs/agentic-gaskit/handoff-next-product-build.md)
+Current public execution entry:
+[`docs/agentic-gaskit/execution-entry.md`](docs/agentic-gaskit/execution-entry.md)
+and [`docs/agentic-gaskit/execution-slices.md`](docs/agentic-gaskit/execution-slices.md).
+Private Codex goals, local handoffs, and scratch planning notes are kept out of
+the open-source surface.
 
 ## One-line pitch
 

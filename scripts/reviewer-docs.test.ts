@@ -117,6 +117,31 @@ test("docs hosting source list includes best-practices and reviewer paths", asyn
   assert.match(docsReadme, /output directory: `apps\/docs-site\/dist`/);
 });
 
+test("hosted docs exclude internal planning and handoff sources", async () => {
+  const [config, readme, gitignore] = await Promise.all([
+    readDoc("apps/docs-site/docs.config.mjs"),
+    readDoc("README.md"),
+    readDoc(".gitignore"),
+  ]);
+
+  for (const source of [
+    "docs/agentic-gaskit/codex-active-goal.md",
+    "docs/agentic-gaskit/codex-execution-prompt.md",
+    "docs/agentic-gaskit/end-to-end-goal.md",
+    "docs/agentic-gaskit/full-roadmap-execution-goal.md",
+    "docs/agentic-gaskit/handoff-next-product-build.md",
+    "docs/agentic-gaskit/local-dirty-work-review.md",
+    "docs/agentic-gaskit/planning-structure-audit.md",
+  ]) {
+    assert.doesNotMatch(config, literalPattern(source));
+    assert.doesNotMatch(readme, literalPattern(source));
+    assert.match(gitignore, literalPattern(source));
+  }
+
+  assert.match(readme, /Current public execution entry/);
+  assert.match(readme, /Private Codex goals, local handoffs, and scratch planning notes are kept out/);
+});
+
 test("public docs include concrete integration code examples", async () => {
   const [examples, sdk] = await Promise.all([readDoc("docs/examples.md"), readDoc("docs/sdk.md")]);
 

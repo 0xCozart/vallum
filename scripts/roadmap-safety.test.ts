@@ -12,7 +12,6 @@ const packageJson = JSON.parse(await readFile(resolve(repoRoot, "package.json"),
 };
 const executionSlices = await readFile(resolve(repoRoot, "docs/agentic-gaskit/execution-slices.md"), "utf8");
 const deviceGate = await readFile(resolve(repoRoot, "docs/agentic-gaskit/device-access-safety-gate.md"), "utf8");
-const fullGoal = await readFile(resolve(repoRoot, "docs/agentic-gaskit/full-roadmap-execution-goal.md"), "utf8");
 const marketplaceReadiness = await readFile(resolve(repoRoot, "docs/marketplace-readiness.md"), "utf8");
 
 test("device access lease remains explicitly safety gated", () => {
@@ -20,7 +19,8 @@ test("device access lease remains explicitly safety gated", () => {
   assert.match(deviceGate, /Physical device operation remains blocked/);
   assert.match(deviceGate, /virtual or simulated workflow/);
   assert.match(deviceGate, /no `contracts\/device_access_lease_v1` implementation is claimed/);
-  assert.match(fullGoal, /Device access lease is explicitly deferred with a hardening rationale/);
+  assert.match(executionSlices, /roadmap explicitly blocks physical device access/);
+  assert.match(executionSlices, /virtual or simulated device lease proof/);
   assert.match(marketplaceReadiness, /Device access safety gate/);
 });
 

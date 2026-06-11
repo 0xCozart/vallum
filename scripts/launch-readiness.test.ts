@@ -122,8 +122,8 @@ async function writeEvidenceTree(cwd: string): Promise<void> {
     "scripts/check-operator-live-gates.ts",
     "docs/agentic-gaskit/verification-profiles.md",
     "scripts/check-verification-profiles.ts",
-    "docs/agentic-gaskit/full-roadmap-execution-goal.md",
-    "docs/agentic-gaskit/handoff-next-product-build.md",
+    "docs/agentic-gaskit/execution-slices.md",
+    "docs/CODEBASE_MAP.md",
   ];
   for (const path of paths) {
     const file = join(cwd, path);

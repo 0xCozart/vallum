@@ -75,9 +75,9 @@ The repo ships a demo-shaped codebase that does not prove the safety and
 interoperability claims.
 
 Fix:
-Use `docs/agentic-gaskit/planning-structure-audit.md` as a blocking traceability check. Every
-phase handoff must cite the relevant thesis need, PRD, slice, gate, evidence,
-and remaining risk.
+Use the public PRDs, module specs, execution slices, and verification gates as
+the blocking traceability check. Every phase handoff must cite the relevant
+thesis need, PRD, slice, gate, evidence, and remaining risk.
 
 Validation:
 Phase handoff includes objective traceability and direct evidence for the phase
@@ -373,10 +373,10 @@ Use this checklist before marking the active goal complete:
   acceptance criteria, verification, risk, and escalation triggers.
 - `docs/agentic-gaskit/verification-hardening.md` contains invariants, gates, risk findings,
   and completion audit criteria.
-- `docs/agentic-gaskit/planning-structure-audit.md` maps thesis needs to PRDs, slices, gates,
-  and failure signals.
-- `docs/agentic-gaskit/codex-execution-prompt.md` gives a future implementation agent a
-  copy/paste starting contract.
+- Public PRDs, module specs, execution slices, and verification gates map
+  thesis needs to PRDs, slices, gates, and failure signals.
+- Private Codex execution prompts and scratch audits stay in ignored local
+  planning paths rather than hosted public docs.
 - The plan explicitly avoids marketplace-first, tokenomics, mainnet custody, and
   standards replacement.
 - The plan explicitly handles sponsored-gas abuse, policy bypass, external API

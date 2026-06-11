@@ -9,7 +9,7 @@ requires a small supporting change.
 Global slice rules:
 
 - Start each slice by reading the owning PRD, `docs/agentic-gaskit/module-specs.md`,
-  `docs/agentic-gaskit/verification-hardening.md`, and `docs/agentic-gaskit/planning-structure-audit.md`.
+  and `docs/agentic-gaskit/verification-hardening.md`.
 - Run `git status --short --branch` before editing and preserve unrelated work.
 - Refresh `docs/agentic-gaskit/external-api-notes.md` before any slice that touches IOTA,
   MCP, x402, AP2, A2A, package names, adapter interfaces, or protocol fields.
@@ -1061,7 +1061,6 @@ hardware.
 Likely files:
 
 - `docs/agentic-gaskit/device-access-safety-gate.md`
-- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
 - `docs/marketplace-readiness.md`
 - `scripts/roadmap-safety.test.ts`
 
@@ -1476,9 +1475,6 @@ Likely files:
 - `docs/agentic-gaskit/product-status.md`
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
 - `docs/agentic-gaskit/operator-live-gates.md`
-- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
-- `docs/agentic-gaskit/codex-active-goal.md`
-- `docs/agentic-gaskit/handoff-next-product-build.md`
 - `docs/overview.md`
 - `docs/CODEBASE_MAP.md`
 - `apps/docs-site/docs.config.mjs`
@@ -2693,7 +2689,6 @@ Likely files:
 - `docs/agentic-gaskit/external-api-notes.md`
 - `docs/agentic-gaskit/product-status.md`
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
-- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
 - `docs/overview.md`
 - `docs/CODEBASE_MAP.md`
 - `README.md`
@@ -2767,9 +2762,6 @@ Likely files:
 - `docs/agentic-gaskit/a2a-public-readiness.md`
 - `docs/agentic-gaskit/product-status.md`
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
-- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
-- `docs/agentic-gaskit/codex-active-goal.md`
-- `docs/agentic-gaskit/handoff-next-product-build.md`
 - `docs/overview.md`
 - `docs/CODEBASE_MAP.md`
 - `README.md`
@@ -2845,9 +2837,6 @@ Likely files:
 - `docs/agentic-gaskit/a2a-public-readiness.md`
 - `docs/agentic-gaskit/product-status.md`
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
-- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
-- `docs/agentic-gaskit/codex-active-goal.md`
-- `docs/agentic-gaskit/handoff-next-product-build.md`
 - `docs/overview.md`
 - `docs/CODEBASE_MAP.md`
 - `README.md`
@@ -2927,9 +2916,6 @@ Likely files:
 - `docs/agentic-gaskit/a2a-public-readiness.md`
 - `docs/agentic-gaskit/product-status.md`
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
-- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
-- `docs/agentic-gaskit/codex-active-goal.md`
-- `docs/agentic-gaskit/handoff-next-product-build.md`
 - `docs/overview.md`
 - `docs/CODEBASE_MAP.md`
 - `README.md`
@@ -3251,9 +3237,6 @@ Likely files:
 - `scripts/product-status.test.ts`
 - `scripts/package-scripts.test.ts`
 - `docs/agentic-gaskit/product-status.md`
-- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
-- `docs/agentic-gaskit/codex-active-goal.md`
-- `docs/agentic-gaskit/handoff-next-product-build.md`
 - `package.json`
 
 Acceptance criteria:
@@ -3315,9 +3298,6 @@ Likely files:
 - `scripts/package-scripts.test.ts`
 - `scripts/reviewer-docs.test.ts`
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
-- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
-- `docs/agentic-gaskit/codex-active-goal.md`
-- `docs/agentic-gaskit/handoff-next-product-build.md`
 - `package.json`
 
 Acceptance criteria:
@@ -3387,9 +3367,6 @@ Likely files:
 - `docs/agentic-gaskit/operator-live-gates.md`
 - `docs/agentic-gaskit/product-status.md`
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
-- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
-- `docs/agentic-gaskit/codex-active-goal.md`
-- `docs/agentic-gaskit/handoff-next-product-build.md`
 - `package.json`
 
 Acceptance criteria:
@@ -3465,9 +3442,6 @@ Likely files:
 - `docs/agentic-gaskit/product-status.md`
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
 - `docs/agentic-gaskit/operator-live-gates.md`
-- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
-- `docs/agentic-gaskit/codex-active-goal.md`
-- `docs/agentic-gaskit/handoff-next-product-build.md`
 - `docs/testnet-readiness.md`
 - `docs/milestone-0-proof.md`
 - `docs/reviewer-walkthrough.md`
@@ -3546,9 +3520,6 @@ Likely files:
 - `docs/agentic-gaskit/verification-profiles.md`
 - `docs/agentic-gaskit/product-status.md`
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
-- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
-- `docs/agentic-gaskit/codex-active-goal.md`
-- `docs/agentic-gaskit/handoff-next-product-build.md`
 - `docs/milestone-0-proof.md`
 - `docs/reviewer-walkthrough.md`
 - `docs/quickstart.md`
@@ -3626,9 +3597,6 @@ Likely files:
 - `docs/agentic-gaskit/product-status.md`
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
 - `docs/agentic-gaskit/operator-live-gates.md`
-- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
-- `docs/agentic-gaskit/codex-active-goal.md`
-- `docs/agentic-gaskit/handoff-next-product-build.md`
 - `docs/testnet-attempts.md`
 - `docs/CODEBASE_MAP.md`
 
@@ -3702,9 +3670,6 @@ Likely files:
 - `docs/quickstart.md`
 - `docs/testnet-attempts.md`
 - `docs/CODEBASE_MAP.md`
-- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
-- `docs/agentic-gaskit/codex-active-goal.md`
-- `docs/agentic-gaskit/handoff-next-product-build.md`
 
 Acceptance criteria:
 
@@ -3777,9 +3742,6 @@ Likely files:
 - `docs/agentic-gaskit/launch-readiness-evidence.md`
 - `docs/agentic-gaskit/operator-live-gates.md`
 - `docs/CODEBASE_MAP.md`
-- `docs/agentic-gaskit/full-roadmap-execution-goal.md`
-- `docs/agentic-gaskit/codex-active-goal.md`
-- `docs/agentic-gaskit/handoff-next-product-build.md`
 
 Acceptance criteria:
 
