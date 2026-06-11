@@ -43,6 +43,27 @@ Latest live-read-only evidence refresh:
   config, public A2A proof, npm publication, payment/provider proof,
   production marketplace, custody, and device-safety blockers.
 
+Latest full local verification refresh:
+
+- On 2026-06-11 at 05:38:59Z, `npm run verify:local` passed from the current
+  state.
+- The command ran the full local reviewer/release gate: root build/test,
+  Move contract tests, typecheck, local gateway and demo smokes, agent workflow
+  smokes, local A2A smokes, marketplace read-model smoke, example testnet
+  readiness preflight, non-networked digest proof, package dry-runs, package
+  install smoke, A2A public-readiness, verification-profile, product-status,
+  launch-readiness, operator-gate, docs, and secret-scan checks.
+- Result highlights: 420 TypeScript tests passed, 33 Move tests passed,
+  package install smoke imported 11 public workspace packages, docs generated
+  37 HTML pages from 36 Markdown sources, and secret scan checked 329
+  tracked/staged/untracked text files with 0 findings.
+- Final reports still intentionally show `product status not-complete`,
+  `launch readiness not-ready`, and `operator live gates blocked`.
+- Remaining blockers are still missing `.env`, missing IOTA Names config,
+  missing IOTA Identity config, missing VC trust-policy config, public A2A
+  proof, npm publication, payment/provider proof, production marketplace,
+  custody, and device-safety gates.
+
 Recent commits to know:
 
 - `dcb3a86` feat: add a2a static discovery bundle

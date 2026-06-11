@@ -42,6 +42,16 @@ read-only RPC reachability for the documented digest only. It does not prove a
 new sponsored transaction, local `.env` readiness, current sponsor wallet
 funding, current Gas Station availability, or production readiness.
 
+As of the latest full local verification refresh on 2026-06-11, `npm run
+verify:local` passed from the current state. The full gate covered 420
+deterministic TypeScript tests, 33 Move tests, typecheck, local gateway and
+demo smokes, agent workflow smokes, local A2A smokes, marketplace read-model
+smoke, example testnet-readiness preflight, non-networked digest proof,
+package dry-runs, package install smoke for 11 packages, A2A public-readiness,
+verification-profile, product-status, launch-readiness, operator-gate, docs,
+and secret-scan checks. This is full local/reviewer evidence only; it does not
+clear live/operator blockers.
+
 The next continuation should choose the next safe roadmap slice from
 `docs/agentic-gaskit/full-roadmap-execution-goal.md` and
 `docs/agentic-gaskit/handoff-next-product-build.md`. Good next candidates are
