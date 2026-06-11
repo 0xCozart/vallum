@@ -16,19 +16,18 @@ local proof as live IOTA testnet, production marketplace, public scoring,
 public A2A discovery, production key management, or provider-verification
 proof.
 
-As of the latest completed update, Slice 4.22 is complete: test-suite
-consolidation. Repeated package-script contract tests were collapsed into
-table-driven checks, reducing the broad `npm run verify:fast` Node test count
-from 422 to 407 while preserving script wiring, opt-in live command exclusion,
-and local readiness proof coverage. The latest product-facing feature slice is
-still Slice 4.21: A2A push callback host allowlisting. Local A2A push
-notification config and injected HTTP transport can constrain callback URLs to
-an exact configured hostname allowlist before storage or delivery.
-`npm run proof:a2a-public-readiness` reports
-`A2A_PUSH_CALLBACK_HOST_ALLOWLIST_LOCAL_PROOF_CONFIGURED` as local
-host-admission proof. This does not send A2A task messages to public endpoints,
-post real webhook callbacks, run background workers, persist queues, store
-webhook credentials, run external A2A conformance, publish JWKS, prove
+As of the latest completed update, Slice 4.23 is complete: A2A push durable
+attempt evidence. Local A2A push delivery attempts can now be written to a
+file-backed sanitized JSONL store containing status-only metadata: config id,
+task id, callback URL, attempt number, observed time, retry time, HTTP status,
+and safe error code. The store does not persist request JSON, task bodies,
+response bodies, raw transport errors, webhook credentials, signer refs, wallet
+internals, payment secrets, or private prompt text. `npm run
+proof:a2a-public-readiness` reports
+`A2A_PUSH_DURABLE_ATTEMPT_EVIDENCE_LOCAL_PROOF_CONFIGURED` as local durable
+attempt evidence. This does not send A2A task messages to public endpoints,
+post real webhook callbacks, run background workers, persist delivery queues,
+store webhook credentials, run external A2A conformance, publish JWKS, prove
 production key rotation, or prove public push delivery. Public hosting
 acceptance, production keys/auth, public webhook infrastructure, live IOTA
 proof, and external conformance claims remain blocked.
