@@ -88,7 +88,7 @@ const AREA_DEFINITIONS = [
       "vc-validation-live",
     ],
     fallbackStatus: "proven-local",
-    next: "Provide operator-owned .env, Names, Identity, and VC trust-policy configuration, then run the opt-in live proof commands.",
+    next: "Provide remaining operator-owned Names, Identity, and VC trust-policy configuration, then run the opt-in live proof commands.",
   },
   {
     id: "phase-3-contract-workflows",

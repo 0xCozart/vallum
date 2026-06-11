@@ -46,6 +46,12 @@ tmp/live-gas-station/
 tmp/agent-browser/
 docs/plans/
 docs/audits/
+docs/agentic-gaskit/local-plans/
+docs/agentic-gaskit/local-handoffs/
+docs/agentic-gaskit/*.local.md
+docs/agentic-gaskit/*-draft.md
+docs/agentic-gaskit/*-scratch.md
+docs/agentic-gaskit/*-handoff-local.md
 .gitnexus/
 .hermes/
 

@@ -38,10 +38,21 @@ Latest live-read-only evidence refresh:
   `timestampMs=1777961597133` (`2026-05-05T06:13:17.133Z`).
 - This did not read `.env`, use sponsor credentials, sign, reserve gas,
   execute a transaction, start Gas Station, or prove current sponsor funding.
-- `npm run proof:live-status` and `npm run proof:operator-gates` still report
-  missing `.env`, IOTA Names config, IOTA Identity config, VC trust-policy
-  config, public A2A proof, npm publication, payment/provider proof,
-  production marketplace, custody, and device-safety blockers.
+- Local `.env` is now populated outside Git with generated local
+  testnet-readiness values. `npm run readiness:testnet` passes non-networked
+  readiness, and `npm run proof:live-status` / `npm run proof:operator-gates`
+  now classify `testnet-readiness` as `TESTNET_READINESS_CONFIG_PRESENT` /
+  `ready-to-run`.
+- `npm run diagnose:gas-station -- --skip-reserve` reached the configured IOTA
+  testnet RPC with HTTP 200 and latest checkpoint `226294570`, but the
+  configured local Gas Station root and `/v1/health` endpoint at loopback were
+  unreachable. This did not reserve gas, spend gas, sign, or execute a
+  transaction.
+- Remaining live blockers still include local Gas Station availability,
+  sponsor funding/current sponsored execution proof, IOTA Names config, IOTA
+  Identity config, VC trust-policy config, public A2A proof, npm publication,
+  payment/provider proof, production marketplace, custody, and device-safety
+  blockers.
 
 Latest full local verification refresh:
 
@@ -59,10 +70,11 @@ Latest full local verification refresh:
   tracked/staged/untracked text files with 0 findings.
 - Final reports still intentionally show `product status not-complete`,
   `launch readiness not-ready`, and `operator live gates blocked`.
-- Remaining blockers are still missing `.env`, missing IOTA Names config,
-  missing IOTA Identity config, missing VC trust-policy config, public A2A
-  proof, npm publication, payment/provider proof, production marketplace,
-  custody, and device-safety gates.
+- Remaining blockers are still live Gas Station availability, sponsor
+  funding/current sponsored execution proof, missing IOTA Names config, missing
+  IOTA Identity config, missing VC trust-policy config, public A2A proof, npm
+  publication, payment/provider proof, production marketplace, custody, and
+  device-safety gates.
 
 Recent commits to know:
 

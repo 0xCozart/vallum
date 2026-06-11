@@ -1,6 +1,6 @@
 # Live Proof Status
 
-Last updated: 2026-06-10.
+Last updated: 2026-06-11.
 
 ## Purpose
 
@@ -21,14 +21,21 @@ and next commands. It never prints configured secret values or endpoint values.
 
 ## Current Local Status
 
-On the current machine, no `.env` file is present and the IOTA Names live smoke,
-IOTA Identity live smoke, and live VC trust-policy variables are unset. The
-correct proof state is therefore blocked, not failed live proof:
+On the current machine, `.env` is present outside Git and `npm run
+readiness:testnet` passes non-networked readiness. `npm run proof:live-status`
+now reports:
 
-- `TESTNET_ENV_FILE_MISSING`
+- `TESTNET_READINESS_CONFIG_PRESENT`
 - `IOTA_NAMES_LIVE_CONFIG_MISSING`
 - `IOTA_IDENTITY_LIVE_CONFIG_MISSING`
 - `VC_TRUST_POLICY_CONFIG_MISSING`
+
+The configured IOTA testnet RPC endpoint also responded to
+`npm run diagnose:gas-station -- --skip-reserve` with HTTP 200 and a latest
+checkpoint response. The same diagnostic could not reach the configured local
+Gas Station root or `/v1/health` endpoint at loopback. This means the next
+testnet execution boundary is local Gas Station availability and sponsor
+funding, not `.env` shape.
 
 ## What The Command Proves
 

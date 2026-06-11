@@ -11,7 +11,9 @@ import {
 import type { ProductStatusReport } from "./check-product-status.js";
 
 test("launch readiness maps local evidence to live and production blockers", async () => {
-  const report = await checkLaunchReadiness();
+  const report = await checkLaunchReadiness({
+    productStatus: productStatusWithLiveBlockers(),
+  });
   const formatted = formatLaunchReadinessReport(report);
 
   assert.equal(report.launchReady, false);
@@ -145,5 +147,74 @@ function completeProductStatus(): ProductStatusReport {
     complete: true,
     localProofOk: true,
     checks,
+  };
+}
+
+function productStatusWithLiveBlockers(): ProductStatusReport {
+  return {
+    complete: false,
+    localProofOk: true,
+    checks: [
+      {
+        id: "testnet-readiness",
+        status: "blocked-live",
+        code: "TESTNET_ENV_FILE_MISSING",
+        message: "Synthetic missing testnet env for launch-readiness mapping tests.",
+      },
+      {
+        id: "iota-names-live",
+        status: "blocked-live",
+        code: "IOTA_NAMES_LIVE_CONFIG_MISSING",
+        message: "Synthetic missing Names config for launch-readiness mapping tests.",
+      },
+      {
+        id: "iota-identity-live",
+        status: "blocked-live",
+        code: "IOTA_IDENTITY_LIVE_CONFIG_MISSING",
+        message: "Synthetic missing Identity config for launch-readiness mapping tests.",
+      },
+      {
+        id: "vc-validation-live",
+        status: "blocked-live",
+        code: "VC_TRUST_POLICY_CONFIG_MISSING",
+        message: "Synthetic missing VC config for launch-readiness mapping tests.",
+      },
+      {
+        id: "physical-device-access",
+        status: "deferred-safety",
+        code: "DEVICE_ACCESS_SAFETY_DEFERRED",
+        message: "Synthetic device-safety blocker for launch-readiness mapping tests.",
+      },
+      {
+        id: "public-a2a-hosting",
+        status: "blocked-production",
+        code: "PUBLIC_A2A_HOSTING_UNPROVEN",
+        message: "Synthetic public A2A blocker for launch-readiness mapping tests.",
+      },
+      {
+        id: "live-payment-provider",
+        status: "blocked-production",
+        code: "LIVE_PAYMENT_PROVIDER_UNPROVEN",
+        message: "Synthetic payment-provider blocker for launch-readiness mapping tests.",
+      },
+      {
+        id: "production-marketplace",
+        status: "blocked-production",
+        code: "PRODUCTION_MARKETPLACE_BLOCKED",
+        message: "Synthetic marketplace blocker for launch-readiness mapping tests.",
+      },
+      {
+        id: "npm-registry-publication",
+        status: "blocked-production",
+        code: "NPM_PUBLICATION_UNRUN",
+        message: "Synthetic npm publication blocker for launch-readiness mapping tests.",
+      },
+      {
+        id: "production-custody",
+        status: "blocked-production",
+        code: "PRODUCTION_CUSTODY_OUT_OF_SCOPE",
+        message: "Synthetic custody blocker for launch-readiness mapping tests.",
+      },
+    ],
   };
 }
