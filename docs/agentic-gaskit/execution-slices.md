@@ -2316,6 +2316,72 @@ Escalation triggers:
   run background delivery workers, persist queues, or mark public webhook
   delivery complete without operator-approved public infrastructure evidence.
 
+## Slice 4.21: A2A Push Callback Host Allowlist
+
+User-visible outcome:
+Operators get local proof that A2A push callback URLs can be constrained to an
+exact callback hostname allowlist before public webhook delivery infrastructure
+is considered.
+
+Likely files:
+
+- `packages/standards/src/a2aPush.ts`
+- `packages/standards/src/a2aPush.test.ts`
+- `scripts/check-a2a-public-readiness.ts`
+- `scripts/a2a-public-readiness.test.ts`
+- `scripts/check-product-status.ts`
+- `scripts/check-launch-readiness.ts`
+- `docs/agentic-gaskit/a2a-public-readiness.md`
+- `docs/agentic-gaskit/external-api-notes.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/overview.md`
+- `docs/CODEBASE_MAP.md`
+- `README.md`
+- `docs/reviewer-walkthrough.md`
+
+Acceptance criteria:
+
+- Push config creation can require an exact callback hostname allowlist.
+- Injected HTTP transport can require the same exact callback hostname
+  allowlist even if a caller supplies a mutated request URL.
+- Disallowed callback hosts are rejected before storage or delivery without
+  printing configured hostnames or URL values.
+- Safe public HTTPS callbacks without query strings/fragments still work when
+  their hostname is allowlisted.
+- A2A public-readiness, product-status, launch-readiness, and public docs
+  classify this as local host-admission proof only, not public webhook delivery
+  infrastructure or external conformance.
+
+Verification:
+
+- Focused `packages/standards/src/a2aPush.test.ts`.
+- Focused A2A public-readiness tests.
+- Product-status tests.
+- Launch-readiness tests.
+- Operator-gate tests.
+- Reviewer-docs regression tests.
+- `npm run proof:a2a-public-readiness`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slice 4.20.
+
+Risk:
+Medium. Host allowlisting is necessary for future public webhook delivery, but
+it is not endpoint ownership proof, production auth, production observability,
+or external conformance.
+
+Escalation triggers:
+
+- Any request to treat host allowlisting as public webhook delivery proof,
+  accept wildcard or query-token callback patterns without a separate design,
+  store webhook credentials, run background delivery workers, or persist
+  queues in this slice.
+
 ## Slice 5.1: Marketplace Readiness Gate
 
 User-visible outcome:

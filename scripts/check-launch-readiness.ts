@@ -115,7 +115,7 @@ const AREA_DEFINITIONS = [
   },
   {
     id: "phase-4-standards-bridges",
-    claim: "x402, AP2, and A2A mappings are locally proven with fail-closed behavior, including local A2A authenticated extended cards, streaming, push configuration, injected push delivery, opt-in push HTTP transport, callback URL admission hardening, local retry/attempt observability, redacted structured public discovery/push/conformance report classification, and an opt-in public discovery/JWKS smoke; live payment/provider and public A2A proofs remain blocked.",
+    claim: "x402, AP2, and A2A mappings are locally proven with fail-closed behavior, including local A2A authenticated extended cards, streaming, push configuration, injected push delivery, opt-in push HTTP transport, callback URL admission hardening, callback host allowlisting, local retry/attempt observability, redacted structured public discovery/push/conformance report classification, and an opt-in public discovery/JWKS smoke; live payment/provider and public A2A proofs remain blocked.",
     evidencePaths: [
       "packages/standards/src/x402.ts",
       "packages/standards/src/ap2.ts",

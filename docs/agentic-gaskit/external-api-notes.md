@@ -617,6 +617,14 @@ Current planning assumptions:
   it does not operate public webhook workers, persist queue state, store
   webhook credentials, prove public webhook delivery, or replace production
   allowlisting/auth/observability design.
+- On 2026-06-11, Slice 4.21 adds optional exact callback-host allowlists for
+  local A2A push config creation and injected HTTP transport delivery. A
+  disallowed host is rejected before storage or delivery with a redacted error,
+  while allowlisted public HTTPS callback URLs continue to work locally. This
+  is host-admission proof only; it does not operate public webhook workers,
+  persist queue state, store webhook credentials, prove public webhook
+  delivery, or replace production endpoint ownership, authentication,
+  observability, and conformance evidence.
 
 Implementation checks:
 

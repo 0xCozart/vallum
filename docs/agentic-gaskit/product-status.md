@@ -13,10 +13,11 @@ surface in one machine-checkable place:
 - A2A public-readiness wiring for local proof, local authenticated extended
   Agent Card access, local loopback streaming, local push notification
   configuration, local injected push delivery, local opt-in push HTTP
-  transport, callback URL admission hardening, local retry/attempt
-  observability, public hosting inputs, redacted structured public discovery
-  report classification, redacted structured public push delivery report
-  classification, and structured external conformance blockers;
+  transport, callback URL admission hardening, callback host allowlisting,
+  local retry/attempt observability, public hosting inputs, redacted structured
+  public discovery report classification, redacted structured public push
+  delivery report classification, and structured external conformance
+  blockers;
 - opt-in public A2A discovery/JWKS smoke wiring for operator-approved public
   HTTPS configuration, kept outside default local verification, with optional
   structured discovery report output;

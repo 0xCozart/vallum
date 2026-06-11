@@ -167,10 +167,10 @@ Latest local verification and prior live proof:
   public-readiness gate reports local proof, local authenticated extended-card
   access, local loopback streaming, local push notification configuration,
   local injected push delivery, local opt-in push HTTP transport, local
-  callback URL admission hardening, local retry/attempt observability, public
-  hosting inputs, redacted public discovery report classification, public push
-  delivery structured-report classification, and external conformance
-  structured-report blockers.
+  callback URL admission hardening, callback host allowlisting, local
+  retry/attempt observability, public hosting inputs, redacted public discovery
+  report classification, public push delivery structured-report
+  classification, and external conformance structured-report blockers.
 - `npm run smoke:a2a-public-discovery`: opt-in public A2A Agent Card and JWKS
   discovery smoke exists for operator-approved public HTTPS configuration; it
   can emit a structured discovery report for readiness review, is not part of

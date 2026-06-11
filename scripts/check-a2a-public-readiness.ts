@@ -96,6 +96,7 @@ export async function checkA2APublicReadiness(
     localPushDeliverySupport(),
     localPushHttpTransportSupport(),
     localPushCallbackUrlHardeningSupport(),
+    localPushCallbackHostAllowlistSupport(),
     localPushRetryObservabilitySupport(),
     await checkPublicPushDeliveryReport(cwd, env.A2A_PUBLIC_PUSH_DELIVERY_REPORT, {
       expectedPublicBaseUrl: env.A2A_PUBLIC_BASE_URL,
@@ -319,6 +320,17 @@ function localPushCallbackUrlHardeningSupport(): A2APublicReadinessCheck {
     message: "A2A push notification callback URLs are locally rejected when they include credentials, query strings, fragments, loopback hosts, or non-public network hosts.",
     evidence: "node --import tsx --test packages/standards/src/a2aPush.test.ts",
     next: "Keep this as local callback admission proof only until public webhook allowlisting, authentication, worker, queue, observability, and external conformance evidence exist.",
+  };
+}
+
+function localPushCallbackHostAllowlistSupport(): A2APublicReadinessCheck {
+  return {
+    id: "local-push-callback-host-allowlist",
+    status: "proven-local",
+    code: "A2A_PUSH_CALLBACK_HOST_ALLOWLIST_LOCAL_PROOF_CONFIGURED",
+    message: "A2A push notification callback hosts can be constrained by an exact local allowlist before config storage or injected HTTP transport delivery.",
+    evidence: "node --import tsx --test packages/standards/src/a2aPush.test.ts",
+    next: "Keep this as local host-admission proof only until public webhook allowlisting, authentication, worker, queue, observability, and external conformance evidence exist.",
   };
 }
 

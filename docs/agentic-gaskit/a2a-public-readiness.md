@@ -56,6 +56,8 @@ publicReady=false
 - Local push notification callback URL admission rejects credentials, query
   strings, fragments, loopback hosts, and private network hosts before config
   storage or delivery.
+- Local push notification callback hosts can be constrained by an exact
+  allowlist before config storage or injected HTTP transport delivery.
 - Local push notification retry and delivery-attempt observability are
   supported for explicitly injected transports with in-memory status-only
   attempt records.
@@ -85,7 +87,8 @@ report paths, report contents, credentials, tokens, or secret-like values.
 - Production extended-card access control.
 - Public streaming or webhook delivery by itself.
 - Production push delivery queues/workers, persistent observability, auth, or
-  SSRF infrastructure beyond the local callback URL admission guard.
+  SSRF infrastructure beyond the local callback URL admission and host
+  allowlist guards.
 - External A2A conformance.
 - Provider verification or production trust.
 

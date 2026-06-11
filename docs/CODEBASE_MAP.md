@@ -63,15 +63,17 @@ It also includes the first Agentic GasKit implementation slices:
 - local A2A push callback URL admission hardening that rejects credentials,
   query strings, fragments, loopback hosts, and private network hosts before
   config storage or delivery
+- local A2A push callback host allowlisting for exact callback-host admission
+  before config storage or injected HTTP transport delivery
 - local A2A push notification retry and in-memory attempt observability for
   explicitly injected transports, without request bodies or credential material
 - non-networked A2A public-readiness proof for local A2A evidence, public
   hosting inputs, production JWKS/auth decisions, local authenticated extended
   cards, local loopback streaming, local push configuration, local injected
   push delivery, local opt-in push HTTP transport, local callback URL admission
-  hardening, local retry/attempt observability, redacted structured public
-  discovery, public push delivery, and external conformance report inputs, and
-  external conformance blockers
+  hardening, local callback host allowlisting, local retry/attempt
+  observability, redacted structured public discovery, public push delivery,
+  and external conformance report inputs, and external conformance blockers
 - opt-in public A2A discovery smoke for operator-approved public HTTPS Agent
   Card and JWKS probing with optional structured report output, excluded from
   default local verification

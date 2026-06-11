@@ -48,6 +48,7 @@ export type A2APushNotificationTransport = (
 ) => A2APushNotificationTransportResponse | Promise<A2APushNotificationTransportResponse>;
 
 export interface A2APushHttpTransportOptions {
+  readonly allowedCallbackHosts?: readonly string[];
   readonly fetch?: typeof fetch;
   readonly timeoutMs?: number;
 }
@@ -138,9 +139,12 @@ export function createA2APushNotificationConfig(options: {
   readonly store: LocalA2APushNotificationStore;
   readonly taskId: string;
   readonly value: unknown;
+  readonly allowedCallbackHosts?: readonly string[];
   readonly now?: Date;
 }): A2ATaskPushNotificationConfig {
-  const config = parsePushNotificationConfig(options.taskId, options.value);
+  const config = parsePushNotificationConfig(options.taskId, options.value, {
+    allowedCallbackHosts: options.allowedCallbackHosts,
+  });
   return options.store.put({
     ...config,
     id: config.id ?? `push_${crypto.randomUUID()}`,
@@ -281,7 +285,9 @@ export function createA2APushHttpTransport(
   const timeoutMs = normalizeTimeoutMs(options.timeoutMs);
 
   return async (request) => {
-    const url = safeWebhookUrl(request.url);
+    const url = safeWebhookUrl(request.url, {
+      allowedCallbackHosts: options.allowedCallbackHosts,
+    });
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
     try {
@@ -302,6 +308,9 @@ export function createA2APushHttpTransport(
 function parsePushNotificationConfig(
   taskId: string,
   value: unknown,
+  options: {
+    readonly allowedCallbackHosts?: readonly string[];
+  } = {},
 ): Omit<A2ATaskPushNotificationConfig, "createdAt" | "id" | "taskId"> & { readonly id?: string } {
   if (!isRecord(value)) {
     throw new A2APushNotificationError("A2A_PUSH_CONFIG_INVALID", "A2A push notification config must be an object.");
@@ -321,7 +330,9 @@ function parsePushNotificationConfig(
   const tenant = optionalString(value.tenant, "$.tenant");
   return {
     ...(id ? { id } : {}),
-    url: safeWebhookUrl(value.url),
+    url: safeWebhookUrl(value.url, {
+      allowedCallbackHosts: options.allowedCallbackHosts,
+    }),
     ...(tenant ? { tenant } : {}),
     ...(authentication ? { authentication } : {}),
   };
@@ -355,7 +366,12 @@ function parseAuthentication(value: unknown): A2APushNotificationAuthenticationI
   return { schemes: normalized };
 }
 
-function safeWebhookUrl(value: unknown): string {
+function safeWebhookUrl(
+  value: unknown,
+  options: {
+    readonly allowedCallbackHosts?: readonly string[];
+  } = {},
+): string {
   if (typeof value !== "string" || value.trim() === "") {
     throw new A2APushNotificationError("A2A_PUSH_CONFIG_INVALID", "A2A push notification URL is required.");
   }
@@ -374,6 +390,9 @@ function safeWebhookUrl(value: unknown): string {
     || isUnsafeWebhookHost(parsed.hostname)
   ) {
     throw new A2APushNotificationError("A2A_PUSH_URL_UNSAFE", "A2A push notification URL must be public HTTPS without credentials, query strings, or fragments.");
+  }
+  if (!isAllowedCallbackHost(parsed.hostname, options.allowedCallbackHosts)) {
+    throw new A2APushNotificationError("A2A_PUSH_URL_UNSAFE", "A2A push notification URL host is not on the configured allowlist.");
   }
   return parsed.toString();
 }
@@ -465,6 +484,12 @@ function isUnsafeWebhookHost(hostname: string): boolean {
       || normalized.startsWith("fe80:");
   }
   return false;
+}
+
+function isAllowedCallbackHost(hostname: string, allowedCallbackHosts: readonly string[] | undefined): boolean {
+  if (!allowedCallbackHosts || allowedCallbackHosts.length === 0) return true;
+  const normalized = hostname.trim().toLowerCase();
+  return allowedCallbackHosts.some((allowed) => allowed.trim().toLowerCase() === normalized);
 }
 
 function clone<T>(value: T): T {

@@ -252,6 +252,66 @@ test("A2A push callback URLs reject query strings before storage or delivery", a
   );
 });
 
+test("A2A push callback host allowlists gate storage and injected transport delivery", async () => {
+  const store = new LocalA2APushNotificationStore();
+
+  const allowed = createA2APushNotificationConfig({
+    store,
+    taskId: "task-push-1",
+    now,
+    allowedCallbackHosts: ["client.example.test"],
+    value: {
+      id: "push-allowlisted",
+      url: "https://client.example.test/a2a/push",
+    },
+  });
+  assert.equal(allowed.url, "https://client.example.test/a2a/push");
+
+  assert.throws(
+    () => createA2APushNotificationConfig({
+      store,
+      taskId: "task-push-1",
+      now,
+      allowedCallbackHosts: ["client.example.test"],
+      value: {
+        id: "push-denied-host",
+        url: "https://evil.example.test/a2a/push",
+      },
+    }),
+    (error: unknown) => {
+      assert.ok(error instanceof Error);
+      assert.match(error.message, /allowlist/);
+      assert.doesNotMatch(error.message, /client\.example|evil\.example|push-denied-host/i);
+      return true;
+    },
+  );
+
+  const captured: string[] = [];
+  const transport = createA2APushHttpTransport({
+    allowedCallbackHosts: ["client.example.test"],
+    fetch: async (url) => {
+      captured.push(String(url));
+      return new Response(null, { status: 204 });
+    },
+  });
+  const safeRequest = buildA2APushNotificationDeliveryRequest(allowed, taskFixture());
+  assert.equal((await transport(safeRequest)).status, 204);
+  assert.deepEqual(captured, ["https://client.example.test/a2a/push"]);
+
+  await assert.rejects(
+    async () => transport({
+      ...safeRequest,
+      url: "https://other.example.test/a2a/push",
+    }),
+    (error: unknown) => {
+      assert.ok(error instanceof Error);
+      assert.match(error.message, /allowlist/);
+      assert.doesNotMatch(error.message, /client\.example|other\.example/i);
+      return true;
+    },
+  );
+});
+
 test("A2A push HTTP transport reports redirects and timeouts as failed delivery without leaking errors", async () => {
   const store = new LocalA2APushNotificationStore();
   createA2APushNotificationConfig({
