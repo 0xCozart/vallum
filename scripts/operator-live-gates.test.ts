@@ -49,6 +49,7 @@ test("operator live gates report current blockers without secret values", async 
       findGate(report, "public-a2a-hosting").command,
       "npm run proof:a2a-public-readiness && npm run smoke:a2a-public-discovery",
     );
+    assert.equal(findGate(report, "live-payment-provider").command, "npm run proof:payment-provider-readiness");
     assert.equal(findGate(report, "physical-device-access").status, "deferred-safety");
     assert.doesNotMatch(formatted, /graphql\.testnet\.example|researcher\.demo\.iota|identity\.testnet\.example|profiles\/researcher\.json/);
     assert.doesNotMatch(formatted, /0x1111111111111111111111111111111111111111111111111111111111111111/);

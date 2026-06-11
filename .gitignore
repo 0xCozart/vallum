@@ -46,7 +46,11 @@ tmp/tooling/
 tmp/live-gas-station/
 tmp/agent-browser/
 docs/plans/
+docs/planning/
 docs/audits/
+docs/evals/
+docs/evidence/
+docs/handoffs/
 docs/agentic-gaskit/local-plans/
 docs/agentic-gaskit/local-handoffs/
 docs/agentic-gaskit/*.local.md
@@ -63,6 +67,12 @@ docs/local/
 docs/**/internal/
 docs/**/private/
 docs/**/local/
+docs/**/planning/
+docs/**/plans/
+docs/**/audits/
+docs/**/evals/
+docs/**/evidence/
+docs/**/handoffs/
 docs/**/*-internal.md
 docs/**/*-private.md
 docs/**/*-local.md
@@ -74,6 +84,12 @@ docs/**/*-goal.md
 docs/**/*-goal-*.md
 docs/**/*-audit.md
 docs/**/*-audit-*.md
+docs/**/*-eval.md
+docs/**/*-eval-*.md
+docs/**/*-evidence.md
+docs/**/*-evidence-*.md
+docs/**/*-planning.md
+docs/**/*-planning-*.md
 docs/**/*-plan-local.md
 docs/**/*-evidence-local.md
 docs/agentic-gaskit/codex-active-goal.md

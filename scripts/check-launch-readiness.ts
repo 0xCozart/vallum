@@ -119,7 +119,7 @@ const AREA_DEFINITIONS = [
   },
   {
     id: "phase-4-standards-bridges",
-    claim: "x402, AP2, and A2A mappings are locally proven with fail-closed behavior, including local A2A authenticated extended cards, local public JWKS serving, local static discovery bundle generation, local static discovery artifact writing and validation, local static discovery loopback host smoke, local static hosting review, streaming, push configuration, injected push delivery, opt-in push HTTP transport, callback URL admission hardening, callback host allowlisting, local retry/attempt observability, local durable attempt evidence, local delivery queueing, a local injected-transport worker, redacted structured public discovery/push/conformance report classification, and an opt-in public discovery/JWKS smoke; live payment/provider and public A2A proofs remain blocked.",
+    claim: "x402, AP2, and A2A mappings are locally proven with fail-closed behavior, including a non-networked payment-provider readiness gate, local A2A authenticated extended cards, local public JWKS serving, local static discovery bundle generation, local static discovery artifact writing and validation, local static discovery loopback host smoke, local static hosting review, streaming, push configuration, injected push delivery, opt-in push HTTP transport, callback URL admission hardening, callback host allowlisting, local retry/attempt observability, local durable attempt evidence, local delivery queueing, a local injected-transport worker, redacted structured public discovery/push/conformance report classification, and an opt-in public discovery/JWKS smoke; live payment/provider and public A2A proofs remain blocked unless accepted operator reports are configured.",
     evidencePaths: [
       "packages/standards/src/x402.ts",
       "packages/standards/src/ap2.ts",
@@ -127,6 +127,7 @@ const AREA_DEFINITIONS = [
       "packages/standards/src/a2aHttp.ts",
       "packages/standards/src/a2aNodeServer.ts",
       "packages/standards/src/a2aPush.ts",
+      "scripts/check-payment-provider-readiness.ts",
       "scripts/check-a2a-public-readiness.ts",
       "scripts/smoke-a2a-static-discovery-local.ts",
       "docs/agentic-gaskit/a2a-public-readiness.md",
@@ -140,11 +141,12 @@ const AREA_DEFINITIONS = [
       "npm run smoke:a2a-http",
       "npm run smoke:a2a-local-server",
       "npm run smoke:a2a-static-discovery-local",
+      "npm run proof:payment-provider-readiness",
       "npm run proof:a2a-public-readiness",
     ],
     productCheckIds: ["public-a2a-hosting", "live-payment-provider"],
     fallbackStatus: "proven-local",
-    next: "Run dedicated public A2A hosting/conformance and live payment/provider proof slices before external interoperability claims.",
+    next: "Run dedicated public A2A hosting/conformance and live payment/provider proof slices, then configure ignored structured reports before external interoperability claims.",
   },
   {
     id: "phase-5-marketplace-operator",

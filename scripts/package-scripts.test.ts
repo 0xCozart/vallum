@@ -132,6 +132,16 @@ test("A2A public discovery smoke is opt-in and excluded from local verification"
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /a2a-public-discovery/);
 });
 
+test("payment provider readiness proof is non-networked and opt-in", () => {
+  assert.equal(
+    packageJson.scripts?.["proof:payment-provider-readiness"],
+    "npm run build && tsx scripts/check-payment-provider-readiness.ts",
+  );
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /payment-provider-readiness/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /payment-provider-readiness/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /payment-provider-readiness/);
+});
+
 test("A2A public proof plan is non-networked and opt-in", () => {
   assert.equal(
     packageJson.scripts?.["a2a:write-public-proof-plan"],

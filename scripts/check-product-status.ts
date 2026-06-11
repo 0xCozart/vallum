@@ -3,6 +3,10 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { checkLiveProofStatus, type LiveProofCheck } from "./check-live-proof-status.js";
+import {
+  checkPaymentProviderReadiness,
+  type PaymentProviderReadinessReport,
+} from "./check-payment-provider-readiness.js";
 import type {
   GasStationRuntimeCommandRunner,
   GasStationRuntimePreflightReport,
@@ -35,6 +39,7 @@ export interface ProductStatusOptions {
   readonly env?: NodeJS.ProcessEnv | Record<string, string | undefined>;
   readonly gasStationRuntimeReport?: GasStationRuntimePreflightReport;
   readonly gasStationRuntimeRunner?: GasStationRuntimeCommandRunner;
+  readonly paymentProviderReadiness?: PaymentProviderReadinessReport;
   readonly scripts?: Record<string, string | undefined>;
 }
 
@@ -79,12 +84,16 @@ export async function checkProductStatus(options: ProductStatusOptions = {}): Pr
     gasStationRuntimeReport: options.gasStationRuntimeReport,
     gasStationRuntimeRunner: options.gasStationRuntimeRunner,
   });
+  const paymentProviderReadiness = options.paymentProviderReadiness ?? await checkPaymentProviderReadiness({
+    cwd,
+    env: options.env,
+  });
 
   const checks: ProductEvidenceCheck[] = [
     checkLocalVerificationCoverage(scripts),
     checkPackageReleaseCoverage(scripts),
     ...liveStatus.checks.map(mapLiveProofCheck),
-    ...productionBlockers(),
+    ...productionBlockers(paymentProviderReadiness),
   ];
 
   return {
@@ -186,7 +195,7 @@ function mapLiveProofCheck(check: LiveProofCheck): ProductEvidenceCheck {
   };
 }
 
-function productionBlockers(): readonly ProductEvidenceCheck[] {
+function productionBlockers(paymentProviderReadiness: PaymentProviderReadinessReport): readonly ProductEvidenceCheck[] {
   return [
     {
       id: "npm-registry-publication",
@@ -203,13 +212,7 @@ function productionBlockers(): readonly ProductEvidenceCheck[] {
       evidence: "npm run proof:a2a-public-readiness",
       next: "Use npm run proof:a2a-public-readiness to inspect blockers, then run npm run smoke:a2a-public-discovery only with operator-approved public A2A config.",
     },
-    {
-      id: "live-payment-provider",
-      status: "blocked-production",
-      code: "LIVE_PAYMENT_PROVIDER_UNPROVEN",
-      message: "x402 and AP2 flows are local/mock only; no real facilitator, payment processor, or provider settlement proof is recorded.",
-      next: "Use operator-approved credentials in a payment-provider proof slice before claiming live settlement.",
-    },
+    paymentProviderCheck(paymentProviderReadiness),
     {
       id: "production-marketplace",
       status: "blocked-production",
@@ -232,6 +235,41 @@ function productionBlockers(): readonly ProductEvidenceCheck[] {
       next: "Replace the safety gate only after physical safety, provider accountability, revocation, emergency stop, privacy, and incident response are approved.",
     },
   ];
+}
+
+function paymentProviderCheck(readiness: PaymentProviderReadinessReport): ProductEvidenceCheck {
+  if (readiness.liveReady) {
+    return {
+      id: "live-payment-provider",
+      status: "ready-live",
+      code: "PAYMENT_PROVIDER_LIVE_REPORT_VALID",
+      message: "Local x402/AP2 proof exists and an operator-supplied structured payment-provider report is valid for manual review.",
+      evidence: "npm run proof:payment-provider-readiness",
+      next: "Manually review the ignored structured report before accepting live facilitator, processor, or settlement claims.",
+    };
+  }
+
+  if (!readiness.localProofOk) {
+    const local = readiness.checks.find((check) => check.id === "local-standards-proof");
+    return {
+      id: "live-payment-provider",
+      status: "blocked-production",
+      code: local?.code ?? "PAYMENT_PROVIDER_LOCAL_PROOF_INCOMPLETE",
+      message: "Local x402/AP2 source or test evidence is incomplete, so payment-provider readiness cannot be evaluated.",
+      evidence: "npm run proof:payment-provider-readiness",
+      next: local?.next ?? "Restore local x402/AP2 proof, then rerun payment-provider readiness.",
+    };
+  }
+
+  const live = readiness.checks.find((check) => check.id === "live-payment-provider-report");
+  return {
+    id: "live-payment-provider",
+    status: "blocked-production",
+    code: "LIVE_PAYMENT_PROVIDER_UNPROVEN",
+    message: `x402 and AP2 flows are locally proven only; live facilitator, processor, or settlement proof remains blocked by ${live?.code ?? "PAYMENT_PROVIDER_LIVE_REPORT_MISSING"}.`,
+    evidence: "npm run proof:payment-provider-readiness",
+    next: "Run a dedicated operator-approved payment-provider proof, save a redacted structured report outside tracked files, set PAYMENT_PROVIDER_LIVE_REPORT, and rerun readiness/status gates.",
+  };
 }
 
 async function main(): Promise<number> {

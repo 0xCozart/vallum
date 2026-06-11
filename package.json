@@ -45,6 +45,7 @@
     "proof:testnet-digest": "npm run build && tsx scripts/check-testnet-digest-proof.ts",
     "proof:testnet-digest:live": "npm run build && tsx scripts/check-testnet-digest-proof.ts --live",
     "proof:a2a-public-readiness": "npm run build && tsx scripts/check-a2a-public-readiness.ts",
+    "proof:payment-provider-readiness": "npm run build && tsx scripts/check-payment-provider-readiness.ts",
     "proof:verification-profiles": "npm run build && tsx scripts/check-verification-profiles.ts",
     "readiness:testnet": "npm run build && tsx scripts/check-testnet-readiness.ts",
     "gas-station:render-config": "npm run build && tsx scripts/render-gas-station-config.ts",

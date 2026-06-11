@@ -62,6 +62,9 @@ hosts, marketplace systems, or physical devices.
 - Keeps package publication, public A2A hosting, live payment/provider proof,
   production marketplace, custody, and physical-device access out of automatic
   local verification claims.
+- Points live payment/provider review at the non-networked
+  `npm run proof:payment-provider-readiness` command, which validates local
+  x402/AP2 proof plus an ignored structured report before manual acceptance.
 - Points public A2A hosting/conformance review at the non-networked
   `npm run proof:a2a-public-readiness` command before any public endpoint is
   probed, then at `npm run smoke:a2a-public-discovery` only after
@@ -78,6 +81,8 @@ hosts, marketplace systems, or physical devices.
 - It does not start Docker, Redis, or Gas Station containers.
 - It does not run `npm run diagnose:gas-station`.
 - It does not run `npm publish`.
+- It does not run payment-provider live calls; it only points to the redacted
+  readiness/report gate.
 - It does not operate public A2A hosting, live payment providers, production
   marketplace flows, production custody, or physical devices.
 - It does not change `launchReady=false` while product-status blockers remain.
@@ -94,6 +99,7 @@ npm run proof:launch-readiness
 npm run proof:testnet-digest
 npm run proof:testnet-digest:live
 npm run proof:a2a-public-readiness
+npm run proof:payment-provider-readiness
 npm run smoke:a2a-public-discovery
 npm run verify:fast
 npm run proof:verification-profiles

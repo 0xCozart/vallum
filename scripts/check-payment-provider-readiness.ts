@@ -1,0 +1,270 @@
+import { access, readFile } from "node:fs/promises";
+import { isAbsolute, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+export type PaymentProviderReadinessStatus =
+  | "proven-local"
+  | "blocked-local"
+  | "blocked-config"
+  | "ready-approval";
+
+export interface PaymentProviderReadinessCheck {
+  readonly id: string;
+  readonly status: PaymentProviderReadinessStatus;
+  readonly code: string;
+  readonly message: string;
+  readonly evidence?: string;
+  readonly next: string;
+}
+
+export interface PaymentProviderReadinessReport {
+  readonly localProofOk: boolean;
+  readonly liveReady: boolean;
+  readonly checks: readonly PaymentProviderReadinessCheck[];
+}
+
+export interface PaymentProviderReadinessOptions {
+  readonly cwd?: string;
+  readonly env?: NodeJS.ProcessEnv | Record<string, string | undefined>;
+  readonly now?: Date;
+}
+
+interface StructuredPaymentProviderReport {
+  readonly schemaVersion?: unknown;
+  readonly kind?: unknown;
+  readonly result?: unknown;
+  readonly observedAt?: unknown;
+  readonly providerKinds?: unknown;
+  readonly checks?: unknown;
+}
+
+const MAX_REPORT_BYTES = 64 * 1024;
+const MAX_REPORT_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+const REQUIRED_SOURCE_PATHS = [
+  "packages/manifest/src/x402Mapping.ts",
+  "packages/manifest/src/x402Mapping.test.ts",
+  "packages/manifest/src/ap2Mapping.ts",
+  "packages/manifest/src/ap2Mapping.test.ts",
+  "packages/receipts/src/x402Receipt.ts",
+  "packages/receipts/src/x402Receipt.test.ts",
+  "packages/receipts/src/ap2Receipt.ts",
+  "packages/receipts/src/ap2Receipt.test.ts",
+  "packages/standards/src/x402.ts",
+  "packages/standards/src/x402.test.ts",
+  "packages/standards/src/ap2.ts",
+  "packages/standards/src/ap2.test.ts",
+] as const;
+
+const REQUIRED_LIVE_CHECKS = [
+  "x402-verify",
+  "x402-settle",
+  "ap2-checkout-receipt",
+  "ap2-payment-receipt",
+  "redaction-review",
+] as const;
+
+const SECRET_FIELD_RE = /secret|token|private|credential|authorization|signature|mnemonic|seed|payload|header|instrument/i;
+
+export async function checkPaymentProviderReadiness(
+  options: PaymentProviderReadinessOptions = {},
+): Promise<PaymentProviderReadinessReport> {
+  const cwd = options.cwd ?? process.cwd();
+  const env = options.env ?? process.env;
+  const now = options.now ?? new Date();
+  const checks = [
+    await checkLocalStandardsProof(cwd),
+    await checkLiveReport(cwd, env.PAYMENT_PROVIDER_LIVE_REPORT, now),
+  ];
+
+  return {
+    localProofOk: checks.find((check) => check.id === "local-standards-proof")?.status === "proven-local",
+    liveReady: checks.every((check) => check.status === "proven-local" || check.status === "ready-approval"),
+    checks,
+  };
+}
+
+export function formatPaymentProviderReadinessReport(report: PaymentProviderReadinessReport): string {
+  const lines = [
+    `Agentic GasKit payment provider readiness ${report.liveReady ? "ready-for-approval" : "blocked"}`,
+    `localProofOk=${report.localProofOk}`,
+    `liveReady=${report.liveReady}`,
+  ];
+  for (const check of report.checks) {
+    lines.push(`${check.status}: ${check.id}: code=${check.code}`);
+    lines.push(`message=${check.message}`);
+    if (check.evidence) lines.push(`evidence=${check.evidence}`);
+    lines.push(`next=${check.next}`);
+  }
+  return lines.join("\n");
+}
+
+async function checkLocalStandardsProof(cwd: string): Promise<PaymentProviderReadinessCheck> {
+  const missing: string[] = [];
+  for (const path of REQUIRED_SOURCE_PATHS) {
+    try {
+      await access(resolve(cwd, path));
+    } catch {
+      missing.push(path);
+    }
+  }
+
+  if (missing.length > 0) {
+    return {
+      id: "local-standards-proof",
+      status: "blocked-local",
+      code: "PAYMENT_PROVIDER_LOCAL_PROOF_INCOMPLETE",
+      message: "Local x402/AP2 standards bridge source or tests are missing.",
+      evidence: `missingPaths=${missing.join(",")}`,
+      next: "Restore local x402/AP2 manifest, receipt, standards bridge, and test evidence before accepting payment-provider readiness.",
+    };
+  }
+
+  return {
+    id: "local-standards-proof",
+    status: "proven-local",
+    code: "PAYMENT_PROVIDER_LOCAL_PROOF_CONFIGURED",
+    message: "Local x402 and AP2 mapping, receipt, policy sequencing, failure, and redaction proof exists.",
+    evidence: "node --import tsx --test packages/manifest/src/x402Mapping.test.ts packages/manifest/src/ap2Mapping.test.ts packages/receipts/src/x402Receipt.test.ts packages/receipts/src/ap2Receipt.test.ts packages/standards/src/x402.test.ts packages/standards/src/ap2.test.ts",
+    next: "Keep this as local/mock standards proof only until an operator-approved live payment-provider report exists.",
+  };
+}
+
+async function checkLiveReport(
+  cwd: string,
+  value: string | undefined,
+  now: Date,
+): Promise<PaymentProviderReadinessCheck> {
+  if (!value || value.trim() === "") {
+    return {
+      id: "live-payment-provider-report",
+      status: "blocked-config",
+      code: "PAYMENT_PROVIDER_LIVE_REPORT_MISSING",
+      message: "Live payment-provider proof requires an operator-supplied structured report path.",
+      evidence: "missing=PAYMENT_PROVIDER_LIVE_REPORT",
+      next: "Run a dedicated operator-approved payment-provider proof and set PAYMENT_PROVIDER_LIVE_REPORT to the ignored local structured report path.",
+    };
+  }
+
+  const reportPath = isAbsolute(value) ? value : resolve(cwd, value);
+  let raw: string;
+  try {
+    const bytes = await readFile(reportPath);
+    if (bytes.byteLength > MAX_REPORT_BYTES) {
+      return invalidReport(
+        "PAYMENT_PROVIDER_LIVE_REPORT_TOO_LARGE",
+        "Live payment-provider proof report is too large.",
+        "configured-report-too-large",
+        "Provide a concise structured report without raw payloads, headers, credentials, or response bodies.",
+      );
+    }
+    raw = bytes.toString("utf8");
+  } catch {
+    return invalidReport(
+      "PAYMENT_PROVIDER_LIVE_REPORT_NOT_FOUND",
+      "Live payment-provider proof report path does not exist.",
+      "configured-report-missing",
+      "Provide an existing ignored local structured report after an operator-approved proof run.",
+    );
+  }
+
+  let parsed: StructuredPaymentProviderReport;
+  try {
+    parsed = JSON.parse(raw) as StructuredPaymentProviderReport;
+  } catch {
+    return invalidReport(
+      "PAYMENT_PROVIDER_LIVE_REPORT_INVALID_JSON",
+      "Live payment-provider proof report is not valid JSON.",
+      "configured-report-invalid-json",
+      "Provide a JSON structured evidence report generated after an operator-approved proof run.",
+    );
+  }
+
+  const invalid = validateStructuredReport(parsed, now);
+  if (invalid) return invalid;
+
+  return {
+    id: "live-payment-provider-report",
+    status: "ready-approval",
+    code: "PAYMENT_PROVIDER_LIVE_REPORT_VALID",
+    message: "Live payment-provider evidence is a passing structured report for a future approved review.",
+    evidence: "local-structured-report-valid-redacted",
+    next: "Review the report manually before accepting live payment/provider settlement claims.",
+  };
+}
+
+function validateStructuredReport(
+  report: StructuredPaymentProviderReport,
+  now: Date,
+): PaymentProviderReadinessCheck | undefined {
+  if (!report || typeof report !== "object" || Array.isArray(report)) {
+    return invalidReport("PAYMENT_PROVIDER_LIVE_REPORT_INVALID_SHAPE", "Live payment-provider proof report must be a JSON object.", "configured-report-invalid-shape", "Provide a JSON object structured evidence report.");
+  }
+  if (containsSecretLikeField(report)) {
+    return invalidReport("PAYMENT_PROVIDER_LIVE_REPORT_UNSAFE_FIELDS", "Live payment-provider proof report contains unsafe secret-like fields.", "configured-report-unsafe-fields", "Provide status-only evidence without raw payloads, headers, credentials, signatures, or payment instruments.");
+  }
+  if (report.schemaVersion !== 1) {
+    return invalidReport("PAYMENT_PROVIDER_LIVE_REPORT_UNSUPPORTED_SCHEMA", "Live payment-provider proof report schema is unsupported.", "configured-report-unsupported-schema", "Provide a structured evidence report with schemaVersion=1.");
+  }
+  if (report.kind !== "agentic-gaskit.payment-provider-live-proof") {
+    return invalidReport("PAYMENT_PROVIDER_LIVE_REPORT_KIND_MISMATCH", "Live payment-provider proof report has the wrong kind.", "configured-report-kind-mismatch", "Provide an agentic-gaskit.payment-provider-live-proof structured report.");
+  }
+  if (report.result !== "passed") {
+    return invalidReport("PAYMENT_PROVIDER_LIVE_REPORT_NOT_PASSED", "Live payment-provider proof report did not pass.", "configured-report-not-passed", "Rerun the approved proof after resolving payment-provider failures.");
+  }
+  const providerKinds = report.providerKinds;
+  if (!Array.isArray(providerKinds) || !providerKinds.includes("x402") || !providerKinds.includes("ap2")) {
+    return invalidReport("PAYMENT_PROVIDER_LIVE_REPORT_PROVIDER_MISSING", "Live payment-provider proof report must include x402 and AP2 provider kinds.", "configured-report-provider-missing", "Provide evidence for both x402 facilitator verify/settle and AP2 checkout/payment receipt paths.");
+  }
+  const checks = report.checks;
+  if (!Array.isArray(checks) || !REQUIRED_LIVE_CHECKS.every((check) => checks.includes(check))) {
+    return invalidReport("PAYMENT_PROVIDER_LIVE_REPORT_CHECKS_INCOMPLETE", "Live payment-provider proof report is missing required check ids.", "configured-report-checks-incomplete", "Include x402 verify/settle, AP2 checkout/payment receipt, and redaction-review checks.");
+  }
+  if (typeof report.observedAt !== "string") {
+    return staleReport();
+  }
+  const observedAt = Date.parse(report.observedAt);
+  if (Number.isNaN(observedAt) || observedAt > now.getTime() || now.getTime() - observedAt > MAX_REPORT_AGE_MS) {
+    return staleReport();
+  }
+  return undefined;
+}
+
+function staleReport(): PaymentProviderReadinessCheck {
+  return invalidReport("PAYMENT_PROVIDER_LIVE_REPORT_STALE", "Live payment-provider proof report is stale or has an invalid observation time.", "configured-report-stale-or-invalid-time", "Provide a structured payment-provider report with an observedAt timestamp from the last 30 days.");
+}
+
+function invalidReport(
+  code: string,
+  message: string,
+  evidence: string,
+  next: string,
+): PaymentProviderReadinessCheck {
+  return {
+    id: "live-payment-provider-report",
+    status: "blocked-config",
+    code,
+    message,
+    evidence,
+    next,
+  };
+}
+
+function containsSecretLikeField(value: unknown): boolean {
+  if (!value || typeof value !== "object") return false;
+  if (Array.isArray(value)) return value.some(containsSecretLikeField);
+  for (const [key, nested] of Object.entries(value)) {
+    if (SECRET_FIELD_RE.test(key)) return true;
+    if (containsSecretLikeField(nested)) return true;
+  }
+  return false;
+}
+
+async function main(): Promise<number> {
+  const report = await checkPaymentProviderReadiness();
+  console.log(formatPaymentProviderReadinessReport(report));
+  return 0;
+}
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  process.exitCode = await main();
+}

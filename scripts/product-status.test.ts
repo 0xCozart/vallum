@@ -32,6 +32,7 @@ test("product status reports local proof gates and explicit live blockers withou
       env: {},
       gasStationRuntimeReport: blockedGasStationRuntime(),
       scripts: completeScripts(),
+      paymentProviderReadiness: blockedPaymentProviderReadiness(),
     });
     const formatted = formatProductStatusReport(report);
 
@@ -53,6 +54,8 @@ test("product status reports local proof gates and explicit live blockers withou
     assert.match(formatted, /not-complete/);
     assert.match(formatted, /NPM_PUBLICATION_UNRUN/);
     assert.match(formatted, /PUBLIC_A2A_HOSTING_UNPROVEN/);
+    assert.match(formatted, /LIVE_PAYMENT_PROVIDER_UNPROVEN/);
+    assert.match(formatted, /npm run proof:payment-provider-readiness/);
     assert.match(formatted, /DEVICE_ACCESS_SAFETY_DEFERRED/);
     assert.doesNotMatch(formatted, /local-secret|iotaprivkey|fake-private-key|seed-phrase|mnemonic-value/i);
   } finally {
@@ -124,6 +127,48 @@ test("product status marks configured live gates ready without contacting endpoi
       formatted,
       /graphql\.testnet\.example|identity\.testnet\.example|researcher\.json|fake-testnet-sponsor-key|fake-gas-station-auth|jwt-secret|fake-upstream-bearer/,
     );
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("product status can mark payment provider report ready for approval without exposing report values", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-product-status-"));
+  try {
+    const report = await checkProductStatus({
+      cwd,
+      env: {},
+      gasStationRuntimeReport: blockedGasStationRuntime(),
+      scripts: completeScripts(),
+      paymentProviderReadiness: {
+        localProofOk: true,
+        liveReady: true,
+        checks: [
+          {
+            id: "local-standards-proof",
+            status: "proven-local",
+            code: "PAYMENT_PROVIDER_LOCAL_PROOF_CONFIGURED",
+            message: "Local x402/AP2 proof exists.",
+            next: "Keep local proof current.",
+          },
+          {
+            id: "live-payment-provider-report",
+            status: "ready-approval",
+            code: "PAYMENT_PROVIDER_LIVE_REPORT_VALID",
+            message: "Structured report is valid.",
+            evidence: "local-structured-report-valid-redacted",
+            next: "Review manually.",
+          },
+        ],
+      },
+    });
+    const formatted = formatProductStatusReport(report);
+    const payment = report.checks.find((check) => check.id === "live-payment-provider");
+
+    assert.equal(payment?.status, "ready-live");
+    assert.equal(payment?.code, "PAYMENT_PROVIDER_LIVE_REPORT_VALID");
+    assert.match(formatted, /PAYMENT_PROVIDER_LIVE_REPORT_VALID/);
+    assert.doesNotMatch(formatted, /payment-provider-live-report|x402-verify|ap2-payment-receipt/);
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }
@@ -220,6 +265,30 @@ function completeScripts(overrides: Record<string, string | undefined> = {}): Re
     "smoke:package-install": "npm run build && tsx scripts/smoke-package-install.ts",
     "publish:dry-run": "npm run build && tsx scripts/package-publish-dry-run.ts",
     ...overrides,
+  };
+}
+
+function blockedPaymentProviderReadiness() {
+  return {
+    localProofOk: true,
+    liveReady: false,
+    checks: [
+      {
+        id: "local-standards-proof",
+        status: "proven-local" as const,
+        code: "PAYMENT_PROVIDER_LOCAL_PROOF_CONFIGURED",
+        message: "Local x402/AP2 proof exists.",
+        next: "Keep local proof current.",
+      },
+      {
+        id: "live-payment-provider-report",
+        status: "blocked-config" as const,
+        code: "PAYMENT_PROVIDER_LIVE_REPORT_MISSING",
+        message: "Structured report is missing.",
+        evidence: "missing=PAYMENT_PROVIDER_LIVE_REPORT",
+        next: "Provide a redacted structured report.",
+      },
+    ],
   };
 }
 

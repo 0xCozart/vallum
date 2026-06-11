@@ -26,6 +26,9 @@ surface in one machine-checkable place:
   structured discovery report output;
 - verification-profile wiring that keeps fast iteration separate from the full
   local evidence gate;
+- payment-provider readiness wiring that checks local x402/AP2 source and test
+  proof, then accepts only an operator-supplied redacted structured report path
+  before moving live payment/provider evidence to manual review;
 - launch-readiness evidence matrix and operator live-gate runbook wiring;
 - live/testnet readiness, local Gas Station runtime preflight status,
   sanitized testnet upstream diagnostic report status, IOTA Names, IOTA
@@ -77,6 +80,9 @@ marketplace, or safety work before those claims can be made.
   `npm run execute:testnet-demo` passes with explicit operator intent.
 - Live IOTA Names, IOTA Identity, VC, payment, or A2A proof unless the
   corresponding opt-in live command is configured and passes.
+- Live x402/AP2 facilitator, processor, or settlement proof unless
+  `npm run proof:payment-provider-readiness` validates an ignored structured
+  report and the operator manually accepts it.
 - Public A2A hosting, production key management, external conformance, public
   push delivery, or production auth decisions.
 - Production marketplace, provider verification, moderation, public scoring, or
@@ -101,6 +107,7 @@ npm run a2a:write-static-discovery-bundle -- --agent-card <signed-card.json> --j
 npm run a2a:check-static-discovery-bundle -- --out-dir <dir> --expected-public-base-url <url> --expected-public-jwks-url <url>
 npm run smoke:a2a-static-discovery-local -- --out-dir <dir> --expected-public-base-url <url> --expected-public-jwks-url <url>
 npm run proof:a2a-public-readiness
+npm run proof:payment-provider-readiness
 npm run proof:verification-profiles
 npm run proof:live-status
 npm run proof:launch-readiness

@@ -129,6 +129,9 @@ It also includes the first Agentic GasKit implementation slices:
 - non-networked product status proof command for local proof, live/testnet,
   package publication, A2A hosting, payment, marketplace, custody, and device
   safety claim boundaries
+- non-networked payment-provider readiness gate for local x402/AP2 source/test
+  evidence plus an operator-supplied redacted structured live-report path before
+  manual approval of live facilitator, processor, or settlement claims
 - non-networked launch-readiness evidence matrix that maps roadmap areas to
   source evidence, local commands, blocker codes, and next gates
 - non-networked operator live-gate runbook that classifies config blockers,
@@ -225,6 +228,9 @@ roadmap unless later slices implement and verify them.
   `scripts/write-a2a-static-hosting-review.test.ts`
 - Product status proof: `docs/agentic-gaskit/product-status.md`,
   `scripts/check-product-status.ts`, `scripts/product-status.test.ts`
+- Payment-provider readiness:
+  `scripts/check-payment-provider-readiness.ts`,
+  `scripts/payment-provider-readiness.test.ts`
 - Launch readiness evidence:
   `docs/agentic-gaskit/launch-readiness-evidence.md`,
   `scripts/check-launch-readiness.ts`, `scripts/launch-readiness.test.ts`
