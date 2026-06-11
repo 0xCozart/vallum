@@ -16,16 +16,18 @@ local proof as live IOTA testnet, production marketplace, public scoring,
 public A2A discovery, production key management, or provider-verification
 proof.
 
-As of the latest completed update, Slice 4.18 is complete: an A2A public
-discovery proof harness. It adds `npm run smoke:a2a-public-discovery` as an
-opt-in networked command for operator-approved public HTTPS Agent Card and JWKS
-probing. The command validates public URL safety, Agent Card JSON shape,
-HTTP+JSON base URL binding, task-auth decision alignment, JWKS public-key shape,
-and absence of secret-like public metadata or private JWK material. It is
-excluded from `verify:fast`, `verify:local`, and `grant:check`. It does not send
-A2A task messages, post webhook callbacks, run background workers, persist
-queues, store webhook credentials, run external A2A conformance, publish JWKS,
-or prove production key rotation. Public hosting acceptance, production
+As of the latest completed update, Slice 4.19 is complete: an A2A public
+discovery report gate. It lets the opt-in
+`npm run smoke:a2a-public-discovery -- --report <path>` command write a
+structured local `a2a-public-discovery` report only after public Agent Card and
+JWKS validation passes. `npm run proof:a2a-public-readiness` now requires
+`A2A_PUBLIC_DISCOVERY_REPORT` before `publicReady=true` is possible, validates
+the report schema, observed time, configured public Agent Card/base/JWKS URLs,
+and task-auth decision, and keeps missing/malformed/stale/mismatched reports
+blocked with redacted output. This does not send A2A task messages, post
+webhook callbacks, run background workers, persist queues, store webhook
+credentials, run external A2A conformance, publish JWKS, prove production key
+rotation, or prove public push delivery. Public hosting acceptance, production
 keys/auth, public webhook infrastructure, live IOTA proof, and external
 conformance claims remain blocked.
 
