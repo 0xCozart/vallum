@@ -77,6 +77,11 @@ hosts, marketplace systems, or physical devices.
   `npm run proof:marketplace-readiness` command, which validates local
   marketplace read-model proof plus an ignored structured production
   marketplace report before manual acceptance.
+- Lets operators prepare that review with
+  `npm run marketplace:write-production-proof-plan`, a redacted local plan that
+  lists marketplace review command order, required report fields, required
+  check ids, approval boundaries, and blocker codes without contacting
+  production marketplace systems.
 - Points production custody review at the non-networked
   `npm run proof:custody-readiness` command, which validates local
   signer-reference proof plus an ignored structured custody report before
@@ -125,6 +130,7 @@ npm run proof:a2a-public-readiness
 npm run proof:package-publication-readiness
 npm run proof:payment-provider-readiness
 npm run proof:marketplace-readiness
+npm run marketplace:write-production-proof-plan -- --out tmp/gaskit/marketplace-production-proof-plan.json
 npm run proof:custody-readiness
 npm run live:write-proof-plan -- --out tmp/gaskit/live-proof-plan.json
 npm run package:write-publication-proof-plan -- --out tmp/gaskit/package-publication-proof-plan.json

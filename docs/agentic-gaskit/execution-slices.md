@@ -3421,6 +3421,81 @@ Escalation triggers:
   public scoring, live settlement, custody, staking, bonding, slashing,
   public marketplace launch, or marketplace action execution.
 
+## Slice 5.4: Marketplace Production Proof Plan Packet
+
+User-visible outcome:
+Marketplace operators have a non-networked proof-plan command that turns the
+marketplace production readiness gate into command order, required structured
+report fields, required check ids, blocker codes, and proof boundaries before
+any production marketplace review.
+
+Likely files:
+
+- `scripts/write-marketplace-production-proof-plan.ts`
+- `scripts/write-marketplace-production-proof-plan.test.ts`
+- `scripts/check-operator-live-gates.ts`
+- `scripts/check-launch-readiness.ts`
+- `scripts/package-scripts.test.ts`
+- `scripts/operator-live-gates.test.ts`
+- `scripts/launch-readiness.test.ts`
+- `docs/marketplace-readiness.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/CODEBASE_MAP.md`
+- `package.json`
+
+Acceptance criteria:
+
+- `npm run marketplace:write-production-proof-plan` builds first and does not
+  contact production marketplace systems, provider systems, payment systems,
+  IOTA services, public A2A endpoints, or Gas Station endpoints.
+- The plan reports current blocker codes, ready approval codes, command order,
+  required operator input names, required structured report fields, required
+  structured report check ids, and safety boundaries.
+- The plan can write a mode-0600 ignored local JSON artifact.
+- The plan does not print or require provider credentials, session tokens,
+  authorization headers, payment instruments, raw payloads, response bodies,
+  moderation payloads, provider secrets, private prompts, signatures, or local
+  secret paths.
+- Operator live gates point production marketplace review at the plan before
+  marketplace readiness and any dedicated production marketplace readiness
+  slice.
+- Launch readiness includes the plan as Phase 5 marketplace evidence without
+  clearing production marketplace blockers.
+
+Verification:
+
+- Focused marketplace production proof-plan tests.
+- Focused marketplace-readiness, package-script, operator-gate,
+  product-status, and launch-readiness tests.
+- `npm run marketplace:write-production-proof-plan -- --out
+  tmp/gaskit/marketplace-production-proof-plan.json`.
+- `npm run proof:marketplace-readiness`.
+- `npm run proof:operator-gates`.
+- `npm run proof:product-status`.
+- `npm run proof:launch-readiness`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slices 5.2 and 5.3.
+
+Risk:
+High. A proof plan can be mistaken for provider verification, moderation
+approval, public scoring approval, payment settlement proof, custody approval,
+or production marketplace launch unless the artifact stays redacted, opt-in,
+and manually reviewed.
+
+Escalation triggers:
+
+- Any request to operate a production marketplace, list production providers,
+  verify providers, moderate listings, run live settlement, expose production
+  session/API authorization, approve custody, public-score providers, or
+  execute marketplace actions.
+
 ## Slice 6.1: Package Namespace And Release Metadata Strategy
 
 User-visible outcome:

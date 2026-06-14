@@ -154,6 +154,10 @@ It also includes the first Agentic GasKit implementation slices:
   proof plus an operator-supplied redacted structured production marketplace
   report path before manual approval of provider, moderation, auth, settlement,
   dispute, or operations claims
+- local redacted marketplace production proof-plan writer for provider
+  onboarding, provider verification, moderation, auth, settlement, dispute,
+  operations, required structured report fields, blocker codes, and proof
+  boundaries before production marketplace review
 - package namespace and release metadata strategy for the current
   `@iota-gaskit/*` prerelease line
 - opt-in package publish dry-run gate for public workspace packages
@@ -211,7 +215,8 @@ roadmap unless later slices implement and verify them.
 - Contract template metadata: `packages/contracts-metadata/src/`
 - Marketplace read model and readiness: `packages/marketplace/src/`,
   `scripts/smoke-marketplace-read-model.ts`,
-  `scripts/check-marketplace-readiness.ts`
+  `scripts/check-marketplace-readiness.ts`,
+  `scripts/write-marketplace-production-proof-plan.ts`
 - Package release strategy: `docs/agentic-gaskit/package-release-strategy.md`,
   `scripts/package-publish-dry-run.ts`,
   `scripts/smoke-package-install.ts`,

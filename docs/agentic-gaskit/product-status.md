@@ -43,6 +43,9 @@ surface in one machine-checkable place:
   tests, smoke wiring, and accepts only an operator-supplied redacted structured
   production marketplace report path before moving marketplace evidence to
   manual review;
+- marketplace-production proof-plan wiring that writes a redacted non-networked
+  command/report checklist before any operator-approved production marketplace
+  review is attempted;
 - custody readiness wiring that checks local signer-reference account source,
   docs, tests, build coverage, and accepts only an operator-supplied redacted
   structured production custody report path before moving custody evidence to
@@ -135,6 +138,7 @@ npm run proof:package-publication-readiness
 npm run package:write-publication-proof-plan -- --out tmp/gaskit/package-publication-proof-plan.json
 npm run proof:payment-provider-readiness
 npm run proof:marketplace-readiness
+npm run marketplace:write-production-proof-plan -- --out tmp/gaskit/marketplace-production-proof-plan.json
 npm run proof:custody-readiness
 npm run payment:write-provider-proof-plan -- --out tmp/gaskit/payment-provider-proof-plan.json
 npm run proof:verification-profiles

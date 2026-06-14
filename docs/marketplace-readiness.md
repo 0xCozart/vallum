@@ -124,6 +124,21 @@ blocks production marketplace claims unless `MARKETPLACE_PRODUCTION_REPORT`
 points to an ignored redacted structured report from an operator-approved
 review.
 
+`npm run marketplace:write-production-proof-plan` adds a non-networked
+marketplace production proof-plan writer for operators:
+
+- builds first;
+- contacts no production marketplace system, provider system, payment system,
+  IOTA service, public A2A endpoint, or Gas Station endpoint;
+- emits command order, current blocker codes, required structured report
+  fields, required check ids, and proof boundaries;
+- can write an ignored local JSON artifact such as
+  `tmp/gaskit/marketplace-production-proof-plan.json`;
+- keeps provider credentials, session tokens, authorization headers, payment
+  instruments, raw payloads, response bodies, moderation payloads, provider
+  secrets, private prompts, signatures, and local secret paths out of output
+  and Git.
+
 The structured report must be status-only JSON with `schemaVersion=1`,
 `kind=agentic-gaskit.marketplace-production-proof`, `result=passed`, a recent
 `observedAt`, `environment=testnet` or `environment=production`, and check ids
