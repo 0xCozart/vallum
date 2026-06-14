@@ -1,12 +1,15 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 
 import {
+  buildLiveProofStatusArtifact,
   checkLiveProofStatus,
+  formatLiveProofStatusArtifact,
   formatLiveProofStatusReport,
+  writeLiveProofStatusArtifact,
 } from "./check-live-proof-status.js";
 
 test("live proof status reports exact blockers without secret values", async () => {
@@ -424,6 +427,69 @@ test("live proof status reports readiness failures by check id only", async () =
     assert.equal(readiness?.code, "TESTNET_READINESS_FAILED");
     assert.ok(readiness?.missing?.includes("GAS_STATION_AUTH.required"));
     assert.doesNotMatch(formatted, /https:\/\/api\.testnet\.iota\.example/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("live proof status artifact summarizes blockers without secret values", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  try {
+    const report = await checkLiveProofStatus({
+      cwd,
+      env: {
+        IOTA_NAMES_GRAPHQL_URL: "https://graphql.testnet.example/iota",
+        IOTA_NAMES_NAME: "researcher.demo.iota",
+        IOTA_NAMES_EXPECTED_ADDRESS: "0x1111111111111111111111111111111111111111111111111111111111111111",
+        IOTA_IDENTITY_PROOF_ENDPOINT: "https://identity.testnet.example/proof",
+        IOTA_IDENTITY_PROFILE_PATH: "profiles/researcher.json",
+      },
+      gasStationRuntimeReport: readyGasStationRuntime(),
+    });
+    const artifact = buildLiveProofStatusArtifact(report, new Date("2026-06-14T00:00:00.000Z"));
+    const formatted = formatLiveProofStatusArtifact(artifact);
+
+    assert.equal(artifact.schemaVersion, 1);
+    assert.equal(artifact.kind, "agentic-gaskit.live-proof-status-report");
+    assert.equal(artifact.generatedAt, "2026-06-14T00:00:00.000Z");
+    assert.equal(artifact.ok, false);
+    assert.ok(artifact.readyCheckIds.includes("gas-station-runtime"));
+    assert.ok(artifact.blockedCheckIds.includes("sponsor-funding"));
+    assert.ok(artifact.blockedCheckIds.includes("iota-names-live"));
+    assert.ok(artifact.blockerCodes.includes("SPONSOR_FUNDING_REPORT_MISSING"));
+    assert.ok(artifact.boundaries.some((boundary) => boundary.includes("non-networked")));
+    assert.doesNotMatch(
+      formatted,
+      /fake-testnet-sponsor-key|fake-gas-station-auth|fake-upstream-bearer|local-secret|iotaprivkey|graphql\.testnet\.example|identity\.testnet\.example|researcher\.demo\.iota|researcher\.json|0x1111111111111111111111111111111111111111111111111111111111111111/i,
+    );
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("live proof status artifact writer uses restrictive local file permissions", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  try {
+    const outFile = join("reports", "live-proof-status.json");
+    const artifact = await writeLiveProofStatusArtifact({
+      cwd,
+      env: {},
+      outFile,
+      now: new Date("2026-06-14T00:00:00.000Z"),
+      gasStationRuntimeReport: readyGasStationRuntime(),
+    });
+    const outPath = join(cwd, outFile);
+    const metadata = await stat(outPath);
+    const parsed = JSON.parse(await readFile(outPath, "utf8"));
+
+    assert.equal(metadata.mode & 0o777, 0o600);
+    assert.equal(parsed.kind, artifact.kind);
+    assert.equal(parsed.generatedAt, "2026-06-14T00:00:00.000Z");
+    assert.deepEqual(parsed.blockedCheckIds, artifact.blockedCheckIds);
+    assert.doesNotMatch(
+      JSON.stringify(parsed),
+      /fake-testnet-sponsor-key|fake-gas-station-auth|fake-upstream-bearer|local-secret|iotaprivkey/i,
+    );
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }

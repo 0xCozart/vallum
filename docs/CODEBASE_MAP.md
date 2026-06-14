@@ -113,6 +113,9 @@ It also includes the first Agentic GasKit implementation slices:
   blocker path and sanitized ignored report output for live proof gates
 - non-networked live proof status command for testnet, IOTA Names, IOTA
   Identity, and VC blocker reporting
+- redacted live proof status artifact writer for current check ids, blocker
+  codes, safety boundaries, and ignored handoff/audit evidence without running
+  live proof commands
 - local redacted live-proof plan writer for testnet, Gas Station, IOTA Names,
   IOTA Identity, and VC command order, required input names, evidence
   artifacts, and safety boundaries before live proof commands are run

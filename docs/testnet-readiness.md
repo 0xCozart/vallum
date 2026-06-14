@@ -171,11 +171,15 @@ Operators can generate a non-networked checklist for this proof path with:
 
 ```bash
 npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json
+npm run proof:live-status -- --out tmp/gaskit/live-proof-status.json
 ```
 
-That template is not accepted by `GASKIT_TESTNET_UPSTREAM_REPORT`. It remains
-`pending-operator-proof`; the accepted report must be the sanitized diagnostic
-JSON emitted by `npm run diagnose:gas-station -- --report <ignored-json-path>`.
+The report template is not accepted by `GASKIT_TESTNET_UPSTREAM_REPORT`. It
+remains `pending-operator-proof`; the accepted report must be the sanitized
+diagnostic JSON emitted by `npm run diagnose:gas-station -- --report
+<ignored-json-path>`. The live-proof status artifact is also not accepted as
+upstream proof; it is a redacted snapshot of current check ids, blocker codes,
+and next steps for handoff/audit evidence.
 
 For the direct Docker path, `npm run gas-station:docker-direct -- --status`
 can be used after an intentional startup to inspect whether the expected local

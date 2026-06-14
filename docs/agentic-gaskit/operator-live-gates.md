@@ -194,6 +194,7 @@ npm run marketplace:write-production-proof-plan -- --out tmp/gaskit/marketplace-
 npm run proof:custody-readiness
 npm run custody:write-production-proof-plan -- --out tmp/gaskit/custody-production-proof-plan.json
 npm run live:write-proof-plan -- --out tmp/gaskit/live-proof-plan.json
+npm run proof:live-status -- --out tmp/gaskit/live-proof-status.json
 npm run package:write-publication-proof-plan -- --out tmp/gaskit/package-publication-proof-plan.json
 npm run payment:write-provider-proof-plan -- --out tmp/gaskit/payment-provider-proof-plan.json
 npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json

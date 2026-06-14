@@ -1,5 +1,5 @@
-import { access } from "node:fs/promises";
-import { resolve } from "node:path";
+import { access, chmod, mkdir, writeFile } from "node:fs/promises";
+import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
@@ -57,6 +57,23 @@ export interface CheckLiveProofStatusOptions {
   readonly gasStationRuntimeRunner?: GasStationRuntimeCommandRunner;
 }
 
+export interface LiveProofStatusArtifact {
+  readonly schemaVersion: 1;
+  readonly kind: "agentic-gaskit.live-proof-status-report";
+  readonly generatedAt: string;
+  readonly ok: boolean;
+  readonly readyCheckIds: readonly string[];
+  readonly blockedCheckIds: readonly string[];
+  readonly blockerCodes: readonly string[];
+  readonly checks: readonly LiveProofCheck[];
+  readonly boundaries: readonly string[];
+}
+
+export interface WriteLiveProofStatusArtifactOptions extends CheckLiveProofStatusOptions {
+  readonly now?: Date;
+  readonly outFile?: string;
+}
+
 const IOTA_NAMES_REQUIRED_ENV = [
   "IOTA_NAMES_GRAPHQL_URL",
   "IOTA_NAMES_NAME",
@@ -87,6 +104,22 @@ const SPONSOR_FAUCET_REPORT_ENV = "GASKIT_SPONSOR_FAUCET_REPORT";
 const TESTNET_UPSTREAM_REPORT_ENV = "GASKIT_TESTNET_UPSTREAM_REPORT";
 const IOTA_NAMES_LIVE_REPORT_ENV = "IOTA_NAMES_LIVE_REPORT";
 const IOTA_IDENTITY_LIVE_REPORT_ENV = "IOTA_IDENTITY_LIVE_REPORT";
+const ARTIFACT_BOUNDARIES = [
+  "This report is non-networked and does not run live proof commands.",
+  "Ready live-proof checks are configuration/report readiness only unless the check message says a live command has already passed.",
+  "Do not commit generated reports, live proof artifacts, credentials, tokens, private keys, raw transaction bytes, user signatures, response bodies, faucet task ids, full sponsor addresses, endpoint values, profile paths, or secret local paths.",
+  "ok=false means at least one live/testnet proof path remains blocked.",
+] as const;
+
+const usage = `usage: npm exec tsx -- scripts/check-live-proof-status.ts [--json] [--out <path>]
+
+Reports current live/testnet proof readiness without contacting live proof services.
+
+Options:
+  --json        Print a redacted machine-readable artifact.
+  --out <path>  Write the same JSON artifact to a local file with mode 0600.
+  --help        Show this help text.
+`;
 
 export async function checkLiveProofStatus(
   options: CheckLiveProofStatusOptions = {},
@@ -110,6 +143,48 @@ export async function checkLiveProofStatus(
     ok: checks.every((check) => check.status === "ready"),
     checks,
   };
+}
+
+export function buildLiveProofStatusArtifact(
+  report: LiveProofStatusReport,
+  now = new Date(),
+): LiveProofStatusArtifact {
+  return {
+    schemaVersion: 1,
+    kind: "agentic-gaskit.live-proof-status-report",
+    generatedAt: now.toISOString(),
+    ok: report.ok,
+    readyCheckIds: report.checks
+      .filter((check) => check.status === "ready")
+      .map((check) => check.id),
+    blockedCheckIds: report.checks
+      .filter((check) => check.status === "blocked")
+      .map((check) => check.id),
+    blockerCodes: report.checks
+      .filter((check) => check.status === "blocked")
+      .map((check) => check.code),
+    checks: report.checks,
+    boundaries: ARTIFACT_BOUNDARIES,
+  };
+}
+
+export async function writeLiveProofStatusArtifact(
+  options: WriteLiveProofStatusArtifactOptions = {},
+): Promise<LiveProofStatusArtifact> {
+  const cwd = options.cwd ?? process.cwd();
+  const report = await checkLiveProofStatus(options);
+  const artifact = buildLiveProofStatusArtifact(report, options.now);
+  if (options.outFile) {
+    const outPath = resolveOutputPath(cwd, options.outFile);
+    await mkdir(dirname(outPath), { recursive: true });
+    await writeFile(outPath, formatLiveProofStatusArtifact(artifact), { mode: 0o600 });
+    await chmod(outPath, 0o600);
+  }
+  return artifact;
+}
+
+export function formatLiveProofStatusArtifact(artifact: LiveProofStatusArtifact): string {
+  return `${JSON.stringify(artifact, null, 2)}\n`;
 }
 
 async function checkGasStationRuntimeStatus(
@@ -579,7 +654,65 @@ function isSafeEndpoint(endpoint: string): boolean {
   }
 }
 
-async function main(): Promise<number> {
+interface CliOptions {
+  readonly json: boolean;
+  readonly outFile?: string;
+  readonly help: boolean;
+}
+
+function parseArgs(args: readonly string[]): CliOptions {
+  let json = false;
+  let outFile: string | undefined;
+  let help = false;
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg === "--json") {
+      json = true;
+      continue;
+    }
+    if (arg === "--help" || arg === "-h") {
+      help = true;
+      continue;
+    }
+    if (arg === "--out") {
+      const value = args[index + 1];
+      if (!value || value.startsWith("--")) {
+        throw new Error("--out requires a path");
+      }
+      outFile = value;
+      index += 1;
+      continue;
+    }
+    throw new Error(`Unsupported argument: ${arg}`);
+  }
+  return { json, outFile, help };
+}
+
+function resolveOutputPath(cwd: string, outFile: string): string {
+  return isAbsolute(outFile) ? outFile : resolve(cwd, outFile);
+}
+
+async function main(args = process.argv.slice(2)): Promise<number> {
+  let options: CliOptions;
+  try {
+    options = parseArgs(args);
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    console.error(usage);
+    return 1;
+  }
+
+  if (options.help) {
+    console.log(usage.trimEnd());
+    return 0;
+  }
+
+  if (options.json || options.outFile) {
+    const artifact = await writeLiveProofStatusArtifact({ outFile: options.outFile });
+    console.log(formatLiveProofStatusArtifact(artifact).trimEnd());
+    return 0;
+  }
+
   const report = await checkLiveProofStatus();
   console.log(formatLiveProofStatusReport(report));
   return 0;

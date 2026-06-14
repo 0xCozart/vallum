@@ -5476,3 +5476,68 @@ Escalation triggers:
 - Any request to print raw faucet response bodies, faucet task ids, full
   sponsor addresses, signer material, bearer tokens, rendered Gas Station
   config, raw transaction bytes, or user signatures.
+
+## Slice 7.25: Live Proof Status Artifact Writer
+
+User-visible outcome:
+Operators and future agents can write the current non-networked live-proof
+status to an ignored redacted JSON artifact for handoff/audit evidence while
+the remaining testnet proof is blocked on sponsor funding and reserve_gas
+compatibility.
+
+Likely files:
+
+- `scripts/check-live-proof-status.ts`
+- `scripts/live-proof-status.test.ts`
+- `docs/CODEBASE_MAP.md`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/testnet-readiness.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `npm run proof:live-status -- --json` prints a redacted machine-readable
+  status artifact without contacting live services.
+- `npm run proof:live-status -- --out <ignored-json-path>` writes the same
+  artifact with mode 0600.
+- The artifact contains schema version, kind, timestamp, overall ok flag,
+  ready check ids, blocked check ids, blocker codes, the existing sanitized
+  checks, and safety boundaries.
+- The artifact does not include configured endpoint values, profile paths,
+  faucet URLs, raw upstream bodies, faucet task ids, full sponsor addresses,
+  signer material, bearer tokens, rendered Gas Station config, raw transaction
+  bytes, user signatures, or local secret paths.
+- The artifact remains status evidence only. It does not clear sponsor
+  funding, testnet-upstream, IOTA Names, IOTA Identity, VC, production, or
+  package-readiness blockers.
+
+Verification:
+
+- Focused live-proof status, product-status, operator-gate, and package-script
+  tests.
+- `npm run proof:live-status -- --out tmp/gaskit/live-proof-status.json`.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slices 7.18-7.24 and the existing non-networked live-proof status gate.
+
+Risk:
+Low. This is a derived local artifact writer, but it still needs strict
+redaction discipline because operators may archive it next to live proof
+evidence.
+
+Escalation triggers:
+
+- Any request to include configured endpoint values, profile paths, faucet
+  URLs, raw upstream bodies, faucet task ids, full sponsor addresses, signer
+  material, bearer tokens, rendered Gas Station config, raw transaction bytes,
+  user signatures, or local secret paths.
+- Any request to treat the live-proof status artifact as proof that sponsor
+  funding, reserve_gas compatibility, live Names/Identity, package
+  publication, production custody, production payment, marketplace, or public
+  A2A readiness has passed.

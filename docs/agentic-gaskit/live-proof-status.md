@@ -1,6 +1,6 @@
 # Live Proof Status
 
-Last updated: 2026-06-11.
+Last updated: 2026-06-14.
 
 ## Purpose
 
@@ -12,12 +12,18 @@ Run:
 
 ```bash
 npm run proof:live-status
+npm run proof:live-status -- --json
+npm run proof:live-status -- --out tmp/gaskit/live-proof-status.json
 ```
 
 The command does not contact IOTA Names, IOTA Identity, IOTA RPC, Gas Station,
 payment facilitators, A2A endpoints, or npm. It inspects local configuration
 shape and prints blocker codes, missing variable names, readiness check ids,
 and next commands. It never prints configured secret values or endpoint values.
+The `--json` and `--out` forms produce the same redacted machine-readable
+status artifact with check ids, blocker codes, messages, next steps, and proof
+boundaries. The output artifact is local evidence only, is written with mode
+0600, and must stay ignored.
 
 For a redacted command-order artifact before live work, run:
 
@@ -34,26 +40,26 @@ or local secret paths.
 ## Current Local Status
 
 On the current machine, `.env` is present outside Git and `npm run
-readiness:testnet` passes non-networked readiness. `npm run proof:live-status`
-now reports:
+readiness:testnet` passes non-networked readiness. Docker Desktop is reachable
+from WSL, `gaskit-gas-station` and `gaskit-redis` are running, and `npm run
+proof:live-status` with the current ignored funding/upstream reports now
+reports:
 
 - `TESTNET_READINESS_CONFIG_PRESENT`
-- `GAS_STATION_DOCKER_DAEMON_UNAVAILABLE`
+- `GAS_STATION_RUNTIME_READY`
+- `SPONSOR_FUNDING_TOTAL_INSUFFICIENT`
 - `TESTNET_UPSTREAM_REPORT_FAILED`
 - `IOTA_NAMES_LIVE_CONFIG_MISSING`
 - `IOTA_IDENTITY_LIVE_CONFIG_MISSING`
 - `VC_TRUST_POLICY_CONFIG_MISSING`
 
 `npm run gas-station:runtime-preflight` confirms the ignored local Gas Station
-config exists and Docker client command is available on this machine, but the
-Docker daemon is not currently reachable from this workspace. The preflight now
-requires a real non-empty Docker server version from `docker info`, so Docker
-Desktop/WSL false-ready states are classified as
-`GAS_STATION_DOCKER_DAEMON_UNAVAILABLE`. When the daemon is reachable, Docker
-Compose is not required because the preflight can fall back to the direct
-Docker dry-run path exposed by `npm run gas-station:docker-direct -- --dry-run`.
-This is a local runtime prerequisite only; it does not start containers,
-contact IOTA RPC, call Gas Station HTTP endpoints, or reserve gas.
+config exists, the Docker daemon is reachable, Docker Compose is available,
+and the direct Docker fallback is also available. `npm run
+gas-station:docker-direct -- --status` reports `DOCKER_DIRECT_STACK_READY` for
+the expected local network, Redis container, and Gas Station container. This is
+a local runtime prerequisite only; it does not prove reserve_gas compatibility
+or sponsored execution.
 
 Operators who intentionally use a separately managed Gas Station can set
 `GASKIT_GAS_STATION_RUNTIME_MODE=managed-upstream` outside committed files.
@@ -72,15 +78,13 @@ the funding gate can explain the latest faucet failure, rate limit, blocked
 request, or completed request in its next step. It never clears
 `sponsor-funding`; only a passing sponsor funding report can do that.
 
-The configured IOTA testnet RPC endpoint also responded to
-`npm run diagnose:gas-station -- --skip-reserve --report
-tmp/gaskit/testnet-upstream-diagnostic.json` with HTTP 200 and a latest
-checkpoint response. The same diagnostic could not reach the configured local
-Gas Station root or `/v1/health` endpoint at loopback, wrote a sanitized
-ignored report, and `npm run proof:live-status` now classifies that evidence as
-`TESTNET_UPSTREAM_REPORT_FAILED`. This means the next testnet execution
-boundary is local Gas Station availability, reserve compatibility, and sponsor
-funding, not `.env` shape.
+The current sanitized upstream diagnostic reaches the local Gas Station root
+and IOTA testnet RPC, but `/v1/health` returns HTTP 404 and the reserve_gas
+compatibility probe returns HTTP 500. `npm run proof:live-status` classifies
+that evidence as `TESTNET_UPSTREAM_REPORT_FAILED`. The configured sponsor
+funding report also remains blocked with `SPONSOR_FUNDING_TOTAL_INSUFFICIENT`.
+This means the next testnet execution boundary is sponsor funding and Gas
+Station reserve compatibility, not Docker connectivity or `.env` shape.
 
 ## What The Command Proves
 
@@ -133,6 +137,7 @@ npm run sponsor:request-faucet-funds -- --execute --out tmp/gaskit/sponsor-fauce
 npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json
 GASKIT_SPONSOR_FAUCET_REPORT=tmp/gaskit/sponsor-faucet-request.json npm run proof:live-status
 GASKIT_SPONSOR_FUNDING_REPORT=tmp/gaskit/sponsor-funding-report.json npm run proof:live-status
+GASKIT_SPONSOR_FUNDING_REPORT=tmp/gaskit/sponsor-funding-report.json GASKIT_TESTNET_UPSTREAM_REPORT=tmp/gaskit/testnet-upstream-diagnostic.json npm run proof:live-status -- --out tmp/gaskit/live-proof-status.json
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run smoke:iota-names-live -- --report tmp/gaskit/iota-names-live-report.json
 npm run smoke:iota-identity-live -- --report tmp/gaskit/iota-identity-live-report.json
