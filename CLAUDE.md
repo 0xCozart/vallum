@@ -59,7 +59,9 @@ Do not frame the product as:
 
 ## Apex Note
 
-`AGENTS.md` references Apex, but the source repo did not include
-`apex.workflow.json` when this fork was created. If no profile exists, do not
-claim Apex verification. Either initialize the profile in a dedicated setup
-slice or use the repo-local npm/docs checks.
+`AGENTS.md` references Apex. The source repo did not include
+`apex.workflow.json` when this fork was created, but this fork now has a
+reviewed Agentic GasKit profile with no external tracker, focused-search code
+review, no browser adapter, ignored local manifests, and repo-local verification
+presets. Do not claim Apex verification unless the profile validates and the
+current slice has manifest/detect evidence.

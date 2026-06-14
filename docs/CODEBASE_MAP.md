@@ -197,6 +197,11 @@ It also includes the first Agentic GasKit implementation slices:
 - fast verification profile plus non-networked verification-profile audit that
   keeps day-to-day iteration bounded while preserving `verify:local` as the
   full reviewer/release/launch evidence gate
+- reviewed Apex Workflow profile for Agentic GasKit with no external tracker,
+  focused-search code review, no browser adapter, ignored local manifests under
+  `tmp/apex-workflow`, confirmed authority/orientation paths, and readiness
+  verification presets; local Codex goal and handoff docs are explicitly not
+  product authority
 - redacted verification-profile artifact writer for archiving fast/full/grant
   gate wiring status, blocked check ids, blocker codes, and safety boundaries
   to an ignored mode-600 local JSON file

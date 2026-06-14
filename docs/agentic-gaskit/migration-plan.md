@@ -1,6 +1,6 @@
 # Agentic GasKit Migration Plan
 
-Last updated: 2026-06-10.
+Last updated: 2026-06-14.
 
 ## Intent Read
 
@@ -171,8 +171,15 @@ site config.
 - Package namespace rename is deferred or executed in one isolated slice.
 - Current package release strategy is documented in
   `docs/agentic-gaskit/package-release-strategy.md`.
-- `AGENTS.md` no longer points to missing setup as if it exists, or the missing
-  setup is created deliberately.
+- `apex.workflow.json` is expanded into a reviewed Agentic GasKit profile with
+  no unresolved setup review items, confirmed authority/orientation paths,
+  `tracker.provider=none`, `codeIntelligence.provider=focused-search`, no
+  browser adapter, ignored local manifests under `tmp/apex-workflow`, and
+  readiness presets that keep `npm run verify:fast` available for bounded
+  iteration.
+- `AGENTS.md` and `CLAUDE.md` treat the Apex profile as present but require
+  profile validation plus current-slice manifest/detect evidence before any
+  Apex verification claim.
 - Skill docs describe both legacy GasKit work and Agentic GasKit work.
 - Verification commands are listed in README and agent guide.
 - Remote URL and branch policy are explicit before publishing.
@@ -232,7 +239,5 @@ compatibility.
 
 - Public package namespace: `@iota-gaskit/agent-*` first or full
   `@agentic-gaskit/*` migration.
-- Whether to expand the minimal `apex.workflow.json` into a full repo profile
-  before code execution.
 - Whether `/home/sacred/code/agents` should be archived, left as staging, or
   updated with a hard pointer to this fork.

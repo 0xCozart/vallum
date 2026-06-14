@@ -7,7 +7,9 @@ Use `$apex-workflow` for meaningful execution in this repo only after an
 `apex.workflow.json` profile exists.
 
 - Profile: `apex.workflow.json`
-- Review `setup.reviewNeeded`, `setup.inferredPaths`, and `operatorCautions` before the first implementation slice.
+- Review `operatorCautions` before live/testnet or security-sensitive work.
+- `setup.reviewNeeded` is expected to stay empty; any new inferred or guessed
+  setup path must be resolved before the next implementation slice.
 - Select the lightest safe mode before implementation.
 - For meaningful code-facing work, create or update a slice manifest under `tmp/apex-workflow/`.
 - Use the configured tracker, code-intelligence, browser, and UI/UX adapters from the profile.
@@ -18,9 +20,9 @@ node /home/sacred/code/apex-workflow/scripts/init-harness.mjs --target=. --yes -
 ```
 
 Current migration note: this Agentic GasKit fork was created before an Apex
-profile was present in the source repo. Read
-`docs/agentic-gaskit/migration-plan.md` before broad changes. If the Apex
-profile is still absent, do not claim Apex verification; either initialize it in
-a dedicated setup slice or proceed with the repo-local npm/docs checks.
+profile was present in the source repo. The fork now has a reviewed local
+profile. Read `docs/agentic-gaskit/migration-plan.md` before broad changes, and
+do not claim Apex verification unless `apex-doctor` plus the current slice
+manifest/detect evidence pass.
 
 <!-- apex-workflow:end -->

@@ -1,27 +1,490 @@
 {
   "version": 1,
-  "profile": "agentic-gaskit",
-  "setup": {
-    "reviewNeeded": true,
-    "inferredPaths": [
-      "docs/agentic-gaskit/migration-plan.md",
-      "docs/CODEBASE_MAP.md",
-      "README.md"
-    ],
-    "operatorCautions": [
-      "Do not run live testnet commands without explicit operator intent.",
-      "Do not expose sponsor keys, app API keys, bearer tokens, seeds, mnemonics, private keys, raw transaction bytes, or user signatures.",
-      "Treat signer references as scoped handles, not bearer credentials."
-    ]
+  "name": "agentic-gaskit",
+  "description": "Apex Workflow profile for Agentic GasKit. Product truth stays in repo docs; Apex configures local slice scope, evidence, and verification only.",
+  "operatorCautions": [
+    "Do not run live testnet commands without explicit operator intent.",
+    "Do not expose sponsor keys, app API keys, bearer tokens, seeds, mnemonics, private keys, raw transaction bytes, user signatures, payment credentials, or private prompt text.",
+    "Treat signer references as scoped handles, not bearer credentials.",
+    "Do not claim Apex verification unless apex-doctor and manifest tooling pass for the current profile."
+  ],
+  "security": {
+    "commandPolicy": {
+      "mode": "trusted-shell",
+      "allowedCommands": [],
+      "blockedShellTokens": []
+    }
   },
   "authority": {
+    "productTruth": [
+      "docs/product-requirements.md",
+      "docs/overview.md",
+      "docs/architecture.md",
+      "docs/agentic-gaskit/roadmap.md",
+      "docs/agentic-gaskit/account-wallet-safety.md"
+    ],
     "executionTruth": [
       "docs/agentic-gaskit/migration-plan.md",
-      "docs/CODEBASE_MAP.md",
+      "docs/agentic-gaskit/execution-slices.md",
       "docs/agentic-gaskit/launch-readiness-evidence.md",
       "docs/agentic-gaskit/testnet-digest-proof.md",
       "docs/reviewer-walkthrough.md",
       "docs/agentic-gaskit/verification-hardening.md"
+    ],
+    "workflowRules": [
+      "AGENTS.md",
+      "CLAUDE.md",
+      "docs/CODEBASE_MAP.md"
+    ],
+    "doNotUseAsAuthority": [
+      "docs/agentic-gaskit/source-thesis.md",
+      "docs/managed-service-roadmap.md",
+      "docs/agentic-gaskit/full-roadmap-execution-goal.md",
+      "docs/agentic-gaskit/handoff-next-product-build.md",
+      "docs/agentic-gaskit/codex-active-goal.md"
     ]
+  },
+  "orientation": {
+    "readFirst": [
+      "AGENTS.md",
+      "CLAUDE.md"
+    ],
+    "readBeforeBroadSearch": [
+      "docs/CODEBASE_MAP.md",
+      "docs/architecture.md",
+      "README.md"
+    ],
+    "sectionedDocs": []
+  },
+  "modes": [
+    {
+      "id": "tiny",
+      "useWhen": "Single known file, low risk, no durable tracker state.",
+      "requiredGates": [
+        "direct file read",
+        "path-scoped check"
+      ],
+      "codeFacing": true
+    },
+    {
+      "id": "route-local",
+      "useWhen": "One owner with obvious callers.",
+      "requiredGates": [
+        "manifest",
+        "owner or contract read",
+        "focused checks"
+      ],
+      "codeFacing": true
+    },
+    {
+      "id": "shared-surface",
+      "useWhen": "Shared policy gateway, SDK contract, app auth, package workspace, release/readiness gate, or multi-route coupling.",
+      "requiredGates": [
+        "manifest",
+        "contract or surrogate doc read",
+        "focused source impact",
+        "broader checks matching blast radius"
+      ],
+      "codeFacing": true
+    },
+    {
+      "id": "issue-resume",
+      "useWhen": "Dirty multi-slice continuation or a named local plan/handoff continuation.",
+      "requiredGates": [
+        "manifest",
+        "latest plan or handoff state",
+        "no-touch surfaces",
+        "first-gap verification"
+      ],
+      "codeFacing": true
+    },
+    {
+      "id": "planning",
+      "useWhen": "Product, design, architecture, workflow, or roadmap decision before code.",
+      "requiredGates": [
+        "product authority read",
+        "dated local plan artifact when durable"
+      ],
+      "codeFacing": false
+    },
+    {
+      "id": "reconciliation",
+      "useWhen": "Implementation appears landed and remaining work is review, audit, handoff, or wait-state management.",
+      "requiredGates": [
+        "evidence packet",
+        "tracker disposition or explicit tracker skip"
+      ],
+      "codeFacing": false
+    }
+  ],
+  "tracker": {
+    "provider": "none",
+    "team": null,
+    "project": null,
+    "authorityRule": "No external tracker is configured. Local docs, manifests, and handoffs reflect execution state; product truth stays in authority docs.",
+    "recordWhen": [
+      "medium or large change",
+      "user-facing flow, contract, or cross-surface behavior",
+      "likely follow-up, coordination, or prioritization need",
+      "roadmap, scope, acceptance-criteria, or sequencing change"
+    ],
+    "dispositions": [
+      "none",
+      "blocked",
+      "reconciliation"
+    ]
+  },
+  "codeIntelligence": {
+    "provider": "focused-search",
+    "availability": {
+      "configuredPreference": "focused-search",
+      "detectedRepoSupport": "not-required",
+      "currentHostAvailability": "not-required",
+      "fallbackCommandReadiness": "not-required"
+    },
+    "mcp": null,
+    "wrapperFallback": null,
+    "statusCommand": null,
+    "refreshCommand": null,
+    "queryCommand": null,
+    "contextCommand": null,
+    "impactCommand": null,
+    "detectCommand": null,
+    "freshnessGate": {
+      "enabled": false,
+      "policy": "Not required for focused-search."
+    },
+    "fallback": "Use focused rg/sed source review routed through AGENTS.md, CLAUDE.md, docs/CODEBASE_MAP.md, and the closest product or security doc.",
+    "confidenceByTarget": {
+      "symbol": "advisory",
+      "type": "advisory",
+      "module": "advisory",
+      "file_path": "measure",
+      "new_file": "measure",
+      "manifest_file": "measure",
+      "script": "measure",
+      "workflow": "measure",
+      "documentation": "advisory"
+    },
+    "requireFor": [],
+    "advisoryFor": [
+      "documentation"
+    ],
+    "skipFor": [],
+    "fallbackEvidence": "focused_source_review"
+  },
+  "contracts": {
+    "featureArtifacts": [],
+    "stateContracts": [],
+    "surrogates": [
+      "docs/architecture.md",
+      "docs/agentic-gaskit/account-wallet-safety.md",
+      "docs/security/secrets.md",
+      "docs/security/sponsor-wallet.md",
+      "docs/testnet-readiness.md",
+      "docs/agentic-gaskit/verification-hardening.md"
+    ]
+  },
+  "verification": {
+    "focusedChecksFirst": true,
+    "requiredCommands": [
+      "git diff --check"
+    ],
+    "optionalCommands": [
+      "npm run typecheck",
+      "npm run docs:check",
+      "npm run secrets:scan",
+      "npm run verify:fast",
+      "npm run verify:local"
+    ],
+    "freshnessInputs": [
+      "package.json",
+      "package-lock.json",
+      "tsconfig.json",
+      "apex.workflow.json"
+    ],
+    "envAllowlist": [],
+    "knownFailures": null,
+    "browser": {
+      "provider": "none",
+      "origin": null,
+      "artifacts": null,
+      "policy": "Use an explicit skip reason when browser verification is not relevant."
+    },
+    "defaultPreset": "focused",
+    "broadChecksRunLast": true,
+    "expensiveCommandPolicy": {
+      "maxConcurrentJobs": 1,
+      "warnAfterSeconds": 120
+    },
+    "presets": {
+      "focused": {
+        "commands": [
+          "git diff --check"
+        ]
+      },
+      "docs_only": {
+        "commands": [
+          "npm run docs:check",
+          "npm run secrets:scan",
+          "git diff --check"
+        ],
+        "skipBroadBuild": true
+      },
+      "code_focused": {
+        "commands": [
+          "npm run typecheck",
+          "npm run secrets:scan",
+          "git diff --check"
+        ]
+      },
+      "readiness_slice": {
+        "commands": [
+          "npm run typecheck",
+          "npm run docs:check",
+          "npm run secrets:scan",
+          "git diff --check",
+          "npm run verify:fast"
+        ]
+      },
+      "full_local": {
+        "commands": [
+          "npm run verify:local"
+        ]
+      }
+    }
+  },
+  "uiUx": {
+    "designSystemDocs": [],
+    "visualSignoff": "human",
+    "browserEvidencePolicy": "functional-only unless this profile explicitly allows visual signoff"
+  },
+  "manifest": {
+    "defaultDir": "tmp/apex-workflow",
+    "finishPacket": [
+      "What landed",
+      "Mode",
+      "Downshift proof",
+      "Owned files",
+      "No-touch preserved",
+      "Verified commands",
+      "Failed / skipped checks",
+      "Manual evidence",
+      "GitNexus freshness",
+      "Code-intelligence scope",
+      "Tracker update",
+      "Next safe slice"
+    ]
+  },
+  "profileDiscovery": {
+    "enabled": true,
+    "observationLog": "tmp/apex-workflow/observations.jsonl",
+    "recommendAfterManifests": 10,
+    "recommendAfterDays": 7
+  },
+  "operatingModel": {
+    "default": "ledger",
+    "allowed": [
+      "ledger",
+      "assisted",
+      "executor"
+    ],
+    "executeCommandDefault": "disabled",
+    "reason": "Use Apex for scope, evidence, and repo-calibrated workflow guidance. Do not enable stronger execution until this repo deliberately opts in."
+  },
+  "manifestPolicy": {
+    "directory": "tmp/apex-workflow",
+    "requiredWhen": [
+      "multi_file_change",
+      "dirty_worktree_present",
+      "shared_surface_change",
+      "install_or_release_change",
+      "security_sensitive_change",
+      "operator_requested_evidence"
+    ],
+    "optionalWhen": [
+      "single_file_low_risk_change",
+      "docs_only_change"
+    ],
+    "deferWhen": [
+      "exploratory_debugging",
+      "single_command_diagnosis",
+      "owned_files_unknown"
+    ],
+    "deferredMode": {
+      "name": "measurement_debugging",
+      "recordsCommands": true,
+      "requiresOwnedFiles": false,
+      "requiresDetect": false
+    }
+  },
+  "sliceTemplates": {},
+  "finishPacket": {
+    "requireOperatorQuestions": false,
+    "include": [
+      "summary",
+      "owned_files",
+      "no_touch_files",
+      "commands_run",
+      "commands_failed_or_skipped",
+      "evidence",
+      "detect_result",
+      "remaining_risk",
+      "next_safe_slice"
+    ]
+  },
+  "setup": {
+    "generatedBy": "apex-workflow manual setup review",
+    "configMode": "custom",
+    "discovery": {
+      "enabled": false
+    },
+    "apexRoot": "/home/sacred/code/apex-workflow",
+    "targetRoot": "/home/sacred/code/agentic-gaskit",
+    "reviewRequiredBeforeFirstSlice": false,
+    "reviewNeeded": [],
+    "acceptedReviewNeeded": [
+      "No contract directories were detected. Shared-surface work will rely on source search and surrogate docs.",
+      "Authority and orientation paths were manually reviewed for Agentic GasKit before enabling manifest tooling."
+    ],
+    "inferredPaths": {
+      "authority": {
+        "productTruth": [
+          {
+            "path": "docs/product-requirements.md",
+            "confidence": "confirmed",
+            "reason": "repo product requirements source"
+          },
+          {
+            "path": "docs/overview.md",
+            "confidence": "confirmed",
+            "reason": "current product status and public overview"
+          },
+          {
+            "path": "docs/architecture.md",
+            "confidence": "confirmed",
+            "reason": "system boundary and architecture source"
+          },
+          {
+            "path": "docs/agentic-gaskit/roadmap.md",
+            "confidence": "confirmed",
+            "reason": "public Agentic GasKit roadmap"
+          },
+          {
+            "path": "docs/agentic-gaskit/account-wallet-safety.md",
+            "confidence": "confirmed",
+            "reason": "wallet and signer-reference safety contract"
+          }
+        ],
+        "executionTruth": [
+          {
+            "path": "docs/agentic-gaskit/migration-plan.md",
+            "confidence": "confirmed",
+            "reason": "canonical migration and repo setup plan"
+          },
+          {
+            "path": "docs/agentic-gaskit/execution-slices.md",
+            "confidence": "confirmed",
+            "reason": "vertical slice ledger"
+          },
+          {
+            "path": "docs/agentic-gaskit/launch-readiness-evidence.md",
+            "confidence": "confirmed",
+            "reason": "launch-readiness evidence matrix"
+          },
+          {
+            "path": "docs/agentic-gaskit/testnet-digest-proof.md",
+            "confidence": "confirmed",
+            "reason": "testnet proof boundary"
+          },
+          {
+            "path": "docs/reviewer-walkthrough.md",
+            "confidence": "confirmed",
+            "reason": "reviewer verification path"
+          },
+          {
+            "path": "docs/agentic-gaskit/verification-hardening.md",
+            "confidence": "confirmed",
+            "reason": "verification and hardening requirements"
+          }
+        ],
+        "workflowRules": [
+          {
+            "path": "AGENTS.md",
+            "confidence": "confirmed",
+            "reason": "repo workflow rule file"
+          },
+          {
+            "path": "CLAUDE.md",
+            "confidence": "confirmed",
+            "reason": "repo project rules"
+          },
+          {
+            "path": "docs/CODEBASE_MAP.md",
+            "confidence": "confirmed",
+            "reason": "reviewed source map"
+          }
+        ],
+        "doNotUseAsAuthority": [
+          {
+            "path": "docs/agentic-gaskit/source-thesis.md",
+            "confidence": "confirmed",
+            "reason": "background thesis, not execution authority"
+          },
+          {
+            "path": "docs/managed-service-roadmap.md",
+            "confidence": "confirmed",
+            "reason": "managed-service planning, not current open-source execution authority"
+          },
+          {
+            "path": "docs/agentic-gaskit/full-roadmap-execution-goal.md",
+            "confidence": "confirmed",
+            "reason": "local Codex goal pointer, not public product authority"
+          },
+          {
+            "path": "docs/agentic-gaskit/handoff-next-product-build.md",
+            "confidence": "confirmed",
+            "reason": "local handoff history, not public product authority"
+          },
+          {
+            "path": "docs/agentic-gaskit/codex-active-goal.md",
+            "confidence": "confirmed",
+            "reason": "local active-goal note, not public product authority"
+          }
+        ]
+      },
+      "orientation": {
+        "readFirst": [
+          {
+            "path": "AGENTS.md",
+            "confidence": "confirmed",
+            "reason": "repo entrypoint"
+          },
+          {
+            "path": "CLAUDE.md",
+            "confidence": "confirmed",
+            "reason": "project-specific rules"
+          }
+        ],
+        "readBeforeBroadSearch": [
+          {
+            "path": "docs/CODEBASE_MAP.md",
+            "confidence": "confirmed",
+            "reason": "reviewed source map"
+          },
+          {
+            "path": "docs/architecture.md",
+            "confidence": "confirmed",
+            "reason": "architecture source"
+          },
+          {
+            "path": "README.md",
+            "confidence": "confirmed",
+            "reason": "public repo entrypoint"
+          }
+        ],
+        "sectionedDocs": []
+      }
+    }
   }
 }

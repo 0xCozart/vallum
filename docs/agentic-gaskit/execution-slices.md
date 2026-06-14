@@ -6314,3 +6314,69 @@ Escalation triggers:
 - Any request to treat the custody readiness artifact as production custody,
   KMS readiness, external signer operation, recovery export approval, staking,
   bonding, slashing, signer-operation approval, or launch proof.
+
+## Slice 7.38: Apex Profile Setup Review
+
+User-visible outcome:
+Future agents can resume roadmap execution through a validated, reviewed Apex
+profile instead of a minimal or invalid harness file. The profile keeps product
+truth in public repo docs, keeps Codex goal/handoff docs out of authority,
+routes slice manifests to ignored local state, and defines local verification
+presets without adding an external tracker or browser adapter.
+
+Likely files:
+
+- `apex.workflow.json`
+- `AGENTS.md`
+- `CLAUDE.md`
+- `scripts/package-scripts.test.ts`
+- `docs/overview.md`
+- `docs/CODEBASE_MAP.md`
+- `docs/agentic-gaskit/migration-plan.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `apex.workflow.json` validates with the Apex profile checker.
+- `apex-doctor` reports no unresolved setup review items or guessed inferred
+  paths.
+- The profile declares `tracker.provider=none`,
+  `codeIntelligence.provider=focused-search`, `browser.provider=none`, ignored
+  manifests under `tmp/apex-workflow`, and a readiness preset that includes
+  `npm run verify:fast`.
+- Local Codex goal and handoff docs are excluded from execution authority and
+  listed only as do-not-use-as-authority paths.
+- `AGENTS.md`, `CLAUDE.md`, and migration docs no longer describe Apex as
+  missing, but still require validation and current-slice manifest/detect
+  evidence before any Apex verification claim.
+
+Verification:
+
+- `node /home/sacred/code/apex-workflow/scripts/check-config.mjs
+  --config=apex.workflow.json --target=.`
+- `node /home/sacred/code/apex-workflow/scripts/apex-doctor.mjs --target=.
+  --config=apex.workflow.json`
+- `node --import tsx --test scripts/package-scripts.test.ts`
+- `npm run typecheck`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `git diff --check`
+- `npm run verify:fast`
+
+Dependencies:
+Existing Apex Workflow local checkout at `/home/sacred/code/apex-workflow` and
+the current repo authority docs.
+
+Risk:
+Low to medium. The profile is workflow configuration, not runtime product code,
+but inaccurate authority paths or overclaiming Apex evidence could misroute
+future agents or expose local planning docs in open-source execution claims.
+
+Escalation triggers:
+
+- Any request to treat ignored Codex goal, handoff, scratch, or private planning
+  docs as product authority.
+- Any request to claim Apex verification without a passing profile validation
+  and current-slice manifest/detect evidence.
+- Any new live/testnet, sponsor-wallet, app-key, bearer-token, payment,
+  custody, or private prompt surface added to workflow logs or public docs.

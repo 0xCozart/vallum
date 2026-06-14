@@ -121,6 +121,7 @@ The official Gas Station is the sponsorship engine. GasKit is the app integratio
 | Area | Current status | Start here |
 | --- | --- | --- |
 | Agentic migration | The fork direction, migrated planning docs, code-slice gates, and remote/package decisions are documented. | [Agentic Migration Plan](agentic-gaskit/migration-plan.md) |
+| Agent workflow harness | The reviewed `apex.workflow.json` profile uses local-only manifests, no external tracker, focused-search code review, no browser adapter, and repo-local verification presets; local Codex goal and handoff docs stay outside product authority. | [Agentic Migration Plan](agentic-gaskit/migration-plan.md) |
 | Agent wallets | Signer-reference-first account/wallet safety model and local package implementation exist; production custody remains blocked behind `npm run proof:custody-readiness` and an operator-approved report; `npm run proof:custody-readiness -- --out tmp/gaskit/custody-readiness.json` writes a redacted mode-600 audit artifact. | [Account And Wallet Safety](agentic-gaskit/account-wallet-safety.md) |
 | Agent manifests and policy | Manifest validation, pure agent action policy, and mock sponsorship gateway are implemented locally. | [Architecture](architecture.md) |
 | Agent MCP tools | Local MCP-shaped sponsorship tools route through the SDK and policy gateway. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |

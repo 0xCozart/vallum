@@ -15,7 +15,14 @@ const tsconfig = JSON.parse(await readFile(resolve(repoRoot, "tsconfig.json"), "
 const secretScanScript = await readFile(resolve(repoRoot, "scripts/scan-secrets.ts"), "utf8");
 const ciWorkflow = await readFile(resolve(repoRoot, ".github/workflows/ci.yml"), "utf8");
 const apexProfile = JSON.parse(await readFile(resolve(repoRoot, "apex.workflow.json"), "utf8")) as {
-  authority?: { executionTruth?: string[] };
+  name?: string;
+  authority?: { executionTruth?: string[]; doNotUseAsAuthority?: string[] };
+  setup?: { reviewNeeded?: unknown; reviewRequiredBeforeFirstSlice?: boolean };
+  modes?: Array<{ id?: string }>;
+  tracker?: { provider?: string };
+  codeIntelligence?: { provider?: string };
+  manifest?: { defaultDir?: string };
+  verification?: { presets?: { readiness_slice?: { commands?: string[] } } };
 };
 const publicPackageNames = await loadPublicPackageNames();
 const verifyLocalScript = packageJson.scripts?.["verify:local"] ?? "";
@@ -458,6 +465,24 @@ test("workflow execution truth does not reference deleted milestone docs", () =>
   assert.ok(apexProfile.authority?.executionTruth?.includes("docs/reviewer-walkthrough.md"));
   assert.ok(!apexProfile.authority?.executionTruth?.includes("docs/milestone-0-proof.md"));
   assert.ok(!apexProfile.authority?.executionTruth?.includes("docs/grant-milestones.md"));
+});
+
+test("Apex workflow profile is reviewed and keeps local goal docs out of authority", () => {
+  const modeIds = new Set(apexProfile.modes?.map((mode) => mode.id));
+
+  assert.equal(apexProfile.name, "agentic-gaskit");
+  assert.deepEqual(apexProfile.setup?.reviewNeeded, []);
+  assert.equal(apexProfile.setup?.reviewRequiredBeforeFirstSlice, false);
+  assert.ok(modeIds.has("route-local"));
+  assert.ok(modeIds.has("shared-surface"));
+  assert.equal(apexProfile.tracker?.provider, "none");
+  assert.equal(apexProfile.codeIntelligence?.provider, "focused-search");
+  assert.equal(apexProfile.manifest?.defaultDir, "tmp/apex-workflow");
+  assert.ok(apexProfile.verification?.presets?.readiness_slice?.commands?.includes("npm run verify:fast"));
+  assert.ok(!apexProfile.authority?.executionTruth?.includes("docs/agentic-gaskit/full-roadmap-execution-goal.md"));
+  assert.ok(apexProfile.authority?.doNotUseAsAuthority?.includes("docs/agentic-gaskit/full-roadmap-execution-goal.md"));
+  assert.ok(apexProfile.authority?.doNotUseAsAuthority?.includes("docs/agentic-gaskit/handoff-next-product-build.md"));
+  assert.ok(apexProfile.authority?.doNotUseAsAuthority?.includes("docs/agentic-gaskit/codex-active-goal.md"));
 });
 
 test("secret scan covers tracked, staged, and untracked text without broad source-test skips", () => {
