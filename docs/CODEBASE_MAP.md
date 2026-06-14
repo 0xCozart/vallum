@@ -112,6 +112,9 @@ It also includes the first Agentic GasKit implementation slices:
   blocker path
 - non-networked live proof status command for testnet, IOTA Names, IOTA
   Identity, and VC blocker reporting
+- local redacted live-proof plan writer for testnet, Gas Station, IOTA Names,
+  IOTA Identity, and VC command order, required input names, evidence
+  artifacts, and safety boundaries before live proof commands are run
 - opt-in sanitized testnet upstream diagnostic report gate that separates
   `.env` readiness from current IOTA RPC, Gas Station reachability, and
   reserve_gas compatibility proof
@@ -216,7 +219,8 @@ roadmap unless later slices implement and verify them.
   `docs/agentic-gaskit/device-access-safety-gate.md`,
   `scripts/roadmap-safety.test.ts`
 - Live proof status: `docs/agentic-gaskit/live-proof-status.md`,
-  `scripts/check-live-proof-status.ts`, `scripts/live-proof-status.test.ts`
+  `scripts/check-live-proof-status.ts`, `scripts/live-proof-status.test.ts`,
+  `scripts/write-live-proof-plan.ts`
 - Testnet upstream diagnostics: `scripts/diagnose-gas-station-upstream.ts`,
   `scripts/testnet-upstream-report.ts`, `docs/testnet-attempts.md`
 - Local Gas Station setup: `scripts/render-gas-station-config.ts`,

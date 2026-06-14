@@ -19,6 +19,18 @@ payment facilitators, A2A endpoints, or npm. It inspects local configuration
 shape and prints blocker codes, missing variable names, readiness check ids,
 and next commands. It never prints configured secret values or endpoint values.
 
+For a redacted command-order artifact before live work, run:
+
+```bash
+npm run live:write-proof-plan -- --out tmp/gaskit/live-proof-plan.json
+```
+
+The proof plan is also non-networked. It records command names, blocker codes,
+missing input names, required evidence artifacts, and safety boundaries without
+printing configured endpoint values, names, addresses, profile paths,
+credentials, tokens, transaction bytes, credential payloads, response bodies,
+or local secret paths.
+
 ## Current Local Status
 
 On the current machine, `.env` is present outside Git and `npm run
@@ -93,6 +105,7 @@ npm run readiness:testnet
 npm run gas-station:render-config
 npm run gas-station:runtime-preflight
 npm run gas-station:docker-direct -- --dry-run
+npm run live:write-proof-plan -- --out tmp/gaskit/live-proof-plan.json
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run smoke:iota-names-live
 npm run smoke:iota-identity-live

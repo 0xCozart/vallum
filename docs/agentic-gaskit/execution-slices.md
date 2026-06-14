@@ -864,6 +864,76 @@ Escalation triggers:
 - Operator wants this command to spend gas, publish identities, mutate
   revocation state, or accept credentials for production policy-gated actions.
 
+## Slice 2.9: Live Proof Plan Packet
+
+User-visible outcome:
+Operators have a non-networked live-proof plan command that turns the current
+testnet, Gas Station, IOTA Names, IOTA Identity, and VC readiness state into a
+redacted command-order artifact before any live proof command runs.
+
+Likely files:
+
+- `scripts/write-live-proof-plan.ts`
+- `scripts/write-live-proof-plan.test.ts`
+- `scripts/check-operator-live-gates.ts`
+- `scripts/check-launch-readiness.ts`
+- `scripts/package-scripts.test.ts`
+- `scripts/operator-live-gates.test.ts`
+- `scripts/launch-readiness.test.ts`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/CODEBASE_MAP.md`
+- `package.json`
+
+Acceptance criteria:
+
+- `npm run live:write-proof-plan` builds first and does not contact IOTA RPC,
+  Gas Station HTTP, IOTA Names, IOTA Identity, payment providers, A2A
+  endpoints, npm, marketplace systems, custody providers, or physical devices.
+- The plan reports current blocker codes, ready codes, command order, required
+  operator input names, required evidence artifact names, and safety
+  boundaries.
+- The plan can write a mode-0600 ignored local JSON artifact.
+- The plan does not print configured endpoint values, profile paths, names,
+  addresses, credentials, tokens, private keys, raw transaction bytes, user
+  signatures, credential payloads, response bodies, or local secret paths.
+- Operator live gates point IOTA Names, IOTA Identity, and VC live proof prep
+  at the plan before live smoke commands.
+- Launch readiness includes the plan as Phase 2 evidence without clearing live
+  proof blockers.
+
+Verification:
+
+- Focused live proof plan tests.
+- Focused live proof status, package-script, operator-gate, product-status, and
+  launch-readiness tests.
+- `npm run live:write-proof-plan -- --out tmp/gaskit/live-proof-plan.json`.
+- `npm run proof:operator-gates`.
+- `npm run proof:product-status`.
+- `npm run proof:launch-readiness`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slices 2.6, 2.7, 2.8, and the Gas Station runtime preflight/testnet upstream
+gates.
+
+Risk:
+Medium. A proof plan can be mistaken for live IOTA Names, live IOTA Identity,
+live VC validation, or sponsored testnet execution unless the artifact stays
+clearly non-networked and approval-gated.
+
+Escalation triggers:
+
+- Operator wants the plan to run live smokes automatically.
+- The plan needs to include configured endpoint values, profile paths, names,
+  addresses, credential payloads, response bodies, or local secret paths.
+- Product needs production provider verification or public trust acceptance
+  from live Identity evidence.
+
 ## Slice 3.1: Contract Metadata Registry
 
 User-visible outcome:

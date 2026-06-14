@@ -57,6 +57,9 @@ hosts, marketplace systems, or physical devices.
   direct Docker fallback when Compose is unavailable.
 - Separates local testnet `.env` readiness from live Gas Station upstream
   readiness using the sanitized `testnet-upstream` diagnostic report gate.
+- Points IOTA Names, IOTA Identity, and VC live proof prep at
+  `npm run live:write-proof-plan`, a redacted local command-order artifact
+  before any live smoke command runs.
 - Shows which live smokes would contact external services and require explicit
   operator intent.
 - Keeps package publication, public A2A hosting, live payment/provider proof,
@@ -119,6 +122,7 @@ npm run proof:package-publication-readiness
 npm run proof:payment-provider-readiness
 npm run proof:marketplace-readiness
 npm run proof:custody-readiness
+npm run live:write-proof-plan -- --out tmp/gaskit/live-proof-plan.json
 npm run payment:write-provider-proof-plan -- --out tmp/gaskit/payment-provider-proof-plan.json
 npm run smoke:a2a-public-discovery
 npm run verify:fast
@@ -130,6 +134,8 @@ npm run gas-station:render-config
 npm run gas-station:runtime-preflight
 npm run gas-station:docker-direct -- --dry-run
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
+npm run smoke:iota-names-live
+npm run smoke:iota-identity-live
 ```
 
 Only run live commands after operator-owned local credentials are configured
