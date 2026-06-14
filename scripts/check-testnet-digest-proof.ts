@@ -9,7 +9,7 @@ import {
   formatTestnetDigestEvidenceReport,
 } from "./testnet-digest-report.js";
 
-export const DOCUMENTED_TESTNET_DIGEST = "Fc32GFCU95wUGs5iGjewJuMxxXwtRrjzLh3LUGrf85uf";
+export const DOCUMENTED_TESTNET_DIGEST = "5qSeMePKyUWVf6e5AiQCZD4MNLe6dwTrcXzo7cXtN5Zg";
 export const DEFAULT_TESTNET_RPC_URL = "https://api.testnet.iota.cafe";
 
 export interface TestnetDigestProofReport {

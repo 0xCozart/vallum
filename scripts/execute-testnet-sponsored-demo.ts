@@ -70,6 +70,13 @@ export interface SponsoredExecutePrerequisiteCheck {
   readonly next?: string;
 }
 
+export interface PolicyGatewayHealthReport {
+  readonly ready: boolean;
+  readonly code: "POLICY_GATEWAY_READY" | "POLICY_GATEWAY_HTTP_STATUS" | "POLICY_GATEWAY_UNREACHABLE";
+  readonly message: string;
+  readonly status?: number;
+}
+
 export interface SponsoredExecutePrerequisiteReport {
   readonly ready: boolean;
   readonly checks: readonly SponsoredExecutePrerequisiteCheck[];
@@ -83,6 +90,8 @@ export interface SponsoredExecutePrerequisiteOptions {
   readonly gasStationRuntimeReport?: GasStationRuntimePreflightReport;
   readonly gasStationRuntimeRunner?: GasStationRuntimeCommandRunner;
   readonly testnetUpstreamReport?: TestnetUpstreamDiagnosticReport;
+  readonly policyGatewayHealthReport?: PolicyGatewayHealthReport;
+  readonly policyGatewayHealthProbe?: (baseUrl: string) => Promise<PolicyGatewayHealthReport>;
 }
 
 const usage = `usage: npm exec tsx -- scripts/execute-testnet-sponsored-demo.ts [--env-file <path>] [--report <path>]
@@ -136,6 +145,38 @@ function gatewayBaseUrl(env: Record<string, string>): string {
   return `http://${host}:${port}`;
 }
 
+async function checkPolicyGatewayHealth(
+  baseUrl: string,
+  probe?: (baseUrl: string) => Promise<PolicyGatewayHealthReport>,
+): Promise<PolicyGatewayHealthReport> {
+  if (probe) return probe(baseUrl);
+  try {
+    const response = await fetch(`${baseUrl}/health`, {
+      signal: AbortSignal.timeout(2_000),
+    });
+    if (response.ok) {
+      return {
+        ready: true,
+        code: "POLICY_GATEWAY_READY",
+        message: "Local policy gateway health endpoint is reachable.",
+        status: response.status,
+      };
+    }
+    return {
+      ready: false,
+      code: "POLICY_GATEWAY_HTTP_STATUS",
+      message: "Local policy gateway health endpoint returned a non-ready HTTP status.",
+      status: response.status,
+    };
+  } catch {
+    return {
+      ready: false,
+      code: "POLICY_GATEWAY_UNREACHABLE",
+      message: "Local policy gateway health endpoint is not reachable.",
+    };
+  }
+}
+
 export async function checkSponsoredExecutePrerequisites(
   options: SponsoredExecutePrerequisiteOptions = {},
 ): Promise<SponsoredExecutePrerequisiteReport> {
@@ -178,6 +219,18 @@ export async function checkSponsoredExecutePrerequisites(
     next: runtime.ready
       ? undefined
       : "Run npm run gas-station:render-config, enable Docker runtime access, then rerun npm run gas-station:runtime-preflight.",
+  });
+
+  const gatewayHealth = options.policyGatewayHealthReport
+    ?? await checkPolicyGatewayHealth(gatewayBaseUrl(env as Record<string, string>), options.policyGatewayHealthProbe);
+  checks.push({
+    id: "policy-gateway",
+    ok: gatewayHealth.ready,
+    code: gatewayHealth.code,
+    message: gatewayHealth.message,
+    next: gatewayHealth.ready
+      ? undefined
+      : "Start the local policy gateway with the operator-owned env, then rerun npm run execute:testnet-demo.",
   });
 
   const reportPath = readEnv(env, "GASKIT_TESTNET_UPSTREAM_REPORT");

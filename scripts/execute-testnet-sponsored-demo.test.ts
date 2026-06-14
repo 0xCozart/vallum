@@ -20,15 +20,17 @@ test("sponsored testnet execute prerequisites block missing upstream report with
       cwd,
       env: completeEnv(),
       gasStationRuntimeReport: readyGasStationRuntime(),
+      policyGatewayHealthReport: readyPolicyGateway(),
     });
     const formatted = formatSponsoredExecutePrerequisiteReport(report);
 
     assert.equal(report.ready, false);
     assert.equal(findCheck(report, "testnet-readiness").ok, true);
     assert.equal(findCheck(report, "gas-station-runtime").ok, true);
+    assert.equal(findCheck(report, "policy-gateway").ok, true);
     assert.equal(findCheck(report, "testnet-upstream").code, "TESTNET_UPSTREAM_REPORT_MISSING");
     assert.doesNotMatch(formatted, /auth-value|bearer-value|demo-app-key|jwt-value/i);
-    assert.doesNotMatch(formatted, /127\.0\.0\.1:9527|api\.testnet\.iota\.cafe/);
+    assert.doesNotMatch(formatted, /127\.0\.0\.1:9527|127\.0\.0\.1:8787|api\.testnet\.iota\.cafe/);
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }
@@ -45,6 +47,7 @@ test("sponsored testnet execute prerequisites block failed runtime before live e
         GASKIT_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
       },
       gasStationRuntimeReport: blockedGasStationRuntime(),
+      policyGatewayHealthReport: readyPolicyGateway(),
       testnetUpstreamReport: validUpstreamReport(),
     });
 
@@ -67,6 +70,7 @@ test("sponsored testnet execute prerequisites require passing reserve compatibil
         GASKIT_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
       },
       gasStationRuntimeReport: readyGasStationRuntime(),
+      policyGatewayHealthReport: readyPolicyGateway(),
       testnetUpstreamReport: {
         ...validUpstreamReport(),
         reserveGas: { skipped: true, ok: false },
@@ -91,6 +95,7 @@ test("sponsored testnet execute prerequisites pass only after readiness runtime 
         GASKIT_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
       },
       gasStationRuntimeReport: readyGasStationRuntime(),
+      policyGatewayHealthReport: readyPolicyGateway(),
       testnetUpstreamReport: validUpstreamReport(),
     });
 
@@ -98,6 +103,7 @@ test("sponsored testnet execute prerequisites pass only after readiness runtime 
     assert.deepEqual(report.checks.map((check) => [check.id, check.ok]), [
       ["testnet-readiness", true],
       ["gas-station-runtime", true],
+      ["policy-gateway", true],
       ["testnet-upstream", true],
     ]);
   } finally {
@@ -120,12 +126,38 @@ test("sponsored testnet execute prerequisites accept explicit managed upstream r
       gasStationRuntimeRunner: async () => {
         throw new Error("managed-upstream prerequisite check must not inspect Docker");
       },
+      policyGatewayHealthReport: readyPolicyGateway(),
       testnetUpstreamReport: validUpstreamReport(),
     });
 
     assert.equal(report.ready, true);
     assert.equal(findCheck(report, "gas-station-runtime").code, "GAS_STATION_RUNTIME_READY");
     assert.equal(findCheck(report, "testnet-upstream").ok, true);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("sponsored testnet execute prerequisites block unreachable local policy gateway before live execute", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-execute-prereq-"));
+  try {
+    await writePolicy(cwd);
+    const report = await checkSponsoredExecutePrerequisites({
+      cwd,
+      env: {
+        ...completeEnv(),
+        GASKIT_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
+      },
+      gasStationRuntimeReport: readyGasStationRuntime(),
+      policyGatewayHealthReport: blockedPolicyGateway(),
+      testnetUpstreamReport: validUpstreamReport(),
+    });
+    const formatted = formatSponsoredExecutePrerequisiteReport(report);
+
+    assert.equal(report.ready, false);
+    assert.equal(findCheck(report, "policy-gateway").code, "POLICY_GATEWAY_UNREACHABLE");
+    assert.equal(findCheck(report, "testnet-upstream").ok, true);
+    assert.doesNotMatch(formatted, /127\.0\.0\.1:8787|demo-app-key|bearer-value/i);
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }
@@ -254,6 +286,23 @@ function blockedGasStationRuntime() {
     code: "GAS_STATION_DOCKER_DAEMON_UNAVAILABLE" as const,
     message: "Docker daemon is not reachable.",
     checks: [],
+  };
+}
+
+function readyPolicyGateway() {
+  return {
+    ready: true,
+    code: "POLICY_GATEWAY_READY" as const,
+    message: "Local policy gateway health endpoint is reachable.",
+    status: 200,
+  };
+}
+
+function blockedPolicyGateway() {
+  return {
+    ready: false,
+    code: "POLICY_GATEWAY_UNREACHABLE" as const,
+    message: "Local policy gateway health endpoint is not reachable.",
   };
 }
 

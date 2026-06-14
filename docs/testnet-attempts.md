@@ -272,6 +272,44 @@ bearer token, app key, raw transaction bytes, user signature, full
 sponsor/user address, full reservation id, or full gateway transaction id was
 written to tracked evidence.
 
+## 2026-06-14 live proof refresh after funded-account audit
+
+After auditing local IOTA-related repositories for ignored env files, the
+current Agentic GasKit checkout was confirmed to have a funded testnet sponsor
+and passing readiness gates. A first execute attempt failed before reservation
+because the local policy gateway was not listening, so the gateway was started
+explicitly from the operator-owned local env and health checked before retry.
+
+Fresh gates passed before execution:
+
+```bash
+npm run readiness:testnet
+npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json
+npm run gas-station:docker-direct -- --status
+npm run gas-station:runtime-preflight
+npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
+```
+
+Sanitized successful run:
+
+```text
+gatewayConfigured=true
+iotaRpcConfigured=true
+demoTarget=0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0::demo_badge::mint_badge
+ephemeralUserAddress=0xba719b9f...91b8af31
+reservedGas=true
+reservationId=<redacted-id>
+gasKitTransactionId=gaskit_1...a4724c
+sponsorAddress=0xd046a4fb...29b9b868
+executed=true
+transactionDigest=5qSeMePKyUWVf6e5AiQCZD4MNLe6dwTrcXzo7cXtN5Zg
+```
+
+Outcome: the current machine proves a fresh real IOTA testnet sponsored
+transaction through local policy gateway, local Gas Station, and IOTA testnet
+RPC. The retry consumed testnet gas only. The associated ignored report path
+contains only the public digest and redacted identifiers.
+
 ## 2026-06-11 upstream diagnostic report gate
 
 Local `.env` is present and `npm run readiness:testnet` passes non-networked
