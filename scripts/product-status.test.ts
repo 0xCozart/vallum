@@ -105,6 +105,7 @@ test("product status marks report-backed live gates ready without contacting end
     }));
     await writeFile(join(cwd, "sponsor-funding-report.json"), JSON.stringify(readySponsorFundingReport()));
     await writeFile(join(cwd, "iota-names-report.json"), JSON.stringify(readyIotaNamesReport()));
+    await writeFile(join(cwd, "iota-identity-report.json"), JSON.stringify(readyIotaIdentityReport()));
 
     const report = await checkProductStatus({
       cwd,
@@ -122,6 +123,7 @@ test("product status marks report-backed live gates ready without contacting end
         IOTA_NAMES_LIVE_REPORT: "iota-names-report.json",
         IOTA_IDENTITY_PROOF_ENDPOINT: "https://identity.testnet.example/proof",
         IOTA_IDENTITY_PROFILE_PATH: "profiles/researcher.json",
+        IOTA_IDENTITY_LIVE_REPORT: "iota-identity-report.json",
         IOTA_IDENTITY_TRUSTED_ISSUER_DIDS: "did:iota:issuer:agent-registry",
         IOTA_IDENTITY_ALLOWED_VERIFICATION_METHODS: "#agent-capability-key-1",
         IOTA_IDENTITY_REQUIRED_CREDENTIAL_TYPES: "VerifiableCredential,AgentCapabilityCredential",
@@ -597,5 +599,22 @@ function readyIotaNamesReport() {
     expectedAddressConfigured: true,
     addressMatched: true,
     resolvedAddressRedacted: "0x11111111...11111111",
+  };
+}
+
+function readyIotaIdentityReport() {
+  return {
+    schemaVersion: 1,
+    kind: "agentic-gaskit.iota-identity-live-smoke-report",
+    observedAt: new Date().toISOString(),
+    result: "passed",
+    code: "IOTA_IDENTITY_LIVE_SMOKE_PASSED",
+    message: "IOTA Identity live smoke verified profile DID and credential evidence.",
+    contactsLiveService: true,
+    endpointConfigured: true,
+    profilePathConfigured: true,
+    trustPolicyConfigured: true,
+    identityVerified: true,
+    credentialRefsChecked: 1,
   };
 }

@@ -5343,3 +5343,77 @@ Escalation triggers:
   transaction bytes, or user signatures.
 - Any request to treat a faucet request as proof of sponsor funding or
   reserve_gas compatibility.
+
+## Slice 7.23: IOTA Identity Live Smoke Report Gate
+
+User-visible outcome:
+IOTA Identity live proof can no longer be marked ready from proof-endpoint and
+profile-path configuration alone. Operators must run the opt-in live smoke and
+provide a sanitized ignored report before live-status, product-status,
+launch-readiness, or operator gates can mark the Identity proof ready.
+
+Likely files:
+
+- `scripts/iota-identity-live-report.ts`
+- `scripts/smoke-iota-identity-live.ts`
+- `scripts/iota-identity-live-smoke.test.ts`
+- `scripts/check-live-proof-status.ts`
+- `scripts/write-live-proof-plan.ts`
+- `scripts/check-operator-live-gates.ts`
+- `scripts/check-launch-readiness.ts`
+- `scripts/live-proof-status.test.ts`
+- `scripts/product-status.test.ts`
+- `scripts/operator-live-gates.test.ts`
+- `scripts/write-live-proof-plan.test.ts`
+- `docs/CODEBASE_MAP.md`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/testnet-readiness.md`
+
+Acceptance criteria:
+
+- `npm run smoke:iota-identity-live -- --report <ignored-json-path>` writes a
+  sanitized report with schema version, kind, observation time, result, code,
+  configured-field booleans, trust-policy configured flag, live-contact flag,
+  identity verification flag, and credential-ref count only.
+- The report omits proof endpoint values, profile paths, profile names, DIDs,
+  credential references, raw proof request/response bodies, credential
+  material, local secret paths, and private keys.
+- `npm run proof:live-status` blocks safe IOTA Identity config without
+  `IOTA_IDENTITY_LIVE_REPORT`.
+- A current passing `IOTA_IDENTITY_LIVE_REPORT` marks only the
+  `iota-identity-live` check ready; it does not prove IOTA Names, VC
+  trust-policy completeness beyond configured local policy, Gas Station
+  reserve_gas, or sponsored execution.
+- Product status, launch readiness, operator gates, and live proof plans point
+  operators at the report-writing command.
+- The live smoke remains opt-in and stays out of default local verification.
+
+Verification:
+
+- Focused IOTA Identity smoke, live-status, product-status, operator-gate,
+  live-proof-plan, launch-readiness, and package-script tests.
+- `npm run smoke:iota-identity-live -- --help`.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slices 2.8 and 7.21.
+
+Risk:
+Medium. This changes readiness semantics from config-present to
+report-backed proof. It may expose previously hidden blockers, but that is the
+intended launch-safety behavior.
+
+Escalation triggers:
+
+- Any request to treat IOTA Identity endpoint/profile configuration as live
+  proof without a current passing report.
+- Any request to print configured endpoint values, profile paths, DIDs,
+  credential refs, raw proof bodies, credential evidence, or local secret paths
+  in status gates.
+- Any request to include `smoke:iota-identity-live` in default local
+  verification.

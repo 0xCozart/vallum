@@ -36,7 +36,7 @@ test("operator live gates report current blockers without secret values", async 
     assert.equal(findGate(report, "iota-names-live").status, "blocked-config");
     assert.equal(findGate(report, "iota-names-live").approvalRequired, true);
     assert.equal(findGate(report, "iota-names-live").contactsLiveService, true);
-    assert.equal(findGate(report, "iota-identity-live").status, "requires-approval");
+    assert.equal(findGate(report, "iota-identity-live").status, "blocked-config");
     assert.equal(findGate(report, "testnet-readiness").status, "blocked-config");
     assert.equal(findGate(report, "gas-station-runtime").status, "blocked-config");
     assert.equal(findGate(report, "gas-station-runtime").approvalRequired, false);
@@ -57,7 +57,7 @@ test("operator live gates report current blockers without secret values", async 
     );
     assert.equal(
       findGate(report, "iota-identity-live").command,
-      "npm run live:write-proof-plan && npm run smoke:iota-identity-live",
+      "npm run live:write-proof-plan && npm run smoke:iota-identity-live -- --report <ignored-json-path>",
     );
     assert.equal(findGate(report, "npm-registry-publication").status, "requires-approval");
     assert.equal(
@@ -159,8 +159,8 @@ test("operator live gates require approval for configured live endpoint smokes",
       {
         id: "iota-identity-live",
         status: "ready-live",
-        code: "IOTA_IDENTITY_LIVE_CONFIG_PRESENT",
-        message: "IOTA Identity live proof endpoint configuration is present.",
+        code: "IOTA_IDENTITY_LIVE_REPORT_VALID",
+        message: "IOTA Identity live smoke report proves profile DID and credential evidence.",
       },
     ]),
   });

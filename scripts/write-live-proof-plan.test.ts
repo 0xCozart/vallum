@@ -38,14 +38,17 @@ test("live proof plan reports current blockers without configured values", async
     assert.ok(plan.blockerCodes.includes("GAS_STATION_DOCKER_DAEMON_UNAVAILABLE"));
     assert.ok(plan.blockerCodes.includes("TESTNET_UPSTREAM_REPORT_MISSING"));
     assert.ok(plan.blockerCodes.includes("IOTA_NAMES_LIVE_REPORT_MISSING"));
-    assert.ok(plan.readyCodes.includes("IOTA_IDENTITY_LIVE_CONFIG_PRESENT"));
+    assert.ok(plan.blockerCodes.includes("IOTA_IDENTITY_LIVE_REPORT_MISSING"));
     assert.ok(plan.readyCodes.includes("VC_TRUST_POLICY_CONFIG_PRESENT"));
     assert.ok(plan.requiredOperatorInputs.includes("IOTA_NAMES_GRAPHQL_URL"));
     assert.ok(plan.requiredOperatorInputs.includes("IOTA_NAMES_LIVE_REPORT"));
     assert.ok(plan.requiredEvidenceArtifacts.includes("sanitized IOTA Names live smoke report"));
     assert.ok(plan.requiredOperatorInputs.includes("IOTA_IDENTITY_PROOF_ENDPOINT"));
+    assert.ok(plan.requiredOperatorInputs.includes("IOTA_IDENTITY_LIVE_REPORT"));
+    assert.ok(plan.requiredEvidenceArtifacts.includes("sanitized IOTA Identity live smoke report"));
     assert.ok(plan.commands.some((command) => command.id === "diagnose-testnet-upstream" && command.contactsLiveService));
     assert.ok(plan.commands.some((command) => command.id === "smoke-iota-names-live" && command.command.includes("--report")));
+    assert.ok(plan.commands.some((command) => command.id === "smoke-iota-identity-live" && command.command.includes("--report")));
     assert.doesNotMatch(formatted, /graphql\.testnet\.example|researcher\.demo\.iota|identity\.testnet\.example|profiles\/researcher\.json/);
     assert.doesNotMatch(formatted, /0x1111111111111111111111111111111111111111111111111111111111111111/);
     assert.doesNotMatch(formatted, /agent-registry|agent-capability-key-1/);

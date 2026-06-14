@@ -42,7 +42,8 @@ It also includes the first Agentic GasKit implementation slices:
   issuers, verification methods, credential types, revocation status, expiry,
   max credential age, and cache-policy binding
 - opt-in IOTA Identity live proof harness through an operator-provided proof
-  endpoint and configured Agent Profile path
+  endpoint and configured Agent Profile path, with sanitized ignored report
+  output for live proof gates
 - local A2A Agent Card mapping from Agent Profiles
 - local A2A Agent Card well-known serving helper and smoke proof
 - local public JWKS response helper for Agent Card signing keys and loopback
@@ -329,6 +330,7 @@ roadmap unless later slices implement and verify them.
   `scripts/verification-profiles.test.ts`
 - IOTA Identity live smoke:
   `scripts/smoke-iota-identity-live.ts`,
+  `scripts/iota-identity-live-report.ts`,
   `scripts/iota-identity-live-smoke.test.ts`
 - MCP sponsorship tools: `packages/mcp-server/src/`
 - Receipts: `packages/receipts/src/`

@@ -165,7 +165,7 @@ test("live proof status marks explicit managed upstream runtime ready without Do
   }
 });
 
-test("live proof status marks configured identity proof endpoint as ready without contacting it", async () => {
+test("live proof status blocks configured identity proof endpoint without a smoke report", async () => {
   const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
   try {
     const report = await checkLiveProofStatus({
@@ -179,10 +179,35 @@ test("live proof status marks configured identity proof endpoint as ready withou
     const formatted = formatLiveProofStatusReport(report);
     const identity = report.checks.find((check) => check.id === "iota-identity-live");
 
-    assert.equal(identity?.status, "ready");
-    assert.equal(identity?.code, "IOTA_IDENTITY_LIVE_CONFIG_PRESENT");
-    assert.match(identity?.next ?? "", /smoke:iota-identity-live/);
+    assert.equal(identity?.status, "blocked");
+    assert.equal(identity?.code, "IOTA_IDENTITY_LIVE_REPORT_MISSING");
+    assert.deepEqual(identity?.missing, ["IOTA_IDENTITY_LIVE_REPORT"]);
+    assert.match(identity?.next ?? "", /--report/);
     assert.doesNotMatch(formatted, /identity\.testnet\.example|researcher\.json/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("live proof status marks identity ready with a passing smoke report", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  try {
+    await writeFile(join(cwd, "iota-identity-report.json"), JSON.stringify(readyIotaIdentityReport()));
+    const report = await checkLiveProofStatus({
+      cwd,
+      gasStationRuntimeReport: readyGasStationRuntime(),
+      env: {
+        IOTA_IDENTITY_PROOF_ENDPOINT: "https://identity.testnet.example/proof",
+        IOTA_IDENTITY_PROFILE_PATH: "profiles/researcher.json",
+        IOTA_IDENTITY_LIVE_REPORT: "iota-identity-report.json",
+      },
+    });
+    const formatted = formatLiveProofStatusReport(report);
+    const identity = report.checks.find((check) => check.id === "iota-identity-live");
+
+    assert.equal(identity?.status, "ready");
+    assert.equal(identity?.code, "IOTA_IDENTITY_LIVE_REPORT_VALID");
+    assert.doesNotMatch(formatted, /iota-identity-report\.json|identity\.testnet\.example|researcher\.json/);
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }
@@ -406,5 +431,22 @@ function readyIotaNamesReport() {
     expectedAddressConfigured: true,
     addressMatched: true,
     resolvedAddressRedacted: "0x11111111...11111111",
+  };
+}
+
+function readyIotaIdentityReport() {
+  return {
+    schemaVersion: 1,
+    kind: "agentic-gaskit.iota-identity-live-smoke-report",
+    observedAt: new Date().toISOString(),
+    result: "passed",
+    code: "IOTA_IDENTITY_LIVE_SMOKE_PASSED",
+    message: "IOTA Identity live smoke verified profile DID and credential evidence.",
+    contactsLiveService: true,
+    endpointConfigured: true,
+    profilePathConfigured: true,
+    trustPolicyConfigured: true,
+    identityVerified: true,
+    credentialRefsChecked: 1,
   };
 }

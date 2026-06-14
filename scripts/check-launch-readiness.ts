@@ -91,7 +91,7 @@ const AREA_DEFINITIONS = [
       "npm run proof:live-status",
       "npm run live:write-proof-plan",
       "npm run smoke:iota-names-live -- --report tmp/gaskit/iota-names-live-report.json",
-      "npm run smoke:iota-identity-live",
+      "npm run smoke:iota-identity-live -- --report tmp/gaskit/iota-identity-live-report.json",
     ],
     productCheckIds: [
       "testnet-readiness",

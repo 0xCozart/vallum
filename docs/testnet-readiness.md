@@ -208,5 +208,12 @@ but it does not reserve gas, sign transactions, execute transactions, or print
 sponsor signer material. The ignored report contains only the redacted sponsor
 address and aggregate numeric funding fields.
 
+`npm run smoke:iota-identity-live -- --report
+tmp/gaskit/iota-identity-live-report.json` is the report-backed IOTA Identity
+proof path. It contacts the configured proof endpoint only after operator-owned
+Identity variables are present, writes a sanitized ignored report, and does not
+print endpoint values, profile paths, DIDs, credential refs, raw proof
+responses, or local secret paths.
+
 Only after those preconditions pass should an operator use explicit intent to
 run the live sponsored testnet execute.

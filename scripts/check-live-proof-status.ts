@@ -20,6 +20,10 @@ import {
   validateIotaNamesLiveReport,
 } from "./iota-names-live-report.js";
 import {
+  loadIotaIdentityLiveReport,
+  validateIotaIdentityLiveReport,
+} from "./iota-identity-live-report.js";
+import {
   checkGasStationRuntimePreflight,
   type GasStationRuntimeCommandRunner,
   type GasStationRuntimePreflightReport,
@@ -77,6 +81,7 @@ const LIVE_TESTNET_ENV_FILE = ".env";
 const SPONSOR_FUNDING_REPORT_ENV = "GASKIT_SPONSOR_FUNDING_REPORT";
 const TESTNET_UPSTREAM_REPORT_ENV = "GASKIT_TESTNET_UPSTREAM_REPORT";
 const IOTA_NAMES_LIVE_REPORT_ENV = "IOTA_NAMES_LIVE_REPORT";
+const IOTA_IDENTITY_LIVE_REPORT_ENV = "IOTA_IDENTITY_LIVE_REPORT";
 
 export async function checkLiveProofStatus(
   options: CheckLiveProofStatusOptions = {},
@@ -92,7 +97,7 @@ export async function checkLiveProofStatus(
     await checkSponsorFundingStatus(mergedEnv, cwd),
     await checkTestnetUpstreamStatus(mergedEnv, cwd),
     await checkIotaNamesStatus(mergedEnv, cwd),
-    checkIotaIdentityStatus(mergedEnv),
+    await checkIotaIdentityStatus(mergedEnv, cwd),
     checkVcTrustPolicyStatus(mergedEnv),
   ];
 
@@ -359,7 +364,10 @@ async function checkIotaNamesStatus(
 
 }
 
-function checkIotaIdentityStatus(env: Record<string, string | undefined>): LiveProofCheck {
+async function checkIotaIdentityStatus(
+  env: Record<string, string | undefined>,
+  cwd: string,
+): Promise<LiveProofCheck> {
   const missing = IOTA_IDENTITY_REQUIRED_ENV.filter((key) => !readEnv(env, key));
   if (missing.length > 0) {
     return {
@@ -368,7 +376,7 @@ function checkIotaIdentityStatus(env: Record<string, string | undefined>): LiveP
       code: "IOTA_IDENTITY_LIVE_CONFIG_MISSING",
       missing,
       message: "IOTA Identity live proof requires an operator-provided proof endpoint and Agent Profile path.",
-      next: "Set the missing variables outside committed files, then run npm run smoke:iota-identity-live.",
+      next: "Set the missing variables outside committed files, then run npm run smoke:iota-identity-live -- --report <ignored-json-path>.",
     };
   }
 
@@ -379,17 +387,50 @@ function checkIotaIdentityStatus(env: Record<string, string | undefined>): LiveP
       status: "blocked",
       code: "IOTA_IDENTITY_PROOF_ENDPOINT_UNSAFE",
       message: "IOTA Identity proof endpoint must be HTTPS or loopback HTTP.",
-      next: "Use an HTTPS endpoint or loopback local proof endpoint before running npm run smoke:iota-identity-live.",
+      next: "Use an HTTPS endpoint or loopback local proof endpoint before running npm run smoke:iota-identity-live -- --report <ignored-json-path>.",
     };
   }
 
-  return {
-    id: "iota-identity-live",
-    status: "ready",
-    code: "IOTA_IDENTITY_LIVE_CONFIG_PRESENT",
-    message: "IOTA Identity live proof endpoint and Agent Profile path configuration are present.",
-    next: "Run npm run smoke:iota-identity-live to contact the configured proof endpoint and prove DID and credential evidence.",
-  };
+  const reportPath = readEnv(env, IOTA_IDENTITY_LIVE_REPORT_ENV);
+  if (!reportPath) {
+    return {
+      id: "iota-identity-live",
+      status: "blocked",
+      code: "IOTA_IDENTITY_LIVE_REPORT_MISSING",
+      missing: [IOTA_IDENTITY_LIVE_REPORT_ENV],
+      message: "No sanitized IOTA Identity live smoke report is configured.",
+      next: "Run npm run smoke:iota-identity-live -- --report <ignored-json-path> with operator approval, then rerun this gate.",
+    };
+  }
+
+  try {
+    const report = await loadIotaIdentityLiveReport(resolve(cwd, reportPath));
+    const validation = validateIotaIdentityLiveReport(report);
+    if (validation.ok) {
+      return {
+        id: "iota-identity-live",
+        status: "ready",
+        code: validation.code,
+        message: validation.message,
+        next: "Keep the report current; rerun npm run smoke:iota-identity-live -- --report <ignored-json-path> when operator-owned Identity inputs change.",
+      };
+    }
+    return {
+      id: "iota-identity-live",
+      status: "blocked",
+      code: validation.code,
+      message: validation.message,
+      next: "Fix IOTA Identity configuration, profile, or credential evidence, rerun npm run smoke:iota-identity-live -- --report <ignored-json-path>, then rerun this gate.",
+    };
+  } catch {
+    return {
+      id: "iota-identity-live",
+      status: "blocked",
+      code: "IOTA_IDENTITY_LIVE_REPORT_INVALID",
+      message: "Configured IOTA Identity live smoke report could not be loaded or validated.",
+      next: "Regenerate the report with npm run smoke:iota-identity-live -- --report <ignored-json-path> without committing endpoint values or profile paths.",
+    };
+  }
 }
 
 function checkVcTrustPolicyStatus(env: Record<string, string | undefined>): LiveProofCheck {

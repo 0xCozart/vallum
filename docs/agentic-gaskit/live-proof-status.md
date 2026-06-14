@@ -129,7 +129,7 @@ npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json
 GASKIT_SPONSOR_FUNDING_REPORT=tmp/gaskit/sponsor-funding-report.json npm run proof:live-status
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run smoke:iota-names-live -- --report tmp/gaskit/iota-names-live-report.json
-npm run smoke:iota-identity-live
+npm run smoke:iota-identity-live -- --report tmp/gaskit/iota-identity-live-report.json
 ```
 
 Live IOTA Identity proof readiness uses these non-secret variable names:
@@ -137,6 +137,7 @@ Live IOTA Identity proof readiness uses these non-secret variable names:
 ```bash
 IOTA_IDENTITY_PROOF_ENDPOINT=https://...
 IOTA_IDENTITY_PROFILE_PATH=profiles/agent-profile.json
+IOTA_IDENTITY_LIVE_REPORT=tmp/gaskit/iota-identity-live-report.json
 ```
 
 Live VC trust-policy readiness uses these non-secret variable names:
@@ -149,16 +150,18 @@ IOTA_IDENTITY_ACCEPTED_STATUS_TYPES=RevocationBitmap2022,StatusList2021Entry
 IOTA_IDENTITY_CACHE_TTL_MS=60000
 ```
 
-Those values are configuration readiness only. `npm run smoke:iota-identity-live`
-contacts the configured proof endpoint and proves that the endpoint can resolve
-the profile DIDs and return credential evidence accepted by the local trust
-policy. It still does not prove that the endpoint is backed by production key
-management, public provider verification, production policy acceptance, or
-mainnet operation.
+Those values are configuration readiness only. `npm run smoke:iota-identity-live
+-- --report <ignored-json-path>` contacts the configured proof endpoint and
+writes a sanitized ignored report proving that the endpoint can resolve the
+profile DIDs and return credential evidence accepted by the local trust policy.
+The report omits endpoint values, profile paths, DIDs, credential references,
+raw proof responses, and private local paths. It still does not prove that the
+endpoint is backed by production key management, public provider verification,
+production policy acceptance, or mainnet operation.
 
 `npm run execute:testnet-demo` contacts live IOTA services and can spend
 sponsored testnet gas. Run it only with explicit operator intent and
 operator-owned local credentials. The command fails closed before reserve or
 execute unless local testnet readiness, local Gas Station runtime preflight,
 and current passing `GASKIT_TESTNET_UPSTREAM_REPORT` plus
-`IOTA_NAMES_LIVE_REPORT` artifacts are present.
+`IOTA_NAMES_LIVE_REPORT` and `IOTA_IDENTITY_LIVE_REPORT` artifacts are present.

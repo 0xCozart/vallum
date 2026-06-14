@@ -1,5 +1,5 @@
-import { readFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
@@ -10,6 +10,10 @@ import {
   type IotaIdentityCredentialValidationResult,
   type IotaIdentityVcTrustPolicy,
 } from "../packages/registry/src/index.js";
+import {
+  buildIotaIdentityLiveReport,
+  formatIotaIdentityLiveReport,
+} from "./iota-identity-live-report.js";
 
 export type IotaIdentityLiveSmokeResult =
   | {
@@ -45,6 +49,11 @@ export interface RunIotaIdentityLiveSmokeOptions {
   readonly profile?: unknown;
   readonly fetch?: typeof fetch;
   readonly now?: () => Date;
+}
+
+interface CliOptions {
+  readonly help: boolean;
+  readonly reportPath?: string;
 }
 
 const IDENTITY_REQUIRED_ENV = [
@@ -388,9 +397,55 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
+function parseArgs(argv: readonly string[]): CliOptions {
+  const options: { help: boolean; reportPath?: string } = { help: false };
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+    if (arg === "--help" || arg === "-h") {
+      options.help = true;
+      continue;
+    }
+    if (arg === "--report") {
+      const value = argv[index + 1];
+      if (!value) throw new Error("--report requires a path.");
+      options.reportPath = value;
+      index += 1;
+      continue;
+    }
+    throw new Error(`Unknown argument: ${arg}`);
+  }
+  return options;
+}
+
+async function writeReport(path: string, result: IotaIdentityLiveSmokeResult): Promise<void> {
+  const reportPath = isAbsolute(path) ? path : resolve(process.cwd(), path);
+  const report = buildIotaIdentityLiveReport({
+    result,
+    env: process.env,
+  });
+  await mkdir(dirname(reportPath), { recursive: true });
+  await writeFile(reportPath, formatIotaIdentityLiveReport(report), { mode: 0o600 });
+  console.log(`report=${path}`);
+}
+
 async function main(): Promise<number> {
+  let options: CliOptions;
+  try {
+    options = parseArgs(process.argv.slice(2));
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : "Invalid arguments.");
+    return 2;
+  }
+  if (options.help) {
+    console.log("usage: npm exec tsx -- scripts/smoke-iota-identity-live.ts [--report <ignored-json-path>]");
+    return 0;
+  }
+
   const result = await runIotaIdentityLiveSmoke();
   const formatted = formatIotaIdentityLiveSmokeResult(result);
+  if (options.reportPath) {
+    await writeReport(options.reportPath, result);
+  }
   if (result.ok) {
     console.log(formatted);
     return 0;

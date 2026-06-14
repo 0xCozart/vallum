@@ -159,7 +159,7 @@ hosts, marketplace systems, or physical devices.
 ## What It Does Not Do
 
 - It does not run `npm run smoke:iota-names-live -- --report <ignored-json-path>`.
-- It does not run `npm run smoke:iota-identity-live`.
+- It does not run `npm run smoke:iota-identity-live -- --report <ignored-json-path>`.
 - It does not start Docker, Redis, or Gas Station containers.
 - It does not run `npm run diagnose:gas-station`.
 - It does not run `npm publish`.
@@ -214,7 +214,7 @@ GASKIT_GAS_STATION_RUNTIME_MODE=managed-upstream npm run gas-station:runtime-pre
 npm run gas-station:docker-direct -- --dry-run
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run smoke:iota-names-live -- --report tmp/gaskit/iota-names-live-report.json
-npm run smoke:iota-identity-live
+npm run smoke:iota-identity-live -- --report tmp/gaskit/iota-identity-live-report.json
 ```
 
 Only run live commands after operator-owned local credentials are configured
