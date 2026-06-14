@@ -91,6 +91,7 @@ const GATE_COMMANDS: Record<string, string | undefined> = {
 const LIVE_SERVICE_GATES = new Set([
   "sponsor-funding",
   "testnet-upstream",
+  "testnet-sponsored-execute",
   "iota-names-live",
   "iota-identity-live",
   "vc-validation-live",
@@ -103,6 +104,7 @@ const LIVE_SERVICE_GATES = new Set([
 const APPROVAL_REQUIRED_GATES = new Set([
   "sponsor-funding",
   "testnet-upstream",
+  "testnet-sponsored-execute",
   "iota-names-live",
   "iota-identity-live",
   "vc-validation-live",
@@ -207,12 +209,21 @@ function mapProductCheckToGate(check: ProductEvidenceCheck): OperatorLiveGate {
     id: check.id,
     status: classifyGate(check),
     code: check.code,
-    command: GATE_COMMANDS[check.id],
+    command: commandForGate(check),
     approvalRequired: approvalRequired(check),
     contactsLiveService: contactsLiveService(check),
     message: check.message,
     next: check.next ?? defaultNext(check),
   };
+}
+
+function commandForGate(check: ProductEvidenceCheck): string | undefined {
+  if (check.id === "testnet-sponsored-execute") {
+    return check.status === "blocked-live"
+      ? "npm run execute:testnet-demo"
+      : "npm run proof:testnet-digest:live";
+  }
+  return GATE_COMMANDS[check.id];
 }
 
 function classifyGate(check: ProductEvidenceCheck): OperatorGateStatus {

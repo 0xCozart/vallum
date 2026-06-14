@@ -80,6 +80,12 @@ hosts, marketplace systems, or physical devices.
   <ignored-json-path>` and referenced through `GASKIT_SPONSOR_FUNDING_REPORT`.
 - Separates local testnet `.env` readiness from live Gas Station upstream
   readiness using the sanitized `testnet-upstream` diagnostic report gate.
+- Routes `testnet-sponsored-execute` to `npm run proof:testnet-digest:live`
+  when a documented digest is present, so operators can perform a read-only
+  IOTA testnet lookup before deciding whether to refresh sponsored execution.
+  If sponsored execute evidence is missing, the gate points to
+  `npm run execute:testnet-demo`, which requires explicit operator intent and
+  can spend sponsored testnet gas.
 - Points IOTA Names, IOTA Identity, and VC live proof prep at
   `npm run live:write-proof-plan`, a redacted local command-order artifact
   before any live smoke command runs.
@@ -184,6 +190,8 @@ hosts, marketplace systems, or physical devices.
 - It does not run `npm run smoke:iota-names-live -- --report <ignored-json-path>`.
 - It does not run `npm run smoke:iota-identity-live -- --report <ignored-json-path>`.
 - It does not run the Identity live smoke on behalf of VC validation.
+- It does not run `npm run proof:testnet-digest:live`.
+- It does not run `npm run execute:testnet-demo`.
 - It does not start Docker, Redis, or Gas Station containers.
 - It does not run `npm run diagnose:gas-station`.
 - It does not run `npm publish`.

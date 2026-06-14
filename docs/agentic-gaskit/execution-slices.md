@@ -5418,6 +5418,60 @@ Escalation triggers:
 - Any request to include `smoke:iota-identity-live` in default local
   verification.
 
+## Slice 7.64: Sponsored Execute Operator Command
+
+User-visible outcome:
+Operator live gates give `testnet-sponsored-execute` an explicit command and
+classify it as approval-required live-service work instead of showing an
+approval-required gate with no command.
+
+Likely files:
+
+- `scripts/check-operator-live-gates.ts`
+- `scripts/operator-live-gates.test.ts`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- When documented sponsored execute evidence exists,
+  `testnet-sponsored-execute` is `requires-approval`, has
+  `contactsLiveService=true`, and points at `npm run proof:testnet-digest:live`
+  for read-only IOTA testnet lookup.
+- When sponsored execute evidence is missing, the gate remains blocked and
+  points at `npm run execute:testnet-demo`, preserving the explicit operator
+  intent boundary for gas-spending proof refreshes.
+- The operator report does not run either command; it only reports the command
+  needed for the next operator decision.
+- No live IOTA lookup, reserve_gas probe, signing, sponsor gas spend,
+  sponsored execute, npm publish, public A2A probe, payment-provider action,
+  production marketplace action, custody/KMS action, external signer action,
+  or physical-device action is run by this slice.
+
+Verification:
+
+- `node --import tsx --test scripts/operator-live-gates.test.ts`
+- `npm run proof:operator-gates`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `npm run typecheck`
+- `git diff --check`
+
+Dependencies:
+Slices 7.54 and 7.63.
+
+Risk:
+Low to medium. The command label is operationally important because one path is
+read-only live lookup and the other can spend sponsored testnet gas.
+
+Escalation triggers:
+
+- Any request to run `execute:testnet-demo` automatically from
+  `proof:operator-gates`.
+- Any request to treat a documented digest as equivalent to fresh live lookup.
+- Any request to print raw transaction bytes, user signatures, sponsor key
+  material, raw RPC bodies, or full addresses in operator gate output.
+
 ## Slice 7.63: VC Operator Live Gate Classification
 
 User-visible outcome:

@@ -61,6 +61,10 @@ test("operator live gates report current blockers without secret values", async 
       findGate(report, "testnet-upstream").command,
       "npm run live:write-proof-plan && npm run diagnose:gas-station -- --report <ignored-json-path>",
     );
+    assert.equal(findGate(report, "testnet-sponsored-execute").status, "blocked-config");
+    assert.equal(findGate(report, "testnet-sponsored-execute").approvalRequired, true);
+    assert.equal(findGate(report, "testnet-sponsored-execute").contactsLiveService, true);
+    assert.equal(findGate(report, "testnet-sponsored-execute").command, "npm run execute:testnet-demo");
     assert.equal(
       findGate(report, "iota-names-live").command,
       "npm run live:write-proof-plan && npm run smoke:iota-names-live -- --report <ignored-json-path>",
@@ -143,6 +147,25 @@ test("operator live gates keep Gas Station runtime preflight local-only", async 
   assert.equal(runtime.approvalRequired, false);
   assert.equal(runtime.contactsLiveService, false);
   assert.equal(runtime.command, "npm run gas-station:runtime-preflight");
+});
+
+test("operator live gates route documented sponsored execute proof to read-only live lookup", async () => {
+  const report = await checkOperatorLiveGates({
+    productStatus: productStatusFixture([
+      {
+        id: "testnet-sponsored-execute",
+        status: "ready-live",
+        code: "TESTNET_SPONSORED_EXECUTE_DIGEST_DOCUMENTED",
+        message: "Fresh sponsored IOTA testnet execute digest is documented in required repo evidence docs.",
+      },
+    ]),
+  });
+  const gate = findGate(report, "testnet-sponsored-execute");
+
+  assert.equal(gate.status, "requires-approval");
+  assert.equal(gate.approvalRequired, true);
+  assert.equal(gate.contactsLiveService, true);
+  assert.equal(gate.command, "npm run proof:testnet-digest:live");
 });
 
 test("operator live gates require approval for configured live endpoint smokes", async () => {
