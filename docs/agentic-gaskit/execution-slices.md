@@ -6506,3 +6506,67 @@ Escalation triggers:
   Identity, VC, package publication, public A2A, payment, marketplace, custody,
   or device gates as ready without a valid structured report or explicit
   operator-approved proof.
+
+## Slice 7.41: Faucet Unsupported Route Classification
+
+User-visible outcome:
+When an approved IOTA testnet faucet route is reachable but rejects the selected
+API shape, the ignored faucet report and funding-request artifact should carry
+a bounded, actionable `faucetErrorCode` instead of only a generic HTTP status.
+This helps operators switch to a wallet faucet flow, CLI faucet flow, alternate
+approved faucet, or manual testnet transfer without repeating an unsupported
+route.
+
+Likely files:
+
+- `scripts/request-sponsor-faucet-funds.ts`
+- `scripts/request-sponsor-faucet-funds.test.ts`
+- `scripts/write-sponsor-funding-request.ts`
+- `scripts/write-sponsor-funding-request.test.ts`
+- `docs/testnet-readiness.md`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- HTTP faucet failures are mapped to bounded error codes where possible:
+  `REQUEST_UNSUPPORTED` for unsupported route/method statuses,
+  `REQUEST_RATE_LIMITED` for rate limits, and `SERVICE_UNAVAILABLE` for
+  common unavailable gateway/service statuses.
+- The documented v0 faucet route returning HTTP 405 is reported as
+  `REQUEST_UNSUPPORTED`.
+- Funding-request guidance for `REQUEST_UNSUPPORTED` tells operators to avoid
+  repeating the same API version and use another approved funding route.
+- Reports and summaries still omit raw faucet response bodies, endpoint values,
+  full sponsor addresses, signer material, task ids, local secret paths, and
+  raw error text.
+- No gate treats a faucet request or funding request as sponsor-funding proof;
+  only `sponsor:check-funding` can clear the funding gate.
+
+Verification:
+
+- `node --import tsx --test scripts/request-sponsor-faucet-funds.test.ts
+  scripts/write-sponsor-funding-request.test.ts`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `git diff --check`
+- `npm run proof:live-status`
+- `npm run proof:product-status`
+
+Dependencies:
+Existing sponsor faucet request, sponsor funding request, live-proof status,
+and product-status gates.
+
+Risk:
+Medium. This is live/testnet operator guidance. It must improve actionable
+classification without printing raw faucet responses or implying funding,
+reserve compatibility, or sponsored execution readiness.
+
+Escalation triggers:
+
+- Any request to print full sponsor addresses, raw faucet responses, faucet
+  task ids, endpoint values, private keys, bearer tokens, raw transaction
+  bytes, signatures, or local secret paths.
+- Any change that treats faucet success, faucet failure, or the funding-request
+  artifact as proof that sponsor funding or reserve compatibility is ready.

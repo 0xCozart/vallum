@@ -224,6 +224,11 @@ evidence.
 Faucet failure reports may include a bounded `faucetErrorCode` such as
 `REQUEST_RATE_LIMITED`, `REQUEST_COOLDOWN`, `FUNDS_UNAVAILABLE`,
 `ADDRESS_INVALID`, `REQUEST_UNSUPPORTED`, `SERVICE_UNAVAILABLE`, or `UNKNOWN`.
+HTTP status failures are also mapped to bounded error codes where possible; for
+example, a documented faucet route returning HTTP 405 is classified as
+`REQUEST_UNSUPPORTED` so operators can switch to a wallet faucet flow, CLI
+faucet flow, alternate approved faucet, or manual testnet transfer instead of
+repeating the same route.
 The raw faucet response body and raw faucet error text must stay out of stdout,
 docs, tracked files, and committed artifacts.
 

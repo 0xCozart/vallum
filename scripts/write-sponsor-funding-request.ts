@@ -305,6 +305,12 @@ function guidanceForFaucetAttempt(report: SponsorFaucetRequestReport): string {
   if (report.code === "SPONSOR_FAUCET_RATE_LIMITED") {
     return "Latest sponsor faucet request was rate limited; retry later or use another approved testnet funding source.";
   }
+  if (report.faucetErrorCode === "REQUEST_UNSUPPORTED") {
+    return "Latest sponsor faucet route appears unsupported; avoid repeating the same API version and use a wallet faucet flow, CLI faucet flow, another approved faucet, or manual testnet transfer.";
+  }
+  if (report.faucetErrorCode === "SERVICE_UNAVAILABLE") {
+    return "Latest sponsor faucet request reached an unavailable service; retry later or use another approved testnet funding source.";
+  }
   if (report.result === "failed") {
     return "Latest sponsor faucet request failed; use another approved faucet, wallet faucet flow, CLI faucet flow, or manual testnet transfer.";
   }

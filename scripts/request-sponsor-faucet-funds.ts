@@ -316,10 +316,16 @@ export async function requestIotaFromDocumentedFaucet(input: {
     throw new SanitizedFaucetRequestError("network-error");
   }
   if (response.status === 429) {
-    throw new SanitizedFaucetRequestError("http-status", 429, "v0-documented", true);
+    throw new SanitizedFaucetRequestError("http-status", 429, "v0-documented", true, "REQUEST_RATE_LIMITED");
   }
   if (!response.ok) {
-    throw new SanitizedFaucetRequestError("http-status", response.status);
+    throw new SanitizedFaucetRequestError(
+      "http-status",
+      response.status,
+      "v0-documented",
+      false,
+      classifyFaucetHttpStatus(response.status),
+    );
   }
 
   let parsed: unknown;
@@ -586,10 +592,16 @@ async function faucetFetchJson(input: {
     throw new SanitizedFaucetRequestError("network-error", undefined, input.apiVersion);
   }
   if (response.status === 429) {
-    throw new SanitizedFaucetRequestError("http-status", 429, input.apiVersion, true);
+    throw new SanitizedFaucetRequestError("http-status", 429, input.apiVersion, true, "REQUEST_RATE_LIMITED");
   }
   if (!response.ok) {
-    throw new SanitizedFaucetRequestError("http-status", response.status, input.apiVersion);
+    throw new SanitizedFaucetRequestError(
+      "http-status",
+      response.status,
+      input.apiVersion,
+      false,
+      classifyFaucetHttpStatus(response.status),
+    );
   }
 
   let parsed: unknown;
@@ -663,6 +675,14 @@ export function classifyFaucetError(value: unknown): SponsorFaucetErrorCode {
   if (/\b(unavailable|temporarily|internal|server|maintenance|try again|failed|error)\b/.test(normalized)) {
     return "SERVICE_UNAVAILABLE";
   }
+  return "UNKNOWN";
+}
+
+function classifyFaucetHttpStatus(status: number): SponsorFaucetErrorCode {
+  if (status === 400 || status === 422) return "ADDRESS_INVALID";
+  if (status === 404 || status === 405 || status === 501) return "REQUEST_UNSUPPORTED";
+  if (status === 429) return "REQUEST_RATE_LIMITED";
+  if (status === 503 || status === 502 || status === 504) return "SERVICE_UNAVAILABLE";
   return "UNKNOWN";
 }
 

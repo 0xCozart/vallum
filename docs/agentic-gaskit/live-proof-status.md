@@ -79,6 +79,10 @@ it points at a sanitized report from `npm run sponsor:request-faucet-funds`,
 the funding gate can explain the latest faucet failure, rate limit, blocked
 request, or completed request in its next step. It never clears
 `sponsor-funding`; only a passing sponsor funding report can do that.
+Faucet HTTP failures are bounded before they reach live-proof output. For
+example, an HTTP 405 from the documented `/gas` route is classified as
+`REQUEST_UNSUPPORTED`, telling the operator to switch funding routes instead
+of repeating that API version.
 
 The current sanitized upstream diagnostic reaches the local Gas Station root
 and IOTA testnet RPC. It classifies raw upstream reachability as

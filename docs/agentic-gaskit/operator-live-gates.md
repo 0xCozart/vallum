@@ -139,6 +139,10 @@ hosts, marketplace systems, or physical devices.
   `--faucet-report <ignored-json-path>` or `GASKIT_SPONSOR_FAUCET_REPORT` is
   supplied, only bounded sanitized faucet result/code/status context is copied
   into that ignored artifact for operator triage; it does not prove funding.
+  Unsupported faucet routes such as an HTTP 405 from a documented route are
+  represented as `REQUEST_UNSUPPORTED` so operators can switch to a wallet
+  faucet flow, CLI faucet flow, alternate approved faucet, or manual testnet
+  transfer.
 - Lets operators request IOTA testnet faucet funds with
   `npm run sponsor:request-faucet-funds -- --execute --out
   tmp/gaskit/sponsor-faucet-request.json` only after they configure

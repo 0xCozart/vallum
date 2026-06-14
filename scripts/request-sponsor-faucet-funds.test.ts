@@ -289,6 +289,7 @@ test("sponsor faucet request records documented v0 HTTP failure metadata", async
     assert.equal(report.faucetApiVersion, "v0-documented");
     assert.equal(report.faucetHttpStatus, 405);
     assert.equal(report.faucetFailureKind, "http-status");
+    assert.equal(report.faucetErrorCode, "REQUEST_UNSUPPORTED");
     assert.doesNotMatch(formatted, new RegExp(escapeRegExp(rawResponse)));
     assert.doesNotMatch(formatted, /faucet\.testnet\.example/);
   } finally {
@@ -316,6 +317,7 @@ test("sponsor faucet request records safe HTTP failure metadata without raw resp
     assert.equal(report.faucetApiVersion, "v1-batch");
     assert.equal(report.faucetHttpStatus, 503);
     assert.equal(report.faucetFailureKind, "http-status");
+    assert.equal(report.faucetErrorCode, "SERVICE_UNAVAILABLE");
     assert.doesNotMatch(formatted, new RegExp(escapeRegExp(rawResponse)));
   } finally {
     globalThis.fetch = originalFetch;
@@ -373,6 +375,7 @@ test("sponsor faucet request preserves v1 metadata for rate limits", async () =>
     assert.equal(report.faucetApiVersion, "v1-batch");
     assert.equal(report.faucetHttpStatus, 429);
     assert.equal(report.faucetFailureKind, "http-status");
+    assert.equal(report.faucetErrorCode, "REQUEST_RATE_LIMITED");
   } finally {
     globalThis.fetch = originalFetch;
   }

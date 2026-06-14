@@ -104,7 +104,7 @@ test("sponsor funding request includes sanitized faucet attempt context", async 
     faucetHttpStatus: 405,
     faucetFailureKind: "http-status",
     faucetErrorCode: "REQUEST_UNSUPPORTED",
-    guidance: "Latest sponsor faucet request failed; use another approved faucet, wallet faucet flow, CLI faucet flow, or manual testnet transfer.",
+    guidance: "Latest sponsor faucet route appears unsupported; avoid repeating the same API version and use a wallet faucet flow, CLI faucet flow, another approved faucet, or manual testnet transfer.",
   });
   assert.equal(request.operatorFundingOptions[0], "Avoid repeating the same faucet route until its bounded failure condition changes.");
   assert.match(artifact, /"faucetErrorCode": "REQUEST_UNSUPPORTED"/);
