@@ -63,6 +63,8 @@ test("product status reports local proof gates and explicit live blockers withou
     assert.match(formatted, /NPM_PUBLICATION_UNRUN/);
     assert.match(formatted, /npm run proof:package-publication-readiness/);
     assert.match(formatted, /PUBLIC_A2A_HOSTING_UNPROVEN/);
+    assert.match(formatted, /npm run a2a:write-public-proof-plan/);
+    assert.match(formatted, /npm run smoke:a2a-public-discovery only with operator-approved public A2A config/);
     assert.match(formatted, /LIVE_PAYMENT_PROVIDER_UNPROVEN/);
     assert.match(formatted, /npm run proof:payment-provider-readiness/);
     assert.match(formatted, /PRODUCTION_MARKETPLACE_BLOCKED/);

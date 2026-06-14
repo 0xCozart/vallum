@@ -6742,3 +6742,59 @@ Escalation triggers:
 - Any request to print or commit configured public endpoint values, report
   paths, private keys, bearer tokens, webhook secrets, raw payloads, response
   bodies, or local secret paths.
+
+## Slice 7.45: A2A Public Status Proof-Plan Guidance
+
+User-visible outcome:
+Product-status output points operators at the redacted A2A public proof-plan
+artifact before any public endpoint probing, so the public A2A blocker gives a
+safe offline preparation route and does not skip straight to an
+approval-required network smoke.
+
+Likely files:
+
+- `scripts/check-product-status.ts`
+- `scripts/product-status.test.ts`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- The `PUBLIC_A2A_HOSTING_UNPROVEN` product-status next step includes
+  `npm run a2a:write-public-proof-plan -- --out <ignored-json-path>` before
+  `npm run proof:a2a-public-readiness` and the opt-in public discovery smoke.
+- Product-status tests assert the proof-plan command is surfaced.
+- The product-status runbook lists the ignored
+  `tmp/gaskit/a2a-public-proof-plan.json` artifact command with the adjacent
+  A2A readiness commands.
+- The change does not alter public A2A readiness acceptance, public endpoint
+  probing, push delivery, external conformance, production auth, or key
+  management behavior.
+- The proof plan remains non-networked local planning evidence only.
+
+Verification:
+
+- `node --import tsx --test scripts/product-status.test.ts`
+- `npm run proof:product-status`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `git diff --check`
+- `npm run typecheck`
+
+Dependencies:
+Existing product-status gate, A2A public-readiness gate, and public proof-plan
+writer.
+
+Risk:
+Low. This is operator guidance only, but it must not imply that the proof plan
+is public hosting, production auth/key-management, public push delivery, or
+external conformance proof.
+
+Escalation triggers:
+
+- Any request to treat the proof plan as public A2A hosting, public discovery,
+  public push delivery, production auth/key-management, or external conformance
+  proof.
+- Any request to print or commit configured public endpoint values, report
+  paths, private keys, bearer tokens, webhook secrets, raw payloads, response
+  bodies, or local secret paths.
