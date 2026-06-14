@@ -241,6 +241,28 @@ test("testnet digest live proof blocks lookup errors without leaking details", a
   }
 });
 
+test("tracked testnet evidence redaction audit catches unsafe execute fields", () => {
+  const unsafe = [
+    "ephemeralUserAddress=0x80b3fadd46ab8aac6563a1e733deda1c63ca5e54c667662ab63cc8f4e3253b5b",
+    "reservationId=13",
+    "gasKitTransactionId=gaskit_5dc3c921-8b51-4f2c-ad54-795e0503b726",
+    "sponsorAddress=0xd046a4fb78f6ad84a08232db7f4f23164f6e406063ac021f8c86d0cf29b9b868",
+  ].join("\n");
+
+  assert.deepEqual(unsafeTrackedTestnetEvidenceLines(unsafe), [
+    "1:ephemeralUserAddress=0x80b3fadd46ab8aac6563a1e733deda1c63ca5e54c667662ab63cc8f4e3253b5b",
+    "2:reservationId=13",
+    "3:gasKitTransactionId=gaskit_5dc3c921-8b51-4f2c-ad54-795e0503b726",
+    "4:sponsorAddress=0xd046a4fb78f6ad84a08232db7f4f23164f6e406063ac021f8c86d0cf29b9b868",
+  ]);
+});
+
+test("tracked testnet attempts evidence keeps addresses and execution ids redacted", async () => {
+  const attempts = await readFile("docs/testnet-attempts.md", "utf8");
+
+  assert.deepEqual(unsafeTrackedTestnetEvidenceLines(attempts), []);
+});
+
 async function writeDigestDocs(digest: string): Promise<string> {
   const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-testnet-digest-"));
   for (const path of [
@@ -253,4 +275,21 @@ async function writeDigestDocs(digest: string): Promise<string> {
     await writeFile(file, `public digest evidence: ${digest}\n`);
   }
   return cwd;
+}
+
+function unsafeTrackedTestnetEvidenceLines(content: string): string[] {
+  const unsafe: string[] = [];
+  const checks: readonly RegExp[] = [
+    /^ephemeralUserAddress=0x[0-9a-fA-F]{64}$/,
+    /^sponsorAddress=0x[0-9a-fA-F]{64}$/,
+    /^reservationId=(?!<redacted-id>$)[^\s.][^\s]*$/,
+    /^gasKitTransactionId=gaskit_[A-Za-z0-9_-]+$/,
+  ];
+
+  for (const [index, line] of content.split(/\r?\n/).entries()) {
+    if (checks.some((check) => check.test(line))) {
+      unsafe.push(`${index + 1}:${line}`);
+    }
+  }
+  return unsafe;
 }

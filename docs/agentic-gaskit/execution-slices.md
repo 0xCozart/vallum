@@ -8467,3 +8467,49 @@ Escalation triggers:
 - Any request to run the live execute command without explicit operator intent,
   local readiness, Gas Station runtime readiness, sponsor funding proof, and
   reserve_gas compatibility proof.
+
+## Slice 7.86: Tracked Testnet Evidence Redaction Audit
+
+User-visible outcome:
+The testnet digest proof test suite now rejects tracked testnet evidence that
+accidentally records full wallet addresses, full reservation ids, or full
+gateway transaction ids in sponsored execute evidence blocks.
+
+Likely files:
+
+- `scripts/testnet-digest-proof.test.ts`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- A fixture test proves the audit catches unredacted
+  `ephemeralUserAddress`, `sponsorAddress`, `reservationId`, and
+  `gasKitTransactionId` evidence lines.
+- A repo-doc test scans `docs/testnet-attempts.md` and passes only when those
+  fields stay redacted.
+- Public package/function targets and public transaction digests remain
+  allowed.
+- No live IOTA RPC, Gas Station, faucet, signing, reserve, execute, or sponsor
+  credential path is contacted by this audit.
+
+Verification:
+
+- `node --import tsx --test scripts/testnet-digest-proof.test.ts`
+- `npm run proof:testnet-digest`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `git diff --check`
+
+Dependencies:
+Slice 7.85.
+
+Risk:
+Low. This is a tracked evidence test only, but false positives would block
+future documentation updates until evidence labels are deliberately redacted.
+
+Escalation triggers:
+
+- Any request to allow full sponsor/user addresses, full reservation ids, full
+  gateway transaction ids, raw transaction bytes, raw signatures, sponsor keys,
+  bearer tokens, app keys, or local secret paths in tracked testnet evidence.
+- Any request to treat this redaction audit as live sponsored execute proof.
