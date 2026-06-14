@@ -39,13 +39,14 @@ test("product status reports local proof gates and explicit live blockers withou
       marketplaceReadiness: blockedMarketplaceReadiness(),
       packagePublicationReadiness: blockedPackagePublicationReadiness(),
       paymentProviderReadiness: blockedPaymentProviderReadiness(),
+      testnetDigestProof: blockedTestnetDigestProof(),
     });
     const formatted = formatProductStatusReport(report);
 
     assert.equal(report.complete, false);
     assert.equal(report.localProofOk, true);
     assert.deepEqual(
-      report.checks.slice(0, 10).map((check) => [check.id, check.status, check.code]),
+      report.checks.slice(0, 11).map((check) => [check.id, check.status, check.code]),
       [
         ["local-verification", "proven-local", "LOCAL_VERIFY_SURFACE_CONFIGURED"],
         ["package-release-local", "proven-local", "PACKAGE_RELEASE_GATES_CONFIGURED"],
@@ -54,6 +55,7 @@ test("product status reports local proof gates and explicit live blockers withou
         ["gas-station-runtime", "blocked-live", "GAS_STATION_DOCKER_DAEMON_UNAVAILABLE"],
         ["sponsor-funding", "blocked-live", "SPONSOR_FUNDING_REPORT_MISSING"],
         ["testnet-upstream", "blocked-live", "TESTNET_UPSTREAM_REPORT_MISSING"],
+        ["testnet-sponsored-execute", "blocked-live", "TESTNET_DIGEST_DOCS_MISSING"],
         ["iota-names-live", "blocked-live", "IOTA_NAMES_LIVE_CONFIG_MISSING"],
         ["iota-identity-live", "blocked-live", "IOTA_IDENTITY_LIVE_CONFIG_MISSING"],
         ["vc-validation-live", "blocked-live", "VC_TRUST_POLICY_CONFIG_MISSING"],
@@ -94,6 +96,7 @@ test("product status artifact summarizes blockers without secret values", async 
       marketplaceReadiness: blockedMarketplaceReadiness(),
       packagePublicationReadiness: blockedPackagePublicationReadiness(),
       paymentProviderReadiness: blockedPaymentProviderReadiness(),
+      testnetDigestProof: blockedTestnetDigestProof(),
     });
     const artifact = buildProductStatusArtifact(report, new Date("2026-06-14T12:00:00.000Z"));
     const json = formatProductStatusArtifact(artifact);
@@ -108,6 +111,7 @@ test("product status artifact summarizes blockers without secret values", async 
       "operator-report-template",
     ]);
     assert.equal(parsed.blockerCodes.includes("SPONSOR_FUNDING_REPORT_MISSING"), true);
+    assert.equal(parsed.blockerCodes.includes("TESTNET_DIGEST_DOCS_MISSING"), true);
     assert.equal(parsed.blockerCodes.includes("NPM_PUBLICATION_UNRUN"), true);
     assert.equal(parsed.blockerCodes.includes("PUBLIC_A2A_HOSTING_UNPROVEN"), true);
     assert.match(parsed.boundaries.join("\n"), /complete=false/);
@@ -130,6 +134,7 @@ test("product status artifact writer uses restrictive local file permissions", a
       marketplaceReadiness: blockedMarketplaceReadiness(),
       packagePublicationReadiness: blockedPackagePublicationReadiness(),
       paymentProviderReadiness: blockedPaymentProviderReadiness(),
+      testnetDigestProof: blockedTestnetDigestProof(),
       now: new Date("2026-06-14T12:00:00.000Z"),
       outFile,
     });
@@ -185,6 +190,7 @@ test("product status marks report-backed live gates ready without contacting end
       marketplaceReadiness: blockedMarketplaceReadiness(),
       packagePublicationReadiness: blockedPackagePublicationReadiness(),
       gasStationRuntimeReport: readyGasStationRuntime(),
+      testnetDigestProof: documentedTestnetDigestProof(),
       env: {
         GASKIT_SPONSOR_FUNDING_REPORT: "sponsor-funding-report.json",
         GASKIT_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
@@ -212,8 +218,14 @@ test("product status marks report-backed live gates ready without contacting end
     assert.doesNotMatch(report.checks.find((check) => check.id === "gas-station-runtime")?.next ?? "", /Start the local Gas Station/);
     assert.equal(report.checks.find((check) => check.id === "sponsor-funding")?.status, "ready-live");
     assert.equal(report.checks.find((check) => check.id === "testnet-upstream")?.status, "ready-live");
+    assert.equal(report.checks.find((check) => check.id === "testnet-sponsored-execute")?.status, "ready-live");
+    assert.equal(
+      report.checks.find((check) => check.id === "testnet-sponsored-execute")?.code,
+      "TESTNET_SPONSORED_EXECUTE_DIGEST_DOCUMENTED",
+    );
     assert.equal(report.checks.find((check) => check.id === "sponsor-funding")?.evidence, "sponsor-funding-report-valid-redacted");
     assert.equal(report.checks.find((check) => check.id === "testnet-upstream")?.evidence, "testnet-upstream-report-valid-redacted");
+    assert.equal(report.checks.find((check) => check.id === "testnet-sponsored-execute")?.evidence, "testnet-digest-documented-redacted");
     assert.equal(report.checks.find((check) => check.id === "iota-names-live")?.status, "ready-live");
     assert.equal(report.checks.find((check) => check.id === "iota-identity-live")?.status, "ready-live");
     assert.equal(report.checks.find((check) => check.id === "vc-validation-live")?.status, "ready-live");
@@ -245,6 +257,7 @@ test("product status can mark managed upstream runtime ready while upstream proo
       marketplaceReadiness: blockedMarketplaceReadiness(),
       packagePublicationReadiness: blockedPackagePublicationReadiness(),
       paymentProviderReadiness: blockedPaymentProviderReadiness(),
+      testnetDigestProof: blockedTestnetDigestProof(),
     });
     const formatted = formatProductStatusReport(report);
 
@@ -266,6 +279,7 @@ test("product status can mark package publication report ready for approval with
       env: {},
       gasStationRuntimeReport: blockedGasStationRuntime(),
       scripts: completeScripts(),
+      testnetDigestProof: verifiedTestnetDigestProof(),
       packagePublicationReadiness: {
         localProofOk: true,
         liveReady: true,
@@ -291,7 +305,11 @@ test("product status can mark package publication report ready for approval with
     });
     const formatted = formatProductStatusReport(report);
     const publication = report.checks.find((check) => check.id === "npm-registry-publication");
+    const sponsoredExecute = report.checks.find((check) => check.id === "testnet-sponsored-execute");
 
+    assert.equal(sponsoredExecute?.status, "ready-live");
+    assert.equal(sponsoredExecute?.code, "TESTNET_SPONSORED_EXECUTE_DIGEST_VERIFIED");
+    assert.equal(sponsoredExecute?.evidence, "testnet-digest-verified-redacted");
     assert.equal(publication?.status, "ready-live");
     assert.equal(publication?.code, "PACKAGE_PUBLICATION_REPORT_VALID");
     assert.match(formatted, /PACKAGE_PUBLICATION_REPORT_VALID/);
@@ -309,6 +327,7 @@ test("product status can mark payment provider report ready for approval without
       env: {},
       gasStationRuntimeReport: blockedGasStationRuntime(),
       scripts: completeScripts(),
+      testnetDigestProof: blockedTestnetDigestProof(),
       paymentProviderReadiness: {
         localProofOk: true,
         liveReady: true,
@@ -351,6 +370,7 @@ test("product status can mark marketplace report ready for approval without expo
       env: {},
       gasStationRuntimeReport: blockedGasStationRuntime(),
       scripts: completeScripts(),
+      testnetDigestProof: blockedTestnetDigestProof(),
       marketplaceReadiness: {
         localProofOk: true,
         productionReady: true,
@@ -414,6 +434,7 @@ test("product status can mark custody report ready for approval without exposing
       },
       gasStationRuntimeReport: blockedGasStationRuntime(),
       scripts: completeScripts(),
+      testnetDigestProof: blockedTestnetDigestProof(),
     });
     const formatted = formatProductStatusReport(report);
     const custody = report.checks.find((check) => check.id === "production-custody");
@@ -434,6 +455,7 @@ test("product status fails the local proof surface when required commands are mi
       cwd,
       env: {},
       gasStationRuntimeReport: blockedGasStationRuntime(),
+      testnetDigestProof: blockedTestnetDigestProof(),
       scripts: {
         "verify:local": "npm test && npm run docs:check",
         "pack:check": "npm pack --dry-run",
@@ -469,6 +491,7 @@ test("product status keeps publish dry-run opt-in", async () => {
       env: {},
       gasStationRuntimeReport: blockedGasStationRuntime(),
       scripts,
+      testnetDigestProof: blockedTestnetDigestProof(),
     });
     const release = report.checks.find((check) => check.id === "package-release-local");
 
@@ -480,6 +503,46 @@ test("product status keeps publish dry-run opt-in", async () => {
     await rm(cwd, { recursive: true, force: true });
   }
 });
+
+function blockedTestnetDigestProof() {
+  return {
+    digest: "FLdnYRUACAKQn8CwugEv1u6gYTh9jBr8rGMk2JZ2adsd",
+    rpcUrl: "https://api.testnet.iota.cafe",
+    documented: false,
+    liveChecked: false,
+    verified: false,
+    status: "blocked-live" as const,
+    blocker: "TESTNET_DIGEST_DOCS_MISSING",
+    next: "Restore the documented public digest evidence before accepting testnet proof docs.",
+  };
+}
+
+function documentedTestnetDigestProof() {
+  return {
+    digest: "FLdnYRUACAKQn8CwugEv1u6gYTh9jBr8rGMk2JZ2adsd",
+    rpcUrl: "https://api.testnet.iota.cafe",
+    documented: true,
+    liveChecked: false,
+    verified: false,
+    status: "documented-local" as const,
+    next: "Run npm run proof:testnet-digest:live for an opt-in read-only IOTA testnet lookup.",
+  };
+}
+
+function verifiedTestnetDigestProof() {
+  return {
+    digest: "FLdnYRUACAKQn8CwugEv1u6gYTh9jBr8rGMk2JZ2adsd",
+    rpcUrl: "https://api.testnet.iota.cafe",
+    documented: true,
+    liveChecked: true,
+    verified: true,
+    status: "verified-testnet" as const,
+    effectsStatus: "success",
+    checkpoint: "123",
+    timestampMs: "1781480000000",
+    next: "The documented public digest is retrievable from the configured IOTA testnet RPC.",
+  };
+}
 
 function completeScripts(overrides: Record<string, string | undefined> = {}): Record<string, string | undefined> {
   return {

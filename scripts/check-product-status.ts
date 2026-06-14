@@ -19,6 +19,10 @@ import {
   checkCustodyReadiness,
   type CustodyReadinessReport,
 } from "./check-custody-readiness.js";
+import {
+  checkTestnetDigestProof,
+  type TestnetDigestProofReport,
+} from "./check-testnet-digest-proof.js";
 import type {
   GasStationRuntimeCommandRunner,
   GasStationRuntimePreflightReport,
@@ -70,6 +74,7 @@ export interface ProductStatusOptions {
   readonly packagePublicationReadiness?: PackagePublicationReadinessReport;
   readonly paymentProviderReadiness?: PaymentProviderReadinessReport;
   readonly scripts?: Record<string, string | undefined>;
+  readonly testnetDigestProof?: TestnetDigestProofReport;
 }
 
 export interface WriteProductStatusArtifactOptions extends ProductStatusOptions {
@@ -154,12 +159,17 @@ export async function checkProductStatus(options: ProductStatusOptions = {}): Pr
     env: options.env,
     scripts,
   });
+  const testnetDigestProof = options.testnetDigestProof ?? await checkTestnetDigestProof({ cwd });
+  const liveChecks = withSponsoredExecuteCheck(
+    liveStatus.checks.map(mapLiveProofCheck),
+    sponsoredExecuteCheck(testnetDigestProof),
+  );
 
   const checks: ProductEvidenceCheck[] = [
     checkLocalVerificationCoverage(scripts),
     checkPackageReleaseCoverage(scripts),
     checkOperatorReportTemplateCoverage(scripts),
-    ...liveStatus.checks.map(mapLiveProofCheck),
+    ...liveChecks,
     ...productionBlockers(paymentProviderReadiness, packagePublicationReadiness, marketplaceReadiness, custodyReadiness),
   ];
 
@@ -349,6 +359,52 @@ function liveProofEvidence(check: LiveProofCheck): string {
   if (check.status === "ready") return "configuration-present-non-networked";
   if (check.missing && check.missing.length > 0) return `missing=${check.missing.join(",")}`;
   return `blocked=${check.code}`;
+}
+
+function withSponsoredExecuteCheck(
+  liveChecks: readonly ProductEvidenceCheck[],
+  sponsoredExecute: ProductEvidenceCheck,
+): readonly ProductEvidenceCheck[] {
+  const upstreamIndex = liveChecks.findIndex((check) => check.id === "testnet-upstream");
+  if (upstreamIndex === -1) return [...liveChecks, sponsoredExecute];
+  return [
+    ...liveChecks.slice(0, upstreamIndex + 1),
+    sponsoredExecute,
+    ...liveChecks.slice(upstreamIndex + 1),
+  ];
+}
+
+function sponsoredExecuteCheck(proof: TestnetDigestProofReport): ProductEvidenceCheck {
+  if (proof.status === "verified-testnet") {
+    return {
+      id: "testnet-sponsored-execute",
+      status: "ready-live",
+      code: "TESTNET_SPONSORED_EXECUTE_DIGEST_VERIFIED",
+      message: "Fresh sponsored IOTA testnet execute digest is documented and read-only live lookup verified success.",
+      evidence: "testnet-digest-verified-redacted",
+      next: "Keep the documented public digest current when rerunning npm run execute:testnet-demo.",
+    };
+  }
+
+  if (proof.status === "documented-local") {
+    return {
+      id: "testnet-sponsored-execute",
+      status: "ready-live",
+      code: "TESTNET_SPONSORED_EXECUTE_DIGEST_DOCUMENTED",
+      message: "Fresh sponsored IOTA testnet execute digest is documented in required repo evidence docs.",
+      evidence: "testnet-digest-documented-redacted",
+      next: "Run npm run proof:testnet-digest:live for read-only lookup, or rerun npm run execute:testnet-demo only with explicit operator intent when refreshing proof.",
+    };
+  }
+
+  return {
+    id: "testnet-sponsored-execute",
+    status: "blocked-live",
+    code: proof.blocker ?? "TESTNET_SPONSORED_EXECUTE_DIGEST_MISSING",
+    message: "Fresh sponsored IOTA testnet execute evidence is missing or not locally documented.",
+    evidence: `blocked=${proof.blocker ?? "TESTNET_SPONSORED_EXECUTE_DIGEST_MISSING"}`,
+    next: "Run npm run execute:testnet-demo only with explicit operator intent, document the public digest, then rerun npm run proof:testnet-digest.",
+  };
 }
 
 function productionBlockers(

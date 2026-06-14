@@ -9,7 +9,7 @@ surface in one machine-checkable place:
 
 - local verification and package release gates that are configured in this
   checkout;
-- documented public testnet digest evidence wiring;
+- documented sponsored IOTA testnet execute digest evidence wiring;
 - A2A public-readiness wiring for local proof, local authenticated extended
   Agent Card access, local public JWKS serving, local static discovery bundle
   generation, local static discovery artifact writing and validation, local
@@ -119,6 +119,10 @@ production evidence by themselves.
   local Docker or explicit managed-upstream Gas Station runtime prerequisites,
   and sanitized upstream evidence, or blocked with exact missing/runtime/report
   check ids plus redacted evidence labels.
+- Sponsored testnet execution is represented by a dedicated
+  `testnet-sponsored-execute` check that accepts only documented public digest
+  evidence, with optional read-only live digest lookup kept in the separate
+  `npm run proof:testnet-digest:live` command.
 - Production and safety claims remain explicit blockers instead of implied
   roadmap completion.
 - Structured report templates can be generated locally without contacting live
@@ -137,11 +141,13 @@ content.
 - Real npm publication or registry installation unless
   `npm run proof:package-publication-readiness` validates an ignored structured
   report and the operator manually accepts it.
-- Fresh sponsored IOTA testnet execution unless `testnet-readiness`,
-  `gas-station-runtime`, `sponsor-funding`, and `testnet-upstream` are ready and
-  `npm run execute:testnet-demo` passes with explicit operator intent.
-  Managed-upstream runtime mode only satisfies the runtime prerequisite; it
-  does not replace the required passing upstream diagnostic report.
+- A new sponsored IOTA testnet execution unless `testnet-readiness`,
+  `gas-station-runtime`, `sponsor-funding`, `testnet-upstream`, and
+  `testnet-sponsored-execute` are ready. `testnet-sponsored-execute` means the
+  public digest is documented locally or verified by the opt-in read-only lookup;
+  rerunning `npm run execute:testnet-demo` still requires explicit operator
+  intent. Managed-upstream runtime mode only satisfies the runtime prerequisite;
+  it does not replace the required passing upstream diagnostic report.
 - Live IOTA Names, IOTA Identity, VC, payment, or A2A proof unless the
   corresponding opt-in live command is configured and passes.
 - Live x402/AP2 facilitator, processor, or settlement proof unless

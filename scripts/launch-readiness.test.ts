@@ -83,6 +83,7 @@ test("launch readiness artifact summarizes areas without secret values", async (
   assert.equal(parsed.blockedProductionAreaIds.includes("phase-4-standards-bridges"), true);
   assert.equal(parsed.deferredSafetyAreaIds.includes("phase-3-contract-workflows"), true);
   assert.equal(parsed.blockerCodes.includes("SPONSOR_FUNDING_REPORT_MISSING"), true);
+  assert.equal(parsed.blockerCodes.includes("TESTNET_DIGEST_DOCS_MISSING"), true);
   assert.equal(parsed.blockerCodes.includes("PUBLIC_A2A_HOSTING_UNPROVEN"), true);
   assert.match(parsed.boundaries.join("\n"), /launchReady=false/);
   assert.doesNotMatch(json, /private-key|mnemonic-value|local-secret|bearer-token-value/i);
@@ -125,7 +126,7 @@ test("launch readiness can become ready only when product status is complete and
     assert.ok(report.areas.every((area) => area.blockerCodes.length === 0));
     assert.match(
       report.areas.find((area) => area.id === "phase-1-sponsored-policy-mvp")?.next ?? "",
-      /execute:testnet-demo/,
+      /public digest current/,
     );
   } finally {
     await rm(cwd, { recursive: true, force: true });
@@ -229,6 +230,7 @@ function completeProductStatus(): ProductStatusReport {
     "gas-station-runtime",
     "sponsor-funding",
     "testnet-upstream",
+    "testnet-sponsored-execute",
     "iota-names-live",
     "iota-identity-live",
     "vc-validation-live",
@@ -280,6 +282,12 @@ function productStatusWithLiveBlockers(): ProductStatusReport {
         status: "blocked-live",
         code: "TESTNET_UPSTREAM_REPORT_MISSING",
         message: "Synthetic missing upstream diagnostic report for launch-readiness mapping tests.",
+      },
+      {
+        id: "testnet-sponsored-execute",
+        status: "blocked-live",
+        code: "TESTNET_DIGEST_DOCS_MISSING",
+        message: "Synthetic missing sponsored execute digest proof for launch-readiness mapping tests.",
       },
       {
         id: "iota-names-live",
