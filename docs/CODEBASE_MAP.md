@@ -173,7 +173,9 @@ It also includes the first Agentic GasKit implementation slices:
   safety boundaries to an ignored mode-600 local JSON file
 - non-networked payment-provider readiness gate for local x402/AP2 source/test
   evidence plus an operator-supplied redacted structured live-report path before
-  manual approval of live facilitator, processor, or settlement claims
+  manual approval of live facilitator, processor, or settlement claims, plus a
+  redacted mode-600 local JSON artifact writer for payment-provider readiness
+  audit snapshots
 - local redacted payment-provider proof plan writer for turning current
   x402/AP2 readiness gates into operator command order, required structured
   report fields, blocker codes, and proof boundaries before any live

@@ -6120,3 +6120,65 @@ Escalation triggers:
 - Any request to treat the package publication readiness artifact as npm
   publication, registry installability, account ownership, 2FA/provenance,
   rollback, release, or launch proof.
+
+## Slice 7.35: Payment Provider Readiness Artifact Writer
+
+User-visible outcome:
+Operators and future agents can archive the current non-networked
+payment-provider readiness state as a redacted ignored JSON artifact, so local
+x402/AP2 proof, live-provider blockers, and safety boundaries can be audited
+without parsing stdout or contacting facilitators, processors, AP2
+participants, settlement systems, or payment providers.
+
+Likely files:
+
+- `scripts/check-payment-provider-readiness.ts`
+- `scripts/payment-provider-readiness.test.ts`
+- `docs/CODEBASE_MAP.md`
+- `docs/overview.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `npm run proof:payment-provider-readiness -- --json` prints a redacted
+  machine-readable artifact with schema version, kind, timestamp, local proof
+  status, live readiness status, proven-local check ids, ready-approval check
+  ids, blocked check ids, blocker codes, checks, and safety boundaries.
+- `npm run proof:payment-provider-readiness -- --out <ignored-json-path>`
+  writes the same artifact with mode `600`.
+- The artifact does not contact payment providers, facilitators, processors,
+  AP2 participants, settlement systems, public endpoints, IOTA services, or Gas
+  Station endpoints.
+- The artifact does not include credentials, authorization headers, signatures,
+  payment instruments, raw payloads, response bodies, provider account details,
+  or local secret paths.
+- `liveReady=false` and blocker codes remain explicit while an
+  operator-approved live payment-provider report is missing.
+
+Verification:
+
+- Focused payment-provider readiness and package-script tests.
+- `npm run proof:payment-provider-readiness -- --out
+  tmp/gaskit/payment-provider-readiness.json`.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run verify:fast`.
+
+Dependencies:
+Existing payment-provider readiness gate and payment-provider proof-plan writer.
+
+Risk:
+Low. This is a derived evidence artifact, but it must not become live
+payment/provider proof or an accidental place to store payment credentials.
+
+Escalation triggers:
+
+- Any request to include credentials, authorization headers, signatures,
+  payment instruments, raw payloads, response bodies, provider account details,
+  or local secret paths.
+- Any request to treat the payment-provider readiness artifact as live x402,
+  AP2, processor, facilitator, settlement, dispute, production payment,
+  marketplace, or launch proof.

@@ -1,13 +1,16 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
 
 import {
+  buildPaymentProviderReadinessArtifact,
   checkPaymentProviderReadiness,
+  formatPaymentProviderReadinessArtifact,
   formatPaymentProviderReadinessReport,
   type PaymentProviderReadinessReport,
+  writePaymentProviderReadinessArtifact,
 } from "./check-payment-provider-readiness.js";
 
 const NOW = new Date("2026-06-11T12:00:00.000Z");
@@ -17,15 +20,50 @@ test("payment provider readiness reports local proof while live report remains m
   try {
     const report = await checkPaymentProviderReadiness({ cwd, env: {}, now: NOW });
     const formatted = formatPaymentProviderReadinessReport(report);
+    const artifact = buildPaymentProviderReadinessArtifact(report, NOW);
+    const artifactJson = formatPaymentProviderReadinessArtifact(artifact);
 
     assert.equal(report.localProofOk, true);
     assert.equal(report.liveReady, false);
+    assert.equal(artifact.kind, "agentic-gaskit.payment-provider-readiness-report");
+    assert.equal(artifact.localProofOk, true);
+    assert.equal(artifact.liveReady, false);
+    assert.ok(artifact.provenLocalCheckIds.includes("local-standards-proof"));
+    assert.ok(artifact.blockedCheckIds.includes("live-payment-provider-report"));
+    assert.ok(artifact.blockerCodes.includes("PAYMENT_PROVIDER_LIVE_REPORT_MISSING"));
     assert.equal(findCheck(report, "local-standards-proof").status, "proven-local");
     assert.equal(findCheck(report, "local-standards-proof").code, "PAYMENT_PROVIDER_LOCAL_PROOF_CONFIGURED");
     assert.equal(findCheck(report, "live-payment-provider-report").status, "blocked-config");
     assert.equal(findCheck(report, "live-payment-provider-report").code, "PAYMENT_PROVIDER_LIVE_REPORT_MISSING");
     assert.match(formatted, /Agentic GasKit payment provider readiness blocked/);
     assert.doesNotMatch(formatted, /secret|token|private|mnemonic|seed|authorization/i);
+    assert.doesNotMatch(
+      artifactJson,
+      /payment-provider-live-report|unsafe-secret-report|Bearer secret-value|0x[0-9a-fA-F]{64}/,
+    );
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("payment provider readiness artifact writer uses restrictive local file permissions", async () => {
+  const cwd = await writeLocalPaymentProviderEvidence();
+  try {
+    const outFile = "tmp/gaskit/payment-provider-readiness.json";
+    const artifact = await writePaymentProviderReadinessArtifact({
+      cwd,
+      env: {},
+      now: NOW,
+      outFile,
+    });
+    const written = JSON.parse(await readFile(join(cwd, outFile), "utf8")) as typeof artifact;
+    const mode = (await stat(join(cwd, outFile))).mode & 0o777;
+
+    assert.equal(artifact.kind, "agentic-gaskit.payment-provider-readiness-report");
+    assert.equal(written.kind, "agentic-gaskit.payment-provider-readiness-report");
+    assert.equal(written.liveReady, false);
+    assert.equal(written.blockerCodes.includes("PAYMENT_PROVIDER_LIVE_REPORT_MISSING"), true);
+    assert.equal(mode, 0o600);
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }

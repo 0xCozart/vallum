@@ -28,7 +28,8 @@ surface in one machine-checkable place:
   local evidence gate;
 - payment-provider readiness wiring that checks local x402/AP2 source and test
   proof, then accepts only an operator-supplied redacted structured report path
-  before moving live payment/provider evidence to manual review;
+  before moving live payment/provider evidence to manual review, with an
+  optional redacted mode-600 local readiness artifact for audit snapshots;
 - payment-provider proof-plan wiring that writes a redacted non-networked
   command/report checklist before any operator-approved x402/AP2 provider proof
   is attempted;

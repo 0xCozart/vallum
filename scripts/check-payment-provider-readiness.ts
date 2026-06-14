@@ -1,5 +1,5 @@
-import { access, readFile } from "node:fs/promises";
-import { isAbsolute, resolve } from "node:path";
+import { access, chmod, mkdir, readFile, writeFile } from "node:fs/promises";
+import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 export type PaymentProviderReadinessStatus =
@@ -23,10 +23,34 @@ export interface PaymentProviderReadinessReport {
   readonly checks: readonly PaymentProviderReadinessCheck[];
 }
 
+export interface PaymentProviderReadinessArtifact {
+  readonly schemaVersion: 1;
+  readonly kind: "agentic-gaskit.payment-provider-readiness-report";
+  readonly generatedAt: string;
+  readonly localProofOk: boolean;
+  readonly liveReady: boolean;
+  readonly provenLocalCheckIds: readonly string[];
+  readonly readyApprovalCheckIds: readonly string[];
+  readonly blockedCheckIds: readonly string[];
+  readonly blockerCodes: readonly string[];
+  readonly checks: readonly PaymentProviderReadinessCheck[];
+  readonly boundaries: readonly string[];
+}
+
 export interface PaymentProviderReadinessOptions {
   readonly cwd?: string;
   readonly env?: NodeJS.ProcessEnv | Record<string, string | undefined>;
   readonly now?: Date;
+}
+
+export interface WritePaymentProviderReadinessArtifactOptions extends PaymentProviderReadinessOptions {
+  readonly outFile?: string;
+}
+
+interface CliOptions {
+  readonly help: boolean;
+  readonly json: boolean;
+  readonly outFile?: string;
 }
 
 interface StructuredPaymentProviderReport {
@@ -65,6 +89,23 @@ const REQUIRED_LIVE_CHECKS = [
 
 const SECRET_FIELD_RE = /secret|token|private|credential|authorization|signature|mnemonic|seed|payload|header|instrument/i;
 
+const ARTIFACT_BOUNDARIES = [
+  "This report is non-networked and does not contact payment providers, facilitators, processors, AP2 participants, settlement systems, public endpoints, IOTA services, or Gas Station endpoints.",
+  "liveReady=false means local standards proof or operator-approved live payment-provider evidence remains blocked.",
+  "ready-approval checks require manual operator review before any live x402, AP2, processor, facilitator, settlement, dispute, or production payment claim is accepted.",
+  "Do not commit generated reports, payment-provider proof outputs, credentials, authorization headers, signatures, payment instruments, raw payloads, response bodies, provider account details, or local secret paths.",
+] as const;
+
+const usage = `usage: npm exec tsx -- scripts/check-payment-provider-readiness.ts [--json] [--out <path>]
+
+Reports current Agentic GasKit payment-provider readiness without contacting live providers or settlement systems.
+
+Options:
+  --json        Print a redacted machine-readable artifact.
+  --out <path>  Write the same JSON artifact to a local file with mode 0600.
+  --help        Show this help text.
+`;
+
 export async function checkPaymentProviderReadiness(
   options: PaymentProviderReadinessOptions = {},
 ): Promise<PaymentProviderReadinessReport> {
@@ -96,6 +137,48 @@ export function formatPaymentProviderReadinessReport(report: PaymentProviderRead
     lines.push(`next=${check.next}`);
   }
   return lines.join("\n");
+}
+
+export function buildPaymentProviderReadinessArtifact(
+  report: PaymentProviderReadinessReport,
+  now = new Date(),
+): PaymentProviderReadinessArtifact {
+  const provenLocalChecks = report.checks.filter((check) => check.status === "proven-local");
+  const readyApprovalChecks = report.checks.filter((check) => check.status === "ready-approval");
+  const blockedChecks = report.checks.filter((check) => check.status !== "proven-local" && check.status !== "ready-approval");
+
+  return {
+    schemaVersion: 1,
+    kind: "agentic-gaskit.payment-provider-readiness-report",
+    generatedAt: now.toISOString(),
+    localProofOk: report.localProofOk,
+    liveReady: report.liveReady,
+    provenLocalCheckIds: provenLocalChecks.map((check) => check.id),
+    readyApprovalCheckIds: readyApprovalChecks.map((check) => check.id),
+    blockedCheckIds: blockedChecks.map((check) => check.id),
+    blockerCodes: blockedChecks.map((check) => check.code),
+    checks: report.checks,
+    boundaries: ARTIFACT_BOUNDARIES,
+  };
+}
+
+export async function writePaymentProviderReadinessArtifact(
+  options: WritePaymentProviderReadinessArtifactOptions = {},
+): Promise<PaymentProviderReadinessArtifact> {
+  const cwd = options.cwd ?? process.cwd();
+  const report = await checkPaymentProviderReadiness(options);
+  const artifact = buildPaymentProviderReadinessArtifact(report, options.now);
+  if (options.outFile) {
+    const outPath = isAbsolute(options.outFile) ? options.outFile : resolve(cwd, options.outFile);
+    await mkdir(dirname(outPath), { recursive: true });
+    await writeFile(outPath, formatPaymentProviderReadinessArtifact(artifact), { mode: 0o600 });
+    await chmod(outPath, 0o600);
+  }
+  return artifact;
+}
+
+export function formatPaymentProviderReadinessArtifact(artifact: PaymentProviderReadinessArtifact): string {
+  return `${JSON.stringify(artifact, null, 2)}\n`;
 }
 
 async function checkLocalStandardsProof(cwd: string): Promise<PaymentProviderReadinessCheck> {
@@ -259,7 +342,55 @@ function containsSecretLikeField(value: unknown): boolean {
   return false;
 }
 
+function parseArgs(args: readonly string[]): CliOptions {
+  let help = false;
+  let json = false;
+  let outFile: string | undefined;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg === "--help" || arg === "-h") {
+      help = true;
+      continue;
+    }
+    if (arg === "--json") {
+      json = true;
+      continue;
+    }
+    if (arg === "--out") {
+      const value = args[index + 1];
+      if (!value || value.startsWith("--")) throw new Error("--out requires a path.");
+      outFile = value;
+      index += 1;
+      continue;
+    }
+    throw new Error(`Unsupported argument: ${arg}`);
+  }
+
+  return { help, json, outFile };
+}
+
 async function main(): Promise<number> {
+  let options: CliOptions;
+  try {
+    options = parseArgs(process.argv.slice(2));
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    console.error(usage);
+    return 1;
+  }
+
+  if (options.help) {
+    console.log(usage.trimEnd());
+    return 0;
+  }
+
+  if (options.json || options.outFile) {
+    const artifact = await writePaymentProviderReadinessArtifact({ outFile: options.outFile });
+    console.log(formatPaymentProviderReadinessArtifact(artifact).trimEnd());
+    return 0;
+  }
+
   const report = await checkPaymentProviderReadiness();
   console.log(formatPaymentProviderReadinessReport(report));
   return 0;
