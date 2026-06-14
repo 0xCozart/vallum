@@ -103,6 +103,7 @@ const VC_TRUST_POLICY_STATUS_TYPES = new Set([
 const LIVE_TESTNET_ENV_FILE = ".env";
 const SPONSOR_FUNDING_REPORT_ENV = "GASKIT_SPONSOR_FUNDING_REPORT";
 const SPONSOR_FAUCET_REPORT_ENV = "GASKIT_SPONSOR_FAUCET_REPORT";
+const DEFAULT_SPONSOR_FAUCET_REPORT = "tmp/gaskit/sponsor-faucet-request.json";
 const TESTNET_UPSTREAM_REPORT_ENV = "GASKIT_TESTNET_UPSTREAM_REPORT";
 const IOTA_NAMES_LIVE_REPORT_ENV = "IOTA_NAMES_LIVE_REPORT";
 const IOTA_IDENTITY_LIVE_REPORT_ENV = "IOTA_IDENTITY_LIVE_REPORT";
@@ -279,13 +280,15 @@ async function sponsorFaucetAttemptContext(
   env: Record<string, string | undefined>,
   cwd: string,
 ): Promise<string | undefined> {
-  const reportPath = readEnv(env, SPONSOR_FAUCET_REPORT_ENV);
+  const configuredReportPath = readEnv(env, SPONSOR_FAUCET_REPORT_ENV);
+  const reportPath = configuredReportPath ?? await defaultSponsorFaucetReportPath(cwd);
+  const reportLabel = configuredReportPath ? "Configured sponsor faucet report" : "Default sponsor faucet report";
   if (!reportPath) return undefined;
   try {
     const report = await loadSponsorFaucetRequestReport(resolve(cwd, reportPath));
     const validation = validateSponsorFaucetRequestReport(report);
     if (!validation.ok) {
-      return "Configured sponsor faucet report is invalid; regenerate it with npm run sponsor:request-faucet-funds -- --out <ignored-json-path> before using it for operator triage.";
+      return `${reportLabel} is invalid; regenerate it with npm run sponsor:request-faucet-funds -- --out <ignored-json-path> before using it for operator triage.`;
     }
     if (report.result === "passed") {
       return "Latest sponsor faucet report says a request completed; wait for faucet settlement or use an alternate funding source if balance remains zero.";
@@ -302,7 +305,16 @@ async function sponsorFaucetAttemptContext(
     }
     return `Latest sponsor faucet report did not contact a faucet (${report.code}); configure an approved faucet URL and use --execute only with operator approval.`;
   } catch {
-    return "Configured sponsor faucet report could not be loaded; regenerate it without committing faucet artifacts or secret material.";
+    return `${reportLabel} could not be loaded; regenerate it without committing faucet artifacts or secret material.`;
+  }
+}
+
+async function defaultSponsorFaucetReportPath(cwd: string): Promise<string | undefined> {
+  try {
+    await access(resolve(cwd, DEFAULT_SPONSOR_FAUCET_REPORT));
+    return DEFAULT_SPONSOR_FAUCET_REPORT;
+  } catch {
+    return undefined;
   }
 }
 

@@ -78,10 +78,11 @@ reserve compatibility can be considered ready. The `testnet-upstream` gate
 still requires a current passing
 `npm run diagnose:gas-station -- --report <ignored-json-path>` report before a
 fresh sponsored execute is ready.
-`GASKIT_SPONSOR_FAUCET_REPORT` is optional operator-triage context only: when
-it points at a sanitized report from `npm run sponsor:request-faucet-funds`,
-the funding gate can explain the latest faucet failure, rate limit, blocked
-request, or completed request in its next step. It never clears
+`GASKIT_SPONSOR_FAUCET_REPORT` is optional operator-triage context only. When
+it points at a sanitized report from `npm run sponsor:request-faucet-funds`, or
+when the default ignored `tmp/gaskit/sponsor-faucet-request.json` report exists
+and validates, the funding gate can explain the latest faucet failure, rate
+limit, blocked request, or completed request in its next step. It never clears
 `sponsor-funding`; only a passing sponsor funding report can do that.
 Faucet HTTP failures are bounded before they reach live-proof output. For
 example, an HTTP 405 from the documented `/gas` route is classified as
@@ -157,6 +158,7 @@ npm run sponsor:write-funding-request -- --out tmp/gaskit/sponsor-funding-reques
 npm run sponsor:write-funding-request -- --faucet-report tmp/gaskit/sponsor-faucet-request.json --out tmp/gaskit/sponsor-funding-request.json
 npm run sponsor:request-faucet-funds -- --execute --out tmp/gaskit/sponsor-faucet-request.json
 npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json
+npm run proof:live-status
 GASKIT_SPONSOR_FAUCET_REPORT=tmp/gaskit/sponsor-faucet-request.json npm run proof:live-status
 GASKIT_SPONSOR_FUNDING_REPORT=tmp/gaskit/sponsor-funding-report.json npm run proof:live-status
 npm run diagnose:gas-station -- --skip-reserve --report tmp/gaskit/testnet-upstream-diagnostic.json

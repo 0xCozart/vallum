@@ -227,10 +227,11 @@ Faucet success is not accepted as reserve_gas compatibility; rerun the funding
 diagnostic and upstream diagnostic afterward. Failed faucet reports should be
 copied into the funding request or live-status context, but they should not
 advance operators to the upstream diagnostic until sponsor funding is ready.
-If `GASKIT_SPONSOR_FAUCET_REPORT` points at the ignored faucet report,
-`npm run proof:live-status` can include the latest sanitized faucet outcome in
-the sponsor-funding next step. This is triage context only, not readiness
-evidence.
+If `GASKIT_SPONSOR_FAUCET_REPORT` points at the ignored faucet report, or if
+the default ignored `tmp/gaskit/sponsor-faucet-request.json` report exists and
+validates, `npm run proof:live-status` can include the latest sanitized faucet
+outcome in the sponsor-funding next step. This is triage context only, not
+readiness evidence.
 `npm run live:write-proof-plan -- --out tmp/gaskit/live-proof-plan.json`
 includes the same sponsor funding command order and required
 `GASKIT_SPONSOR_FUNDING_REPORT` evidence artifact before the upstream
