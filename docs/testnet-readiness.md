@@ -135,5 +135,20 @@ building/signing a transaction unless all of these are true:
   by `npm run diagnose:gas-station -- --report <ignored-json-path>` without
   `--skip-reserve`.
 
+`gas-station:runtime-preflight` defaults to `local-docker`, which requires the
+ignored rendered config plus a reachable Docker daemon and either Docker
+Compose or the direct Docker fallback. Operators who intentionally use a
+separately managed Gas Station can set:
+
+```bash
+GASKIT_GAS_STATION_RUNTIME_MODE=managed-upstream
+```
+
+Managed mode is still non-networked. It only verifies that a Gas Station URL is
+configured without printing it. It does not prove that the endpoint is healthy
+or compatible; `GASKIT_TESTNET_UPSTREAM_REPORT` must still point at a current
+passing diagnostic report before `npm run execute:testnet-demo` can reserve gas
+or build/sign a transaction.
+
 Only after those preconditions pass should an operator use explicit intent to
 run the live sponsored testnet execute.

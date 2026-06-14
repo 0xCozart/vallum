@@ -78,7 +78,7 @@ export async function checkLiveProofStatus(
   const mergedEnv = mergeEnv(fileEnv, env);
   const checks: LiveProofCheck[] = [
     await checkTestnetReadinessStatus(envFile, cwd),
-    await checkGasStationRuntimeStatus(options, cwd),
+    await checkGasStationRuntimeStatus(options, cwd, mergedEnv),
     await checkTestnetUpstreamStatus(mergedEnv, cwd),
     checkIotaNamesStatus(mergedEnv),
     checkIotaIdentityStatus(mergedEnv),
@@ -94,9 +94,11 @@ export async function checkLiveProofStatus(
 async function checkGasStationRuntimeStatus(
   options: CheckLiveProofStatusOptions,
   cwd: string,
+  env: Record<string, string | undefined>,
 ): Promise<LiveProofCheck> {
   const report = options.gasStationRuntimeReport ?? await checkGasStationRuntimePreflight({
     cwd,
+    env,
     runner: options.gasStationRuntimeRunner,
   });
   if (report.ready) {
@@ -105,7 +107,9 @@ async function checkGasStationRuntimeStatus(
       status: "ready",
       code: report.code,
       message: report.message,
-      next: "Start the local Gas Station through Docker Compose or npm run gas-station:docker-direct -- --execute if needed, then run npm run diagnose:gas-station -- --report <ignored-json-path>.",
+      next: report.checks.some((check) => check.code === "GAS_STATION_MANAGED_UPSTREAM_MODE_SELECTED")
+        ? "Run npm run diagnose:gas-station -- --report <ignored-json-path> to prove the managed upstream without printing secrets."
+        : "Start the local Gas Station through Docker Compose or npm run gas-station:docker-direct -- --execute if needed, then run npm run diagnose:gas-station -- --report <ignored-json-path>.",
     };
   }
 
@@ -114,7 +118,9 @@ async function checkGasStationRuntimeStatus(
     status: "blocked",
     code: report.code,
     message: report.message,
-    next: "Run npm run gas-station:render-config, enable the Docker daemon and either Compose or direct Docker fallback for this workspace, then rerun npm run gas-station:runtime-preflight.",
+    next: report.code === "GAS_STATION_MANAGED_UPSTREAM_CONFIG_MISSING"
+      ? "Set GAS_STATION_URL outside committed files or switch GASKIT_GAS_STATION_RUNTIME_MODE back to local-docker, then rerun npm run gas-station:runtime-preflight."
+      : "Run npm run gas-station:render-config, enable the Docker daemon and either Compose or direct Docker fallback for this workspace, or explicitly choose managed-upstream mode with a configured Gas Station URL, then rerun npm run gas-station:runtime-preflight.",
   };
 }
 

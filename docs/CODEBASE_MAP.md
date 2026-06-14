@@ -124,6 +124,10 @@ It also includes the first Agentic GasKit implementation slices:
 - local Gas Station runtime preflight gate for checking ignored rendered config,
   Docker client, Docker daemon, and Docker Compose or direct Docker fallback
   availability before upstream diagnostics
+- explicit managed-upstream Gas Station runtime mode for operators who provide
+  a separately managed Gas Station at `GAS_STATION_URL`; the mode skips Docker
+  inspection but still requires sanitized upstream diagnostics before sponsored
+  execute
 - non-networked testnet digest proof for documented public IOTA testnet
   evidence, plus an opt-in read-only live lookup command
 - fail-closed sponsored testnet execute prerequisite checks that require local

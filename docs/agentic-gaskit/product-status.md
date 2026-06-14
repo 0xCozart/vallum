@@ -96,8 +96,9 @@ marketplace, or safety work before those claims can be made.
   install/import, opt-in publish dry-run, and a non-networked package
   publication readiness gate.
 - Live/testnet gates are either ready to run with safe local configuration,
-  local Gas Station runtime prerequisites, and sanitized upstream evidence, or
-  blocked with exact missing/runtime/report check ids.
+  local Docker or explicit managed-upstream Gas Station runtime prerequisites,
+  and sanitized upstream evidence, or blocked with exact missing/runtime/report
+  check ids.
 - Production and safety claims remain explicit blockers instead of implied
   roadmap completion.
 - Structured report templates can be generated locally without contacting live
@@ -112,6 +113,8 @@ marketplace, or safety work before those claims can be made.
 - Fresh sponsored IOTA testnet execution unless `testnet-readiness`,
   `gas-station-runtime`, and `testnet-upstream` are ready and
   `npm run execute:testnet-demo` passes with explicit operator intent.
+  Managed-upstream runtime mode only satisfies the runtime prerequisite; it
+  does not replace the required passing upstream diagnostic report.
 - Live IOTA Names, IOTA Identity, VC, payment, or A2A proof unless the
   corresponding opt-in live command is configured and passes.
 - Live x402/AP2 facilitator, processor, or settlement proof unless
@@ -140,6 +143,7 @@ npm run proof:testnet-digest
 npm run proof:testnet-digest:live
 npm run gas-station:render-config
 npm run gas-station:runtime-preflight
+GASKIT_GAS_STATION_RUNTIME_MODE=managed-upstream npm run gas-station:runtime-preflight
 npm run gas-station:docker-direct -- --dry-run
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run a2a:write-static-discovery-bundle -- --agent-card <signed-card.json> --jwks <jwks.json> --public-base-url <url> --public-jwks-url <url> --out-dir <dir>

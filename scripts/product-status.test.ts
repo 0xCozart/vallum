@@ -144,6 +144,35 @@ test("product status marks configured live gates ready without contacting endpoi
   }
 });
 
+test("product status can mark managed upstream runtime ready while upstream proof remains separate", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-product-status-"));
+  try {
+    const report = await checkProductStatus({
+      cwd,
+      env: {
+        GASKIT_GAS_STATION_RUNTIME_MODE: "managed-upstream",
+        GAS_STATION_URL: "https://gas-station.testnet.example",
+      },
+      gasStationRuntimeRunner: async () => {
+        throw new Error("managed-upstream product status must not inspect Docker");
+      },
+      scripts: completeScripts(),
+      custodyReadiness: blockedCustodyReadiness(),
+      marketplaceReadiness: blockedMarketplaceReadiness(),
+      packagePublicationReadiness: blockedPackagePublicationReadiness(),
+      paymentProviderReadiness: blockedPaymentProviderReadiness(),
+    });
+    const formatted = formatProductStatusReport(report);
+
+    assert.equal(report.complete, false);
+    assert.equal(report.checks.find((check) => check.id === "gas-station-runtime")?.status, "ready-live");
+    assert.equal(report.checks.find((check) => check.id === "testnet-upstream")?.code, "TESTNET_UPSTREAM_REPORT_MISSING");
+    assert.doesNotMatch(formatted, /gas-station\.testnet\.example/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
 test("product status can mark package publication report ready for approval without exposing report values", async () => {
   const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-product-status-"));
   try {

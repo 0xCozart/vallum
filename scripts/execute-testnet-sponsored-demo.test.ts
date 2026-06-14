@@ -102,6 +102,32 @@ test("sponsored testnet execute prerequisites pass only after readiness runtime 
   }
 });
 
+test("sponsored testnet execute prerequisites accept explicit managed upstream runtime only with upstream proof", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-execute-prereq-"));
+  try {
+    await writePolicy(cwd);
+    const report = await checkSponsoredExecutePrerequisites({
+      cwd,
+      env: {
+        ...completeEnv(),
+        GASKIT_GAS_STATION_RUNTIME_MODE: "managed-upstream",
+        GAS_STATION_URL: "https://gas-station.testnet.example",
+        GASKIT_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
+      },
+      gasStationRuntimeRunner: async () => {
+        throw new Error("managed-upstream prerequisite check must not inspect Docker");
+      },
+      testnetUpstreamReport: validUpstreamReport(),
+    });
+
+    assert.equal(report.ready, true);
+    assert.equal(findCheck(report, "gas-station-runtime").code, "GAS_STATION_RUNTIME_READY");
+    assert.equal(findCheck(report, "testnet-upstream").ok, true);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
 function findCheck(
   report: Awaited<ReturnType<typeof checkSponsoredExecutePrerequisites>>,
   id: string,

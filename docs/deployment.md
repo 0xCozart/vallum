@@ -43,7 +43,7 @@ Use this path only with operator-owned testnet credentials and a reachable IOTA 
 | Example placeholders are documented | `npm run readiness:testnet:example` | Public config documentation drifted. |
 | Local secret file is shaped correctly | `npm run readiness:testnet` | Fix `.env`; do not attempt live reserve/execute. |
 | Local Gas Station config is rendered | `npm run gas-station:render-config` | Fix `.env` signer/RPC config; do not start Gas Station. |
-| Local Docker runtime is ready | `npm run gas-station:runtime-preflight` | Install/enable Docker daemon, then use Docker Compose or the direct Docker fallback before starting Gas Station. |
+| Gas Station runtime mode is ready | `npm run gas-station:runtime-preflight` | Install/enable Docker daemon for `local-docker`, or explicitly configure `managed-upstream` with an operator-managed Gas Station URL. |
 | Local Gas Station containers are started | `docker compose --env-file .env -f deploy/docker-compose/docker-compose.local.yml up` or `npm run gas-station:docker-direct -- --execute` | Docker daemon, Compose plugin, image pull, Redis, or Gas Station startup is not ready. |
 | Upstream is reachable | `npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json` | Gas Station URL/auth/network/reserve compatibility is not ready. |
 | Live sponsored execute is intentional | `npm run execute:testnet-demo` | Command self-checks readiness/runtime/upstream report first; stop and inspect bounded error output before retrying. |
@@ -65,6 +65,16 @@ reachable, review the sanitized direct plan with
 want to pull/start the local Redis and Gas Station containers. The direct path
 adds the `redis` network alias that the rendered local Gas Station config uses
 by default.
+
+If an operator intentionally uses a separately managed Gas Station instead of
+the local Docker path, set `GASKIT_GAS_STATION_RUNTIME_MODE=managed-upstream`
+outside committed files. In that mode `npm run gas-station:runtime-preflight`
+does not inspect Docker and does not contact the upstream service; it only
+confirms that managed mode and a Gas Station URL are configured without
+printing the URL. A current passing
+`npm run diagnose:gas-station -- --report <ignored-json-path>` report is still
+required before `npm run execute:testnet-demo` can reserve gas or build/sign a
+transaction.
 
 ## Production path
 

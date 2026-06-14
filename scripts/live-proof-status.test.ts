@@ -102,6 +102,31 @@ test("live proof status blocks skipped reserve diagnostic reports", async () => 
   }
 });
 
+test("live proof status marks explicit managed upstream runtime ready without Docker", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  try {
+    const report = await checkLiveProofStatus({
+      cwd,
+      env: {
+        GASKIT_GAS_STATION_RUNTIME_MODE: "managed-upstream",
+        GAS_STATION_URL: "https://gas-station.testnet.example",
+      },
+      gasStationRuntimeRunner: async () => {
+        throw new Error("managed-upstream live status must not inspect Docker");
+      },
+    });
+    const formatted = formatLiveProofStatusReport(report);
+    const runtime = report.checks.find((check) => check.id === "gas-station-runtime");
+
+    assert.equal(runtime?.status, "ready");
+    assert.equal(runtime?.code, "GAS_STATION_RUNTIME_READY");
+    assert.match(runtime?.next ?? "", /diagnose:gas-station/);
+    assert.doesNotMatch(formatted, /gas-station\.testnet\.example/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
 test("live proof status marks configured identity proof endpoint as ready without contacting it", async () => {
   const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
   try {

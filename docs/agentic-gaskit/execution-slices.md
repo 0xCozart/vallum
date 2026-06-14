@@ -4580,3 +4580,79 @@ Escalation triggers:
   `.env`, bearer tokens, signer material, or raw upstream errors.
 - Any request to claim direct Docker startup without confirmed running
   containers and a passing sanitized upstream diagnostic.
+
+## Slice 7.12: Managed Gas Station Runtime Mode
+
+User-visible outcome:
+Operators who intentionally use a separately managed Gas Station can satisfy
+the runtime preflight without local Docker, while the testnet execute path
+still requires a current passing sanitized upstream diagnostic report before
+reserve or execute.
+
+Likely files:
+
+- `scripts/check-gas-station-runtime-preflight.ts`
+- `scripts/check-gas-station-runtime-preflight.test.ts`
+- `scripts/check-live-proof-status.ts`
+- `scripts/live-proof-status.test.ts`
+- `scripts/execute-testnet-sponsored-demo.ts`
+- `scripts/execute-testnet-sponsored-demo.test.ts`
+- `scripts/check-product-status.ts`
+- `scripts/product-status.test.ts`
+- `.env.example`
+- `docs/testnet-readiness.md`
+- `docs/deployment.md`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/CODEBASE_MAP.md`
+- `README.md`
+
+Acceptance criteria:
+
+- `npm run gas-station:runtime-preflight` defaults to `local-docker` and keeps
+  the existing local config, Docker client, Docker daemon, Compose, and direct
+  Docker fallback checks.
+- Setting `GASKIT_GAS_STATION_RUNTIME_MODE=managed-upstream` makes the
+  preflight skip Docker inspection and require only a configured
+  `GAS_STATION_URL` without printing its value.
+- Unsupported runtime modes fail closed with an exact blocker code.
+- Managed-upstream mode does not contact the managed Gas Station endpoint,
+  does not prove reachability, and does not prove reserve_gas compatibility.
+- `npm run execute:testnet-demo` still requires local testnet readiness,
+  runtime preflight, and a current passing `GASKIT_TESTNET_UPSTREAM_REPORT`
+  before building/signing a transaction or reserving gas.
+- Product status, live proof status, launch readiness, and operator docs keep
+  runtime readiness separate from the `testnet-upstream` gate.
+
+Verification:
+
+- Focused runtime-preflight, live-proof, execute-prerequisite,
+  product-status, launch-readiness, operator-gate, and package-script tests.
+- `GASKIT_GAS_STATION_RUNTIME_MODE=managed-upstream npm run
+  gas-station:runtime-preflight`.
+- `npm run readiness:testnet`.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run proof:product-status`.
+- `npm run proof:launch-readiness`.
+- `npm run proof:operator-gates`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slices 7.7, 7.8, 7.9, 7.10, and 7.11.
+
+Risk:
+Medium. Managed upstream mode can be mistaken for live Gas Station proof unless
+it remains a configuration-only runtime preflight and the sanitized upstream
+diagnostic remains mandatory before sponsored execution.
+
+Escalation triggers:
+
+- Any request to treat managed-upstream runtime readiness as Gas Station HTTP
+  health, reserve_gas compatibility, sponsor funding, or sponsored execution
+  proof.
+- Any request to print managed endpoint URLs, bearer tokens, response bodies,
+  sponsor signer material, raw transaction bytes, or user signatures.

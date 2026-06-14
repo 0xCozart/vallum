@@ -226,10 +226,10 @@ Latest local verification and prior live proof:
   marketplace, custody, and safety gates before execution.
 - `npm run operator:write-live-gate-report`: writes the same redacted
   non-networked operator-gate classification to an ignored local JSON artifact.
-- `npm run gas-station:runtime-preflight`: local-only preflight checks the
-  ignored rendered Gas Station config, Docker client, Docker daemon, and either
-  Docker Compose or the direct Docker fallback before upstream diagnostics; it
-  does not start containers, contact IOTA services, or reserve gas.
+- `npm run gas-station:runtime-preflight`: non-networked runtime preflight for
+  either the default local Docker Gas Station path or explicit
+  `GASKIT_GAS_STATION_RUNTIME_MODE=managed-upstream`; it does not start
+  containers, contact IOTA services, or reserve gas.
 - `npm run gas-station:docker-direct -- --dry-run`: local-only sanitized direct
   Docker plan for starting Redis and Gas Station when Compose is unavailable;
   `--execute` is opt-in because it may pull images and start containers.
@@ -507,10 +507,14 @@ npm run typecheck
 npm run smoke:local
 ```
 
-For live proof, configure the local policy gateway and Gas Station with
-operator-owned testnet credentials, render the local Gas Station config, run
-`npm run gas-station:runtime-preflight`, start the local Gas Station through
-Compose or the direct Docker fallback, run `npm run diagnose:gas-station --
+For live proof, configure the policy gateway and Gas Station with
+operator-owned testnet credentials. Use the default local Docker path by
+rendering the local Gas Station config, running
+`npm run gas-station:runtime-preflight`, and starting Gas Station through
+Compose or the direct Docker fallback. If an operator intentionally uses a
+separately managed Gas Station at `GAS_STATION_URL`, set
+`GASKIT_GAS_STATION_RUNTIME_MODE=managed-upstream` outside committed files and
+run the same preflight. In both modes, run `npm run diagnose:gas-station --
 --report tmp/gaskit/testnet-upstream-diagnostic.json`, then run
 `npm run execute:testnet-demo` only with explicit operator intent. The execute
 command is intentionally opt-in, self-checks those preconditions before

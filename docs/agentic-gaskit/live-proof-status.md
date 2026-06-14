@@ -55,6 +55,15 @@ Docker dry-run path exposed by `npm run gas-station:docker-direct -- --dry-run`.
 This is a local runtime prerequisite only; it does not start containers,
 contact IOTA RPC, call Gas Station HTTP endpoints, or reserve gas.
 
+Operators who intentionally use a separately managed Gas Station can set
+`GASKIT_GAS_STATION_RUNTIME_MODE=managed-upstream` outside committed files.
+In that mode `npm run gas-station:runtime-preflight` does not inspect Docker
+and does not contact the managed endpoint; it only verifies that managed mode
+and `GAS_STATION_URL` are configured without printing the URL. The
+`testnet-upstream` gate still requires a current passing
+`npm run diagnose:gas-station -- --report <ignored-json-path>` report before a
+fresh sponsored execute is ready.
+
 The configured IOTA testnet RPC endpoint also responded to
 `npm run diagnose:gas-station -- --skip-reserve --report
 tmp/gaskit/testnet-upstream-diagnostic.json` with HTTP 200 and a latest
@@ -69,8 +78,8 @@ funding, not `.env` shape.
 
 - local testnet readiness configuration is present and structurally valid, or
   the exact readiness blocker ids are listed
-- local Gas Station runtime prerequisites are present, or the exact local
-  Docker/config blocker is listed
+- local Gas Station runtime prerequisites are present through local Docker or
+  explicit managed-upstream mode, or the exact runtime/config blocker is listed
 - sanitized testnet upstream diagnostic report status is present and proves
   IOTA RPC, Gas Station reachability, and reserve_gas compatibility, or the
   exact upstream report blocker is listed

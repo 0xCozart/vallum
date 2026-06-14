@@ -7,6 +7,8 @@ export type GasStationRuntimePreflightStatus = "ready" | "blocked";
 
 export type GasStationRuntimePreflightCode =
   | "GAS_STATION_RUNTIME_READY"
+  | "GAS_STATION_RUNTIME_MODE_INVALID"
+  | "GAS_STATION_MANAGED_UPSTREAM_CONFIG_MISSING"
   | "GAS_STATION_LOCAL_CONFIG_MISSING"
   | "GAS_STATION_DOCKER_CLIENT_MISSING"
   | "GAS_STATION_DOCKER_DAEMON_UNAVAILABLE"
@@ -41,20 +43,46 @@ export interface CheckGasStationRuntimePreflightOptions {
   readonly configPath?: string;
   readonly cwd?: string;
   readonly directDockerFallback?: boolean;
+  readonly env?: NodeJS.ProcessEnv | Record<string, string | undefined>;
   readonly runner?: GasStationRuntimeCommandRunner;
 }
 
 const DEFAULT_CONFIG_PATH = "deploy/gas-station/config.local.yaml";
 const COMMAND_TIMEOUT_MS = 3_000;
+const RUNTIME_MODE_ENV = "GASKIT_GAS_STATION_RUNTIME_MODE";
+
+type GasStationRuntimeMode = "local-docker" | "managed-upstream";
 
 export async function checkGasStationRuntimePreflight(
   options: CheckGasStationRuntimePreflightOptions = {},
 ): Promise<GasStationRuntimePreflightReport> {
   const cwd = options.cwd ?? process.cwd();
+  const env = options.env ?? process.env;
   const runner = options.runner ?? createExecRunner(cwd);
   const configPath = options.configPath ?? DEFAULT_CONFIG_PATH;
   const directDockerFallback = options.directDockerFallback ?? true;
+  const mode = parseRuntimeMode(env[RUNTIME_MODE_ENV]);
+  if (!mode.ok) {
+    return blocked("GAS_STATION_RUNTIME_MODE_INVALID", "Gas Station runtime mode is unsupported.", [runtimeModeCheck(mode)]);
+  }
+  if (mode.value === "managed-upstream") {
+    const checks = [
+      runtimeModeCheck(mode),
+      checkManagedUpstreamUrl(env.GAS_STATION_URL),
+    ];
+    const managed = findCheck(checks, "managed-upstream-url");
+    if (managed.status !== "ready") {
+      return blocked("GAS_STATION_MANAGED_UPSTREAM_CONFIG_MISSING", "Managed Gas Station upstream mode requires a configured Gas Station URL.", checks);
+    }
+    return {
+      ready: true,
+      code: "GAS_STATION_RUNTIME_READY",
+      message: "Managed Gas Station upstream mode is selected; Docker runtime is not required, but upstream diagnostics still must prove reachability and reserve_gas compatibility.",
+      checks,
+    };
+  }
   const checks: GasStationRuntimePreflightCheck[] = [
+    runtimeModeCheck(mode),
     await checkLocalConfig(cwd, configPath),
     await checkCommand(runner, {
       id: "docker-client",
@@ -142,6 +170,72 @@ export async function checkGasStationRuntimePreflight(
       : "Local Gas Station runtime prerequisites are present through direct Docker fallback.",
     checks,
   };
+}
+
+function parseRuntimeMode(value: string | undefined): { ok: true; value: GasStationRuntimeMode } | { ok: false; value: string } {
+  const normalized = value?.trim() || "local-docker";
+  if (normalized === "local-docker" || normalized === "managed-upstream") {
+    return { ok: true, value: normalized };
+  }
+  return { ok: false, value: normalized };
+}
+
+function runtimeModeCheck(
+  mode: { ok: true; value: GasStationRuntimeMode } | { ok: false; value: string },
+): GasStationRuntimePreflightCheck {
+  if (!mode.ok) {
+    return {
+      id: "runtime-mode",
+      status: "blocked",
+      code: "GAS_STATION_RUNTIME_MODE_UNSUPPORTED",
+      message: "Gas Station runtime mode must be local-docker or managed-upstream.",
+      command: `${RUNTIME_MODE_ENV}=local-docker|managed-upstream`,
+    };
+  }
+  return {
+    id: "runtime-mode",
+    status: "ready",
+    code: mode.value === "managed-upstream"
+      ? "GAS_STATION_MANAGED_UPSTREAM_MODE_SELECTED"
+      : "GAS_STATION_LOCAL_DOCKER_MODE_SELECTED",
+    message: mode.value === "managed-upstream"
+      ? "Managed Gas Station upstream mode is selected explicitly."
+      : "Local Docker Gas Station runtime mode is selected.",
+    command: `${RUNTIME_MODE_ENV}=${mode.value}`,
+  };
+}
+
+function checkManagedUpstreamUrl(value: string | undefined): GasStationRuntimePreflightCheck {
+  if (!value || value.trim() === "") {
+    return {
+      id: "managed-upstream-url",
+      status: "blocked",
+      code: "GAS_STATION_URL_MISSING",
+      message: "Managed Gas Station upstream mode requires GAS_STATION_URL.",
+      command: "GAS_STATION_URL=<operator-managed-gas-station-url>",
+    };
+  }
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "http:" && url.protocol !== "https:") {
+      throw new Error("unsupported protocol");
+    }
+    return {
+      id: "managed-upstream-url",
+      status: "ready",
+      code: "GAS_STATION_MANAGED_UPSTREAM_URL_CONFIGURED",
+      message: "Managed Gas Station upstream URL is configured without printing its value.",
+      command: "npm run diagnose:gas-station -- --report <ignored-json-path>",
+    };
+  } catch {
+    return {
+      id: "managed-upstream-url",
+      status: "blocked",
+      code: "GAS_STATION_URL_INVALID",
+      message: "Managed Gas Station upstream URL is not a valid HTTP(S) URL.",
+      command: "GAS_STATION_URL=<operator-managed-gas-station-url>",
+    };
+  }
 }
 
 export function formatGasStationRuntimePreflightReport(report: GasStationRuntimePreflightReport): string {

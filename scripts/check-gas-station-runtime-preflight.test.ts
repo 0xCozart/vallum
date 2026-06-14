@@ -28,6 +28,7 @@ test("Gas Station runtime preflight passes when config Docker daemon and Compose
 
     assert.equal(report.ready, true);
     assert.equal(report.code, "GAS_STATION_RUNTIME_READY");
+    assert.equal(findCheck(report, "runtime-mode").code, "GAS_STATION_LOCAL_DOCKER_MODE_SELECTED");
     assert.equal(findCheck(report, "local-config").code, "GAS_STATION_LOCAL_CONFIG_PRESENT");
     assert.equal(findCheck(report, "docker-daemon").code, "DOCKER_DAEMON_READY");
     assert.equal(findCheck(report, "docker-compose-plugin").code, "DOCKER_COMPOSE_PLUGIN_READY");
@@ -36,6 +37,45 @@ test("Gas Station runtime preflight passes when config Docker daemon and Compose
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }
+});
+
+test("Gas Station runtime preflight passes in managed upstream mode without Docker", async () => {
+  const report = await checkGasStationRuntimePreflight({
+    env: {
+      GASKIT_GAS_STATION_RUNTIME_MODE: "managed-upstream",
+      GAS_STATION_URL: "https://gas-station.testnet.example",
+    },
+    runner: async () => {
+      throw new Error("managed-upstream mode must not inspect Docker");
+    },
+  });
+  const formatted = formatGasStationRuntimePreflightReport(report);
+
+  assert.equal(report.ready, true);
+  assert.equal(report.code, "GAS_STATION_RUNTIME_READY");
+  assert.equal(findCheck(report, "runtime-mode").code, "GAS_STATION_MANAGED_UPSTREAM_MODE_SELECTED");
+  assert.equal(findCheck(report, "managed-upstream-url").code, "GAS_STATION_MANAGED_UPSTREAM_URL_CONFIGURED");
+  assert.doesNotMatch(formatted, /gas-station\.testnet\.example/);
+  assert.doesNotMatch(formatted, /docker info|config\.local\.yaml/i);
+});
+
+test("Gas Station runtime preflight blocks invalid managed upstream config", async () => {
+  const missingUrl = await checkGasStationRuntimePreflight({
+    env: { GASKIT_GAS_STATION_RUNTIME_MODE: "managed-upstream" },
+  });
+  const invalidMode = await checkGasStationRuntimePreflight({
+    env: {
+      GASKIT_GAS_STATION_RUNTIME_MODE: "managed",
+      GAS_STATION_URL: "https://gas-station.testnet.example",
+    },
+  });
+
+  assert.equal(missingUrl.ready, false);
+  assert.equal(missingUrl.code, "GAS_STATION_MANAGED_UPSTREAM_CONFIG_MISSING");
+  assert.equal(findCheck(missingUrl, "managed-upstream-url").code, "GAS_STATION_URL_MISSING");
+  assert.equal(invalidMode.ready, false);
+  assert.equal(invalidMode.code, "GAS_STATION_RUNTIME_MODE_INVALID");
+  assert.equal(findCheck(invalidMode, "runtime-mode").code, "GAS_STATION_RUNTIME_MODE_UNSUPPORTED");
 });
 
 test("Gas Station runtime preflight blocks when Docker daemon is unavailable", async () => {

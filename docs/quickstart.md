@@ -240,12 +240,17 @@ The live flow requires operator-owned local credentials and a reachable IOTA Gas
 
 1. Copy `.env.example` to `.env`.
 2. Add testnet sponsor wallet values locally.
-3. Run `npm run gas-station:render-config`.
-4. Start Redis, Gas Station, policy gateway, and dashboard.
-5. Run `npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json`.
-6. Open dashboard health page.
-7. Open demo dApp.
-8. Execute sponsored testnet transaction.
-9. See usage event in dashboard.
+3. Run `npm run gas-station:render-config` for the default local Docker
+   Gas Station path, or set `GASKIT_GAS_STATION_RUNTIME_MODE=managed-upstream`
+   when `GAS_STATION_URL` points at an operator-managed Gas Station.
+4. Run `npm run gas-station:runtime-preflight`.
+5. Start Redis, Gas Station, policy gateway, and dashboard for the local Docker
+   path, or start only the policy gateway/dashboard when using managed
+   upstream.
+6. Run `npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json`.
+7. Open dashboard health page.
+8. Open demo dApp.
+9. Execute sponsored testnet transaction.
+10. See usage event in dashboard.
 
 Secrets must remain local and must never be committed.

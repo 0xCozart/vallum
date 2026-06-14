@@ -128,6 +128,7 @@ export async function checkSponsoredExecutePrerequisites(
 
   const runtime = options.gasStationRuntimeReport ?? await checkGasStationRuntimePreflight({
     cwd,
+    env,
     runner: options.gasStationRuntimeRunner,
   });
   checks.push({

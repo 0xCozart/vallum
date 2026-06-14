@@ -70,6 +70,10 @@ hosts, marketplace systems, or physical devices.
 - Separates rendered local Gas Station config from local Docker runtime
   readiness using the `gas-station-runtime` preflight gate, including the
   direct Docker fallback when Compose is unavailable.
+- Lets operators explicitly choose `GASKIT_GAS_STATION_RUNTIME_MODE=managed-upstream`
+  when a separately managed Gas Station is configured; that skips Docker
+  inspection but still leaves upstream reachability and reserve compatibility
+  to the sanitized `testnet-upstream` diagnostic report.
 - Separates local testnet `.env` readiness from live Gas Station upstream
   readiness using the sanitized `testnet-upstream` diagnostic report gate.
 - Points IOTA Names, IOTA Identity, and VC live proof prep at
@@ -176,6 +180,7 @@ npm run operator:write-live-gate-report
 npm run readiness:testnet
 npm run gas-station:render-config
 npm run gas-station:runtime-preflight
+GASKIT_GAS_STATION_RUNTIME_MODE=managed-upstream npm run gas-station:runtime-preflight
 npm run gas-station:docker-direct -- --dry-run
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run smoke:iota-names-live
