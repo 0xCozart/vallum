@@ -102,6 +102,19 @@ test("sponsor funding request writer builds and stays opt-in", () => {
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /sponsor:write-funding-request/);
 });
 
+test("sponsor faucet request builds and stays opt-in", () => {
+  const sponsorFaucetRequest = packageJson.scripts?.["sponsor:request-faucet-funds"];
+
+  assert.equal(
+    sponsorFaucetRequest,
+    "npm run build && tsx scripts/request-sponsor-faucet-funds.ts",
+    "npm run sponsor:request-faucet-funds must not depend on pre-existing ignored dist artifacts",
+  );
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /sponsor:request-faucet-funds/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /sponsor:request-faucet-funds/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /sponsor:request-faucet-funds/);
+});
+
 test("local docker compose wires official Gas Station behind loopback ports", () => {
   assert.match(localDockerCompose, /image: \$\{IOTA_GAS_STATION_IMAGE:-iotaledger\/gas-station:latest\}/);
   assert.match(localDockerCompose, /"--config-path", "\/app\/config.yaml"/);

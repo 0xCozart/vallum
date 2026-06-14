@@ -138,10 +138,14 @@ building/signing a transaction unless all of these are true:
   pass, `npm run sponsor:write-funding-request -- --out
   tmp/gaskit/sponsor-funding-request.json` can write the public sponsor address
   to an ignored local artifact for operator funding while keeping stdout
-  redacted. Then `npm run sponsor:check-funding` reports whether the configured
-  sponsor wallet has enough readable testnet IOTA balance and sampled coin
-  shape for the reserve budget. It is read-only and prints no private key or
-  full sponsor address.
+  redacted. If an approved faucet is available, `npm run
+  sponsor:request-faucet-funds -- --execute --out
+  tmp/gaskit/sponsor-faucet-request.json` can request testnet gas from
+  `IOTA_FAUCET_URL` or `--faucet-url`; it requires explicit `--execute`.
+  Then `npm run sponsor:check-funding` reports whether the configured sponsor
+  wallet has enough readable testnet IOTA balance and sampled coin shape for
+  the reserve budget. It is read-only and prints no private key or full
+  sponsor address.
 - `GASKIT_TESTNET_UPSTREAM_REPORT` points at a current sanitized report created
   by `npm run diagnose:gas-station -- --report <ignored-json-path>` without
   `--skip-reserve`.
@@ -182,6 +186,16 @@ the configured public sponsor address to request or transfer IOTA testnet gas.
 The full public address is written only to the ignored artifact; the command
 does not contact live services, reserve gas, sign transactions, execute
 transactions, or print sponsor signer material.
+
+`npm run sponsor:request-faucet-funds -- --execute --out
+tmp/gaskit/sponsor-faucet-request.json` can be used only when the operator has
+configured `IOTA_FAUCET_URL` or passes `--faucet-url`. Without `--execute`, the
+command writes a blocked local report and does not contact the faucet. With
+`--execute`, it sends the public sponsor address to the configured HTTPS or
+loopback faucet, writes only a sanitized ignored report, and still does not
+sign, reserve gas, or execute transactions. Faucet success is not accepted as
+reserve_gas compatibility; rerun the funding diagnostic and upstream
+diagnostic afterward.
 
 `npm run sponsor:check-funding` can be used as a read-only funding diagnostic
 when reserve_gas fails after auth succeeds. It contacts IOTA RPC, but it does

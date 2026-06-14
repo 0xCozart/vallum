@@ -63,6 +63,7 @@
     "diagnose:gas-station": "npm run build && tsx scripts/diagnose-gas-station-upstream.ts",
     "sponsor:check-funding": "npm run build && tsx scripts/check-sponsor-funding.ts",
     "sponsor:write-funding-request": "npm run build && tsx scripts/write-sponsor-funding-request.ts",
+    "sponsor:request-faucet-funds": "npm run build && tsx scripts/request-sponsor-faucet-funds.ts",
     "execute:testnet-demo": "npm run build && tsx scripts/execute-testnet-sponsored-demo.ts",
     "readiness:testnet:example": "npm run build && tsx scripts/check-testnet-readiness.ts --env-file .env.example --expect-placeholders",
     "secrets:scan": "tsx scripts/scan-secrets.ts",

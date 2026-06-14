@@ -167,6 +167,7 @@ npm run operator:write-report-template -- --kind custody-production --out tmp/ga
 npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/gaskit/a2a-public-discovery-report-template.json
 npm run gas-station:docker-direct -- --status
 npm run sponsor:write-funding-request -- --out tmp/gaskit/sponsor-funding-request.json
+npm run sponsor:request-faucet-funds -- --execute --out tmp/gaskit/sponsor-faucet-request.json
 npm run sponsor:check-funding
 npm run proof:verification-profiles
 npm run proof:live-status

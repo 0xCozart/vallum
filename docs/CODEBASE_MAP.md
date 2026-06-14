@@ -135,6 +135,10 @@ It also includes the first Agentic GasKit implementation slices:
   sponsor address only to an ignored local JSON artifact for testnet funding,
   while keeping stdout redacted and avoiding live service contact, signing,
   reserve, or execute
+- opt-in sponsor faucet request helper that requires explicit `--execute` plus
+  an operator-provided faucet URL, sends only the public sponsor address to the
+  faucet, writes a sanitized ignored report, and still keeps funding separate
+  from reserve_gas and sponsored execution proof
 - explicit managed-upstream Gas Station runtime mode for operators who provide
   a separately managed Gas Station at `GAS_STATION_URL`; the mode skips Docker
   inspection but still requires sanitized upstream diagnostics before sponsored
@@ -261,6 +265,8 @@ roadmap unless later slices implement and verify them.
   `scripts/testnet-upstream-report.ts`, `docs/testnet-attempts.md`
 - Sponsor funding request: `scripts/write-sponsor-funding-request.ts`,
   `scripts/write-sponsor-funding-request.test.ts`
+- Sponsor faucet request: `scripts/request-sponsor-faucet-funds.ts`,
+  `scripts/request-sponsor-faucet-funds.test.ts`
 - Local Gas Station setup: `scripts/render-gas-station-config.ts`,
   `scripts/check-gas-station-runtime-preflight.ts`,
   `scripts/gas-station-docker-direct.ts`,

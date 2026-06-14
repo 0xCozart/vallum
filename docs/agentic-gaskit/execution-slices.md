@@ -4931,3 +4931,85 @@ Escalation triggers:
 - Any request to treat the funding request artifact as proof that reserve_gas
   or sponsored execution is ready.
 - Any request to run `execute:testnet-demo` without explicit operator approval.
+
+## Slice 7.17: Sponsor Faucet Request Helper
+
+User-visible outcome:
+Operators can request IOTA testnet faucet funds for the configured sponsor
+address through an explicit opt-in command that uses only operator-provided
+faucet configuration, writes sanitized ignored evidence, and keeps faucet
+funding separate from reserve_gas and sponsored execution proof.
+
+Likely files:
+
+- `scripts/request-sponsor-faucet-funds.ts`
+- `scripts/request-sponsor-faucet-funds.test.ts`
+- `scripts/package-scripts.test.ts`
+- `scripts/write-operator-report-template.ts`
+- `scripts/write-operator-report-template.test.ts`
+- `package.json`
+- `docs/testnet-readiness.md`
+- `docs/deployment.md`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/agentic-gaskit/execution-slices.md`
+- `docs/CODEBASE_MAP.md`
+
+Acceptance criteria:
+
+- `npm run sponsor:request-faucet-funds` without `--execute` does not contact
+  the faucet and writes a blocked ignored report.
+- `npm run sponsor:request-faucet-funds -- --execute --out
+  tmp/gaskit/sponsor-faucet-request.json` requires `IOTA_FAUCET_URL` or
+  `--faucet-url`.
+- Faucet URLs must be HTTPS or loopback HTTP.
+- The command sends only the configured public sponsor address to the faucet,
+  never signer material, bearer tokens, raw transaction bytes, or user
+  signatures.
+- Stdout and the ignored report include only a redacted sponsor address,
+  sanitized result code, optional transferred amount, and next command order.
+- The command does not sign, reserve gas, execute transactions, call Gas
+  Station, or treat faucet success as reserve_gas compatibility.
+- The command is opt-in and excluded from `verify:fast`, `verify:local`, and
+  `grant:check`.
+- Public docs and the testnet upstream operator template route funding through
+  funding request, optional faucet request, funding diagnostic, then upstream
+  diagnostic.
+
+Verification:
+
+- Focused sponsor faucet request, sponsor funding request, sponsor funding,
+  operator-template, and package-script tests.
+- `npm run sponsor:request-faucet-funds`, recording only the blocked redacted
+  summary output.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run proof:live-status`.
+- `npm run proof:product-status`.
+- `npm run proof:launch-readiness`.
+- `npm run proof:operator-gates`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slices 7.7-7.16 and local `.env` testnet signer configuration. Actual faucet
+execution also requires an operator-provided `IOTA_FAUCET_URL` or
+`--faucet-url`.
+
+Risk:
+Medium. Faucet requests contact an external service and reveal the public
+sponsor address to that service. Keep execution opt-in, require safe URLs,
+sanitize reports, and continue requiring funding diagnostics plus reserve_gas
+diagnostics before any sponsored execute.
+
+Escalation triggers:
+
+- Any request to use an unsafe HTTP faucet URL outside loopback.
+- Any request to print the full sponsor address in stdout, sponsor private key,
+  rendered Gas Station config, bearer token, raw faucet responses, raw
+  transaction bytes, or user signatures.
+- Any request to treat faucet success as reserve_gas compatibility or
+  sponsored execution readiness.
+- Any request to run `execute:testnet-demo` without explicit operator approval.
