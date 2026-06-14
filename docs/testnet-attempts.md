@@ -310,6 +310,40 @@ transaction through local policy gateway, local Gas Station, and IOTA testnet
 RPC. The retry consumed testnet gas only. The associated ignored report path
 contains only the public digest and redacted identifiers.
 
+## 2026-06-14 sponsored execute refresh after operator gate cleanup
+
+After confirming the operator gate reports classified existing testnet
+evidence as ready for manual approval, the local policy gateway was started
+from the ignored operator-owned env and one fresh sponsored testnet
+transaction was executed with an ignored sanitized report:
+
+```bash
+npm run execute:testnet-demo -- --report tmp/gaskit/sponsored-execute-report-20260614-refresh.json
+```
+
+Sanitized successful run:
+
+```text
+gatewayConfigured=true
+iotaRpcConfigured=true
+demoTarget=0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0::demo_badge::mint_badge
+ephemeralUserAddress=0x4a18440f...244a7dee
+reservedGas=true
+reservationId=<redacted-id>
+gasKitTransactionId=gaskit_5...bbad51
+sponsorAddress=0xd046a4fb...29b9b868
+executed=true
+transactionDigest=6gA8pyrYStnHWbYrE7Edr9iKd4PFG4mf2J2u9x14JoR3
+```
+
+Outcome: the current machine again proves the real IOTA testnet sponsored
+transaction path end-to-end through the local policy gateway, local Gas
+Station, and IOTA testnet RPC. The command consumed testnet gas only and
+captured the operational report in an ignored local file. No sponsor key,
+bearer token, app key, raw transaction bytes, user signature, full
+sponsor/user address, full reservation id, or full gateway transaction id was
+written to tracked evidence.
+
 ## 2026-06-11 upstream diagnostic report gate
 
 Local `.env` is present and `npm run readiness:testnet` passes non-networked
