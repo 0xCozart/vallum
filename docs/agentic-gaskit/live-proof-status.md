@@ -128,7 +128,7 @@ npm run sponsor:request-faucet-funds -- --execute --out tmp/gaskit/sponsor-fauce
 npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json
 GASKIT_SPONSOR_FUNDING_REPORT=tmp/gaskit/sponsor-funding-report.json npm run proof:live-status
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
-npm run smoke:iota-names-live
+npm run smoke:iota-names-live -- --report tmp/gaskit/iota-names-live-report.json
 npm run smoke:iota-identity-live
 ```
 
@@ -160,4 +160,5 @@ mainnet operation.
 sponsored testnet gas. Run it only with explicit operator intent and
 operator-owned local credentials. The command fails closed before reserve or
 execute unless local testnet readiness, local Gas Station runtime preflight,
-and a current passing `GASKIT_TESTNET_UPSTREAM_REPORT` are all present.
+and current passing `GASKIT_TESTNET_UPSTREAM_REPORT` plus
+`IOTA_NAMES_LIVE_REPORT` artifacts are present.

@@ -54,6 +54,7 @@ const REQUIRED_OPERATOR_INPUTS = [
   "IOTA_NAMES_GRAPHQL_URL",
   "IOTA_NAMES_NAME",
   "IOTA_NAMES_EXPECTED_ADDRESS",
+  "IOTA_NAMES_LIVE_REPORT",
   "IOTA_IDENTITY_PROOF_ENDPOINT",
   "IOTA_IDENTITY_PROFILE_PATH",
   "IOTA_IDENTITY_TRUSTED_ISSUER_DIDS",
@@ -65,7 +66,7 @@ const REQUIRED_OPERATOR_INPUTS = [
 
 const REQUIRED_EVIDENCE_ARTIFACTS = [
   "sanitized testnet upstream diagnostic report",
-  "IOTA Names live smoke output",
+  "sanitized IOTA Names live smoke report",
   "IOTA Identity live proof smoke output",
   "VC trust-policy configuration review",
 ] as const;
@@ -103,7 +104,7 @@ const PLAN_COMMANDS: readonly LiveProofPlanCommand[] = [
   },
   {
     id: "smoke-iota-names-live",
-    command: "npm run smoke:iota-names-live",
+    command: "npm run smoke:iota-names-live -- --report <ignored-json-path>",
     contactsLiveService: true,
     requiresOperatorApproval: true,
   },

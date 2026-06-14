@@ -73,7 +73,7 @@ test("product status reports local proof gates and explicit live blockers withou
   }
 });
 
-test("product status marks configured live gates ready without contacting endpoints", async () => {
+test("product status marks report-backed live gates ready without contacting endpoints", async () => {
   const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-product-status-"));
   try {
     await writeFile(join(cwd, "policy.yaml"), validPolicy);
@@ -104,6 +104,7 @@ test("product status marks configured live gates ready without contacting endpoi
       ok: true,
     }));
     await writeFile(join(cwd, "sponsor-funding-report.json"), JSON.stringify(readySponsorFundingReport()));
+    await writeFile(join(cwd, "iota-names-report.json"), JSON.stringify(readyIotaNamesReport()));
 
     const report = await checkProductStatus({
       cwd,
@@ -118,6 +119,7 @@ test("product status marks configured live gates ready without contacting endpoi
         IOTA_NAMES_GRAPHQL_URL: "https://graphql.testnet.example/iota",
         IOTA_NAMES_NAME: "researcher.demo.iota",
         IOTA_NAMES_EXPECTED_ADDRESS: "0x1111111111111111111111111111111111111111111111111111111111111111",
+        IOTA_NAMES_LIVE_REPORT: "iota-names-report.json",
         IOTA_IDENTITY_PROOF_ENDPOINT: "https://identity.testnet.example/proof",
         IOTA_IDENTITY_PROFILE_PATH: "profiles/researcher.json",
         IOTA_IDENTITY_TRUSTED_ISSUER_DIDS: "did:iota:issuer:agent-registry",
@@ -578,5 +580,22 @@ function readySponsorFundingReport() {
     sampledCoinCount: 1,
     maxSampledCoinBalanceMist: "100000000",
     hasNextCoinPage: false,
+  };
+}
+
+function readyIotaNamesReport() {
+  return {
+    schemaVersion: 1,
+    kind: "agentic-gaskit.iota-names-live-smoke-report",
+    observedAt: new Date().toISOString(),
+    result: "passed",
+    code: "IOTA_NAMES_LIVE_SMOKE_PASSED",
+    message: "IOTA Names live smoke resolved the configured name to the expected address.",
+    contactsLiveService: true,
+    endpointConfigured: true,
+    nameConfigured: true,
+    expectedAddressConfigured: true,
+    addressMatched: true,
+    resolvedAddressRedacted: "0x11111111...11111111",
   };
 }

@@ -33,7 +33,7 @@ test("operator live gates report current blockers without secret values", async 
     assert.equal(report.allGatesClear, false);
     assert.equal(report.localOnly, false);
     assert.equal(findGate(report, "local-verification").status, "blocked-production");
-    assert.equal(findGate(report, "iota-names-live").status, "requires-approval");
+    assert.equal(findGate(report, "iota-names-live").status, "blocked-config");
     assert.equal(findGate(report, "iota-names-live").approvalRequired, true);
     assert.equal(findGate(report, "iota-names-live").contactsLiveService, true);
     assert.equal(findGate(report, "iota-identity-live").status, "requires-approval");
@@ -53,7 +53,7 @@ test("operator live gates report current blockers without secret values", async 
     assert.equal(findGate(report, "testnet-upstream").command, "npm run diagnose:gas-station");
     assert.equal(
       findGate(report, "iota-names-live").command,
-      "npm run live:write-proof-plan && npm run smoke:iota-names-live",
+      "npm run live:write-proof-plan && npm run smoke:iota-names-live -- --report <ignored-json-path>",
     );
     assert.equal(
       findGate(report, "iota-identity-live").command,
@@ -153,8 +153,8 @@ test("operator live gates require approval for configured live endpoint smokes",
       {
         id: "iota-names-live",
         status: "ready-live",
-        code: "IOTA_NAMES_LIVE_CONFIG_PRESENT",
-        message: "IOTA Names live smoke configuration is present.",
+        code: "IOTA_NAMES_LIVE_REPORT_VALID",
+        message: "IOTA Names live smoke report proves the configured name/address binding.",
       },
       {
         id: "iota-identity-live",
@@ -207,8 +207,8 @@ test("operator live gate artifact reports blockers without configured values", a
       {
         id: "iota-names-live",
         status: "ready-live",
-        code: "IOTA_NAMES_LIVE_CONFIG_PRESENT",
-        message: "IOTA Names live smoke configuration is present.",
+        code: "IOTA_NAMES_LIVE_REPORT_VALID",
+        message: "IOTA Names live smoke report proves the configured name/address binding.",
       },
       {
         id: "public-a2a-hosting",
@@ -231,10 +231,10 @@ test("operator live gate artifact reports blockers without configured values", a
   assert.equal(artifact.allGatesClear, false);
   assert.equal(artifact.localOnly, false);
   assert.ok(artifact.blockerCodes.includes("PUBLIC_A2A_HOSTING_UNPROVEN"));
-  assert.ok(artifact.blockerCodes.includes("IOTA_NAMES_LIVE_CONFIG_PRESENT"));
+  assert.ok(artifact.blockerCodes.includes("IOTA_NAMES_LIVE_REPORT_VALID"));
   assert.ok(artifact.approvalRequiredGateIds.includes("iota-names-live"));
   assert.ok(artifact.liveServiceGateIds.includes("iota-names-live"));
-  assert.ok(artifact.gates.some((gate) => gate.command === "npm run live:write-proof-plan && npm run smoke:iota-names-live"));
+  assert.ok(artifact.gates.some((gate) => gate.command === "npm run live:write-proof-plan && npm run smoke:iota-names-live -- --report <ignored-json-path>"));
   assert.doesNotMatch(formatted, /graphql\.testnet\.example|researcher\.demo\.iota/);
   assert.doesNotMatch(formatted, /0x1111111111111111111111111111111111111111111111111111111111111111/);
 });

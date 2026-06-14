@@ -5212,3 +5212,74 @@ Escalation triggers:
 - Any request to treat Gas Station root reachability or IOTA RPC reachability
   as reserve_gas compatibility.
 - Any request to run `execute:testnet-demo` without explicit operator approval.
+
+## Slice 7.21: IOTA Names Live Smoke Report Gate
+
+User-visible outcome:
+IOTA Names live proof can no longer be marked ready from configuration alone.
+Operators must run the opt-in live smoke and provide a sanitized ignored report
+before live-status, product-status, launch-readiness, or operator gates can
+mark the Names proof ready.
+
+Likely files:
+
+- `scripts/iota-names-live-report.ts`
+- `scripts/smoke-iota-names-live.ts`
+- `scripts/iota-names-live-smoke.test.ts`
+- `scripts/check-live-proof-status.ts`
+- `scripts/write-live-proof-plan.ts`
+- `scripts/check-operator-live-gates.ts`
+- `scripts/check-launch-readiness.ts`
+- `scripts/live-proof-status.test.ts`
+- `scripts/product-status.test.ts`
+- `scripts/operator-live-gates.test.ts`
+- `scripts/write-live-proof-plan.test.ts`
+- `docs/CODEBASE_MAP.md`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/testnet-readiness.md`
+- `README.md`
+
+Acceptance criteria:
+
+- `npm run smoke:iota-names-live -- --report <ignored-json-path>` writes a
+  sanitized report with schema version, kind, observation time, result, code,
+  configured-field booleans, live-contact flag, match status, and redacted
+  resolved address only.
+- The report omits GraphQL endpoint values, full names, full expected/resolved
+  addresses, raw GraphQL request/response bodies, credential material, local
+  secret paths, and private keys.
+- `npm run proof:live-status` blocks safe IOTA Names config without
+  `IOTA_NAMES_LIVE_REPORT`.
+- A current passing `IOTA_NAMES_LIVE_REPORT` marks only the `iota-names-live`
+  check ready; it does not prove IOTA Identity, VC, Gas Station reserve_gas, or
+  sponsored execution.
+- Product status, launch readiness, operator gates, and live proof plans point
+  operators at the report-writing command.
+- The live smoke remains opt-in and stays out of default local verification.
+
+Verification:
+
+- Focused IOTA Names smoke, live-status, product-status, operator-gate,
+  live-proof-plan, launch-readiness, and package-script tests.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slices 2.6-2.8 and 7.20.
+
+Risk:
+Medium. This changes readiness semantics from config-present to
+report-backed proof. It may expose previously hidden blockers, but that is the
+intended launch-safety behavior.
+
+Escalation triggers:
+
+- Any request to treat IOTA Names endpoint/name/address configuration as live
+  proof without a current passing report.
+- Any request to print configured GraphQL endpoint values, full names, full
+  addresses, raw GraphQL bodies, or local secret paths in status gates.
+- Any request to include `smoke:iota-names-live` in default local verification.

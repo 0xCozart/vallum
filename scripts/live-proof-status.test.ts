@@ -260,7 +260,7 @@ test("live proof status blocks malformed VC trust policy config without printing
   }
 });
 
-test("live proof status marks configured names as ready without contacting GraphQL", async () => {
+test("live proof status blocks configured names without a smoke report", async () => {
   const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
   try {
     const report = await checkLiveProofStatus({
@@ -274,9 +274,35 @@ test("live proof status marks configured names as ready without contacting Graph
     });
 
     const names = report.checks.find((check) => check.id === "iota-names-live");
+    assert.equal(names?.status, "blocked");
+    assert.equal(names?.code, "IOTA_NAMES_LIVE_REPORT_MISSING");
+    assert.deepEqual(names?.missing, ["IOTA_NAMES_LIVE_REPORT"]);
+    assert.match(names?.next ?? "", /--report/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("live proof status marks names ready with a passing smoke report", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  try {
+    await writeFile(join(cwd, "iota-names-report.json"), JSON.stringify(readyIotaNamesReport()));
+    const report = await checkLiveProofStatus({
+      cwd,
+      gasStationRuntimeReport: readyGasStationRuntime(),
+      env: {
+        IOTA_NAMES_GRAPHQL_URL: "https://graphql.testnet.example/iota",
+        IOTA_NAMES_NAME: "researcher.demo.iota",
+        IOTA_NAMES_EXPECTED_ADDRESS: "0x1111111111111111111111111111111111111111111111111111111111111111",
+        IOTA_NAMES_LIVE_REPORT: "iota-names-report.json",
+      },
+    });
+    const formatted = formatLiveProofStatusReport(report);
+    const names = report.checks.find((check) => check.id === "iota-names-live");
+
     assert.equal(names?.status, "ready");
-    assert.equal(names?.code, "IOTA_NAMES_LIVE_CONFIG_PRESENT");
-    assert.match(names?.next ?? "", /smoke:iota-names-live/);
+    assert.equal(names?.code, "IOTA_NAMES_LIVE_REPORT_VALID");
+    assert.doesNotMatch(formatted, /iota-names-report\.json|graphql\.testnet\.example|researcher\.demo\.iota/);
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }
@@ -363,5 +389,22 @@ function readySponsorFundingReport() {
     sampledCoinCount: 1,
     maxSampledCoinBalanceMist: "100000000",
     hasNextCoinPage: false,
+  };
+}
+
+function readyIotaNamesReport() {
+  return {
+    schemaVersion: 1,
+    kind: "agentic-gaskit.iota-names-live-smoke-report",
+    observedAt: new Date().toISOString(),
+    result: "passed",
+    code: "IOTA_NAMES_LIVE_SMOKE_PASSED",
+    message: "IOTA Names live smoke resolved the configured name to the expected address.",
+    contactsLiveService: true,
+    endpointConfigured: true,
+    nameConfigured: true,
+    expectedAddressConfigured: true,
+    addressMatched: true,
+    resolvedAddressRedacted: "0x11111111...11111111",
   };
 }

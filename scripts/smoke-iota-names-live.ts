@@ -1,3 +1,5 @@
+import { mkdir, writeFile } from "node:fs/promises";
+import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
@@ -5,6 +7,10 @@ import {
   resolveIotaNamesAddress,
   type IotaNamesGraphQLClient,
 } from "../packages/registry/src/index.js";
+import {
+  buildIotaNamesLiveReport,
+  formatIotaNamesLiveReport,
+} from "./iota-names-live-report.js";
 
 export type IotaNamesLiveSmokeResult =
   | {
@@ -32,6 +38,11 @@ export interface RunIotaNamesLiveSmokeOptions {
   readonly env?: NodeJS.ProcessEnv | Record<string, string | undefined>;
   readonly graphQL?: IotaNamesGraphQLClient;
   readonly fetch?: typeof fetch;
+}
+
+interface CliOptions {
+  readonly help: boolean;
+  readonly reportPath?: string;
 }
 
 const REQUIRED_ENV = [
@@ -104,7 +115,7 @@ export function formatIotaNamesLiveSmokeResult(result: IotaNamesLiveSmokeResult)
     return [
       "IOTA Names live smoke passed",
       `name=${result.name}`,
-      `address=${result.address}`,
+      `address=${redactAddress(result.address)}`,
       `source=${result.source}`,
     ].join("\n");
   }
@@ -146,6 +157,11 @@ function normalizeAddress(address: string): string {
   return address.trim().toLowerCase();
 }
 
+function redactAddress(value: string): string {
+  if (value.length <= 18) return "<redacted-address>";
+  return `${value.slice(0, 10)}...${value.slice(-8)}`;
+}
+
 function withTimeout(fetchImpl: typeof fetch): typeof fetch {
   return async (input, init = {}) => {
     const controller = new AbortController();
@@ -161,9 +177,55 @@ function withTimeout(fetchImpl: typeof fetch): typeof fetch {
   };
 }
 
+function parseArgs(argv: readonly string[]): CliOptions {
+  const options: { help: boolean; reportPath?: string } = { help: false };
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+    if (arg === "--help" || arg === "-h") {
+      options.help = true;
+      continue;
+    }
+    if (arg === "--report") {
+      const value = argv[index + 1];
+      if (!value) throw new Error("--report requires a path.");
+      options.reportPath = value;
+      index += 1;
+      continue;
+    }
+    throw new Error(`Unknown argument: ${arg}`);
+  }
+  return options;
+}
+
+async function writeReport(path: string, result: IotaNamesLiveSmokeResult): Promise<void> {
+  const reportPath = isAbsolute(path) ? path : resolve(process.cwd(), path);
+  const report = buildIotaNamesLiveReport({
+    result,
+    env: process.env,
+  });
+  await mkdir(dirname(reportPath), { recursive: true });
+  await writeFile(reportPath, formatIotaNamesLiveReport(report), { mode: 0o600 });
+  console.log(`report=${path}`);
+}
+
 async function main(): Promise<number> {
+  let options: CliOptions;
+  try {
+    options = parseArgs(process.argv.slice(2));
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : "Invalid arguments.");
+    return 2;
+  }
+  if (options.help) {
+    console.log("usage: npm exec tsx -- scripts/smoke-iota-names-live.ts [--report <ignored-json-path>]");
+    return 0;
+  }
+
   const result = await runIotaNamesLiveSmoke();
   const formatted = formatIotaNamesLiveSmokeResult(result);
+  if (options.reportPath) {
+    await writeReport(options.reportPath, result);
+  }
   if (result.ok) {
     console.log(formatted);
     return 0;

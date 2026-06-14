@@ -16,6 +16,10 @@ import {
   validateSponsorFundingReport,
 } from "./sponsor-funding-report.js";
 import {
+  loadIotaNamesLiveReport,
+  validateIotaNamesLiveReport,
+} from "./iota-names-live-report.js";
+import {
   checkGasStationRuntimePreflight,
   type GasStationRuntimeCommandRunner,
   type GasStationRuntimePreflightReport,
@@ -72,6 +76,7 @@ const VC_TRUST_POLICY_STATUS_TYPES = new Set([
 const LIVE_TESTNET_ENV_FILE = ".env";
 const SPONSOR_FUNDING_REPORT_ENV = "GASKIT_SPONSOR_FUNDING_REPORT";
 const TESTNET_UPSTREAM_REPORT_ENV = "GASKIT_TESTNET_UPSTREAM_REPORT";
+const IOTA_NAMES_LIVE_REPORT_ENV = "IOTA_NAMES_LIVE_REPORT";
 
 export async function checkLiveProofStatus(
   options: CheckLiveProofStatusOptions = {},
@@ -86,7 +91,7 @@ export async function checkLiveProofStatus(
     await checkGasStationRuntimeStatus(options, cwd, mergedEnv),
     await checkSponsorFundingStatus(mergedEnv, cwd),
     await checkTestnetUpstreamStatus(mergedEnv, cwd),
-    checkIotaNamesStatus(mergedEnv),
+    await checkIotaNamesStatus(mergedEnv, cwd),
     checkIotaIdentityStatus(mergedEnv),
     checkVcTrustPolicyStatus(mergedEnv),
   ];
@@ -284,7 +289,10 @@ async function checkTestnetReadinessStatus(envFile: string, cwd: string): Promis
   }
 }
 
-function checkIotaNamesStatus(env: Record<string, string | undefined>): LiveProofCheck {
+async function checkIotaNamesStatus(
+  env: Record<string, string | undefined>,
+  cwd: string,
+): Promise<LiveProofCheck> {
   const missing = IOTA_NAMES_REQUIRED_ENV.filter((key) => !readEnv(env, key));
   if (missing.length > 0) {
     return {
@@ -293,7 +301,7 @@ function checkIotaNamesStatus(env: Record<string, string | undefined>): LiveProo
       code: "IOTA_NAMES_LIVE_CONFIG_MISSING",
       missing,
       message: "IOTA Names live proof requires operator-provided endpoint, name, and expected address.",
-      next: "Set the missing variables outside committed files, then run npm run smoke:iota-names-live.",
+      next: "Set the missing variables outside committed files, then run npm run smoke:iota-names-live -- --report <ignored-json-path>.",
     };
   }
 
@@ -304,17 +312,51 @@ function checkIotaNamesStatus(env: Record<string, string | undefined>): LiveProo
       status: "blocked",
       code: "IOTA_NAMES_GRAPHQL_URL_UNSAFE",
       message: "IOTA Names GraphQL endpoint must be HTTPS or loopback HTTP.",
-      next: "Use an HTTPS endpoint or loopback local GraphQL endpoint before running npm run smoke:iota-names-live.",
+      next: "Use an HTTPS endpoint or loopback local GraphQL endpoint before running npm run smoke:iota-names-live -- --report <ignored-json-path>.",
     };
   }
 
-  return {
-    id: "iota-names-live",
-    status: "ready",
-    code: "IOTA_NAMES_LIVE_CONFIG_PRESENT",
-    message: "IOTA Names live smoke configuration is present and endpoint scheme is safe.",
-    next: "Run npm run smoke:iota-names-live to contact the configured endpoint and prove the name/address binding.",
-  };
+  const reportPath = readEnv(env, IOTA_NAMES_LIVE_REPORT_ENV);
+  if (!reportPath) {
+    return {
+      id: "iota-names-live",
+      status: "blocked",
+      code: "IOTA_NAMES_LIVE_REPORT_MISSING",
+      missing: [IOTA_NAMES_LIVE_REPORT_ENV],
+      message: "No sanitized IOTA Names live smoke report is configured.",
+      next: "Run npm run smoke:iota-names-live -- --report <ignored-json-path> with operator approval, then rerun this gate.",
+    };
+  }
+
+  try {
+    const report = await loadIotaNamesLiveReport(resolve(cwd, reportPath));
+    const validation = validateIotaNamesLiveReport(report);
+    if (validation.ok) {
+      return {
+        id: "iota-names-live",
+        status: "ready",
+        code: validation.code,
+        message: validation.message,
+        next: "Keep the report current; rerun npm run smoke:iota-names-live -- --report <ignored-json-path> when operator-owned Names inputs change.",
+      };
+    }
+    return {
+      id: "iota-names-live",
+      status: "blocked",
+      code: validation.code,
+      message: validation.message,
+      next: "Fix IOTA Names configuration or name/address binding, rerun npm run smoke:iota-names-live -- --report <ignored-json-path>, then rerun this gate.",
+    };
+  } catch {
+    return {
+      id: "iota-names-live",
+      status: "blocked",
+      code: "IOTA_NAMES_LIVE_REPORT_INVALID",
+      message: "Configured IOTA Names live smoke report could not be loaded or validated.",
+      next: "Regenerate the report with npm run smoke:iota-names-live -- --report <ignored-json-path> without committing endpoint values.",
+    };
+  }
+
 }
 
 function checkIotaIdentityStatus(env: Record<string, string | undefined>): LiveProofCheck {

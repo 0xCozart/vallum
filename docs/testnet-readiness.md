@@ -54,7 +54,7 @@ name/address pair, the registry adapter can be checked without spending gas:
 IOTA_NAMES_GRAPHQL_URL=https://...
 IOTA_NAMES_NAME=example.iota
 IOTA_NAMES_EXPECTED_ADDRESS=0x...
-npm run smoke:iota-names-live
+npm run smoke:iota-names-live -- --report tmp/gaskit/iota-names-live-report.json
 ```
 
 The command contacts the configured GraphQL endpoint and verifies that

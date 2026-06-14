@@ -109,7 +109,7 @@ It also includes the first Agentic GasKit implementation slices:
 - local redacted A2A public proof plan writer for turning current non-networked
   readiness gates into an operator checklist before any public probing
 - opt-in IOTA Names GraphQL live resolution smoke with an exact missing-config
-  blocker path
+  blocker path and sanitized ignored report output for live proof gates
 - non-networked live proof status command for testnet, IOTA Names, IOTA
   Identity, and VC blocker reporting
 - local redacted live-proof plan writer for testnet, Gas Station, IOTA Names,
@@ -267,6 +267,9 @@ roadmap unless later slices implement and verify them.
 - Live proof status: `docs/agentic-gaskit/live-proof-status.md`,
   `scripts/check-live-proof-status.ts`, `scripts/live-proof-status.test.ts`,
   `scripts/write-live-proof-plan.ts`
+- IOTA Names live proof report:
+  `scripts/iota-names-live-report.ts`, `scripts/smoke-iota-names-live.ts`,
+  `scripts/iota-names-live-smoke.test.ts`
 - Testnet upstream diagnostics: `scripts/diagnose-gas-station-upstream.ts`,
   `scripts/testnet-upstream-report.ts`, `docs/testnet-attempts.md`; the
   diagnostic prints status-only endpoint results and writes bounded JSON
@@ -438,7 +441,7 @@ Opt-in configured/live checks:
 - `npm run proof:testnet-digest:live` performs a read-only IOTA testnet lookup
   for the documented public transaction digest; it does not spend gas or use
   sponsor credentials
-- `npm run smoke:iota-names-live` only when an operator provides
+- `npm run smoke:iota-names-live -- --report <ignored-json-path>` only when an operator provides
   `IOTA_NAMES_GRAPHQL_URL`, `IOTA_NAMES_NAME`, and
   `IOTA_NAMES_EXPECTED_ADDRESS`; this is not part of `npm run verify:local`
 - `npm run proof:live-status` is non-networked and reports live/testnet proof

@@ -162,9 +162,10 @@ Latest local verification and prior live proof:
 - `npm run smoke:a2a-local-server`: deterministic loopback A2A server smoke passed locally.
 - `npm run smoke:marketplace-read-model`: deterministic local marketplace
   access-control and dispute-evidence smoke passed locally.
-- `npm run smoke:iota-names-live`: opt-in configured IOTA Names GraphQL
-  resolution smoke exists; the missing-config blocker path is locally tested
-  and a passing live run requires operator-provided endpoint/name/address.
+- `npm run smoke:iota-names-live -- --report <ignored-json-path>`: opt-in
+  configured IOTA Names GraphQL resolution smoke exists; the missing-config
+  blocker path is locally tested and a passing live run writes a sanitized
+  ignored report before live proof gates can mark Names ready.
 - `npm run readiness:testnet:example`: deterministic example testnet-readiness preflight passed locally.
 - `npm run proof:testnet-digest`: deterministic non-networked check confirms
   the documented public testnet digest evidence is present in repo docs.
