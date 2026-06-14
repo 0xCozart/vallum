@@ -44,7 +44,7 @@ operator-approved proof.
 
 | Area | Current claim | Status boundary |
 | --- | --- | --- |
-| Phase 1 sponsored policy MVP | Local signer-reference wallets, manifests, policy-gated sponsorship, MCP tools, escrow, receipts, documented public testnet digest evidence, local testnet-readiness config, local Gas Station runtime preflight wiring, sanitized upstream diagnostic report path, non-networked custody readiness gate, and redacted custody production proof-plan writer are proven by local checks. | Local proof plus documented prior testnet digest only; new sponsored execution still requires `gas-station-runtime` to pass locally, then a passing `testnet-upstream` report proving Gas Station reachability and reserve_gas compatibility, sponsor funding, explicit operator intent, and separate production custody review before custody claims. |
+| Phase 1 sponsored policy MVP | Local signer-reference wallets, manifests, policy-gated sponsorship, MCP tools, escrow, receipts, documented public testnet digest evidence, local testnet-readiness config, local Gas Station runtime preflight wiring, sponsor funding request generation, bounded sponsor faucet context, sanitized upstream diagnostic report path, non-networked custody readiness gate, and redacted custody production proof-plan writer are proven by local checks. | Local proof plus documented prior testnet digest only; new sponsored execution still requires `gas-station-runtime` to pass locally, sponsor funding to pass, then a passing `testnet-upstream` report proving Gas Station reachability and reserve_gas compatibility, explicit operator intent, and separate production custody review before custody claims. |
 | Phase 2 identity and VC | Profiles, local resolvers, mock Names/Identity adapters, cache behavior, VC trust policy, and a non-networked live-proof plan writer are locally proven. | Blocked on IOTA Names, IOTA Identity, and VC live-proof configuration. |
 | Phase 3 contract workflows | Escrow, receipt, pay-per-call, data-license, service-bounty, reputation-receipt, and subscription workflows are locally proven. | Physical device access remains safety-gated. |
 | Phase 4 standards bridges | x402, AP2, and A2A mappings are locally proven with fail-closed behavior. Payment-provider readiness now reports local x402/AP2 source and test proof, then validates only an operator-supplied redacted structured report before manual review; the payment proof-plan writer emits the non-networked command/report checklist before any provider call. A2A public-readiness proof now reports local proof, local authenticated extended-card access, local public JWKS serving, local static discovery bundle generation, local static discovery artifact writing and validation, local static discovery loopback host smoke, local static hosting review, local loopback streaming, local push notification configuration, local injected push delivery, local opt-in push HTTP transport, callback URL admission hardening, callback host allowlisting, local retry/attempt observability, local durable attempt evidence, local delivery queueing, a local injected-transport worker, public hosting inputs, redacted structured public discovery report classification, redacted structured public push delivery report classification, and structured external conformance blockers. Opt-in artifact commands can prepare, validate, loopback-smoke, and write a redacted hosting-review packet for canonical local `.well-known` files from already-signed public inputs, and an opt-in public discovery smoke can probe approved public Agent Card/JWKS config and emit the discovery report. | Blocked on accepted live payment/provider report, public A2A hosting acceptance, production auth/key management, accepted public discovery evidence, accepted public push webhook delivery evidence, and external conformance. |
@@ -76,6 +76,11 @@ npm run proof:testnet-digest:live
 npm run gas-station:render-config
 npm run gas-station:runtime-preflight
 npm run gas-station:docker-direct -- --dry-run
+npm run sponsor:write-funding-request -- --out tmp/gaskit/sponsor-funding-request.json
+npm run sponsor:request-faucet-funds -- --execute --out tmp/gaskit/sponsor-faucet-request.json
+npm run sponsor:write-funding-request -- --faucet-report tmp/gaskit/sponsor-faucet-request.json --out tmp/gaskit/sponsor-funding-request.json
+npm run proof:live-status
+npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json
 npm run diagnose:gas-station -- --skip-reserve --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run a2a:write-static-discovery-bundle -- --agent-card <signed-card.json> --jwks <jwks.json> --public-base-url <url> --public-jwks-url <url> --out-dir <dir>
@@ -101,6 +106,12 @@ npm run verify:local
 The `--skip-reserve` diagnostic is reachability triage only. It does not clear
 launch readiness; the full diagnostic without `--skip-reserve` must pass before
 `testnet-upstream` can support fresh sponsored execution claims.
+
+Sponsor funding must clear before the full upstream diagnostic can prove
+`reserve_gas` compatibility. If the bounded faucet context reports
+`REQUEST_UNSUPPORTED` with HTTP `405`, use another approved faucet or the
+ignored funding-request artifact to fund the sponsor, then rerun the sponsor
+funding gate and full diagnostic.
 
 Run live commands only after operator-owned local credentials are configured
 outside the repo and the operator explicitly intends to run that proof.

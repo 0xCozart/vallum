@@ -23,6 +23,21 @@ test("launch readiness maps local evidence to live and production blockers", asy
   assert.equal(report.localEvidenceOk, true);
   assert.equal(report.areas.find((area) => area.id === "phase-1-sponsored-policy-mvp")?.status, "blocked-live");
   const phase1 = report.areas.find((area) => area.id === "phase-1-sponsored-policy-mvp");
+  assert.ok(phase1?.evidencePaths.includes("scripts/write-sponsor-funding-request.ts"));
+  assert.ok(phase1?.evidencePaths.includes("scripts/request-sponsor-faucet-funds.ts"));
+  assert.ok(phase1?.commands.includes("npm run sponsor:write-funding-request -- --out tmp/gaskit/sponsor-funding-request.json"));
+  assert.ok(phase1?.commands.includes("npm run sponsor:request-faucet-funds -- --execute --out tmp/gaskit/sponsor-faucet-request.json"));
+  assert.ok(phase1?.commands.includes("npm run sponsor:write-funding-request -- --faucet-report tmp/gaskit/sponsor-faucet-request.json --out tmp/gaskit/sponsor-funding-request.json"));
+  assert.ok(phase1?.commands.includes("npm run proof:live-status"));
+  assert.ok(
+    (phase1?.commands.indexOf("npm run sponsor:write-funding-request -- --faucet-report tmp/gaskit/sponsor-faucet-request.json --out tmp/gaskit/sponsor-funding-request.json") ?? -1)
+      < (phase1?.commands.indexOf("npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json") ?? -1),
+  );
+  assert.ok(
+    (phase1?.commands.indexOf("npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json") ?? -1)
+      < (phase1?.commands.indexOf("npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json") ?? -1),
+  );
+  assert.match(phase1?.next ?? "", /funding request/);
   assert.ok(phase1?.commands.includes("npm run diagnose:gas-station -- --skip-reserve --report tmp/gaskit/testnet-upstream-diagnostic.json"));
   assert.ok(phase1?.commands.includes("npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json"));
   assert.ok(
@@ -145,7 +160,10 @@ async function writeEvidenceTree(cwd: string): Promise<void> {
     "contracts/receipt_v1/Move.toml",
     "examples/agent-escrow/agent-escrow-demo.ts",
     "docs/testnet-attempts.md",
+    "docs/agentic-gaskit/live-proof-status.md",
     "scripts/check-gas-station-runtime-preflight.ts",
+    "scripts/write-sponsor-funding-request.ts",
+    "scripts/request-sponsor-faucet-funds.ts",
     "scripts/check-sponsor-funding.ts",
     "scripts/check-testnet-digest-proof.ts",
     "packages/registry/src/profileSchema.ts",
