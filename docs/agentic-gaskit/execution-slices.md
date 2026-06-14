@@ -8513,3 +8513,74 @@ Escalation triggers:
   gateway transaction ids, raw transaction bytes, raw signatures, sponsor keys,
   bearer tokens, app keys, or local secret paths in tracked testnet evidence.
 - Any request to treat this redaction audit as live sponsored execute proof.
+
+## Slice 7.87: Roadmap Completion Audit Artifact
+
+User-visible outcome:
+Operators and future agents can run one non-networked command to aggregate
+product-status, launch-readiness, and operator live-gate state into a redacted
+roadmap completion audit, so the active roadmap goal has a single strict
+completion signal without clearing any underlying proof gate.
+
+Likely files:
+
+- `scripts/check-roadmap-completion.ts`
+- `scripts/roadmap-completion.test.ts`
+- `scripts/package-scripts.test.ts`
+- `package.json`
+- `README.md`
+- `docs/CODEBASE_MAP.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `npm run proof:roadmap-completion` prints a redacted text audit with
+  `roadmapComplete=false` while any product-status, launch-readiness, or
+  operator live-gate input remains open.
+- `npm run proof:roadmap-completion -- --json` prints a redacted
+  machine-readable artifact with schema version, kind, timestamp,
+  completion flags, blocker codes, blocked product check ids, blocked launch
+  area ids, blocked operator gate ids, approval-required gate ids, live-service
+  gate ids, and safety boundaries.
+- `npm run proof:roadmap-completion -- --out <ignored-json-path>` writes the
+  same artifact with mode `600`.
+- The command does not contact live services, publish packages, run payment
+  providers, operate public A2A endpoints, reserve gas, sign transactions, or
+  execute transactions.
+- The artifact does not include endpoint values, profile paths, local report
+  paths, full sponsor addresses, raw upstream bodies, signer material, bearer
+  tokens, rendered Gas Station config, raw transaction bytes, user signatures,
+  or local secret paths.
+- The package script stays opt-in and out of `verify:fast`, `verify:local`,
+  and `grant:check`; the existing product-status, launch-readiness, and
+  operator-gate commands remain the authoritative proof inputs.
+
+Verification:
+
+- `node --import tsx --test scripts/roadmap-completion.test.ts
+  scripts/package-scripts.test.ts`
+- `npm run proof:roadmap-completion -- --out
+  tmp/gaskit/roadmap-completion-audit.json`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `npm run typecheck`
+- `git diff --check`
+
+Dependencies:
+Slices 7.29, 7.30, 7.70, 7.84, 7.85, and 7.86.
+
+Risk:
+Low. This is a derived audit surface only, but it must stay strict: a green
+local proof path cannot be reported as full roadmap completion while live,
+publication, public hosting, payment, marketplace, custody, or safety gates
+remain open.
+
+Escalation triggers:
+
+- Any request to include endpoint values, local report paths, full addresses,
+  raw upstream bodies, signer material, bearer tokens, raw transaction bytes,
+  user signatures, or local secret paths in the roadmap audit.
+- Any request to treat this aggregate audit as a substitute for the underlying
+  live/testnet, publication, public A2A, payment, marketplace, custody, or
+  physical-safety proof gates.

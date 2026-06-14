@@ -177,6 +177,7 @@ Readiness/product gates:
 - `npm run proof:product-status`
 - `npm run proof:launch-readiness`
 - `npm run proof:operator-gates`
+- `npm run proof:roadmap-completion`
 - `npm run operator:write-live-gate-report`
 - `npm run operator:write-report-template`
 - `npm run proof:verification-profiles`

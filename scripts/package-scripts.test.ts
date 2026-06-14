@@ -449,6 +449,16 @@ test("non-networked product readiness proofs are wired into local verification",
   );
 });
 
+test("roadmap completion audit is non-networked and opt-in", () => {
+  assert.equal(
+    packageJson.scripts?.["proof:roadmap-completion"],
+    "npm run build && tsx scripts/check-roadmap-completion.ts",
+  );
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /roadmap-completion/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /roadmap-completion/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /roadmap-completion/);
+});
+
 test("Move contract tests are wired into local verification", () => {
   assert.equal(packageJson.scripts?.["contracts:test"], "tsx scripts/run-move-tests.ts");
   assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run contracts:test/);

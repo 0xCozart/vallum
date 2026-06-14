@@ -225,6 +225,10 @@ Latest local verification and prior live proof:
 - `npm run proof:operator-gates`: deterministic non-networked operator
   runbook classifies live/testnet, publication, public A2A, payment,
   marketplace, custody, and safety gates before execution.
+- `npm run proof:roadmap-completion`: deterministic non-networked aggregate
+  audit combines product-status, launch-readiness, and operator live-gate state
+  into a redacted roadmap completion artifact; it does not contact live
+  services or clear any blocked proof gate.
 - `npm run operator:write-live-gate-report`: writes the same redacted
   non-networked operator-gate classification to an ignored local JSON artifact.
 - `npm run gas-station:runtime-preflight`: non-networked runtime preflight for

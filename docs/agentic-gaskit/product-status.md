@@ -85,6 +85,19 @@ npm run proof:product-status -- --out tmp/gaskit/product-status.json
 The `--out` file is written with mode `600`. It is a local audit artifact, not
 passing evidence by itself, and it must stay outside committed files.
 
+To aggregate product-status, launch-readiness, and operator live-gate state
+into a single redacted completion audit, use:
+
+```bash
+npm run proof:roadmap-completion
+npm run proof:roadmap-completion -- --out tmp/gaskit/roadmap-completion-audit.json
+```
+
+The roadmap completion audit is also non-networked. It keeps
+`roadmapComplete=false` until product status, launch readiness, and operator
+live gates are all clear; it does not replace any live/testnet, publication,
+public A2A, payment, marketplace, custody, or safety proof.
+
 Expected status in an unconfigured checkout:
 
 ```text
@@ -178,6 +191,7 @@ Use the audit output to choose the next gate:
 npm run verify:local
 npm run verify:fast
 npm run proof:product-status -- --out tmp/gaskit/product-status.json
+npm run proof:roadmap-completion -- --out tmp/gaskit/roadmap-completion-audit.json
 npm run proof:testnet-digest
 npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json
 npm run gas-station:render-config
