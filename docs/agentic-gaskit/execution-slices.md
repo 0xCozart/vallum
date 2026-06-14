@@ -5417,3 +5417,62 @@ Escalation triggers:
   in status gates.
 - Any request to include `smoke:iota-identity-live` in default local
   verification.
+
+## Slice 7.24: Sponsor Faucet Attempt Context
+
+User-visible outcome:
+Operators can wire the latest sanitized sponsor faucet request report into
+live-status/product/operator gates as triage context for the `sponsor-funding`
+next step, without letting a faucet request clear funding readiness.
+
+Likely files:
+
+- `scripts/request-sponsor-faucet-funds.ts`
+- `scripts/check-live-proof-status.ts`
+- `scripts/request-sponsor-faucet-funds.test.ts`
+- `scripts/live-proof-status.test.ts`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/testnet-readiness.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `GASKIT_SPONSOR_FAUCET_REPORT=<ignored-json-path> npm run proof:live-status`
+  can include a bounded, sanitized summary of the latest faucet result in the
+  `sponsor-funding` next step.
+- Faucet reports are validated before use and reject unsupported fields,
+  stale reports, full sponsor addresses, gas-spend claims, signing claims,
+  unsupported API versions, unsupported failure kinds, and malformed amounts.
+- A configured faucet report never clears `sponsor-funding`; only a passing
+  `GASKIT_SPONSOR_FUNDING_REPORT` can do that.
+- Status output does not print faucet URLs, raw faucet response bodies, faucet
+  task ids, full sponsor addresses, signer material, rendered Gas Station
+  config, bearer tokens, raw transaction bytes, user signatures, or local
+  secret paths.
+
+Verification:
+
+- Focused sponsor faucet and live-proof status tests.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slices 7.17-7.23 and the existing sponsor faucet report artifact path.
+
+Risk:
+Low to medium. The report is optional operator context, but accepting
+operator-provided JSON still needs strict validation so the status path cannot
+become a place to smuggle full addresses, raw faucet details, or readiness
+overclaims.
+
+Escalation triggers:
+
+- Any request to treat `GASKIT_SPONSOR_FAUCET_REPORT` as funding,
+  reserve_gas, or sponsored execution proof.
+- Any request to print raw faucet response bodies, faucet task ids, full
+  sponsor addresses, signer material, bearer tokens, rendered Gas Station
+  config, raw transaction bytes, or user signatures.

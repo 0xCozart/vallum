@@ -8,9 +8,11 @@ import { Ed25519Keypair } from "@iota/iota-sdk/keypairs/ed25519";
 
 import {
   formatSponsorFaucetRequestReport,
+  loadSponsorFaucetRequestReport,
   requestIotaFromDocumentedFaucet,
   requestIotaFromDefaultFaucet,
   requestSponsorFaucetFunds,
+  validateSponsorFaucetRequestReport,
   type SponsorFaucetRequester,
 } from "./request-sponsor-faucet-funds.js";
 
@@ -102,6 +104,28 @@ test("sponsor faucet request calls injected faucet and writes sanitized report",
   assert.doesNotMatch(JSON.stringify(artifact), new RegExp(escapeRegExp(sponsorAddress)));
   assert.doesNotMatch(JSON.stringify(artifact), new RegExp(escapeRegExp(sponsorKey)));
   assert.doesNotMatch(formatted, new RegExp(escapeRegExp(sponsorAddress)));
+});
+
+test("sponsor faucet report validation rejects unsafe full address fields", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "gaskit-sponsor-faucet-"));
+  const outFile = join(cwd, "tmp/gaskit/sponsor-faucet-request.json");
+  const report = await requestSponsorFaucetFunds({
+    env: {
+      GAS_STATION_KEYPAIR: sponsorKey,
+      IOTA_FAUCET_URL: "https://faucet.testnet.example",
+    },
+    execute: true,
+    outFile,
+    requestFunds: async () => 1_000_000_000,
+  });
+  const loaded = await loadSponsorFaucetRequestReport(outFile);
+  const unsafe = {
+    ...loaded,
+    sponsorAddressRedacted: sponsorAddress,
+  };
+
+  assert.equal(validateSponsorFaucetRequestReport(report).ok, true);
+  assert.equal(validateSponsorFaucetRequestReport(unsafe).ok, false);
 });
 
 test("documented faucet requester posts fixed amount requests to the /gas endpoint", async () => {
@@ -326,6 +350,7 @@ test("sponsor faucet request redacts failed faucet responses", async () => {
   assert.equal(report.result, "failed");
   assert.equal(report.code, "SPONSOR_FAUCET_FAILED");
   assert.equal(report.contactsLiveService, true);
+  assert.equal(report.faucetApiVersion, "v1-batch");
   assert.doesNotMatch(formatted, new RegExp(escapeRegExp(rawError)));
 });
 

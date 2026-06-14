@@ -142,6 +142,10 @@ hosts, marketplace systems, or physical devices.
   `IOTA_FAUCET_URL` or pass `--faucet-url`. The command writes a sanitized
   ignored report, requires explicit `--execute`, and does not prove reserve_gas
   compatibility.
+- Lets operators point `GASKIT_SPONSOR_FAUCET_REPORT` at that sanitized faucet
+  report so live-status/product/operator gates can include the latest faucet
+  failure, rate-limit, blocked request, or completed request in the
+  `sponsor-funding` next step without accepting it as proof.
 - Lets operators write the funding evidence report with
   `npm run sponsor:check-funding -- --report
   tmp/gaskit/sponsor-funding-report.json`. The command contacts IOTA RPC, but
@@ -196,6 +200,7 @@ npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gask
 npm run gas-station:docker-direct -- --status
 npm run sponsor:write-funding-request -- --out tmp/gaskit/sponsor-funding-request.json
 npm run sponsor:request-faucet-funds -- --execute --out tmp/gaskit/sponsor-faucet-request.json
+GASKIT_SPONSOR_FAUCET_REPORT=tmp/gaskit/sponsor-faucet-request.json npm run proof:live-status
 npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json
 npm run operator:write-report-template -- --kind package-publication --out tmp/gaskit/package-publication-report-template.json
 npm run operator:write-report-template -- --kind payment-provider-live --out tmp/gaskit/payment-provider-live-report-template.json

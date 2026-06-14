@@ -109,6 +109,58 @@ test("live proof status blocks insufficient sponsor funding reports", async () =
   }
 });
 
+test("live proof status includes sanitized sponsor faucet failure context", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  try {
+    await writeFile(join(cwd, "sponsor-funding-report.json"), JSON.stringify({
+      ...readySponsorFundingReport(),
+      ready: false,
+      code: "SPONSOR_FUNDING_TOTAL_INSUFFICIENT",
+      message: "Sponsor wallet total IOTA balance is below the requested reserve budget.",
+      totalBalanceMist: "0",
+      coinObjectCount: 0,
+      sampledCoinCount: 0,
+      maxSampledCoinBalanceMist: "0",
+    }));
+    await writeFile(join(cwd, "sponsor-faucet-report.json"), JSON.stringify({
+      schemaVersion: 1,
+      kind: "agentic-gaskit.sponsor-faucet-request",
+      result: "failed",
+      code: "SPONSOR_FAUCET_FAILED",
+      observedAt: new Date().toISOString(),
+      network: "iota-testnet",
+      message: "Sponsor faucet request failed without exposing raw faucet response details.",
+      approvalRequired: true,
+      contactsLiveService: true,
+      spendsGas: false,
+      signsTransactions: false,
+      sponsorAddressRedacted: "0x12345678...90abcdef",
+      faucetUrlConfigured: true,
+      faucetApiVersion: "v1-batch",
+      faucetHttpStatus: 200,
+      faucetFailureKind: "faucet-error",
+      nextCommands: ["npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json"],
+    }));
+    const report = await checkLiveProofStatus({
+      cwd,
+      gasStationRuntimeReport: readyGasStationRuntime(),
+      env: {
+        GASKIT_SPONSOR_FUNDING_REPORT: "sponsor-funding-report.json",
+        GASKIT_SPONSOR_FAUCET_REPORT: "sponsor-faucet-report.json",
+      },
+    });
+    const formatted = formatLiveProofStatusReport(report);
+    const funding = report.checks.find((check) => check.id === "sponsor-funding");
+
+    assert.equal(funding?.status, "blocked");
+    assert.equal(funding?.code, "SPONSOR_FUNDING_TOTAL_INSUFFICIENT");
+    assert.match(funding?.next ?? "", /Latest sponsor faucet report failed via v1-batch with HTTP 200 \(faucet-error\)/);
+    assert.doesNotMatch(formatted, /sponsor-faucet-report\.json|0x1234567890abcdef|faucet\.testnet\.example|task-/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
 test("live proof status blocks skipped reserve diagnostic reports", async () => {
   const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
   try {

@@ -200,6 +200,10 @@ v1-batch`; operators can pass `--api-version v0-documented` for faucet
 deployments that still expose the documented `/gas` endpoint. Faucet success is
 not accepted as reserve_gas compatibility; rerun the funding diagnostic and
 upstream diagnostic afterward.
+If `GASKIT_SPONSOR_FAUCET_REPORT` points at the ignored faucet report,
+`npm run proof:live-status` can include the latest sanitized faucet outcome in
+the sponsor-funding next step. This is triage context only, not readiness
+evidence.
 
 `npm run sponsor:check-funding -- --report
 tmp/gaskit/sponsor-funding-report.json` can be used as a read-only funding

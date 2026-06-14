@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -35,6 +35,12 @@ export interface SponsorFaucetRequestReport {
   readonly amountMist?: string;
   readonly reportPath?: string;
   readonly nextCommands: readonly string[];
+}
+
+export interface SponsorFaucetRequestReportValidation {
+  readonly ok: boolean;
+  readonly code: "SPONSOR_FAUCET_REPORT_VALID" | "SPONSOR_FAUCET_REPORT_INVALID";
+  readonly message: string;
 }
 
 export type SponsorFaucetApiVersion = NonNullable<SponsorFaucetRequestReport["faucetApiVersion"]>;
@@ -149,8 +155,8 @@ export async function requestSponsorFaucetFunds(
     });
   }
 
+  const selectedApiVersion = options.faucetApiVersion ?? "v1-batch";
   try {
-    const selectedApiVersion = options.faucetApiVersion ?? "v1-batch";
     const requester = options.requestFunds ?? requesterForApiVersion(selectedApiVersion);
     const amount = await requester({
       host: faucetUrl,
@@ -177,11 +183,95 @@ export async function requestSponsorFaucetFunds(
         : "Sponsor faucet request failed without exposing raw faucet response details.",
       contactsLiveService: true,
       sponsorAddressRedacted,
-      faucetApiVersion: sanitized.apiVersion ?? options.faucetApiVersion,
+      faucetApiVersion: sanitized.apiVersion ?? selectedApiVersion,
       faucetHttpStatus: sanitized.httpStatus,
       faucetFailureKind: sanitized.failureKind,
     });
   }
+}
+
+export async function loadSponsorFaucetRequestReport(path: string): Promise<SponsorFaucetRequestReport> {
+  return JSON.parse(await readFile(path, "utf8")) as SponsorFaucetRequestReport;
+}
+
+export function validateSponsorFaucetRequestReport(
+  report: SponsorFaucetRequestReport,
+  now: Date = new Date(),
+): SponsorFaucetRequestReportValidation {
+  if (!isRecord(report)) return invalidSponsorFaucetReport("Sponsor faucet report must be a JSON object.");
+  const unknown = Object.keys(report).filter((key) => !SPONSOR_FAUCET_REPORT_KEYS.has(key));
+  if (unknown.length > 0) return invalidSponsorFaucetReport("Sponsor faucet report contains unsupported fields.");
+  if (report.schemaVersion !== 1 || report.kind !== "agentic-gaskit.sponsor-faucet-request") {
+    return invalidSponsorFaucetReport("Sponsor faucet report schema or kind is unsupported.");
+  }
+  const observedAt = Date.parse(report.observedAt);
+  if (!Number.isFinite(observedAt)) return invalidSponsorFaucetReport("Sponsor faucet report observedAt is invalid.");
+  if (Math.abs(now.getTime() - observedAt) > 24 * 60 * 60 * 1000) {
+    return invalidSponsorFaucetReport("Sponsor faucet report is stale.");
+  }
+  if (!["blocked", "passed", "failed"].includes(report.result)) {
+    return invalidSponsorFaucetReport("Sponsor faucet report result is unsupported.");
+  }
+  if (![
+    "SPONSOR_FAUCET_APPROVAL_REQUIRED",
+    "SPONSOR_FAUCET_CONFIG_MISSING",
+    "SPONSOR_FAUCET_URL_UNSAFE",
+    "SPONSOR_FAUCET_REQUESTED",
+    "SPONSOR_FAUCET_RATE_LIMITED",
+    "SPONSOR_FAUCET_FAILED",
+  ].includes(report.code)) {
+    return invalidSponsorFaucetReport("Sponsor faucet report code is unsupported.");
+  }
+  if (report.result === "passed" && report.code !== "SPONSOR_FAUCET_REQUESTED") {
+    return invalidSponsorFaucetReport("Sponsor faucet report passed result must use the requested code.");
+  }
+  if (report.result === "failed" && report.code !== "SPONSOR_FAUCET_FAILED" && report.code !== "SPONSOR_FAUCET_RATE_LIMITED") {
+    return invalidSponsorFaucetReport("Sponsor faucet report failed result must use a failure code.");
+  }
+  if (report.result === "blocked" && ![
+    "SPONSOR_FAUCET_APPROVAL_REQUIRED",
+    "SPONSOR_FAUCET_CONFIG_MISSING",
+    "SPONSOR_FAUCET_URL_UNSAFE",
+  ].includes(report.code)) {
+    return invalidSponsorFaucetReport("Sponsor faucet report blocked result must use a blocked code.");
+  }
+  if (report.network !== "iota-testnet") return invalidSponsorFaucetReport("Sponsor faucet report network is unsupported.");
+  if (report.spendsGas !== false || report.signsTransactions !== false) {
+    return invalidSponsorFaucetReport("Sponsor faucet report cannot claim gas spend or signing.");
+  }
+  if (typeof report.approvalRequired !== "boolean" || typeof report.contactsLiveService !== "boolean" || typeof report.faucetUrlConfigured !== "boolean") {
+    return invalidSponsorFaucetReport("Sponsor faucet report booleans are invalid.");
+  }
+  if (report.sponsorAddressRedacted && /^0x[0-9a-fA-F]{64}$/.test(report.sponsorAddressRedacted)) {
+    return invalidSponsorFaucetReport("Sponsor faucet report must not contain a full sponsor address.");
+  }
+  if (report.faucetApiVersion && report.faucetApiVersion !== "v1-batch" && report.faucetApiVersion !== "v0-documented") {
+    return invalidSponsorFaucetReport("Sponsor faucet report API version is unsupported.");
+  }
+  if (report.faucetHttpStatus !== undefined && (!Number.isInteger(report.faucetHttpStatus) || report.faucetHttpStatus < 100 || report.faucetHttpStatus > 599)) {
+    return invalidSponsorFaucetReport("Sponsor faucet report HTTP status is invalid.");
+  }
+  if (report.faucetFailureKind && ![
+    "http-status",
+    "invalid-json",
+    "faucet-error",
+    "network-error",
+    "discarded",
+    "poll-timeout",
+  ].includes(report.faucetFailureKind)) {
+    return invalidSponsorFaucetReport("Sponsor faucet report failure kind is unsupported.");
+  }
+  if (report.amountMist !== undefined && !/^\d+$/.test(report.amountMist)) {
+    return invalidSponsorFaucetReport("Sponsor faucet report amount is invalid.");
+  }
+  if (!Array.isArray(report.nextCommands) || !report.nextCommands.every((command) => typeof command === "string" && command.trim() !== "")) {
+    return invalidSponsorFaucetReport("Sponsor faucet report next commands are invalid.");
+  }
+  return {
+    ok: true,
+    code: "SPONSOR_FAUCET_REPORT_VALID",
+    message: "Sponsor faucet report is structurally valid sanitized evidence.",
+  };
 }
 
 export async function requestIotaFromDocumentedFaucet(input: {
@@ -320,6 +410,40 @@ function requesterForApiVersion(apiVersion: SponsorFaucetApiVersion): SponsorFau
   return apiVersion === "v0-documented"
     ? requestIotaFromDocumentedFaucet
     : requestIotaFromDefaultFaucet;
+}
+
+const SPONSOR_FAUCET_REPORT_KEYS = new Set([
+  "schemaVersion",
+  "kind",
+  "result",
+  "code",
+  "observedAt",
+  "network",
+  "message",
+  "approvalRequired",
+  "contactsLiveService",
+  "spendsGas",
+  "signsTransactions",
+  "sponsorAddressRedacted",
+  "faucetUrlConfigured",
+  "faucetApiVersion",
+  "faucetHttpStatus",
+  "faucetFailureKind",
+  "amountMist",
+  "reportPath",
+  "nextCommands",
+]);
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function invalidSponsorFaucetReport(message: string): SponsorFaucetRequestReportValidation {
+  return {
+    ok: false,
+    code: "SPONSOR_FAUCET_REPORT_INVALID",
+    message,
+  };
 }
 
 function parseArgs(argv: readonly string[]): CliOptions {

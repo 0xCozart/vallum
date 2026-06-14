@@ -66,6 +66,11 @@ reserve compatibility can be considered ready. The `testnet-upstream` gate
 still requires a current passing
 `npm run diagnose:gas-station -- --report <ignored-json-path>` report before a
 fresh sponsored execute is ready.
+`GASKIT_SPONSOR_FAUCET_REPORT` is optional operator-triage context only: when
+it points at a sanitized report from `npm run sponsor:request-faucet-funds`,
+the funding gate can explain the latest faucet failure, rate limit, blocked
+request, or completed request in its next step. It never clears
+`sponsor-funding`; only a passing sponsor funding report can do that.
 
 The configured IOTA testnet RPC endpoint also responded to
 `npm run diagnose:gas-station -- --skip-reserve --report
@@ -126,6 +131,7 @@ npm run gas-station:docker-direct -- --status
 npm run sponsor:write-funding-request -- --out tmp/gaskit/sponsor-funding-request.json
 npm run sponsor:request-faucet-funds -- --execute --out tmp/gaskit/sponsor-faucet-request.json
 npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json
+GASKIT_SPONSOR_FAUCET_REPORT=tmp/gaskit/sponsor-faucet-request.json npm run proof:live-status
 GASKIT_SPONSOR_FUNDING_REPORT=tmp/gaskit/sponsor-funding-report.json npm run proof:live-status
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run smoke:iota-names-live -- --report tmp/gaskit/iota-names-live-report.json

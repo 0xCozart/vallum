@@ -16,6 +16,10 @@ import {
   validateSponsorFundingReport,
 } from "./sponsor-funding-report.js";
 import {
+  loadSponsorFaucetRequestReport,
+  validateSponsorFaucetRequestReport,
+} from "./request-sponsor-faucet-funds.js";
+import {
   loadIotaNamesLiveReport,
   validateIotaNamesLiveReport,
 } from "./iota-names-live-report.js";
@@ -79,6 +83,7 @@ const VC_TRUST_POLICY_STATUS_TYPES = new Set([
 ]);
 const LIVE_TESTNET_ENV_FILE = ".env";
 const SPONSOR_FUNDING_REPORT_ENV = "GASKIT_SPONSOR_FUNDING_REPORT";
+const SPONSOR_FAUCET_REPORT_ENV = "GASKIT_SPONSOR_FAUCET_REPORT";
 const TESTNET_UPSTREAM_REPORT_ENV = "GASKIT_TESTNET_UPSTREAM_REPORT";
 const IOTA_NAMES_LIVE_REPORT_ENV = "IOTA_NAMES_LIVE_REPORT";
 const IOTA_IDENTITY_LIVE_REPORT_ENV = "IOTA_IDENTITY_LIVE_REPORT";
@@ -144,6 +149,7 @@ async function checkSponsorFundingStatus(
   env: Record<string, string | undefined>,
   cwd: string,
 ): Promise<LiveProofCheck> {
+  const faucetContext = await sponsorFaucetAttemptContext(env, cwd);
   const reportPath = readEnv(env, SPONSOR_FUNDING_REPORT_ENV);
   if (!reportPath) {
     return {
@@ -152,7 +158,7 @@ async function checkSponsorFundingStatus(
       code: "SPONSOR_FUNDING_REPORT_MISSING",
       missing: [SPONSOR_FUNDING_REPORT_ENV],
       message: "No sanitized sponsor funding report is configured.",
-      next: "Run npm run sponsor:check-funding -- --report <ignored-json-path> after funding or faucet request steps.",
+      next: `${faucetContext ?? "Run npm run sponsor:request-faucet-funds -- --execute --out <ignored-json-path> only with operator approval, or fund the sponsor address manually."} Then run npm run sponsor:check-funding -- --report <ignored-json-path>.`,
     };
   }
 
@@ -173,7 +179,7 @@ async function checkSponsorFundingStatus(
       status: "blocked",
       code: validation.code,
       message: validation.message,
-      next: "Fund or consolidate the configured sponsor wallet, rerun npm run sponsor:check-funding -- --report <ignored-json-path>, then rerun this gate.",
+      next: `${faucetContext ?? "Fund or consolidate the configured sponsor wallet."} Rerun npm run sponsor:check-funding -- --report <ignored-json-path>, then rerun this gate.`,
     };
   } catch {
     return {
@@ -183,6 +189,36 @@ async function checkSponsorFundingStatus(
       message: "Configured sponsor funding report could not be loaded or validated.",
       next: "Regenerate the report with npm run sponsor:check-funding -- --report <ignored-json-path> without committing or printing secrets.",
     };
+  }
+}
+
+async function sponsorFaucetAttemptContext(
+  env: Record<string, string | undefined>,
+  cwd: string,
+): Promise<string | undefined> {
+  const reportPath = readEnv(env, SPONSOR_FAUCET_REPORT_ENV);
+  if (!reportPath) return undefined;
+  try {
+    const report = await loadSponsorFaucetRequestReport(resolve(cwd, reportPath));
+    const validation = validateSponsorFaucetRequestReport(report);
+    if (!validation.ok) {
+      return "Configured sponsor faucet report is invalid; regenerate it with npm run sponsor:request-faucet-funds -- --out <ignored-json-path> before using it for operator triage.";
+    }
+    if (report.result === "passed") {
+      return "Latest sponsor faucet report says a request completed; wait for faucet settlement or use an alternate funding source if balance remains zero.";
+    }
+    if (report.code === "SPONSOR_FAUCET_RATE_LIMITED") {
+      return "Latest sponsor faucet report was rate limited; retry later or use the funding-request artifact with another testnet funding source.";
+    }
+    if (report.result === "failed") {
+      const api = report.faucetApiVersion ? ` via ${report.faucetApiVersion}` : "";
+      const status = report.faucetHttpStatus ? ` with HTTP ${report.faucetHttpStatus}` : "";
+      const kind = report.faucetFailureKind ? ` (${report.faucetFailureKind})` : "";
+      return `Latest sponsor faucet report failed${api}${status}${kind}; use another approved faucet or the ignored funding-request artifact.`;
+    }
+    return `Latest sponsor faucet report did not contact a faucet (${report.code}); configure an approved faucet URL and use --execute only with operator approval.`;
+  } catch {
+    return "Configured sponsor faucet report could not be loaded; regenerate it without committing faucet artifacts or secret material.";
   }
 }
 
