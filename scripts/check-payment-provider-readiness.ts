@@ -64,6 +64,7 @@ interface StructuredPaymentProviderReport {
 
 const MAX_REPORT_BYTES = 64 * 1024;
 const MAX_REPORT_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+const PAYMENT_PROVIDER_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind payment-provider-live --out tmp/gaskit/payment-provider-live-report-template.json";
 const REQUIRED_SOURCE_PATHS = [
   "packages/manifest/src/x402Mapping.ts",
   "packages/manifest/src/x402Mapping.test.ts",
@@ -224,7 +225,7 @@ async function checkLiveReport(
       code: "PAYMENT_PROVIDER_LIVE_REPORT_MISSING",
       message: "Live payment-provider proof requires an operator-supplied structured report path.",
       evidence: "missing=PAYMENT_PROVIDER_LIVE_REPORT",
-      next: "Run a dedicated operator-approved payment-provider proof and set PAYMENT_PROVIDER_LIVE_REPORT to the ignored local structured report path.",
+      next: `${PAYMENT_PROVIDER_TEMPLATE_COMMAND}; run a dedicated operator-approved payment-provider proof and set PAYMENT_PROVIDER_LIVE_REPORT to the ignored local structured report path.`,
     };
   }
 

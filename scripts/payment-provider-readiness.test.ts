@@ -36,10 +36,11 @@ test("payment provider readiness reports local proof while live report remains m
     assert.equal(findCheck(report, "live-payment-provider-report").status, "blocked-config");
     assert.equal(findCheck(report, "live-payment-provider-report").code, "PAYMENT_PROVIDER_LIVE_REPORT_MISSING");
     assert.match(formatted, /Agentic GasKit payment provider readiness blocked/);
+    assert.match(formatted, /operator:write-report-template -- --kind payment-provider-live/);
     assert.doesNotMatch(formatted, /secret|token|private|mnemonic|seed|authorization/i);
     assert.doesNotMatch(
       artifactJson,
-      /payment-provider-live-report|unsafe-secret-report|Bearer secret-value|0x[0-9a-fA-F]{64}/,
+      /unsafe-secret-report|Bearer secret-value|0x[0-9a-fA-F]{64}/,
     );
   } finally {
     await rm(cwd, { recursive: true, force: true });

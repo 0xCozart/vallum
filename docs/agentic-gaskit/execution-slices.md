@@ -8117,3 +8117,55 @@ Escalation triggers:
 - Any request to include npm tokens, OTPs, npmrc contents, registry auth,
   package-owner account details, raw registry responses, signatures, or local
   secret paths in readiness output or public docs.
+
+## Slice 7.80: Payment Provider Readiness Template Guidance
+
+User-visible outcome:
+`npm run proof:payment-provider-readiness` points a missing
+`PAYMENT_PROVIDER_LIVE_REPORT` blocker at the ignored
+`payment-provider-live` report-template command before instructing operators to
+run the approved payment-provider proof and set the structured report path.
+
+Likely files:
+
+- `scripts/check-payment-provider-readiness.ts`
+- `scripts/payment-provider-readiness.test.ts`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- Missing payment-provider report output includes
+  `npm run operator:write-report-template -- --kind payment-provider-live`.
+- The readiness gate still reports `PAYMENT_PROVIDER_LIVE_REPORT_MISSING`
+  until a valid ignored structured report is configured.
+- Report-template generation remains a non-networked preparation artifact and
+  is not accepted as live x402, AP2, facilitator, processor, settlement, or
+  payment-provider evidence.
+- Focused tests preserve redaction of provider credentials, authorization
+  headers, signatures, payment instruments, raw payloads, response bodies, and
+  unsafe local report paths while allowing the safe template filename.
+
+Verification:
+
+- `node --import tsx --test scripts/payment-provider-readiness.test.ts`
+- `npm run proof:payment-provider-readiness`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `npm run typecheck`
+- `git diff --check`
+
+Dependencies:
+Slices 4.1, 4.2, 7.35, 7.45, and 7.78.
+
+Risk:
+Low. This changes readiness guidance only, but stale direct readiness output
+can cause operators to skip the structured template and create unaccepted
+payment-provider proof artifacts.
+
+Escalation triggers:
+
+- Any request to treat generated templates, local x402/AP2 tests, readiness
+  artifacts, or payment proof plans as live payment-provider settlement proof.
+- Any request to include provider credentials, authorization headers,
+  signatures, payment instruments, raw payloads, raw response bodies, account
+  details, or local secret paths in readiness output or public docs.
