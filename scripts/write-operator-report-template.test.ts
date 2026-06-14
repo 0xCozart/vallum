@@ -6,6 +6,8 @@ import test from "node:test";
 
 import { checkA2APublicReadiness } from "./check-a2a-public-readiness.js";
 import { checkPackagePublicationReadiness } from "./check-package-publication-readiness.js";
+import { loadIotaIdentityLiveReport } from "./iota-identity-live-report.js";
+import { loadIotaNamesLiveReport } from "./iota-names-live-report.js";
 import { loadTestnetDigestReport } from "./testnet-digest-report.js";
 import { loadTestnetUpstreamReport } from "./testnet-upstream-report.js";
 import {
@@ -86,6 +88,87 @@ test("operator report template builds testnet digest guidance without accepted p
     () => loadTestnetDigestReport(outFile),
     /invalid shape/,
   );
+});
+
+test("operator report template builds IOTA Names guidance without accepted report shape", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "gaskit-iota-names-template-"));
+  const outFile = join(cwd, "iota-names-live-report-template.json");
+
+  await writeOperatorReportTemplate({
+    kind: "iota-names-live",
+    now: new Date("2026-06-14T12:00:00.000Z"),
+    outFile,
+  });
+
+  const mode = (await stat(outFile)).mode & 0o777;
+  assert.equal(mode, 0o600);
+
+  const parsed = JSON.parse(await readFile(outFile, "utf8")) as Record<string, unknown>;
+  assert.equal(parsed.kind, "agentic-gaskit.iota-names-live-smoke-template");
+  assert.equal(parsed.result, "pending-operator-proof");
+  assert.equal(parsed.acceptedReportKind, "agentic-gaskit.iota-names-live-smoke-report");
+  assert.equal(parsed.acceptedReportEnv, "IOTA_NAMES_LIVE_REPORT");
+  assert.deepEqual(parsed.requiredEnv, ["IOTA_NAMES_GRAPHQL_URL", "IOTA_NAMES_NAME", "IOTA_NAMES_EXPECTED_ADDRESS"]);
+  assert.ok((parsed.commands as string[]).includes("npm run live:write-proof-plan"));
+  assert.ok((parsed.commands as string[]).includes("npm run smoke:iota-names-live -- --report tmp/gaskit/iota-names-live-report.json"));
+  assert.ok((parsed.checks as string[]).includes("expected-address-match"));
+  assert.ok((parsed.notes as string[]).some((note) => note.includes("not accepted as passing IOTA Names evidence")));
+
+  await assert.rejects(
+    () => loadIotaNamesLiveReport(outFile),
+    /invalid shape/,
+  );
+});
+
+test("operator report template builds IOTA Identity guidance without accepted report shape", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "gaskit-iota-identity-template-"));
+  const outFile = join(cwd, "iota-identity-live-report-template.json");
+
+  await writeOperatorReportTemplate({
+    kind: "iota-identity-live",
+    now: new Date("2026-06-14T12:00:00.000Z"),
+    outFile,
+  });
+
+  const parsed = JSON.parse(await readFile(outFile, "utf8")) as Record<string, unknown>;
+  assert.equal(parsed.kind, "agentic-gaskit.iota-identity-live-smoke-template");
+  assert.equal(parsed.result, "pending-operator-proof");
+  assert.equal(parsed.acceptedReportKind, "agentic-gaskit.iota-identity-live-smoke-report");
+  assert.equal(parsed.acceptedReportEnv, "IOTA_IDENTITY_LIVE_REPORT");
+  assert.deepEqual(parsed.requiredEnv, [
+    "IOTA_IDENTITY_PROOF_ENDPOINT",
+    "IOTA_IDENTITY_PROFILE_PATH",
+    "IOTA_IDENTITY_TRUSTED_ISSUER_DIDS",
+    "IOTA_IDENTITY_ALLOWED_VERIFICATION_METHODS",
+    "IOTA_IDENTITY_REQUIRED_CREDENTIAL_TYPES",
+    "IOTA_IDENTITY_ACCEPTED_STATUS_TYPES",
+    "IOTA_IDENTITY_CACHE_TTL_MS",
+  ]);
+  assert.ok((parsed.commands as string[]).includes("npm run smoke:iota-identity-live -- --report tmp/gaskit/iota-identity-live-report.json"));
+  assert.ok((parsed.checks as string[]).includes("credential-evidence-validation"));
+  assert.ok((parsed.notes as string[]).some((note) => note.includes("not accepted as passing IOTA Identity evidence")));
+
+  await assert.rejects(
+    () => loadIotaIdentityLiveReport(outFile),
+    /invalid shape/,
+  );
+});
+
+test("operator report template builds VC validation guidance against identity report evidence", async () => {
+  const template = await buildOperatorReportTemplate({
+    kind: "vc-validation-live",
+    now: new Date("2026-06-14T12:00:00.000Z"),
+  });
+
+  assert.equal(template.kind, "agentic-gaskit.vc-validation-live-template");
+  assert.equal(template.result, "pending-operator-proof");
+  assert.equal(template.acceptedReportKind, "agentic-gaskit.iota-identity-live-smoke-report");
+  assert.equal(template.acceptedReportEnv, "IOTA_IDENTITY_LIVE_REPORT");
+  assert.ok((template.requiredEnv as string[]).includes("IOTA_IDENTITY_TRUSTED_ISSUER_DIDS"));
+  assert.ok((template.requiredEnv as string[]).includes("IOTA_IDENTITY_PROOF_ENDPOINT"));
+  assert.ok((template.commands as string[]).includes("npm run smoke:iota-identity-live -- --report tmp/gaskit/iota-identity-live-report.json"));
+  assert.ok((template.checks as string[]).includes("credential-evidence-present"));
+  assert.ok((template.notes as string[]).some((note) => note.includes("uses the accepted IOTA Identity live smoke report")));
 });
 
 test("operator report template builds package publication schema without marking it passed", async () => {

@@ -7,6 +7,9 @@ import { collectPublishablePackages } from "./package-publish-dry-run.js";
 export type OperatorReportTemplateKind =
   | "testnet-upstream"
   | "testnet-digest"
+  | "iota-names-live"
+  | "iota-identity-live"
+  | "vc-validation-live"
   | "a2a-public-discovery"
   | "a2a-public-push-delivery"
   | "a2a-external-conformance"
@@ -87,6 +90,51 @@ const TESTNET_DIGEST_CHECKS = [
   "redaction-review",
 ] as const;
 
+const IOTA_NAMES_NOTES = [
+  ...COMMON_NOTES,
+  "This template is not accepted as passing IOTA Names evidence; run the live names smoke command with --report to write the accepted report shape.",
+  "The live names smoke contacts the configured IOTA Names endpoint and must not print endpoint values, names, full addresses, raw responses, or local report paths.",
+] as const;
+
+const IOTA_NAMES_CHECKS = [
+  "endpoint-safety",
+  "name-resolution",
+  "expected-address-match",
+  "fresh-observation-time",
+  "redaction-review",
+] as const;
+
+const IOTA_IDENTITY_NOTES = [
+  ...COMMON_NOTES,
+  "This template is not accepted as passing IOTA Identity evidence; run the live identity smoke command with --report to write the accepted report shape.",
+  "The live identity smoke contacts the configured proof endpoint and must not print endpoint values, profile paths, DIDs, credential refs, proof bodies, or local report paths.",
+] as const;
+
+const IOTA_IDENTITY_CHECKS = [
+  "endpoint-safety",
+  "agent-profile-validation",
+  "did-resolution",
+  "credential-evidence-validation",
+  "revocation-and-expiry-review",
+  "redaction-review",
+] as const;
+
+const VC_VALIDATION_NOTES = [
+  ...COMMON_NOTES,
+  "VC validation live evidence uses the accepted IOTA Identity live smoke report plus trust-policy configuration; this template is not accepted as passing evidence.",
+  "The accepted report must prove credential evidence was checked and must not include endpoint values, profile paths, DIDs, credential refs, proof bodies, or local report paths.",
+] as const;
+
+const VC_VALIDATION_CHECKS = [
+  "trusted-issuer-policy",
+  "allowed-verification-methods",
+  "required-credential-types",
+  "credential-status-revocation",
+  "credential-cache-ttl",
+  "credential-evidence-present",
+  "redaction-review",
+] as const;
+
 const PAYMENT_CHECKS = [
   "x402-verify",
   "x402-settle",
@@ -134,6 +182,9 @@ The template remains result=pending-operator-proof until a real approved proof r
 kinds:
   testnet-upstream
   testnet-digest
+  iota-names-live
+  iota-identity-live
+  vc-validation-live
   a2a-public-discovery
   a2a-public-push-delivery
   a2a-external-conformance
@@ -219,6 +270,77 @@ export async function buildOperatorReportTemplate(
         ],
         checks: TESTNET_DIGEST_CHECKS,
         notes: TESTNET_DIGEST_NOTES,
+      };
+    case "iota-names-live":
+      return {
+        ...base,
+        kind: "agentic-gaskit.iota-names-live-smoke-template",
+        acceptedReportKind: "agentic-gaskit.iota-names-live-smoke-report",
+        acceptedReportEnv: "IOTA_NAMES_LIVE_REPORT",
+        requiredEnv: [
+          "IOTA_NAMES_GRAPHQL_URL",
+          "IOTA_NAMES_NAME",
+          "IOTA_NAMES_EXPECTED_ADDRESS",
+        ],
+        commands: [
+          "npm run live:write-proof-plan",
+          "npm run smoke:iota-names-live -- --report tmp/gaskit/iota-names-live-report.json",
+          "npm run proof:live-status",
+          "npm run proof:product-status",
+          "npm run proof:operator-gates",
+        ],
+        checks: IOTA_NAMES_CHECKS,
+        notes: IOTA_NAMES_NOTES,
+      };
+    case "iota-identity-live":
+      return {
+        ...base,
+        kind: "agentic-gaskit.iota-identity-live-smoke-template",
+        acceptedReportKind: "agentic-gaskit.iota-identity-live-smoke-report",
+        acceptedReportEnv: "IOTA_IDENTITY_LIVE_REPORT",
+        requiredEnv: [
+          "IOTA_IDENTITY_PROOF_ENDPOINT",
+          "IOTA_IDENTITY_PROFILE_PATH",
+          "IOTA_IDENTITY_TRUSTED_ISSUER_DIDS",
+          "IOTA_IDENTITY_ALLOWED_VERIFICATION_METHODS",
+          "IOTA_IDENTITY_REQUIRED_CREDENTIAL_TYPES",
+          "IOTA_IDENTITY_ACCEPTED_STATUS_TYPES",
+          "IOTA_IDENTITY_CACHE_TTL_MS",
+        ],
+        commands: [
+          "npm run live:write-proof-plan",
+          "npm run smoke:iota-identity-live -- --report tmp/gaskit/iota-identity-live-report.json",
+          "npm run proof:live-status",
+          "npm run proof:product-status",
+          "npm run proof:operator-gates",
+        ],
+        checks: IOTA_IDENTITY_CHECKS,
+        notes: IOTA_IDENTITY_NOTES,
+      };
+    case "vc-validation-live":
+      return {
+        ...base,
+        kind: "agentic-gaskit.vc-validation-live-template",
+        acceptedReportKind: "agentic-gaskit.iota-identity-live-smoke-report",
+        acceptedReportEnv: "IOTA_IDENTITY_LIVE_REPORT",
+        requiredEnv: [
+          "IOTA_IDENTITY_TRUSTED_ISSUER_DIDS",
+          "IOTA_IDENTITY_ALLOWED_VERIFICATION_METHODS",
+          "IOTA_IDENTITY_REQUIRED_CREDENTIAL_TYPES",
+          "IOTA_IDENTITY_ACCEPTED_STATUS_TYPES",
+          "IOTA_IDENTITY_CACHE_TTL_MS",
+          "IOTA_IDENTITY_PROOF_ENDPOINT",
+          "IOTA_IDENTITY_PROFILE_PATH",
+        ],
+        commands: [
+          "npm run live:write-proof-plan",
+          "npm run smoke:iota-identity-live -- --report tmp/gaskit/iota-identity-live-report.json",
+          "npm run proof:live-status",
+          "npm run proof:product-status",
+          "npm run proof:operator-gates",
+        ],
+        checks: VC_VALIDATION_CHECKS,
+        notes: VC_VALIDATION_NOTES,
       };
     case "a2a-public-discovery":
       return stripUndefined({
@@ -363,6 +485,9 @@ function parseKind(value: string): OperatorReportTemplateKind {
   const allowed = new Set<OperatorReportTemplateKind>([
     "testnet-upstream",
     "testnet-digest",
+    "iota-names-live",
+    "iota-identity-live",
+    "vc-validation-live",
     "a2a-public-discovery",
     "a2a-public-push-delivery",
     "a2a-external-conformance",

@@ -7594,3 +7594,72 @@ Escalation triggers:
   providers, operate marketplace systems, touch custody/KMS, or print report
   contents, endpoint values, addresses, credentials, transaction bytes, or
   local secret paths.
+
+## Slice 7.71: Identity Operator Report Templates
+
+User-visible outcome:
+Operators can generate redacted pending templates for the remaining live
+identity gates: IOTA Names, IOTA Identity, and VC validation. The templates
+point at the exact accepted report kinds and environment variables without
+being accepted as passing live evidence.
+
+Likely files:
+
+- `scripts/write-operator-report-template.ts`
+- `scripts/write-operator-report-template.test.ts`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `operator:write-report-template -- --kind iota-names-live` writes a mode
+  `0600` pending template with
+  `acceptedReportKind=agentic-gaskit.iota-names-live-smoke-report` and
+  `acceptedReportEnv=IOTA_NAMES_LIVE_REPORT`.
+- `operator:write-report-template -- --kind iota-identity-live` writes a
+  pending template with
+  `acceptedReportKind=agentic-gaskit.iota-identity-live-smoke-report` and
+  `acceptedReportEnv=IOTA_IDENTITY_LIVE_REPORT`.
+- `operator:write-report-template -- --kind vc-validation-live` explains that
+  live VC evidence uses the accepted IOTA Identity live smoke report plus
+  trust-policy configuration.
+- Tests prove generated IOTA Names and IOTA Identity templates are rejected by
+  the actual live-report loaders.
+- The change does not contact IOTA Names, IOTA Identity, IOTA RPC, Gas
+  Station, payment providers, npm, public A2A endpoints, marketplace systems,
+  custody/KMS providers, or alter live readiness acceptance.
+
+Verification:
+
+- `node --import tsx --test scripts/write-operator-report-template.test.ts
+  scripts/iota-names-live-smoke.test.ts
+  scripts/iota-identity-live-smoke.test.ts`
+- `npm run operator:write-report-template -- --kind iota-names-live --out
+  tmp/gaskit/iota-names-live-report-template.json`
+- `npm run operator:write-report-template -- --kind iota-identity-live --out
+  tmp/gaskit/iota-identity-live-report-template.json`
+- `npm run operator:write-report-template -- --kind vc-validation-live --out
+  tmp/gaskit/vc-validation-live-report-template.json`
+- `npm run proof:operator-gates`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `npm run typecheck`
+- `git diff --check`
+
+Dependencies:
+Existing IOTA Names live smoke report validator, IOTA Identity live smoke
+report validator, VC live-status gate, and operator report template writer.
+
+Risk:
+Low to medium. This improves operator evidence scaffolding near live identity
+and credential-proof boundaries, so templates must stay pending-only and must
+not include configured endpoint values, names, addresses, profile paths, DIDs,
+credential refs, proof bodies, or local secret paths.
+
+Escalation triggers:
+
+- Any request to treat a pending template as live IOTA Names, IOTA Identity, or
+  VC validation proof.
+- Any request for the template writer to contact live services, run smoke
+  commands automatically, print configured values, or include endpoint values,
+  names, addresses, profile paths, DIDs, credential refs, proof bodies, report
+  contents, credentials, tokens, private keys, or local secret paths.
