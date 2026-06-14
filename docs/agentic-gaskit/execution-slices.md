@@ -6689,3 +6689,56 @@ Escalation triggers:
   Gas Station config, raw transaction bytes, signatures, or local secret paths.
 - Any change that treats faucet success, fallback success, or fallback failure
   as sponsor funding, reserve_gas compatibility, or sponsored execution proof.
+
+## Slice 7.44: A2A Public Proof Plan Kind Namespacing
+
+User-visible outcome:
+The public A2A proof-plan artifact uses the same `agentic-gaskit.*`
+namespacing convention as other local readiness and proof artifacts, making it
+easier for operators and future agents to distinguish an Agentic GasKit local
+plan from generic A2A proof data.
+
+Likely files:
+
+- `scripts/write-a2a-public-proof-plan.ts`
+- `scripts/write-a2a-public-proof-plan.test.ts`
+- `docs/agentic-gaskit/a2a-public-readiness.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `npm run a2a:write-public-proof-plan` emits
+  `kind=agentic-gaskit.a2a-public-proof-plan`.
+- Tests assert the namespaced kind for in-memory and written artifacts.
+- Docs show the ignored `tmp/gaskit/a2a-public-proof-plan.json` path and the
+  namespaced kind.
+- The change does not alter public A2A readiness acceptance, public endpoint
+  probing, push delivery, external conformance, production auth, or key
+  management behavior.
+- The plan remains non-networked local planning evidence only.
+
+Verification:
+
+- `node --import tsx --test scripts/write-a2a-public-proof-plan.test.ts
+  scripts/a2a-public-readiness.test.ts`
+- `npm run proof:a2a-public-readiness`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `git diff --check`
+
+Dependencies:
+Existing A2A public-readiness gate, public proof-plan writer, static discovery
+bundle/review tooling, public discovery smoke, and operator report templates.
+
+Risk:
+Low. This is an ignored local artifact schema label, but it should not be
+mistaken for public readiness proof or external conformance.
+
+Escalation triggers:
+
+- Any request to treat the proof plan as public A2A hosting, public discovery,
+  public push delivery, production auth/key-management, or external conformance
+  proof.
+- Any request to print or commit configured public endpoint values, report
+  paths, private keys, bearer tokens, webhook secrets, raw payloads, response
+  bodies, or local secret paths.

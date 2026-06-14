@@ -254,14 +254,15 @@ npm run a2a:write-public-proof-plan
 To write the JSON artifact to a local ignored path:
 
 ```bash
-npm run a2a:write-public-proof-plan -- --out tmp/a2a-public-proof-plan.json
+npm run a2a:write-public-proof-plan -- --out tmp/gaskit/a2a-public-proof-plan.json
 ```
 
-The plan includes command order, `contactsPublicNetwork` flags, remaining
-blocker codes, `ready-approval` codes, operator input variable names, and
-safety boundaries. It is still local planning evidence only. It does not fetch
-public URLs, validate public hosting, deliver push webhooks, run external
-conformance tools, or approve production auth/key management.
+The plan writes `kind=agentic-gaskit.a2a-public-proof-plan` and includes
+command order, `contactsPublicNetwork` flags, remaining blocker codes,
+`ready-approval` codes, operator input variable names, and safety boundaries.
+It is still local planning evidence only. It does not fetch public URLs,
+validate public hosting, deliver push webhooks, run external conformance tools,
+or approve production auth/key management.
 
 ## Opt-In Public Discovery Smoke
 
