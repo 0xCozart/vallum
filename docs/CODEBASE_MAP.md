@@ -131,6 +131,10 @@ It also includes the first Agentic GasKit implementation slices:
   locally, queries IOTA RPC for balance and sampled coin shape, and prints only
   redacted address/numeric readiness fields without signing, reserving, or
   executing
+- opt-in sponsor funding request artifact writer that writes the full public
+  sponsor address only to an ignored local JSON artifact for testnet funding,
+  while keeping stdout redacted and avoiding live service contact, signing,
+  reserve, or execute
 - explicit managed-upstream Gas Station runtime mode for operators who provide
   a separately managed Gas Station at `GAS_STATION_URL`; the mode skips Docker
   inspection but still requires sanitized upstream diagnostics before sponsored
@@ -255,6 +259,8 @@ roadmap unless later slices implement and verify them.
   `scripts/write-live-proof-plan.ts`
 - Testnet upstream diagnostics: `scripts/diagnose-gas-station-upstream.ts`,
   `scripts/testnet-upstream-report.ts`, `docs/testnet-attempts.md`
+- Sponsor funding request: `scripts/write-sponsor-funding-request.ts`,
+  `scripts/write-sponsor-funding-request.test.ts`
 - Local Gas Station setup: `scripts/render-gas-station-config.ts`,
   `scripts/check-gas-station-runtime-preflight.ts`,
   `scripts/gas-station-docker-direct.ts`,

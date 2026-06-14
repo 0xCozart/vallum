@@ -31,6 +31,7 @@ test("operator report template builds testnet upstream guidance without accepted
   assert.deepEqual(parsed.requiredEnv, ["IOTA_RPC_URL", "GAS_STATION_URL", "GAS_STATION_BEARER_TOKEN"]);
   assert.ok((parsed.commands as string[]).includes("npm run diagnose:gas-station -- --report <ignored-json-path>"));
   assert.ok((parsed.commands as string[]).includes("npm run gas-station:docker-direct -- --status"));
+  assert.ok((parsed.commands as string[]).includes("npm run sponsor:write-funding-request -- --out tmp/gaskit/sponsor-funding-request.json"));
   assert.ok((parsed.commands as string[]).includes("npm run sponsor:check-funding"));
   assert.ok((parsed.checks as string[]).includes("sponsor-funding-readiness"));
   assert.ok((parsed.checks as string[]).includes("reserve-gas-compatibility"));

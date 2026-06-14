@@ -127,6 +127,11 @@ hosts, marketplace systems, or physical devices.
   `GASKIT_TESTNET_UPSTREAM_REPORT`; only the sanitized diagnostic report
   emitted by `npm run diagnose:gas-station -- --report <ignored-json-path>` can
   clear the upstream gate.
+- Lets operators write an ignored sponsor funding request artifact with
+  `npm run sponsor:write-funding-request -- --out
+  tmp/gaskit/sponsor-funding-request.json` when they need the public sponsor
+  address for testnet funding. The full address stays in the ignored artifact;
+  stdout remains redacted, and the command does not contact live services.
 - Points public A2A hosting/conformance review at the non-networked
   `npm run proof:a2a-public-readiness` command before any public endpoint is
   probed, then at `npm run smoke:a2a-public-discovery` only after
@@ -174,6 +179,7 @@ npm run package:write-publication-proof-plan -- --out tmp/gaskit/package-publica
 npm run payment:write-provider-proof-plan -- --out tmp/gaskit/payment-provider-proof-plan.json
 npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json
 npm run gas-station:docker-direct -- --status
+npm run sponsor:write-funding-request -- --out tmp/gaskit/sponsor-funding-request.json
 npm run sponsor:check-funding
 npm run operator:write-report-template -- --kind package-publication --out tmp/gaskit/package-publication-report-template.json
 npm run operator:write-report-template -- --kind payment-provider-live --out tmp/gaskit/payment-provider-live-report-template.json

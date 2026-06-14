@@ -135,10 +135,13 @@ building/signing a transaction unless all of these are true:
   reports the expected local network, Redis container, and Gas Station
   container running. This is local Docker state only.
 - If reserve compatibility fails after Gas Station root and IOTA RPC checks
-  pass, `npm run sponsor:check-funding` reports whether the configured sponsor
-  wallet has enough readable testnet IOTA balance and sampled coin shape for
-  the reserve budget. It is read-only and prints no private key or full sponsor
-  address.
+  pass, `npm run sponsor:write-funding-request -- --out
+  tmp/gaskit/sponsor-funding-request.json` can write the public sponsor address
+  to an ignored local artifact for operator funding while keeping stdout
+  redacted. Then `npm run sponsor:check-funding` reports whether the configured
+  sponsor wallet has enough readable testnet IOTA balance and sampled coin
+  shape for the reserve budget. It is read-only and prints no private key or
+  full sponsor address.
 - `GASKIT_TESTNET_UPSTREAM_REPORT` points at a current sanitized report created
   by `npm run diagnose:gas-station -- --report <ignored-json-path>` without
   `--skip-reserve`.
@@ -172,6 +175,13 @@ For the direct Docker path, `npm run gas-station:docker-direct -- --status`
 can be used after an intentional startup to inspect whether the expected local
 network and containers are running. It does not prove Gas Station HTTP health,
 IOTA RPC reachability, reserve_gas compatibility, or sponsored execution.
+
+`npm run sponsor:write-funding-request -- --out
+tmp/gaskit/sponsor-funding-request.json` can be used when the operator needs
+the configured public sponsor address to request or transfer IOTA testnet gas.
+The full public address is written only to the ignored artifact; the command
+does not contact live services, reserve gas, sign transactions, execute
+transactions, or print sponsor signer material.
 
 `npm run sponsor:check-funding` can be used as a read-only funding diagnostic
 when reserve_gas fails after auth succeeds. It contacts IOTA RPC, but it does

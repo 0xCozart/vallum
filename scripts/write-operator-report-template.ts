@@ -168,6 +168,7 @@ export async function buildOperatorReportTemplate(
         commands: [
           "npm run gas-station:runtime-preflight",
           "npm run gas-station:docker-direct -- --status",
+          "npm run sponsor:write-funding-request -- --out tmp/gaskit/sponsor-funding-request.json",
           "npm run sponsor:check-funding",
           "npm run diagnose:gas-station -- --report <ignored-json-path>",
           "npm run proof:live-status",

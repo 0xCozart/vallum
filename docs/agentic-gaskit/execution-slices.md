@@ -4859,3 +4859,75 @@ Escalation triggers:
 - Any request to treat sponsor funding readiness as successful reserve_gas,
   transaction execution, or production readiness.
 - Any request to run `execute:testnet-demo` without explicit operator approval.
+
+## Slice 7.16: Sponsor Funding Request Artifact
+
+User-visible outcome:
+Operators can retrieve the configured public sponsor address for IOTA testnet
+funding through an ignored local JSON artifact, while normal stdout and tracked
+docs keep the address redacted and no live service or transaction path runs.
+
+Likely files:
+
+- `scripts/write-sponsor-funding-request.ts`
+- `scripts/write-sponsor-funding-request.test.ts`
+- `scripts/package-scripts.test.ts`
+- `package.json`
+- `docs/testnet-readiness.md`
+- `docs/deployment.md`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/agentic-gaskit/execution-slices.md`
+- `docs/CODEBASE_MAP.md`
+
+Acceptance criteria:
+
+- `npm run sponsor:write-funding-request -- --out
+  tmp/gaskit/sponsor-funding-request.json` derives the configured public
+  sponsor address from ignored signer config and writes it to the requested
+  ignored artifact.
+- The command summary prints only a redacted sponsor address, not the full
+  address or signer material.
+- The artifact includes the public sponsor address, redacted address,
+  requested minimum balance, safety notes, and next command order.
+- The command does not contact IOTA RPC, call Gas Station, reserve gas, sign,
+  execute transactions, print raw config, or print raw secret material.
+- The command is opt-in and excluded from `verify:fast`, `verify:local`, and
+  `grant:check`.
+- Public docs route reserve-funding blockers through the funding request
+  artifact, then `npm run sponsor:check-funding`, then the sanitized upstream
+  diagnostic.
+
+Verification:
+
+- Focused sponsor funding request, sponsor funding, and package-script tests.
+- `npm run sponsor:write-funding-request -- --out
+  tmp/gaskit/sponsor-funding-request.json`, recording only the redacted
+  summary output.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run proof:live-status`.
+- `npm run proof:product-status`.
+- `npm run proof:launch-readiness`.
+- `npm run proof:operator-gates`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slices 7.7-7.15 and local `.env` testnet signer configuration.
+
+Risk:
+Medium. A full public address is required for funding, but it should not
+become normal console output or tracked repository content. Keep the address in
+ignored local artifacts only and continue treating funding as separate from
+reserve_gas compatibility and sponsored execution proof.
+
+Escalation triggers:
+
+- Any request to print the sponsor private key, rendered Gas Station config,
+  bearer token, raw transaction bytes, user signatures, or raw RPC responses.
+- Any request to treat the funding request artifact as proof that reserve_gas
+  or sponsored execution is ready.
+- Any request to run `execute:testnet-demo` without explicit operator approval.
