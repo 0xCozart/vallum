@@ -34,10 +34,14 @@ npm run live:write-proof-plan -- --out tmp/gaskit/live-proof-plan.json
 ```
 
 The proof plan is also non-networked. It records command names, blocker codes,
-missing input names, required evidence artifacts, and safety boundaries without
-printing configured endpoint values, names, addresses, profile paths,
-credentials, tokens, transaction bytes, credential payloads, response bodies,
-or local secret paths.
+missing input names, optional triage input names, required evidence artifacts,
+redacted evidence labels, and safety boundaries without printing configured
+endpoint values, names, addresses, profile paths, credentials, tokens,
+transaction bytes, credential payloads, response bodies, or local secret paths.
+It includes the sponsor funding request, faucet request, and read-only funding
+diagnostic in the command order, but still treats faucet reports as optional
+triage context only; a passing sponsor funding report is required before the
+funding gate can clear.
 
 ## Current Local Status
 

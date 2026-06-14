@@ -20,6 +20,7 @@ export interface LiveProofPlanCheck {
   readonly id: string;
   readonly status: LiveProofCheck["status"];
   readonly code: string;
+  readonly evidence?: string;
   readonly missing?: readonly string[];
   readonly next?: string;
 }
@@ -36,6 +37,7 @@ export interface LiveProofPlan {
   readonly checks: readonly LiveProofPlanCheck[];
   readonly boundaries: readonly string[];
   readonly requiredOperatorInputs: readonly string[];
+  readonly optionalOperatorInputs: readonly string[];
   readonly requiredEvidenceArtifacts: readonly string[];
 }
 
@@ -50,6 +52,7 @@ interface CliOptions {
 }
 
 const REQUIRED_OPERATOR_INPUTS = [
+  "GASKIT_SPONSOR_FUNDING_REPORT",
   "GASKIT_TESTNET_UPSTREAM_REPORT",
   "IOTA_NAMES_GRAPHQL_URL",
   "IOTA_NAMES_NAME",
@@ -65,7 +68,12 @@ const REQUIRED_OPERATOR_INPUTS = [
   "IOTA_IDENTITY_CACHE_TTL_MS",
 ] as const;
 
+const OPTIONAL_OPERATOR_INPUTS = [
+  "GASKIT_SPONSOR_FAUCET_REPORT",
+] as const;
+
 const REQUIRED_EVIDENCE_ARTIFACTS = [
+  "sanitized sponsor funding report",
   "sanitized testnet upstream diagnostic report",
   "sanitized IOTA Names live smoke report",
   "sanitized IOTA Identity live smoke report",
@@ -98,6 +106,24 @@ const PLAN_COMMANDS: readonly LiveProofPlanCommand[] = [
     requiresOperatorApproval: false,
   },
   {
+    id: "write-sponsor-funding-request",
+    command: "npm run sponsor:write-funding-request -- --out <ignored-json-path>",
+    contactsLiveService: false,
+    requiresOperatorApproval: false,
+  },
+  {
+    id: "request-sponsor-faucet-funds",
+    command: "npm run sponsor:request-faucet-funds -- --execute --out <ignored-json-path>",
+    contactsLiveService: true,
+    requiresOperatorApproval: true,
+  },
+  {
+    id: "check-sponsor-funding",
+    command: "npm run sponsor:check-funding -- --report <ignored-json-path>",
+    contactsLiveService: true,
+    requiresOperatorApproval: true,
+  },
+  {
     id: "diagnose-testnet-upstream",
     command: "npm run diagnose:gas-station -- --report <ignored-json-path>",
     contactsLiveService: true,
@@ -125,7 +151,8 @@ const PLAN_COMMANDS: readonly LiveProofPlanCommand[] = [
 
 const BOUNDARIES = [
   "This plan is non-networked and does not contact IOTA RPC, Gas Station HTTP, IOTA Names, or IOTA Identity.",
-  "Only diagnose-testnet-upstream and the live smoke commands contact live services, and they require explicit operator approval.",
+  "Sponsor faucet requests, sponsor funding diagnostics, testnet upstream diagnostics, and live smoke commands contact live services, and they require explicit operator approval.",
+  "A sponsor faucet report is optional triage context; only a passing sponsor funding report can clear sponsor-funding readiness.",
   "Do not commit reports, endpoint values, profile paths, names, addresses, credentials, tokens, private keys, raw transaction bytes, user signatures, response bodies, credential payloads, or local secret paths.",
   "ready-to-run means the live proof commands are configured for operator review; it is not production, mainnet, custody, marketplace, or payment approval.",
 ] as const;
@@ -157,6 +184,7 @@ export function buildLiveProofPlan(
     id: check.id,
     status: check.status,
     code: check.code,
+    evidence: check.evidence,
     missing: check.missing,
     next: check.next,
   }));
@@ -175,6 +203,7 @@ export function buildLiveProofPlan(
     checks,
     boundaries: BOUNDARIES,
     requiredOperatorInputs: REQUIRED_OPERATOR_INPUTS,
+    optionalOperatorInputs: OPTIONAL_OPERATOR_INPUTS,
     requiredEvidenceArtifacts: REQUIRED_EVIDENCE_ARTIFACTS,
   };
 }

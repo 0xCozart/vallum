@@ -83,6 +83,10 @@ hosts, marketplace systems, or physical devices.
 - Points IOTA Names, IOTA Identity, and VC live proof prep at
   `npm run live:write-proof-plan`, a redacted local command-order artifact
   before any live smoke command runs.
+- Includes sponsor funding prep in that proof plan: write the ignored funding
+  request first, optionally attempt an approved faucet route, then run the
+  read-only sponsor funding diagnostic before upstream reserve compatibility.
+  Faucet reports remain optional triage context and cannot clear funding.
 - Shows which live smokes would contact external services and require explicit
   operator intent.
 - Keeps package publication, public A2A hosting, live payment/provider proof,

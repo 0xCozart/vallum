@@ -221,6 +221,10 @@ If `GASKIT_SPONSOR_FAUCET_REPORT` points at the ignored faucet report,
 `npm run proof:live-status` can include the latest sanitized faucet outcome in
 the sponsor-funding next step. This is triage context only, not readiness
 evidence.
+`npm run live:write-proof-plan -- --out tmp/gaskit/live-proof-plan.json`
+includes the same sponsor funding command order and required
+`GASKIT_SPONSOR_FUNDING_REPORT` evidence artifact before the upstream
+diagnostic step, while keeping `GASKIT_SPONSOR_FAUCET_REPORT` optional.
 Faucet failure reports may include a bounded `faucetErrorCode` such as
 `REQUEST_RATE_LIMITED`, `REQUEST_COOLDOWN`, `FUNDS_UNAVAILABLE`,
 `ADDRESS_INVALID`, `REQUEST_UNSUPPORTED`, `SERVICE_UNAVAILABLE`, or `UNKNOWN`.

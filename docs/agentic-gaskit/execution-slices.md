@@ -6570,3 +6570,62 @@ Escalation triggers:
   bytes, signatures, or local secret paths.
 - Any change that treats faucet success, faucet failure, or the funding-request
   artifact as proof that sponsor funding or reserve compatibility is ready.
+
+## Slice 7.42: Live Proof Plan Sponsor Funding Alignment
+
+User-visible outcome:
+`npm run live:write-proof-plan` should match the current live-status gate
+ordering. The non-networked plan must include sponsor funding prep and evidence
+before testnet upstream diagnostics, and it should carry redacted evidence
+labels from live-status checks so operators can see which ignored report class
+is missing, loaded, invalid, or accepted without exposing values.
+
+Likely files:
+
+- `scripts/write-live-proof-plan.ts`
+- `scripts/write-live-proof-plan.test.ts`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/testnet-readiness.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- The live proof plan lists `GASKIT_SPONSOR_FUNDING_REPORT` as a required
+  operator input.
+- The live proof plan lists `GASKIT_SPONSOR_FAUCET_REPORT` as optional triage
+  input, not required proof.
+- Required evidence artifacts include a sanitized sponsor funding report.
+- Plan commands include writing the funding request, optional faucet request,
+  and read-only sponsor funding diagnostic before upstream reserve diagnostics.
+- Plan checks preserve redacted `evidence` labels from live proof status.
+- Tests prove the plan omits endpoint values, names, full addresses, profile
+  paths, trusted issuer details, and other secret-like configured values.
+
+Verification:
+
+- `node --import tsx --test scripts/write-live-proof-plan.test.ts`
+- `npm run proof:live-status`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `git diff --check`
+- `npm run typecheck`
+- `npm run proof:product-status`
+
+Dependencies:
+Existing live-proof status, sponsor funding report gate, sponsor faucet triage
+context, and operator live-gate docs.
+
+Risk:
+Medium. This is operator-facing live/testnet sequencing. The plan must not
+make faucet attempts or funding requests look like sponsor funding proof, and
+must not print endpoint values, local paths, sponsor addresses, report paths,
+raw response bodies, credentials, or secret material.
+
+Escalation triggers:
+
+- Any request to treat `GASKIT_SPONSOR_FAUCET_REPORT` or the funding-request
+  artifact as proof of funding.
+- Any request to print full sponsor addresses, endpoint values, report paths,
+  profile paths, DID values, credential refs, private keys, tokens, raw
+  transaction bytes, signatures, raw response bodies, or local secret paths.
