@@ -214,7 +214,8 @@ It also includes the first Agentic GasKit implementation slices:
 - local package install smoke for packed public workspace tarballs
 - non-networked package publication readiness gate for local release proof plus
   an operator-supplied redacted structured npm publication report path before
-  manual approval of registry publication claims
+  manual approval of registry publication claims, plus a redacted mode-600
+  local JSON artifact writer for package publication readiness audit snapshots
 - local redacted package publication proof-plan writer for npm publication
   command order, current package names, required structured report fields,
   required check ids, blocker codes, and proof boundaries before real registry

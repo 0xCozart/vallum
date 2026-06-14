@@ -1,13 +1,16 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import {
+  buildPackagePublicationReadinessArtifact,
   checkPackagePublicationReadiness,
+  formatPackagePublicationReadinessArtifact,
   formatPackagePublicationReadinessReport,
+  writePackagePublicationReadinessArtifact,
 } from "./check-package-publication-readiness.js";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -19,9 +22,18 @@ test("package publication readiness reports local proof and missing registry rep
     now: new Date("2026-06-11T12:00:00.000Z"),
   });
   const formatted = formatPackagePublicationReadinessReport(report);
+  const artifact = buildPackagePublicationReadinessArtifact(report, new Date("2026-06-11T12:00:00.000Z"));
+  const artifactJson = formatPackagePublicationReadinessArtifact(artifact);
 
   assert.equal(report.localProofOk, true);
   assert.equal(report.liveReady, false);
+  assert.equal(artifact.kind, "agentic-gaskit.package-publication-readiness-report");
+  assert.equal(artifact.localProofOk, true);
+  assert.equal(artifact.liveReady, false);
+  assert.ok(artifact.packageNames.includes("@iota-gaskit/sdk"));
+  assert.ok(artifact.provenLocalCheckIds.includes("local-package-publication-proof"));
+  assert.ok(artifact.blockedCheckIds.includes("npm-registry-publication-report"));
+  assert.ok(artifact.blockerCodes.includes("PACKAGE_PUBLICATION_REPORT_MISSING"));
   assert.ok(report.packageNames.includes("@iota-gaskit/sdk"));
   assert.equal(
     report.checks.find((check) => check.id === "local-package-publication-proof")?.code,
@@ -33,6 +45,30 @@ test("package publication readiness reports local proof and missing registry rep
   );
   assert.match(formatted, /npm run publish:dry-run/);
   assert.doesNotMatch(formatted, /npm_token|otp|password|credential|secret/i);
+  assert.doesNotMatch(artifactJson, /npm_token|fixture-redacted-but-still-forbidden|publication-report\.json|0x[0-9a-fA-F]{64}/);
+});
+
+test("package publication readiness artifact writer uses restrictive local file permissions", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-package-publication-"));
+  try {
+    const outFile = "tmp/gaskit/package-publication-readiness.json";
+    const artifact = await writePackagePublicationReadinessArtifact({
+      cwd: repoRoot,
+      env: {},
+      now: new Date("2026-06-11T12:00:00.000Z"),
+      outFile: join(cwd, outFile),
+    });
+    const written = JSON.parse(await readFile(join(cwd, outFile), "utf8")) as typeof artifact;
+    const mode = (await stat(join(cwd, outFile))).mode & 0o777;
+
+    assert.equal(artifact.kind, "agentic-gaskit.package-publication-readiness-report");
+    assert.equal(written.kind, "agentic-gaskit.package-publication-readiness-report");
+    assert.equal(written.liveReady, false);
+    assert.equal(written.blockerCodes.includes("PACKAGE_PUBLICATION_REPORT_MISSING"), true);
+    assert.equal(mode, 0o600);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
 });
 
 test("package publication readiness accepts a recent redacted registry report", async () => {

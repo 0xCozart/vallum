@@ -6060,3 +6060,63 @@ Escalation triggers:
 - Any request to treat the A2A public readiness artifact as public hosting,
   production key management, public push delivery, external conformance, or
   launch proof.
+
+## Slice 7.34: Package Publication Readiness Artifact Writer
+
+User-visible outcome:
+Operators and future agents can archive the current non-networked npm
+publication readiness state as a redacted ignored JSON artifact, so local
+release proof, public package names, registry-publication blockers, and safety
+boundaries can be audited without parsing stdout or contacting npm.
+
+Likely files:
+
+- `scripts/check-package-publication-readiness.ts`
+- `scripts/package-publication-readiness.test.ts`
+- `docs/CODEBASE_MAP.md`
+- `docs/agentic-gaskit/package-release-strategy.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `npm run proof:package-publication-readiness -- --json` prints a redacted
+  machine-readable artifact with schema version, kind, timestamp, local proof
+  status, publication readiness status, public package names, proven-local
+  check ids, ready-approval check ids, blocked check ids, blocker codes,
+  checks, and safety boundaries.
+- `npm run proof:package-publication-readiness -- --out <ignored-json-path>`
+  writes the same artifact with mode `600`.
+- The artifact does not contact npm, run real `npm publish`, prove package
+  ownership, prove 2FA/provenance, or clear registry publication readiness.
+- The artifact does not include npm tokens, OTPs, npmrc contents, credentials,
+  authorization headers, raw registry responses, signatures, package-owner
+  account details, or local secret paths.
+- `liveReady=false` and blocker codes remain explicit while an
+  operator-approved npm registry publication report is missing.
+
+Verification:
+
+- Focused package-publication readiness and package-script tests.
+- `npm run proof:package-publication-readiness -- --out
+  tmp/gaskit/package-publication-readiness.json`.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run verify:fast`.
+
+Dependencies:
+Existing package publication readiness gate and publication proof-plan writer.
+
+Risk:
+Low. This is a derived evidence artifact, but it must not become npm
+publication proof or an accidental place to store registry credentials.
+
+Escalation triggers:
+
+- Any request to include npm tokens, OTPs, npmrc contents, credentials,
+  authorization headers, raw registry responses, signatures, package-owner
+  account details, or local secret paths.
+- Any request to treat the package publication readiness artifact as npm
+  publication, registry installability, account ownership, 2FA/provenance,
+  rollback, release, or launch proof.

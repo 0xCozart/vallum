@@ -1,5 +1,5 @@
-import { access, readFile } from "node:fs/promises";
-import { isAbsolute, resolve } from "node:path";
+import { access, chmod, mkdir, readFile, writeFile } from "node:fs/promises";
+import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { collectPublishablePackages, type PublishablePackage } from "./package-publish-dry-run.js";
@@ -26,11 +26,36 @@ export interface PackagePublicationReadinessReport {
   readonly checks: readonly PackagePublicationReadinessCheck[];
 }
 
+export interface PackagePublicationReadinessArtifact {
+  readonly schemaVersion: 1;
+  readonly kind: "agentic-gaskit.package-publication-readiness-report";
+  readonly generatedAt: string;
+  readonly localProofOk: boolean;
+  readonly liveReady: boolean;
+  readonly packageNames: readonly string[];
+  readonly provenLocalCheckIds: readonly string[];
+  readonly readyApprovalCheckIds: readonly string[];
+  readonly blockedCheckIds: readonly string[];
+  readonly blockerCodes: readonly string[];
+  readonly checks: readonly PackagePublicationReadinessCheck[];
+  readonly boundaries: readonly string[];
+}
+
 export interface PackagePublicationReadinessOptions {
   readonly cwd?: string;
   readonly env?: NodeJS.ProcessEnv | Record<string, string | undefined>;
   readonly now?: Date;
   readonly scripts?: Record<string, string | undefined>;
+}
+
+export interface WritePackagePublicationReadinessArtifactOptions extends PackagePublicationReadinessOptions {
+  readonly outFile?: string;
+}
+
+interface CliOptions {
+  readonly help: boolean;
+  readonly json: boolean;
+  readonly outFile?: string;
 }
 
 interface StructuredPackagePublicationReport {
@@ -65,6 +90,23 @@ const REQUIRED_REGISTRY_CHECKS = [
 ] as const;
 
 const SECRET_FIELD_RE = /secret|token|private|credential|authorization|otp|password|session|cookie|npmrc|signature|payload|header/i;
+
+const ARTIFACT_BOUNDARIES = [
+  "This report is non-networked and does not contact the npm registry or run real npm publish.",
+  "liveReady=false means local package proof or operator-approved npm registry publication evidence remains blocked.",
+  "ready-approval checks require manual operator review before any npm publication, provenance, registry installability, ownership, 2FA, or rollback claim is accepted.",
+  "Do not commit generated reports, publication proof outputs, npm tokens, OTPs, npmrc contents, credentials, authorization headers, raw registry responses, signatures, package-owner account details, or local secret paths.",
+] as const;
+
+const usage = `usage: npm exec tsx -- scripts/check-package-publication-readiness.ts [--json] [--out <path>]
+
+Reports current Agentic GasKit package publication readiness without contacting npm or publishing packages.
+
+Options:
+  --json        Print a redacted machine-readable artifact.
+  --out <path>  Write the same JSON artifact to a local file with mode 0600.
+  --help        Show this help text.
+`;
 
 export async function checkPackagePublicationReadiness(
   options: PackagePublicationReadinessOptions = {},
@@ -102,6 +144,49 @@ export function formatPackagePublicationReadinessReport(report: PackagePublicati
     lines.push(`next=${check.next}`);
   }
   return lines.join("\n");
+}
+
+export function buildPackagePublicationReadinessArtifact(
+  report: PackagePublicationReadinessReport,
+  now = new Date(),
+): PackagePublicationReadinessArtifact {
+  const provenLocalChecks = report.checks.filter((check) => check.status === "proven-local");
+  const readyApprovalChecks = report.checks.filter((check) => check.status === "ready-approval");
+  const blockedChecks = report.checks.filter((check) => check.status !== "proven-local" && check.status !== "ready-approval");
+
+  return {
+    schemaVersion: 1,
+    kind: "agentic-gaskit.package-publication-readiness-report",
+    generatedAt: now.toISOString(),
+    localProofOk: report.localProofOk,
+    liveReady: report.liveReady,
+    packageNames: report.packageNames,
+    provenLocalCheckIds: provenLocalChecks.map((check) => check.id),
+    readyApprovalCheckIds: readyApprovalChecks.map((check) => check.id),
+    blockedCheckIds: blockedChecks.map((check) => check.id),
+    blockerCodes: blockedChecks.map((check) => check.code),
+    checks: report.checks,
+    boundaries: ARTIFACT_BOUNDARIES,
+  };
+}
+
+export async function writePackagePublicationReadinessArtifact(
+  options: WritePackagePublicationReadinessArtifactOptions = {},
+): Promise<PackagePublicationReadinessArtifact> {
+  const cwd = options.cwd ?? process.cwd();
+  const report = await checkPackagePublicationReadiness(options);
+  const artifact = buildPackagePublicationReadinessArtifact(report, options.now);
+  if (options.outFile) {
+    const outPath = isAbsolute(options.outFile) ? options.outFile : resolve(cwd, options.outFile);
+    await mkdir(dirname(outPath), { recursive: true });
+    await writeFile(outPath, formatPackagePublicationReadinessArtifact(artifact), { mode: 0o600 });
+    await chmod(outPath, 0o600);
+  }
+  return artifact;
+}
+
+export function formatPackagePublicationReadinessArtifact(artifact: PackagePublicationReadinessArtifact): string {
+  return `${JSON.stringify(artifact, null, 2)}\n`;
 }
 
 async function loadPackageScripts(cwd: string): Promise<Record<string, string | undefined>> {
@@ -319,7 +404,55 @@ function containsSecretLikeField(value: unknown): boolean {
   return false;
 }
 
+function parseArgs(args: readonly string[]): CliOptions {
+  let help = false;
+  let json = false;
+  let outFile: string | undefined;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg === "--help" || arg === "-h") {
+      help = true;
+      continue;
+    }
+    if (arg === "--json") {
+      json = true;
+      continue;
+    }
+    if (arg === "--out") {
+      const value = args[index + 1];
+      if (!value || value.startsWith("--")) throw new Error("--out requires a path.");
+      outFile = value;
+      index += 1;
+      continue;
+    }
+    throw new Error(`Unsupported argument: ${arg}`);
+  }
+
+  return { help, json, outFile };
+}
+
 async function main(): Promise<number> {
+  let options: CliOptions;
+  try {
+    options = parseArgs(process.argv.slice(2));
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    console.error(usage);
+    return 1;
+  }
+
+  if (options.help) {
+    console.log(usage.trimEnd());
+    return 0;
+  }
+
+  if (options.json || options.outFile) {
+    const artifact = await writePackagePublicationReadinessArtifact({ outFile: options.outFile });
+    console.log(formatPackagePublicationReadinessArtifact(artifact).trimEnd());
+    return 0;
+  }
+
   const report = await checkPackagePublicationReadiness();
   console.log(formatPackagePublicationReadinessReport(report));
   return 0;

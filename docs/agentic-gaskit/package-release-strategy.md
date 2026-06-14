@@ -105,6 +105,20 @@ registry install, provenance review, and rollback review. It must not include
 npm tokens, OTPs, npmrc contents, credentials, authorization headers, raw
 registry responses, signatures, or local secret paths.
 
+The readiness gate can also emit a redacted local audit artifact:
+
+```bash
+npm run proof:package-publication-readiness -- --json
+npm run proof:package-publication-readiness -- --out tmp/gaskit/package-publication-readiness.json
+```
+
+The artifact records schema version, kind, timestamp, local proof status,
+publication readiness status, public package names, check ids grouped by
+status, blocker codes, checks, and safety boundaries. The `--out` file is
+written with mode `600` and must stay outside committed files. It does not
+publish packages, contact npm, prove package ownership, prove 2FA/provenance,
+or clear registry publication readiness by itself.
+
 `npm run package:write-publication-proof-plan` adds a non-networked
 publication proof-plan writer for operators:
 
