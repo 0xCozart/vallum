@@ -5418,6 +5418,58 @@ Escalation triggers:
 - Any request to include `smoke:iota-identity-live` in default local
   verification.
 
+## Slice 7.66: Launch Digest Report Command Alignment
+
+User-visible outcome:
+Launch readiness points operators at the report-writing digest lookup command
+so the current sponsored-execute proof can be consumed by product-status without
+live network contact.
+
+Likely files:
+
+- `scripts/check-launch-readiness.ts`
+- `scripts/launch-readiness.test.ts`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- Phase 1 launch readiness lists `npm run proof:testnet-digest:live --
+  --report tmp/gaskit/testnet-digest-proof.json`.
+- Phase 1 no longer lists the bare `npm run proof:testnet-digest:live`
+  command.
+- Tests assert the report-writing digest lookup appears before
+  `npm run execute:testnet-demo`.
+- Launch readiness docs tell operators to set `GASKIT_TESTNET_DIGEST_REPORT`
+  outside committed files so product-status can consume the sanitized report.
+- No live lookup, reserve_gas probe, signing, sponsor gas spend, sponsored
+  execute, npm publish, public A2A probe, payment-provider action,
+  marketplace production action, custody/KMS action, external signer action,
+  or physical-device action is run by this slice.
+
+Verification:
+
+- `node --import tsx --test scripts/launch-readiness.test.ts`
+- `npm run proof:launch-readiness`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `npm run typecheck`
+- `git diff --check`
+
+Dependencies:
+Slice 7.65.
+
+Risk:
+Low. This is command guidance and test coverage, but wrong command ordering can
+make operators lose the reusable report-backed proof path.
+
+Escalation triggers:
+
+- Any request to run `execute:testnet-demo` automatically from launch
+  readiness.
+- Any request for launch readiness to treat the bare live lookup as persistent
+  product-status evidence.
+
 ## Slice 7.65: Testnet Digest Live Report Gate
 
 User-visible outcome:

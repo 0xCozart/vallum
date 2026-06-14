@@ -72,7 +72,7 @@ npm run proof:launch-readiness -- --out tmp/gaskit/launch-readiness.json
 npm run proof:live-status
 npm run live:write-proof-plan -- --out tmp/gaskit/live-proof-plan.json
 npm run proof:testnet-digest
-npm run proof:testnet-digest:live
+npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json
 npm run gas-station:render-config
 npm run gas-station:runtime-preflight
 npm run gas-station:docker-direct -- --dry-run
@@ -108,10 +108,14 @@ launch readiness; the full diagnostic without `--skip-reserve` must pass before
 `testnet-upstream` can support fresh sponsored execution claims.
 
 The `testnet-sponsored-execute` product-status check is non-networked by
-default and only verifies that the current public digest is documented in the
-required evidence docs. Use `npm run proof:testnet-digest:live` for the
-read-only testnet lookup, and rerun `npm run execute:testnet-demo` only with
-explicit operator intent when the public digest needs to be refreshed.
+default. Without `GASKIT_TESTNET_DIGEST_REPORT`, it only verifies that the
+current public digest is documented in the required evidence docs. Use
+`npm run proof:testnet-digest:live -- --report
+tmp/gaskit/testnet-digest-proof.json` for the read-only testnet lookup, set
+`GASKIT_TESTNET_DIGEST_REPORT` outside committed files so product-status can
+consume that sanitized report without contacting IOTA RPC, and rerun
+`npm run execute:testnet-demo` only with explicit operator intent when the
+public digest needs to be refreshed.
 
 Sponsor funding must clear before the full upstream diagnostic can prove
 `reserve_gas` compatibility. If the bounded faucet context reports

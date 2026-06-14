@@ -28,6 +28,8 @@ test("launch readiness maps local evidence to live and production blockers", asy
   assert.ok(phase1?.commands.includes("npm run sponsor:write-funding-request -- --out tmp/gaskit/sponsor-funding-request.json"));
   assert.ok(phase1?.commands.includes("npm run sponsor:request-faucet-funds -- --execute --out tmp/gaskit/sponsor-faucet-request.json"));
   assert.ok(phase1?.commands.includes("npm run sponsor:write-funding-request -- --faucet-report tmp/gaskit/sponsor-faucet-request.json --out tmp/gaskit/sponsor-funding-request.json"));
+  assert.ok(phase1?.commands.includes("npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json"));
+  assert.equal(phase1?.commands.includes("npm run proof:testnet-digest:live"), false);
   assert.ok(phase1?.commands.includes("npm run proof:live-status"));
   assert.ok(
     (phase1?.commands.indexOf("npm run sponsor:write-funding-request -- --faucet-report tmp/gaskit/sponsor-faucet-request.json --out tmp/gaskit/sponsor-funding-request.json") ?? -1)
@@ -43,6 +45,10 @@ test("launch readiness maps local evidence to live and production blockers", asy
   assert.ok(
     (phase1?.commands.indexOf("npm run diagnose:gas-station -- --skip-reserve --report tmp/gaskit/testnet-upstream-diagnostic.json") ?? -1)
       < (phase1?.commands.indexOf("npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json") ?? -1),
+  );
+  assert.ok(
+    (phase1?.commands.indexOf("npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json") ?? -1)
+      < (phase1?.commands.indexOf("npm run execute:testnet-demo") ?? -1),
   );
   assert.equal(report.areas.find((area) => area.id === "phase-2-identity-and-vc")?.status, "blocked-live");
   const standards = report.areas.find((area) => area.id === "phase-4-standards-bridges");

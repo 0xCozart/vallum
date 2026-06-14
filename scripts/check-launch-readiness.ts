@@ -103,7 +103,7 @@ const AREA_DEFINITIONS = [
       "npm run contracts:test",
       "npm run smoke:agent-escrow",
       "npm run proof:testnet-digest",
-      "npm run proof:testnet-digest:live",
+      "npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json",
       "npm run gas-station:runtime-preflight",
       "npm run sponsor:write-funding-request -- --out tmp/gaskit/sponsor-funding-request.json",
       "npm run sponsor:request-faucet-funds -- --execute --out tmp/gaskit/sponsor-faucet-request.json",
