@@ -8227,3 +8227,60 @@ Escalation triggers:
   authorization headers, raw payloads, raw response bodies, moderation payloads,
   account details, private prompts, signatures, full addresses, or local secret
   paths in readiness output or public docs.
+
+## Slice 7.82: Custody Readiness Template Guidance
+
+User-visible outcome:
+`npm run proof:custody-readiness` points a missing
+`CUSTODY_PRODUCTION_REPORT` blocker at the ignored `custody-production`
+report-template command before instructing operators to complete the approved
+custody, KMS, recovery, legal, and incident-response review and set the
+structured report path.
+
+Likely files:
+
+- `scripts/check-custody-readiness.ts`
+- `scripts/custody-readiness.test.ts`
+- `docs/agentic-gaskit/account-wallet-safety.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- Missing custody production report output includes
+  `npm run operator:write-report-template -- --kind custody-production`.
+- The readiness gate still reports `CUSTODY_PRODUCTION_REPORT_MISSING` until a
+  valid ignored structured report is configured.
+- Report-template generation remains a non-networked preparation artifact and
+  is not accepted as production custody, KMS, external signer, recovery export,
+  staking, bonding, slashing, or signer-operation evidence.
+- Focused tests preserve redaction of seeds, mnemonics, private keys, raw
+  keypairs, signer material, credentials, authorization headers, payloads,
+  signatures, exported keys, unsafe local report paths, and full addresses
+  while allowing the safe template filename.
+
+Verification:
+
+- `node --import tsx --test scripts/custody-readiness.test.ts`
+- `npm run proof:custody-readiness`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `npm run typecheck`
+- `git diff --check`
+
+Dependencies:
+Slices 1.1, 1.2, 7.35, 7.45, 7.78, and 7.81.
+
+Risk:
+Low. This changes readiness guidance only, but stale direct readiness output can
+cause operators to skip the structured template and create unaccepted custody
+proof artifacts.
+
+Escalation triggers:
+
+- Any request to treat generated templates, local signer-reference tests,
+  readiness artifacts, or custody proof plans as production custody, KMS,
+  external signer, staking, bonding, slashing, or signer-operation proof.
+- Any request to include seeds, mnemonics, private keys, raw keypairs, signer
+  material, credentials, authorization headers, raw payloads, raw response
+  bodies, account details, signatures, exported keys, full addresses, or local
+  secret paths in readiness output or public docs.

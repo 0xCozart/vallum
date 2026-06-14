@@ -65,6 +65,7 @@ interface StructuredCustodyReport {
 
 const MAX_REPORT_BYTES = 64 * 1024;
 const MAX_REPORT_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+const CUSTODY_PRODUCTION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind custody-production --out tmp/gaskit/custody-production-report-template.json";
 const REQUIRED_SOURCE_PATHS = [
   "packages/accounts/src/index.ts",
   "packages/accounts/src/accounts.test.ts",
@@ -252,7 +253,7 @@ async function checkProductionReport(
       code: "CUSTODY_PRODUCTION_REPORT_MISSING",
       message: "Production custody proof requires an operator-supplied structured report path.",
       evidence: "missing=CUSTODY_PRODUCTION_REPORT",
-      next: "Complete a dedicated operator-approved custody, KMS, recovery, legal, and incident-response review and set CUSTODY_PRODUCTION_REPORT to the ignored local structured report path.",
+      next: `${CUSTODY_PRODUCTION_TEMPLATE_COMMAND}; complete a dedicated operator-approved custody, KMS, recovery, legal, and incident-response review and set CUSTODY_PRODUCTION_REPORT to the ignored local structured report path.`,
     };
   }
 

@@ -51,6 +51,7 @@ test("custody readiness reports local signer-reference proof and missing product
     report.checks.find((check) => check.id === "production-custody-report")?.code,
     "CUSTODY_PRODUCTION_REPORT_MISSING",
   );
+  assert.match(formatted, /operator:write-report-template -- --kind custody-production/);
   assert.match(formatted, /packages\/accounts\/src\/accounts\.test\.ts/);
   assert.doesNotMatch(formatted, /seed phrase|private key|raw keypair|credential|bearer token/i);
   assert.doesNotMatch(

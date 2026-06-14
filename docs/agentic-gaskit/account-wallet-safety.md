@@ -128,6 +128,19 @@ The report must not include seeds, mnemonics, private keys, raw keypairs,
 signer material, credentials, payloads, headers, signatures, or local secret
 paths.
 
+When `CUSTODY_PRODUCTION_REPORT` is missing, generate the status-only template
+first:
+
+```bash
+npm run operator:write-report-template -- --kind custody-production --out tmp/gaskit/custody-production-report-template.json
+```
+
+The generated template is preparation material only. It does not contact KMS
+providers, external signers, custody providers, IOTA services, Gas Station
+endpoints, or live wallet infrastructure, and it is not accepted as production
+custody proof until an operator completes the required review and sets
+`CUSTODY_PRODUCTION_REPORT` to a valid ignored structured report.
+
 `npm run proof:custody-readiness -- --out tmp/gaskit/custody-readiness.json`
 writes the same readiness state as a redacted mode-0600 local JSON artifact for
 audit snapshots. The artifact does not contact KMS providers, external
