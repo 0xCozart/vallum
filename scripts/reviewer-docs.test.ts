@@ -116,6 +116,33 @@ test("docs hosting source list includes best-practices and reviewer paths", asyn
   assert.match(docsReadme, /output directory: `apps\/docs-site\/dist`/);
 });
 
+test("operator live-gates docs list every report template kind", async () => {
+  const docs = await readDoc("docs/agentic-gaskit/operator-live-gates.md");
+
+  for (const kind of [
+    "testnet-upstream",
+    "testnet-digest",
+    "iota-names-live",
+    "iota-identity-live",
+    "vc-validation-live",
+    "a2a-public-discovery",
+    "a2a-public-push-delivery",
+    "a2a-external-conformance",
+    "payment-provider-live",
+    "package-publication",
+    "marketplace-production",
+    "custody-production",
+  ]) {
+    assert.match(docs, literalPattern(kind));
+    assert.match(docs, literalPattern(`npm run operator:write-report-template -- --kind ${kind}`));
+  }
+
+  assert.match(docs, /GASKIT_TESTNET_DIGEST_REPORT/);
+  assert.match(docs, /IOTA Names and IOTA Identity report kinds/);
+  assert.match(docs, /trust-policy configuration/);
+  assert.match(docs, /result=pending-operator-proof/);
+});
+
 test("hosted docs exclude internal planning and handoff sources", async () => {
   const [config, readme, gitignore] = await Promise.all([
     readDoc("apps/docs-site/docs.config.mjs"),

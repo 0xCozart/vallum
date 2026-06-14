@@ -44,12 +44,14 @@ npm run operator:write-report-template -- --kind package-publication --out tmp/g
 ```
 
 The template writer is also non-networked. It can write templates for
-`a2a-public-discovery`, `a2a-public-push-delivery`,
-`a2a-external-conformance`, `payment-provider-live`,
-`package-publication`, `marketplace-production`, and `custody-production`.
-Generated templates keep `result=pending-operator-proof`; a readiness gate will
-not accept the report until a real operator-approved proof run replaces that
-status with passing evidence.
+`testnet-upstream`, `testnet-digest`, `iota-names-live`,
+`iota-identity-live`, `vc-validation-live`, `a2a-public-discovery`,
+`a2a-public-push-delivery`, `a2a-external-conformance`,
+`payment-provider-live`, `package-publication`, `marketplace-production`, and
+`custody-production`. Generated templates keep
+`result=pending-operator-proof`; a readiness gate will not accept the report
+until a real operator-approved proof run replaces that status with passing
+evidence.
 
 Expected status in an unconfigured checkout:
 
@@ -152,6 +154,15 @@ hosts, marketplace systems, or physical devices.
   accepted by `GASKIT_TESTNET_UPSTREAM_REPORT`; only the sanitized diagnostic
   report emitted by `npm run diagnose:gas-station -- --report
   <ignored-json-path>` can clear the upstream gate.
+- Includes a `testnet-digest` template for the accepted
+  `GASKIT_TESTNET_DIGEST_REPORT` artifact. The template points at the
+  non-networked digest-docs check before the read-only live lookup command, but
+  it is not accepted as sponsored execute evidence.
+- Includes `iota-names-live`, `iota-identity-live`, and `vc-validation-live`
+  templates for the remaining live identity gates. They point at the accepted
+  IOTA Names and IOTA Identity report kinds, while keeping VC validation tied
+  to the accepted IOTA Identity live smoke report plus trust-policy
+  configuration.
 - Lets operators write an ignored sponsor funding request artifact with
   `npm run sponsor:write-funding-request -- --out
   tmp/gaskit/sponsor-funding-request.json` when they need the public sponsor
@@ -231,6 +242,10 @@ npm run proof:live-status -- --out tmp/gaskit/live-proof-status.json
 npm run package:write-publication-proof-plan -- --out tmp/gaskit/package-publication-proof-plan.json
 npm run payment:write-provider-proof-plan -- --out tmp/gaskit/payment-provider-proof-plan.json
 npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json
+npm run operator:write-report-template -- --kind testnet-digest --out tmp/gaskit/testnet-digest-report-template.json
+npm run operator:write-report-template -- --kind iota-names-live --out tmp/gaskit/iota-names-live-report-template.json
+npm run operator:write-report-template -- --kind iota-identity-live --out tmp/gaskit/iota-identity-live-report-template.json
+npm run operator:write-report-template -- --kind vc-validation-live --out tmp/gaskit/vc-validation-live-report-template.json
 npm run gas-station:docker-direct -- --status
 npm run sponsor:write-funding-request -- --out tmp/gaskit/sponsor-funding-request.json
 npm run sponsor:write-funding-request -- --faucet-report tmp/gaskit/sponsor-faucet-request.json --out tmp/gaskit/sponsor-funding-request.json
@@ -242,6 +257,8 @@ npm run operator:write-report-template -- --kind payment-provider-live --out tmp
 npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json
 npm run operator:write-report-template -- --kind custody-production --out tmp/gaskit/custody-production-report-template.json
 npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/gaskit/a2a-public-discovery-report-template.json
+npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/gaskit/a2a-public-push-delivery-report-template.json
+npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/gaskit/a2a-external-conformance-report-template.json
 npm run smoke:a2a-public-discovery
 npm run verify:fast
 npm run proof:verification-profiles

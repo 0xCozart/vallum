@@ -7663,3 +7663,55 @@ Escalation triggers:
   commands automatically, print configured values, or include endpoint values,
   names, addresses, profile paths, DIDs, credential refs, proof bodies, report
   contents, credentials, tokens, private keys, or local secret paths.
+
+## Slice 7.72: Operator Template Kind Docs Alignment
+
+User-visible outcome:
+The public operator live-gates runbook lists the same report-template kinds
+that `operator:write-report-template` actually supports, including the newer
+testnet digest, IOTA Names, IOTA Identity, and VC validation templates.
+
+Likely files:
+
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `scripts/reviewer-docs.test.ts`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- Operator docs list every supported report-template kind:
+  `testnet-upstream`, `testnet-digest`, `iota-names-live`,
+  `iota-identity-live`, `vc-validation-live`, `a2a-public-discovery`,
+  `a2a-public-push-delivery`, `a2a-external-conformance`,
+  `payment-provider-live`, `package-publication`, `marketplace-production`,
+  and `custody-production`.
+- Operator docs include next-command examples for the newly added digest,
+  Names, Identity, and VC templates.
+- Reviewer docs tests fail if the runbook omits a supported template kind or
+  its `operator:write-report-template` command.
+- The change does not alter template generation, report acceptance, live
+  command execution, readiness classification, or product status.
+
+Verification:
+
+- `node --import tsx --test scripts/reviewer-docs.test.ts
+  scripts/write-operator-report-template.test.ts`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `npm run typecheck`
+- `git diff --check`
+
+Dependencies:
+Existing operator report-template writer and hosted public docs contract test.
+
+Risk:
+Low. This is documentation/test alignment only, but stale runbooks can cause
+operators to miss the correct ignored evidence artifact path.
+
+Escalation triggers:
+
+- Any request to treat template generation or docs examples as passing live,
+  publication, payment, marketplace, custody, public A2A, or VC proof.
+- Any request to include endpoint values, names, addresses, DIDs, credential
+  refs, report contents, local paths to sensitive files, or credentials in
+  public docs.
