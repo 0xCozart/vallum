@@ -17,6 +17,16 @@ Run it from the repository root:
 npm run proof:launch-readiness
 ```
 
+For a redacted machine-readable artifact, use:
+
+```bash
+npm run proof:launch-readiness -- --json
+npm run proof:launch-readiness -- --out tmp/gaskit/launch-readiness.json
+```
+
+The `--out` file is written with mode `600`. It is a local audit artifact, not
+passing evidence by itself, and it must stay outside committed files.
+
 Expected status in an unconfigured checkout:
 
 ```text
@@ -57,6 +67,8 @@ Use the matrix with:
 
 ```bash
 npm run proof:product-status
+npm run proof:product-status -- --out tmp/gaskit/product-status.json
+npm run proof:launch-readiness -- --out tmp/gaskit/launch-readiness.json
 npm run proof:live-status
 npm run live:write-proof-plan -- --out tmp/gaskit/live-proof-plan.json
 npm run proof:testnet-digest

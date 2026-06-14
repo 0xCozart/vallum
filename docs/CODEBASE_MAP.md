@@ -178,6 +178,9 @@ It also includes the first Agentic GasKit implementation slices:
   facilitator, processor, AP2 participant, or settlement path is used
 - non-networked launch-readiness evidence matrix that maps roadmap areas to
   source evidence, local commands, blocker codes, and next gates
+- redacted launch-readiness artifact writer for archiving the current
+  non-networked launch matrix, area status groups, blocker codes, and safety
+  boundaries to an ignored mode-600 local JSON file
 - non-networked operator live-gate runbook that classifies config blockers,
   approval-required live commands, production blockers, and safety deferrals
   before execution, plus an opt-in redacted local JSON artifact writer for

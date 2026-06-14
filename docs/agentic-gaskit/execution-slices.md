@@ -5802,3 +5802,66 @@ Escalation triggers:
 - Any request to treat a product-status artifact as live/testnet, publication,
   production custody, production payment, marketplace, public A2A, or launch
   readiness proof.
+
+## Slice 7.30: Launch Readiness Artifact Writer
+
+User-visible outcome:
+Operators and future agents can archive the current non-networked launch
+readiness matrix as a redacted ignored JSON artifact, so roadmap phase audits
+can compare local evidence, area status groups, blockers, and claim boundaries
+without parsing stdout or clearing any live/production gate.
+
+Likely files:
+
+- `scripts/check-launch-readiness.ts`
+- `scripts/launch-readiness.test.ts`
+- `docs/CODEBASE_MAP.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `npm run proof:launch-readiness -- --json` prints a redacted
+  machine-readable artifact with schema version, kind, timestamp, launch
+  readiness, local evidence status, proven-local area ids, blocked-live area
+  ids, blocked-production area ids, deferred-safety area ids, blocker codes,
+  areas, and safety boundaries.
+- `npm run proof:launch-readiness -- --out <ignored-json-path>` writes the same
+  artifact with mode `600`.
+- The artifact does not contact live services, publish packages, run payment
+  providers, operate public A2A endpoints, reserve gas, sign transactions, or
+  execute transactions.
+- The artifact does not include configured endpoint values, profile paths,
+  full sponsor addresses, raw upstream bodies, signer material, bearer tokens,
+  rendered Gas Station config, raw transaction bytes, user signatures, or local
+  secret paths.
+- `launchReady=false` and blocker codes remain explicit while sponsor funding,
+  testnet upstream, Names/Identity/VC, npm publication, public A2A, payment,
+  marketplace, custody, or device-safety gates are unresolved.
+
+Verification:
+
+- Focused launch-readiness and package-script tests.
+- `npm run proof:launch-readiness -- --out tmp/gaskit/launch-readiness.json`.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run verify:fast`.
+
+Dependencies:
+Existing launch-readiness and product-status reports.
+
+Risk:
+Low. This is a derived evidence artifact, but it must not become a passing
+proof or an accidental place to store configured values.
+
+Escalation triggers:
+
+- Any request to include configured endpoint values, profile paths, full
+  sponsor addresses, raw upstream bodies, signer material, bearer tokens,
+  rendered Gas Station config, raw transaction bytes, user signatures, or local
+  secret paths.
+- Any request to treat a launch-readiness artifact as live/testnet,
+  publication, production custody, production payment, marketplace, public A2A,
+  or launch readiness proof.

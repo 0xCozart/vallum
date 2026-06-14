@@ -1,12 +1,15 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
 
 import {
+  buildLaunchReadinessArtifact,
   checkLaunchReadiness,
+  formatLaunchReadinessArtifact,
   formatLaunchReadinessReport,
+  writeLaunchReadinessArtifact,
 } from "./check-launch-readiness.js";
 import type { ProductStatusReport } from "./check-product-status.js";
 
@@ -34,6 +37,48 @@ test("launch readiness maps local evidence to live and production blockers", asy
   assert.match(formatted, /PUBLIC_A2A_HOSTING_UNPROVEN/);
   assert.match(formatted, /DEVICE_ACCESS_SAFETY_DEFERRED/);
   assert.doesNotMatch(formatted, /private-key|mnemonic-value|local-secret|bearer-token-value/i);
+});
+
+test("launch readiness artifact summarizes areas without secret values", async () => {
+  const report = await checkLaunchReadiness({
+    productStatus: productStatusWithLiveBlockers(),
+  });
+  const artifact = buildLaunchReadinessArtifact(report, new Date("2026-06-14T12:00:00.000Z"));
+  const json = formatLaunchReadinessArtifact(artifact);
+  const parsed = JSON.parse(json) as typeof artifact;
+
+  assert.equal(parsed.kind, "agentic-gaskit.launch-readiness-report");
+  assert.equal(parsed.launchReady, false);
+  assert.equal(parsed.localEvidenceOk, true);
+  assert.equal(parsed.blockedLiveAreaIds.includes("phase-1-sponsored-policy-mvp"), true);
+  assert.equal(parsed.blockedProductionAreaIds.includes("phase-4-standards-bridges"), true);
+  assert.equal(parsed.deferredSafetyAreaIds.includes("phase-3-contract-workflows"), true);
+  assert.equal(parsed.blockerCodes.includes("SPONSOR_FUNDING_REPORT_MISSING"), true);
+  assert.equal(parsed.blockerCodes.includes("PUBLIC_A2A_HOSTING_UNPROVEN"), true);
+  assert.match(parsed.boundaries.join("\n"), /launchReady=false/);
+  assert.doesNotMatch(json, /private-key|mnemonic-value|local-secret|bearer-token-value/i);
+});
+
+test("launch readiness artifact writer uses restrictive local file permissions", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-launch-artifact-"));
+  try {
+    await writeEvidenceTree(cwd);
+    const outFile = "tmp/gaskit/launch-readiness.json";
+    const artifact = await writeLaunchReadinessArtifact({
+      cwd,
+      productStatus: productStatusWithLiveBlockers(),
+      now: new Date("2026-06-14T12:00:00.000Z"),
+      outFile,
+    });
+    const written = await readFile(join(cwd, outFile), "utf8");
+    const mode = (await stat(join(cwd, outFile))).mode & 0o777;
+
+    assert.equal(artifact.kind, "agentic-gaskit.launch-readiness-report");
+    assert.equal(JSON.parse(written).kind, "agentic-gaskit.launch-readiness-report");
+    assert.equal(mode, 0o600);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
 });
 
 test("launch readiness can become ready only when product status is complete and evidence exists", async () => {

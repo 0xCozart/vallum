@@ -1,5 +1,5 @@
-import { access, readFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { access, chmod, mkdir, readFile, writeFile } from "node:fs/promises";
+import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
@@ -30,10 +30,47 @@ export interface LaunchReadinessReport {
   readonly areas: readonly LaunchReadinessArea[];
 }
 
+export interface LaunchReadinessArtifact {
+  readonly schemaVersion: 1;
+  readonly kind: "agentic-gaskit.launch-readiness-report";
+  readonly generatedAt: string;
+  readonly launchReady: boolean;
+  readonly localEvidenceOk: boolean;
+  readonly provenLocalAreaIds: readonly string[];
+  readonly blockedLiveAreaIds: readonly string[];
+  readonly blockedProductionAreaIds: readonly string[];
+  readonly deferredSafetyAreaIds: readonly string[];
+  readonly blockerCodes: readonly string[];
+  readonly areas: readonly LaunchReadinessArea[];
+  readonly boundaries: readonly string[];
+}
+
 export interface LaunchReadinessOptions {
   readonly cwd?: string;
   readonly productStatus?: ProductStatusReport;
 }
+
+export interface WriteLaunchReadinessArtifactOptions extends LaunchReadinessOptions {
+  readonly now?: Date;
+  readonly outFile?: string;
+}
+
+const ARTIFACT_BOUNDARIES = [
+  "This report is non-networked and does not run live proof commands.",
+  "launchReady=false means at least one live, production, publication, custody, payment, marketplace, A2A, or safety gate remains blocked.",
+  "Do not commit generated reports, live proof artifacts, credentials, tokens, private keys, raw transaction bytes, user signatures, response bodies, endpoint values, profile paths, full sponsor addresses, or secret local paths.",
+  "Launch readiness requires product status completion plus local evidence; this artifact does not replace operator-approved live or production proof.",
+] as const;
+
+const usage = `usage: npm exec tsx -- scripts/check-launch-readiness.ts [--json] [--out <path>]
+
+Reports current Agentic GasKit launch readiness without contacting live proof services.
+
+Options:
+  --json        Print a redacted machine-readable artifact.
+  --out <path>  Write the same JSON artifact to a local file with mode 0600.
+  --help        Show this help text.
+`;
 
 const AREA_DEFINITIONS = [
   {
@@ -273,6 +310,53 @@ export function formatLaunchReadinessReport(report: LaunchReadinessReport): stri
   return lines.join("\n");
 }
 
+export function buildLaunchReadinessArtifact(
+  report: LaunchReadinessReport,
+  now = new Date(),
+): LaunchReadinessArtifact {
+  return {
+    schemaVersion: 1,
+    kind: "agentic-gaskit.launch-readiness-report",
+    generatedAt: now.toISOString(),
+    launchReady: report.launchReady,
+    localEvidenceOk: report.localEvidenceOk,
+    provenLocalAreaIds: report.areas
+      .filter((area) => area.status === "proven-local")
+      .map((area) => area.id),
+    blockedLiveAreaIds: report.areas
+      .filter((area) => area.status === "blocked-live")
+      .map((area) => area.id),
+    blockedProductionAreaIds: report.areas
+      .filter((area) => area.status === "blocked-production")
+      .map((area) => area.id),
+    deferredSafetyAreaIds: report.areas
+      .filter((area) => area.status === "deferred-safety")
+      .map((area) => area.id),
+    blockerCodes: [...new Set(report.areas.flatMap((area) => area.blockerCodes))],
+    areas: report.areas,
+    boundaries: ARTIFACT_BOUNDARIES,
+  };
+}
+
+export async function writeLaunchReadinessArtifact(
+  options: WriteLaunchReadinessArtifactOptions = {},
+): Promise<LaunchReadinessArtifact> {
+  const cwd = options.cwd ?? process.cwd();
+  const report = await checkLaunchReadiness(options);
+  const artifact = buildLaunchReadinessArtifact(report, options.now);
+  if (options.outFile) {
+    const outPath = resolveOutputPath(cwd, options.outFile);
+    await mkdir(dirname(outPath), { recursive: true });
+    await writeFile(outPath, formatLaunchReadinessArtifact(artifact), { mode: 0o600 });
+    await chmod(outPath, 0o600);
+  }
+  return artifact;
+}
+
+export function formatLaunchReadinessArtifact(artifact: LaunchReadinessArtifact): string {
+  return `${JSON.stringify(artifact, null, 2)}\n`;
+}
+
 async function buildArea(
   cwd: string,
   productStatus: ProductStatusReport,
@@ -325,7 +409,67 @@ function strongestStatus(
   return fallbackStatus;
 }
 
-async function main(): Promise<number> {
+interface CliOptions {
+  readonly help: boolean;
+  readonly json: boolean;
+  readonly outFile?: string;
+}
+
+function parseArgs(args: readonly string[]): CliOptions {
+  let help = false;
+  let json = false;
+  let outFile: string | undefined;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg === "--help" || arg === "-h") {
+      help = true;
+      continue;
+    }
+    if (arg === "--json") {
+      json = true;
+      continue;
+    }
+    if (arg === "--out") {
+      const value = args[index + 1];
+      if (!value || value.startsWith("--")) {
+        throw new Error("--out requires a path.");
+      }
+      outFile = value;
+      index += 1;
+      continue;
+    }
+    throw new Error(`Unsupported argument: ${arg}`);
+  }
+
+  return { help, json, outFile };
+}
+
+function resolveOutputPath(cwd: string, outFile: string): string {
+  return isAbsolute(outFile) ? outFile : resolve(cwd, outFile);
+}
+
+async function main(args = process.argv.slice(2)): Promise<number> {
+  let options: CliOptions;
+  try {
+    options = parseArgs(args);
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    console.error(usage);
+    return 1;
+  }
+
+  if (options.help) {
+    console.log(usage.trimEnd());
+    return 0;
+  }
+
+  if (options.json || options.outFile) {
+    const artifact = await writeLaunchReadinessArtifact({ outFile: options.outFile });
+    console.log(formatLaunchReadinessArtifact(artifact).trimEnd());
+    return 0;
+  }
+
   const report = await checkLaunchReadiness();
   console.log(formatLaunchReadinessReport(report));
   return 0;
