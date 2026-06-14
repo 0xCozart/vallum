@@ -5418,6 +5418,70 @@ Escalation triggers:
 - Any request to include `smoke:iota-identity-live` in default local
   verification.
 
+## Slice 7.65: Testnet Digest Live Report Gate
+
+User-visible outcome:
+The read-only `npm run proof:testnet-digest:live` command can write a sanitized
+ignored report, and product status can accept that current report without
+contacting IOTA RPC by default.
+
+Likely files:
+
+- `scripts/check-testnet-digest-proof.ts`
+- `scripts/testnet-digest-report.ts`
+- `scripts/testnet-digest-proof.test.ts`
+- `scripts/check-product-status.ts`
+- `scripts/product-status.test.ts`
+- `docs/testnet-readiness.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `npm run proof:testnet-digest:live -- --report <ignored-json-path>` writes a
+  mode `0600` report with a namespaced `agentic-gaskit.*` kind, schema version,
+  and observation timestamp.
+- The report validator accepts only current, documented,
+  `verified-testnet`, `effectsStatus=success` read-only lookup evidence.
+- `npm run proof:product-status` reads `GASKIT_TESTNET_DIGEST_REPORT` from
+  `.env` or process env and marks `testnet-sponsored-execute` as verified
+  without contacting IOTA RPC.
+- Stale, invalid, or unverified reports fail closed with redacted blocker
+  codes.
+- The default product-status path remains non-networked when no report is
+  configured.
+- No live IOTA lookup, reserve_gas probe, signing, sponsor gas spend,
+  sponsored execute, npm publish, public A2A probe, payment-provider action,
+  production marketplace action, custody/KMS action, external signer action,
+  or physical-device action is run by this slice.
+
+Verification:
+
+- `node --import tsx --test scripts/testnet-digest-proof.test.ts`
+- `node --import tsx --test scripts/product-status.test.ts`
+- `npm run proof:testnet-digest`
+- `npm run proof:product-status`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `npm run typecheck`
+- `git diff --check`
+
+Dependencies:
+Slice 7.64 and the documented sponsored execute digest.
+
+Risk:
+Medium. This turns live lookup evidence into a reusable local report, so report
+freshness, shape validation, and redaction boundaries must be strict.
+
+Escalation triggers:
+
+- Any request for product-status to contact IOTA RPC by default.
+- Any request to accept stale or documented-only digest evidence as live
+  verified.
+- Any request to include raw transaction bytes, user signatures, sponsor
+  material, raw RPC bodies, or secret local paths in the persisted report.
+
 ## Slice 7.64: Sponsored Execute Operator Command
 
 User-visible outcome:

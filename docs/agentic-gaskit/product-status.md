@@ -122,7 +122,10 @@ production evidence by themselves.
 - Sponsored testnet execution is represented by a dedicated
   `testnet-sponsored-execute` check that accepts only documented public digest
   evidence, with optional read-only live digest lookup kept in the separate
-  `npm run proof:testnet-digest:live` command.
+  `npm run proof:testnet-digest:live` command. When that lookup is written to
+  an ignored report and referenced with `GASKIT_TESTNET_DIGEST_REPORT`,
+  product status can accept the current successful lookup without contacting
+  IOTA RPC itself.
 - Production and safety claims remain explicit blockers instead of implied
   roadmap completion.
 - Structured report templates can be generated locally without contacting live
@@ -174,7 +177,7 @@ npm run verify:local
 npm run verify:fast
 npm run proof:product-status -- --out tmp/gaskit/product-status.json
 npm run proof:testnet-digest
-npm run proof:testnet-digest:live
+npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json
 npm run gas-station:render-config
 npm run gas-station:runtime-preflight
 GASKIT_GAS_STATION_RUNTIME_MODE=managed-upstream npm run gas-station:runtime-preflight

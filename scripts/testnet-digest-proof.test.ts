@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
@@ -9,6 +9,12 @@ import {
   DOCUMENTED_TESTNET_DIGEST,
   formatTestnetDigestProofReport,
 } from "./check-testnet-digest-proof.js";
+import {
+  buildTestnetDigestEvidenceReport,
+  formatTestnetDigestEvidenceReport,
+  loadTestnetDigestReport,
+  validateTestnetDigestReport,
+} from "./testnet-digest-report.js";
 
 test("testnet digest proof checks documented evidence without network", async () => {
   const cwd = await writeDigestDocs(DOCUMENTED_TESTNET_DIGEST);
@@ -96,6 +102,84 @@ test("testnet digest live proof verifies a successful transaction through inject
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }
+});
+
+test("testnet digest live proof can be persisted as a validated local report", async () => {
+  const cwd = await writeDigestDocs(DOCUMENTED_TESTNET_DIGEST);
+  try {
+    const report = await checkTestnetDigestProof({
+      cwd,
+      live: true,
+      client: {
+        async getTransactionBlock() {
+          return {
+            digest: DOCUMENTED_TESTNET_DIGEST,
+            checkpoint: "12345",
+            timestampMs: "1781136000000",
+            effects: {
+              status: { status: "success" },
+              executedEpoch: "42",
+              gasObject: { reference: { objectId: "0x1", version: "1", digest: "gas" }, owner: { AddressOwner: "0x2" } },
+              gasUsed: {
+                computationCost: "1",
+                computationCostBurned: "0",
+                storageCost: "1",
+                storageRebate: "0",
+                nonRefundableStorageFee: "0",
+              },
+              messageVersion: "v1",
+              transactionDigest: DOCUMENTED_TESTNET_DIGEST,
+            },
+          };
+        },
+      },
+    });
+    const evidence = buildTestnetDigestEvidenceReport(report, new Date("2026-06-14T00:00:00.000Z"));
+    const raw = formatTestnetDigestEvidenceReport(evidence);
+    const outFile = join(cwd, "tmp/gaskit/testnet-digest-proof.json");
+
+    await mkdir(dirname(outFile), { recursive: true });
+    await writeFile(outFile, `${raw}\n`, { mode: 0o600 });
+
+    const loaded = await loadTestnetDigestReport(outFile);
+    const validation = validateTestnetDigestReport(loaded, new Date("2026-06-14T00:10:00.000Z"));
+    const mode = (await stat(outFile)).mode & 0o777;
+
+    assert.equal(mode, 0o600);
+    assert.equal(loaded.kind, "agentic-gaskit.testnet-digest-proof-report");
+    assert.equal(validation.ok, true);
+    assert.equal(validation.code, "TESTNET_SPONSORED_EXECUTE_DIGEST_VERIFIED");
+    assert.doesNotMatch(await readFile(outFile, "utf8"), /secret|private|mnemonic|iotaprivkey/i);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("testnet digest report validation rejects stale or unverified reports", async () => {
+  const verified = buildTestnetDigestEvidenceReport({
+    digest: DOCUMENTED_TESTNET_DIGEST,
+    rpcUrl: "https://api.testnet.iota.cafe",
+    documented: true,
+    liveChecked: true,
+    verified: true,
+    status: "verified-testnet",
+    effectsStatus: "success",
+    next: "ok",
+  }, new Date("2026-06-12T00:00:00.000Z"));
+  const stale = validateTestnetDigestReport(verified, new Date("2026-06-14T00:00:01.000Z"));
+  const unverified = validateTestnetDigestReport({
+    ...verified,
+    observedAt: "2026-06-14T00:00:00.000Z",
+    status: "documented-local",
+    liveChecked: false,
+    verified: false,
+    effectsStatus: undefined,
+  }, new Date("2026-06-14T00:10:00.000Z"));
+
+  assert.equal(stale.ok, false);
+  assert.equal(stale.code, "TESTNET_DIGEST_REPORT_STALE");
+  assert.equal(unverified.ok, false);
+  assert.equal(unverified.code, "TESTNET_DIGEST_NOT_VERIFIED");
 });
 
 test("testnet digest live proof blocks failed or mismatched transactions", async () => {

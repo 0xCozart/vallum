@@ -83,9 +83,12 @@ hosts, marketplace systems, or physical devices.
 - Routes `testnet-sponsored-execute` to `npm run proof:testnet-digest:live`
   when a documented digest is present, so operators can perform a read-only
   IOTA testnet lookup before deciding whether to refresh sponsored execution.
-  If sponsored execute evidence is missing, the gate points to
-  `npm run execute:testnet-demo`, which requires explicit operator intent and
-  can spend sponsored testnet gas.
+  Write that lookup to `tmp/gaskit/testnet-digest-proof.json` and set
+  `GASKIT_TESTNET_DIGEST_REPORT` outside committed files when product-status
+  should accept the current successful lookup without contacting IOTA RPC. If
+  sponsored execute evidence is missing, the gate points to `npm run
+  execute:testnet-demo`, which requires explicit operator intent and can spend
+  sponsored testnet gas.
 - Points IOTA Names, IOTA Identity, and VC live proof prep at
   `npm run live:write-proof-plan`, a redacted local command-order artifact
   before any live smoke command runs.
@@ -213,7 +216,7 @@ Use this report with the other proof gates:
 npm run proof:product-status
 npm run proof:launch-readiness
 npm run proof:testnet-digest
-npm run proof:testnet-digest:live
+npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json
 npm run a2a:write-public-proof-plan -- --out tmp/gaskit/a2a-public-proof-plan.json
 npm run proof:a2a-public-readiness
 npm run proof:package-publication-readiness

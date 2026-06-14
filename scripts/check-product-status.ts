@@ -23,6 +23,11 @@ import {
   checkTestnetDigestProof,
   type TestnetDigestProofReport,
 } from "./check-testnet-digest-proof.js";
+import { loadEnvFile } from "../apps/policy-gateway-service/src/readiness.js";
+import {
+  loadTestnetDigestReport,
+  validateTestnetDigestReport,
+} from "./testnet-digest-report.js";
 import type {
   GasStationRuntimeCommandRunner,
   GasStationRuntimePreflightReport,
@@ -120,6 +125,8 @@ const ARTIFACT_BOUNDARIES = [
   "Do not commit generated reports, live proof artifacts, credentials, tokens, private keys, raw transaction bytes, user signatures, response bodies, endpoint values, profile paths, full sponsor addresses, or secret local paths.",
   "Ready-live checks are readiness or report-valid states only; they still require operator review or explicit operator intent before live execution.",
 ] as const;
+const LIVE_TESTNET_ENV_FILE = ".env";
+const TESTNET_DIGEST_REPORT_ENV = "GASKIT_TESTNET_DIGEST_REPORT";
 
 const usage = `usage: npm exec tsx -- scripts/check-product-status.ts [--json] [--out <path>]
 
@@ -133,33 +140,34 @@ Options:
 
 export async function checkProductStatus(options: ProductStatusOptions = {}): Promise<ProductStatusReport> {
   const cwd = options.cwd ?? process.cwd();
+  const env = await productStatusEnv(cwd, options.env);
   const scripts = options.scripts ?? await loadPackageScripts(cwd);
   const liveStatus = await checkLiveProofStatus({
     cwd,
-    env: options.env,
+    env,
     gasStationRuntimeReport: options.gasStationRuntimeReport,
     gasStationRuntimeRunner: options.gasStationRuntimeRunner,
   });
   const paymentProviderReadiness = options.paymentProviderReadiness ?? await checkPaymentProviderReadiness({
     cwd,
-    env: options.env,
+    env,
   });
   const packagePublicationReadiness = options.packagePublicationReadiness ?? await checkPackagePublicationReadiness({
     cwd,
-    env: options.env,
+    env,
     scripts,
   });
   const marketplaceReadiness = options.marketplaceReadiness ?? await checkMarketplaceReadiness({
     cwd,
-    env: options.env,
+    env,
     scripts,
   });
   const custodyReadiness = options.custodyReadiness ?? await checkCustodyReadiness({
     cwd,
-    env: options.env,
+    env,
     scripts,
   });
-  const testnetDigestProof = options.testnetDigestProof ?? await checkTestnetDigestProof({ cwd });
+  const testnetDigestProof = options.testnetDigestProof ?? await testnetDigestProofStatus(cwd, env);
   const liveChecks = withSponsoredExecuteCheck(
     liveStatus.checks.map(mapLiveProofCheck),
     sponsoredExecuteCheck(testnetDigestProof),
@@ -184,6 +192,76 @@ export async function checkProductStatus(options: ProductStatusOptions = {}): Pr
       .every((check) => check.status === "proven-local"),
     checks,
   };
+}
+
+async function productStatusEnv(
+  cwd: string,
+  env: NodeJS.ProcessEnv | Record<string, string | undefined> | undefined,
+): Promise<Record<string, string | undefined>> {
+  const fileEnv = await loadOptionalProductEnv(cwd);
+  return {
+    ...fileEnv,
+    ...(env ?? process.env),
+  };
+}
+
+async function loadOptionalProductEnv(cwd: string): Promise<Record<string, string>> {
+  try {
+    return await loadEnvFile(LIVE_TESTNET_ENV_FILE, cwd);
+  } catch {
+    return {};
+  }
+}
+
+async function testnetDigestProofStatus(
+  cwd: string,
+  env: Record<string, string | undefined>,
+): Promise<TestnetDigestProofReport> {
+  const reportPath = readEnv(env, TESTNET_DIGEST_REPORT_ENV);
+  if (!reportPath) return await checkTestnetDigestProof({ cwd });
+
+  try {
+    const report = await loadTestnetDigestReport(resolve(cwd, reportPath));
+    const validation = validateTestnetDigestReport(report);
+    if (validation.ok) {
+      return {
+        digest: report.digest,
+        rpcUrl: report.rpcUrl,
+        documented: report.documented,
+        liveChecked: report.liveChecked,
+        verified: report.verified,
+        status: "verified-testnet",
+        effectsStatus: report.effectsStatus,
+        checkpoint: report.checkpoint,
+        timestampMs: report.timestampMs,
+        next: "Keep the configured testnet digest proof report current when refreshing sponsored execute evidence.",
+      };
+    }
+    return {
+      digest: report.digest,
+      rpcUrl: report.rpcUrl,
+      documented: report.documented,
+      liveChecked: report.liveChecked,
+      verified: false,
+      status: "blocked-live",
+      effectsStatus: report.effectsStatus,
+      checkpoint: report.checkpoint,
+      timestampMs: report.timestampMs,
+      blocker: validation.code,
+      next: "Regenerate the testnet digest proof report with npm run proof:testnet-digest:live -- --report <ignored-json-path>.",
+    };
+  } catch {
+    return {
+      digest: "redacted",
+      rpcUrl: "redacted",
+      documented: false,
+      liveChecked: false,
+      verified: false,
+      status: "blocked-live",
+      blocker: "TESTNET_DIGEST_REPORT_INVALID",
+      next: "Regenerate the testnet digest proof report with npm run proof:testnet-digest:live -- --report <ignored-json-path>.",
+    };
+  }
 }
 
 export function formatProductStatusReport(report: ProductStatusReport): string {
@@ -381,7 +459,7 @@ function sponsoredExecuteCheck(proof: TestnetDigestProofReport): ProductEvidence
       status: "ready-live",
       code: "TESTNET_SPONSORED_EXECUTE_DIGEST_VERIFIED",
       message: "Fresh sponsored IOTA testnet execute digest is documented and read-only live lookup verified success.",
-      evidence: "testnet-digest-verified-redacted",
+      evidence: "testnet-digest-report-valid-redacted",
       next: "Keep the documented public digest current when rerunning npm run execute:testnet-demo.",
     };
   }
@@ -403,8 +481,13 @@ function sponsoredExecuteCheck(proof: TestnetDigestProofReport): ProductEvidence
     code: proof.blocker ?? "TESTNET_SPONSORED_EXECUTE_DIGEST_MISSING",
     message: "Fresh sponsored IOTA testnet execute evidence is missing or not locally documented.",
     evidence: `blocked=${proof.blocker ?? "TESTNET_SPONSORED_EXECUTE_DIGEST_MISSING"}`,
-    next: "Run npm run execute:testnet-demo only with explicit operator intent, document the public digest, then rerun npm run proof:testnet-digest.",
+    next: proof.next,
   };
+}
+
+function readEnv(env: Record<string, string | undefined>, key: string): string | undefined {
+  const value = env[key];
+  return value && value.trim() !== "" ? value.trim() : undefined;
 }
 
 function productionBlockers(

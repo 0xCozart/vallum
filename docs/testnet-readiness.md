@@ -22,11 +22,15 @@ npm run proof:testnet-digest
 Optionally perform a read-only testnet lookup of that public digest:
 
 ```bash
-npm run proof:testnet-digest:live
+npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json
 ```
 
 The live digest lookup does not reserve gas, execute transactions, sign
 transactions, or use sponsor credentials.
+
+Set `GASKIT_TESTNET_DIGEST_REPORT=tmp/gaskit/testnet-digest-proof.json`
+outside committed files to let `npm run proof:product-status` consume the
+current sanitized lookup report without contacting IOTA RPC.
 
 Validate your local `.env` before trying a real testnet-sponsored transaction:
 

@@ -1,8 +1,13 @@
-import { readFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { IotaClient } from "@iota/iota-sdk/client";
+
+import {
+  buildTestnetDigestEvidenceReport,
+  formatTestnetDigestEvidenceReport,
+} from "./testnet-digest-report.js";
 
 export const DOCUMENTED_TESTNET_DIGEST = "FLdnYRUACAKQn8CwugEv1u6gYTh9jBr8rGMk2JZ2adsd";
 export const DEFAULT_TESTNET_RPC_URL = "https://api.testnet.iota.cafe";
@@ -36,6 +41,7 @@ interface CliOptions {
   readonly live: boolean;
   readonly timeoutMs: number;
   readonly help: boolean;
+  readonly reportFile?: string;
 }
 
 const REQUIRED_DOCS = [
@@ -44,10 +50,11 @@ const REQUIRED_DOCS = [
   "docs/reviewer-walkthrough.md",
 ] as const;
 
-const usage = `usage: npm exec tsx -- scripts/check-testnet-digest-proof.ts [--live] [--digest <digest>] [--rpc-url <url>] [--timeout-ms <ms>]
+const usage = `usage: npm exec tsx -- scripts/check-testnet-digest-proof.ts [--live] [--digest <digest>] [--rpc-url <url>] [--timeout-ms <ms>] [--report <path>]
 
 Default mode is non-networked: it checks that the documented public IOTA testnet digest evidence is still present in repo docs.
---live performs a read-only IOTA testnet transaction lookup. It does not spend gas, sign transactions, or use sponsor credentials.`;
+--live performs a read-only IOTA testnet transaction lookup. It does not spend gas, sign transactions, or use sponsor credentials.
+--report writes a sanitized local JSON report with mode 0600 for product-status gates.`;
 
 export async function checkTestnetDigestProof(
   options: TestnetDigestProofOptions = {},
@@ -156,7 +163,14 @@ async function isDigestDocumented(cwd: string, digest: string): Promise<boolean>
 }
 
 function parseArgs(argv: string[]): CliOptions {
-  const options = {
+  const options: {
+    digest: string;
+    rpcUrl: string;
+    live: boolean;
+    timeoutMs: number;
+    help: boolean;
+    reportFile?: string;
+  } = {
     digest: DOCUMENTED_TESTNET_DIGEST,
     rpcUrl: DEFAULT_TESTNET_RPC_URL,
     live: false,
@@ -191,6 +205,13 @@ function parseArgs(argv: string[]): CliOptions {
       index += 1;
       continue;
     }
+    if (arg === "--report") {
+      const value = argv[index + 1];
+      if (!value) throw new Error("--report requires a path.");
+      options.reportFile = value;
+      index += 1;
+      continue;
+    }
     if (arg === "--help" || arg === "-h") {
       options.help = true;
       continue;
@@ -217,7 +238,19 @@ async function main(): Promise<number> {
 
   const report = await checkTestnetDigestProof(options);
   console.log(formatTestnetDigestProofReport(report));
+  if (options.reportFile) {
+    await writeTestnetDigestReportFile(options.reportFile, report);
+    console.log(`report=${options.reportFile}`);
+  }
   return report.status === "blocked-live" ? 1 : 0;
+}
+
+async function writeTestnetDigestReportFile(path: string, report: TestnetDigestProofReport): Promise<void> {
+  const outFile = isAbsolute(path) ? path : resolve(process.cwd(), path);
+  await mkdir(dirname(outFile), { recursive: true });
+  await writeFile(outFile, `${formatTestnetDigestEvidenceReport(buildTestnetDigestEvidenceReport(report))}\n`, {
+    mode: 0o600,
+  });
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

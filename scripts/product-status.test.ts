@@ -180,6 +180,7 @@ test("product status marks report-backed live gates ready without contacting end
       ok: true,
     }));
     await writeFile(join(cwd, "sponsor-funding-report.json"), JSON.stringify(readySponsorFundingReport()));
+    await writeFile(join(cwd, "testnet-digest-report.json"), JSON.stringify(readyTestnetDigestReport()));
     await writeFile(join(cwd, "iota-names-report.json"), JSON.stringify(readyIotaNamesReport()));
     await writeFile(join(cwd, "iota-identity-report.json"), JSON.stringify(readyIotaIdentityReport()));
 
@@ -190,10 +191,10 @@ test("product status marks report-backed live gates ready without contacting end
       marketplaceReadiness: blockedMarketplaceReadiness(),
       packagePublicationReadiness: blockedPackagePublicationReadiness(),
       gasStationRuntimeReport: readyGasStationRuntime(),
-      testnetDigestProof: documentedTestnetDigestProof(),
       env: {
         GASKIT_SPONSOR_FUNDING_REPORT: "sponsor-funding-report.json",
         GASKIT_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
+        GASKIT_TESTNET_DIGEST_REPORT: "testnet-digest-report.json",
         IOTA_NAMES_GRAPHQL_URL: "https://graphql.testnet.example/iota",
         IOTA_NAMES_NAME: "researcher.demo.iota",
         IOTA_NAMES_EXPECTED_ADDRESS: "0x1111111111111111111111111111111111111111111111111111111111111111",
@@ -221,11 +222,11 @@ test("product status marks report-backed live gates ready without contacting end
     assert.equal(report.checks.find((check) => check.id === "testnet-sponsored-execute")?.status, "ready-live");
     assert.equal(
       report.checks.find((check) => check.id === "testnet-sponsored-execute")?.code,
-      "TESTNET_SPONSORED_EXECUTE_DIGEST_DOCUMENTED",
+      "TESTNET_SPONSORED_EXECUTE_DIGEST_VERIFIED",
     );
     assert.equal(report.checks.find((check) => check.id === "sponsor-funding")?.evidence, "sponsor-funding-report-valid-redacted");
     assert.equal(report.checks.find((check) => check.id === "testnet-upstream")?.evidence, "testnet-upstream-report-valid-redacted");
-    assert.equal(report.checks.find((check) => check.id === "testnet-sponsored-execute")?.evidence, "testnet-digest-documented-redacted");
+    assert.equal(report.checks.find((check) => check.id === "testnet-sponsored-execute")?.evidence, "testnet-digest-report-valid-redacted");
     assert.equal(report.checks.find((check) => check.id === "iota-names-live")?.status, "ready-live");
     assert.equal(report.checks.find((check) => check.id === "iota-identity-live")?.status, "ready-live");
     assert.equal(report.checks.find((check) => check.id === "vc-validation-live")?.status, "ready-live");
@@ -235,6 +236,37 @@ test("product status marks report-backed live gates ready without contacting end
       formatted,
       /graphql\.testnet\.example|identity\.testnet\.example|researcher\.json|fake-testnet-sponsor-key|fake-gas-station-auth|jwt-secret|fake-upstream-bearer/,
     );
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("product status blocks stale configured testnet digest reports without contacting live RPC", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-product-status-digest-report-"));
+  try {
+    await writeFile(join(cwd, "testnet-digest-report.json"), JSON.stringify({
+      ...readyTestnetDigestReport(),
+      observedAt: "2026-06-12T00:00:00.000Z",
+    }));
+
+    const report = await checkProductStatus({
+      cwd,
+      scripts: completeScripts(),
+      custodyReadiness: blockedCustodyReadiness(),
+      marketplaceReadiness: blockedMarketplaceReadiness(),
+      packagePublicationReadiness: blockedPackagePublicationReadiness(),
+      paymentProviderReadiness: blockedPaymentProviderReadiness(),
+      gasStationRuntimeReport: blockedGasStationRuntime(),
+      env: {
+        GASKIT_TESTNET_DIGEST_REPORT: "testnet-digest-report.json",
+      },
+    });
+    const sponsoredExecute = report.checks.find((check) => check.id === "testnet-sponsored-execute");
+
+    assert.equal(sponsoredExecute?.status, "blocked-live");
+    assert.equal(sponsoredExecute?.code, "TESTNET_DIGEST_REPORT_STALE");
+    assert.equal(sponsoredExecute?.evidence, "blocked=TESTNET_DIGEST_REPORT_STALE");
+    assert.match(sponsoredExecute?.next ?? "", /proof:testnet-digest:live/);
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }
@@ -309,7 +341,7 @@ test("product status can mark package publication report ready for approval with
 
     assert.equal(sponsoredExecute?.status, "ready-live");
     assert.equal(sponsoredExecute?.code, "TESTNET_SPONSORED_EXECUTE_DIGEST_VERIFIED");
-    assert.equal(sponsoredExecute?.evidence, "testnet-digest-verified-redacted");
+    assert.equal(sponsoredExecute?.evidence, "testnet-digest-report-valid-redacted");
     assert.equal(publication?.status, "ready-live");
     assert.equal(publication?.code, "PACKAGE_PUBLICATION_REPORT_VALID");
     assert.match(formatted, /PACKAGE_PUBLICATION_REPORT_VALID/);
@@ -541,6 +573,15 @@ function verifiedTestnetDigestProof() {
     checkpoint: "123",
     timestampMs: "1781480000000",
     next: "The documented public digest is retrievable from the configured IOTA testnet RPC.",
+  };
+}
+
+function readyTestnetDigestReport() {
+  return {
+    schemaVersion: 1,
+    kind: "agentic-gaskit.testnet-digest-proof-report",
+    observedAt: new Date().toISOString(),
+    ...verifiedTestnetDigestProof(),
   };
 }
 
