@@ -124,6 +124,9 @@ It also includes the first Agentic GasKit implementation slices:
 - local Gas Station runtime preflight gate for checking ignored rendered config,
   Docker client, Docker daemon, and Docker Compose or direct Docker fallback
   availability before upstream diagnostics
+- local direct-Docker Gas Station stack status check for inspecting the
+  expected Docker network, Redis container, and Gas Station container without
+  starting containers or contacting live services
 - explicit managed-upstream Gas Station runtime mode for operators who provide
   a separately managed Gas Station at `GAS_STATION_URL`; the mode skips Docker
   inspection but still requires sanitized upstream diagnostics before sponsored

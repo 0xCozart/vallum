@@ -45,6 +45,7 @@ Use this path only with operator-owned testnet credentials and a reachable IOTA 
 | Local Gas Station config is rendered | `npm run gas-station:render-config` | Fix `.env` signer/RPC config; do not start Gas Station. |
 | Gas Station runtime mode is ready | `npm run gas-station:runtime-preflight` | Install/enable Docker daemon for `local-docker`, or explicitly configure `managed-upstream` with an operator-managed Gas Station URL. |
 | Local Gas Station containers are started | `docker compose --env-file .env -f deploy/docker-compose/docker-compose.local.yml up` or `npm run gas-station:docker-direct -- --execute` | Docker daemon, Compose plugin, image pull, Redis, or Gas Station startup is not ready. |
+| Direct Docker stack is running | `npm run gas-station:docker-direct -- --status` | Expected direct Docker network or containers are missing or stopped; this does not prove HTTP health or reserve compatibility. |
 | Testnet upstream checklist is prepared | `npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json` | Template only; it cannot clear `GASKIT_TESTNET_UPSTREAM_REPORT`. |
 | Upstream is reachable | `npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json` | Gas Station URL/auth/network/reserve compatibility is not ready. |
 | Live sponsored execute is intentional | `npm run execute:testnet-demo` | Command self-checks readiness/runtime/upstream report first; stop and inspect bounded error output before retrying. |
@@ -65,7 +66,11 @@ reachable, review the sanitized direct plan with
 `npm run gas-station:docker-direct -- --execute` only when you intentionally
 want to pull/start the local Redis and Gas Station containers. The direct path
 adds the `redis` network alias that the rendered local Gas Station config uses
-by default.
+by default. After an intentional direct start, use
+`npm run gas-station:docker-direct -- --status` to inspect only the expected
+local Docker network and container states. The status check does not start
+containers, fetch HTTP health endpoints, contact IOTA RPC, or prove
+reserve_gas compatibility.
 
 If an operator intentionally uses a separately managed Gas Station instead of
 the local Docker path, set `GASKIT_GAS_STATION_RUNTIME_MODE=managed-upstream`

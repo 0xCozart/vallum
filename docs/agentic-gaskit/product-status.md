@@ -165,6 +165,7 @@ npm run operator:write-report-template -- --kind payment-provider-live --out tmp
 npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json
 npm run operator:write-report-template -- --kind custody-production --out tmp/gaskit/custody-production-report-template.json
 npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/gaskit/a2a-public-discovery-report-template.json
+npm run gas-station:docker-direct -- --status
 npm run proof:verification-profiles
 npm run proof:live-status
 npm run proof:launch-readiness

@@ -3,7 +3,10 @@ import test from "node:test";
 
 import {
   buildGasStationDockerDirectPlan,
+  checkGasStationDockerDirectStatus,
   formatGasStationDockerDirectPlan,
+  formatGasStationDockerDirectStatus,
+  type DockerInspectRunner,
 } from "./gas-station-docker-direct.js";
 
 test("direct Docker Gas Station plan uses loopback ports and sanitized config mount", () => {
@@ -46,3 +49,48 @@ test("direct Docker Gas Station plan starts Redis and Gas Station on an isolated
   assert.ok(startRedis);
   assert.match(startRedis.args.join(" "), /--network-alias redis/);
 });
+
+test("direct Docker Gas Station status reports running local stack without contacting live services", async () => {
+  const report = await checkGasStationDockerDirectStatus({
+    runner: inspectRunnerFixture({
+      "docker network inspect gaskit-local --format {{.Name}}": { ok: true, output: "gaskit-local\n" },
+      "docker inspect gaskit-redis --format {{.State.Status}}": { ok: true, output: "running\n" },
+      "docker inspect gaskit-gas-station --format {{.State.Status}}": { ok: true, output: "running\n" },
+    }),
+  });
+  const formatted = formatGasStationDockerDirectStatus(report);
+
+  assert.equal(report.ready, true);
+  assert.equal(report.code, "DOCKER_DIRECT_STACK_READY");
+  assert.equal(report.startsContainers, false);
+  assert.equal(report.contactsLiveServices, false);
+  assert.match(formatted, /next=npm run diagnose:gas-station/);
+  assert.doesNotMatch(formatted, /bearer|token|private|mnemonic|iotaprivkey/i);
+});
+
+test("direct Docker Gas Station status blocks missing or stopped local containers without leaking output", async () => {
+  const report = await checkGasStationDockerDirectStatus({
+    runner: inspectRunnerFixture({
+      "docker network inspect gaskit-local --format {{.Name}}": { ok: true, output: "gaskit-local\n" },
+      "docker inspect gaskit-redis --format {{.State.Status}}": { ok: true, output: "exited\nsecret-looking-token" },
+      "docker inspect gaskit-gas-station --format {{.State.Status}}": { ok: false, output: "raw docker error with bearer token" },
+    }),
+  });
+  const formatted = formatGasStationDockerDirectStatus(report);
+
+  assert.equal(report.ready, false);
+  assert.equal(report.code, "DOCKER_DIRECT_STACK_NOT_READY");
+  assert.equal(report.startsContainers, false);
+  assert.equal(report.contactsLiveServices, false);
+  assert.match(formatted, /DOCKER_DIRECT_CONTAINER_NOT_RUNNING/);
+  assert.doesNotMatch(formatted, /secret-looking-token|raw docker error|bearer token/i);
+});
+
+function inspectRunnerFixture(
+  results: Record<string, { ok: boolean; output: string }>,
+): DockerInspectRunner {
+  return async (command, args) => {
+    const key = [command, ...args].join(" ");
+    return results[key] ?? { ok: false, output: "" };
+  };
+}

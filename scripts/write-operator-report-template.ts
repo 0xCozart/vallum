@@ -166,6 +166,7 @@ export async function buildOperatorReportTemplate(
         ],
         commands: [
           "npm run gas-station:runtime-preflight",
+          "npm run gas-station:docker-direct -- --status",
           "npm run diagnose:gas-station -- --report <ignored-json-path>",
           "npm run proof:live-status",
           "npm run execute:testnet-demo",

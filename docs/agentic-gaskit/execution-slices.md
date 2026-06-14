@@ -4723,3 +4723,70 @@ Escalation triggers:
   execute readiness.
 - Any request to include endpoint URLs, bearer tokens, raw responses, signer
   material, raw transaction bytes, or user signatures in the template.
+
+## Slice 7.14: Direct Docker Stack Status
+
+User-visible outcome:
+Operators can inspect whether the expected direct-Docker local Gas Station
+network, Redis container, and Gas Station container are running before moving
+to upstream HTTP diagnostics, without starting containers or contacting live
+services.
+
+Likely files:
+
+- `scripts/gas-station-docker-direct.ts`
+- `scripts/gas-station-docker-direct.test.ts`
+- `scripts/write-operator-report-template.ts`
+- `scripts/write-operator-report-template.test.ts`
+- `docs/testnet-readiness.md`
+- `docs/deployment.md`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/agentic-gaskit/execution-slices.md`
+- `docs/CODEBASE_MAP.md`
+
+Acceptance criteria:
+
+- `npm run gas-station:docker-direct -- --status` inspects only local Docker
+  network and container state.
+- The status command reports whether `gaskit-local`, `gaskit-redis`, and
+  `gaskit-gas-station` are present/running.
+- The status command does not start containers, fetch Gas Station HTTP health,
+  contact IOTA RPC, reserve gas, execute a transaction, or print raw Docker
+  error output.
+- The status command returns non-zero when the expected local stack is not
+  running.
+- Public docs and the testnet upstream operator template route operators to
+  the status check as local Docker evidence only, not as upstream health or
+  reserve_gas compatibility proof.
+
+Verification:
+
+- Focused direct-Docker and operator-template tests.
+- `npm run gas-station:docker-direct -- --status`, recording only sanitized
+  status output.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run proof:live-status`.
+- `npm run proof:product-status`.
+- `npm run proof:launch-readiness`.
+- `npm run proof:operator-gates`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slices 7.7-7.13 and local Docker runtime access.
+
+Risk:
+Low to medium. Container status can be mistaken for upstream readiness unless
+docs and reports keep it separate from Gas Station HTTP health, IOTA RPC,
+reserve_gas compatibility, and sponsored execution proof.
+
+Escalation triggers:
+
+- Any request to treat direct Docker status as upstream diagnostic proof.
+- Any request to ignore a failed status check and proceed to reserve or execute.
+- Any request to print raw Docker errors, rendered config, `.env`, bearer
+  tokens, signer material, raw transaction bytes, or user signatures.
