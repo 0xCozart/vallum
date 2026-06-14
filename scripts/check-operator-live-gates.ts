@@ -15,6 +15,7 @@ import type {
 export type OperatorGateStatus =
   | "proven-local"
   | "ready-to-run"
+  | "ready-approval"
   | "blocked-config"
   | "requires-approval"
   | "blocked-production"
@@ -44,6 +45,7 @@ export interface OperatorLiveGateArtifact {
   readonly allGatesClear: boolean;
   readonly localOnly: boolean;
   readonly blockerCodes: readonly string[];
+  readonly readyApprovalGateIds: readonly string[];
   readonly approvalRequiredGateIds: readonly string[];
   readonly liveServiceGateIds: readonly string[];
   readonly gates: readonly OperatorLiveGate[];
@@ -119,6 +121,7 @@ const APPROVAL_REQUIRED_GATES = new Set([
 const ARTIFACT_BOUNDARIES = [
   "This report is non-networked and does not run live proof commands.",
   "Gates with contactsLiveService=true require explicit operator approval before execution.",
+  "ready-approval means a valid structured report or ready-live gate is present for manual review; it is not permission to run a live command.",
   "Do not commit generated reports, live proof artifacts, credentials, tokens, private keys, raw transaction bytes, user signatures, response bodies, or secret local paths.",
   "allGatesClear=false means the product is not launch-ready.",
 ] as const;
@@ -141,7 +144,7 @@ export async function checkOperatorLiveGates(
   const gates = productStatus.checks.map(mapProductCheckToGate);
 
   return {
-    allGatesClear: productStatus.complete && gates.every((gate) => gate.status === "proven-local"),
+    allGatesClear: productStatus.complete && gates.every(isClearGateStatus),
     localOnly: gates.every((gate) => !gate.contactsLiveService),
     gates,
   };
@@ -173,7 +176,8 @@ export function buildOperatorLiveGateArtifact(
     generatedAt: now.toISOString(),
     allGatesClear: report.allGatesClear,
     localOnly: report.localOnly,
-    blockerCodes: blockedGates.map((gate) => gate.code),
+    blockerCodes: blockedGates.filter((gate) => gate.status !== "ready-approval").map((gate) => gate.code),
+    readyApprovalGateIds: report.gates.filter((gate) => gate.status === "ready-approval").map((gate) => gate.id),
     approvalRequiredGateIds: report.gates.filter((gate) => gate.approvalRequired).map((gate) => gate.id),
     liveServiceGateIds: report.gates.filter((gate) => gate.contactsLiveService).map((gate) => gate.id),
     gates: report.gates,
@@ -230,13 +234,17 @@ function classifyGate(check: ProductEvidenceCheck): OperatorGateStatus {
   if (check.status === "proven-local") return "proven-local";
   if (check.status === "deferred-safety") return "deferred-safety";
   if (check.status === "ready-live") {
-    return APPROVAL_REQUIRED_GATES.has(check.id) ? "requires-approval" : "ready-to-run";
+    return APPROVAL_REQUIRED_GATES.has(check.id) ? "ready-approval" : "ready-to-run";
   }
   if (check.status === "blocked-live") return "blocked-config";
   if (check.status === "blocked-production") {
     return APPROVAL_REQUIRED_GATES.has(check.id) ? "requires-approval" : "blocked-production";
   }
   return "blocked-production";
+}
+
+function isClearGateStatus(gate: OperatorLiveGate): boolean {
+  return gate.status === "proven-local" || gate.status === "ready-to-run" || gate.status === "ready-approval";
 }
 
 function approvalRequired(check: ProductEvidenceCheck): boolean {

@@ -165,7 +165,7 @@ test("operator live gates route documented sponsored execute proof to read-only 
   });
   const gate = findGate(report, "testnet-sponsored-execute");
 
-  assert.equal(gate.status, "requires-approval");
+  assert.equal(gate.status, "ready-approval");
   assert.equal(gate.approvalRequired, true);
   assert.equal(gate.contactsLiveService, true);
   assert.equal(gate.command, "npm run operator:write-report-template -- --kind testnet-digest --out tmp/gaskit/testnet-digest-report-template.json && npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json");
@@ -209,13 +209,13 @@ test("operator live gates require approval for configured live endpoint smokes",
 
   for (const id of ["sponsor-funding", "testnet-upstream", "iota-names-live", "iota-identity-live", "vc-validation-live"]) {
     const gate = findGate(report, id);
-    assert.equal(gate.status, "requires-approval");
+    assert.equal(gate.status, "ready-approval");
     assert.equal(gate.approvalRequired, true);
     assert.equal(gate.contactsLiveService, true);
   }
 });
 
-test("operator live gates can clear only when every product check is local-proven", async () => {
+test("operator live gates can clear when every product check is local-proven or ready for approval", async () => {
   const report = await checkOperatorLiveGates({
     productStatus: {
       complete: true,
@@ -233,13 +233,20 @@ test("operator live gates can clear only when every product check is local-prove
           code: "PACKAGE_RELEASE_GATES_CONFIGURED",
           message: "Local package gates are configured.",
         },
+        {
+          id: "sponsor-funding",
+          status: "ready-live",
+          code: "SPONSOR_FUNDING_REPORT_VALID",
+          message: "Sponsor funding report is valid.",
+        },
       ],
     },
   });
 
   assert.equal(report.allGatesClear, true);
-  assert.equal(report.localOnly, true);
-  assert.deepEqual(report.gates.map((gate) => gate.status), ["proven-local", "proven-local"]);
+  assert.equal(report.localOnly, false);
+  assert.deepEqual(report.gates.map((gate) => gate.status), ["proven-local", "proven-local", "ready-approval"]);
+  assert.equal(findGate(report, "sponsor-funding").approvalRequired, true);
 });
 
 test("operator live gate artifact reports blockers without configured values", async () => {
@@ -273,7 +280,8 @@ test("operator live gate artifact reports blockers without configured values", a
   assert.equal(artifact.allGatesClear, false);
   assert.equal(artifact.localOnly, false);
   assert.ok(artifact.blockerCodes.includes("PUBLIC_A2A_HOSTING_UNPROVEN"));
-  assert.ok(artifact.blockerCodes.includes("IOTA_NAMES_LIVE_REPORT_VALID"));
+  assert.equal(artifact.blockerCodes.includes("IOTA_NAMES_LIVE_REPORT_VALID"), false);
+  assert.ok(artifact.readyApprovalGateIds.includes("iota-names-live"));
   assert.ok(artifact.approvalRequiredGateIds.includes("iota-names-live"));
   assert.ok(artifact.liveServiceGateIds.includes("iota-names-live"));
   assert.ok(artifact.gates.some((gate) => gate.command === "npm run operator:write-report-template -- --kind iota-names-live --out tmp/gaskit/iota-names-live-report-template.json && npm run live:write-proof-plan && npm run smoke:iota-names-live -- --report <ignored-json-path>"));

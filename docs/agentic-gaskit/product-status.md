@@ -24,6 +24,10 @@ surface in one machine-checkable place:
 - opt-in public A2A discovery/JWKS smoke wiring for operator-approved public
   HTTPS configuration, kept outside default local verification, with optional
   structured discovery report output;
+- public A2A readiness aggregation that moves `public-a2a-hosting` to
+  `ready-live` only when public URL, JWKS, task-auth, public discovery, public
+  push delivery, and external conformance checks are all either local proof or
+  `ready-approval` structured evidence;
 - verification-profile wiring that keeps fast iteration separate from the full
   local evidence gate;
 - payment-provider readiness wiring that checks local x402/AP2 source and test
@@ -67,7 +71,8 @@ surface in one machine-checkable place:
   Identity, and VC proof status from `npm run proof:live-status`;
 - production-only blockers such as npm registry publication, public A2A
   hosting, live payment/provider settlement, production marketplace operation,
-  production custody, and physical device access.
+  production custody, and physical device access when their accepted structured
+  reports or safety approvals are still missing.
 
 Run it from the repository root:
 
@@ -172,7 +177,10 @@ content.
   `npm run proof:payment-provider-readiness` validates an ignored structured
   report and the operator manually accepts it.
 - Public A2A hosting, production key management, external conformance, public
-  push delivery, or production auth decisions.
+  push delivery, or production auth decisions unless
+  `npm run proof:a2a-public-readiness` validates the required public
+  configuration and ignored structured reports and the operator manually
+  accepts them.
 - Any operator report template by itself. Templates remain
   `pending-operator-proof` and do not clear readiness blockers.
 - Production marketplace, provider verification, moderation, public scoring, or

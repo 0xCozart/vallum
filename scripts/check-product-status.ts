@@ -8,6 +8,10 @@ import {
   type PaymentProviderReadinessReport,
 } from "./check-payment-provider-readiness.js";
 import {
+  checkA2APublicReadiness,
+  type A2APublicReadinessReport,
+} from "./check-a2a-public-readiness.js";
+import {
   checkPackagePublicationReadiness,
   type PackagePublicationReadinessReport,
 } from "./check-package-publication-readiness.js";
@@ -71,6 +75,7 @@ export interface ProductStatusArtifact {
 
 export interface ProductStatusOptions {
   readonly cwd?: string;
+  readonly a2aPublicReadiness?: A2APublicReadinessReport;
   readonly env?: NodeJS.ProcessEnv | Record<string, string | undefined>;
   readonly custodyReadiness?: CustodyReadinessReport;
   readonly gasStationRuntimeReport?: GasStationRuntimePreflightReport;
@@ -159,6 +164,11 @@ export async function checkProductStatus(options: ProductStatusOptions = {}): Pr
     cwd,
     env,
   });
+  const a2aPublicReadiness = options.a2aPublicReadiness ?? await checkA2APublicReadiness({
+    cwd,
+    env,
+    scripts,
+  });
   const packagePublicationReadiness = options.packagePublicationReadiness ?? await checkPackagePublicationReadiness({
     cwd,
     env,
@@ -185,7 +195,7 @@ export async function checkProductStatus(options: ProductStatusOptions = {}): Pr
     checkPackageReleaseCoverage(scripts),
     checkOperatorReportTemplateCoverage(scripts),
     ...liveChecks,
-    ...productionBlockers(paymentProviderReadiness, packagePublicationReadiness, marketplaceReadiness, custodyReadiness),
+    ...productionBlockers(a2aPublicReadiness, paymentProviderReadiness, packagePublicationReadiness, marketplaceReadiness, custodyReadiness),
   ];
 
   return {
@@ -499,6 +509,7 @@ function readEnv(env: Record<string, string | undefined>, key: string): string |
 }
 
 function productionBlockers(
+  a2aPublicReadiness: A2APublicReadinessReport,
   paymentProviderReadiness: PaymentProviderReadinessReport,
   packagePublicationReadiness: PackagePublicationReadinessReport,
   marketplaceReadiness: MarketplaceReadinessReport,
@@ -506,14 +517,7 @@ function productionBlockers(
 ): readonly ProductEvidenceCheck[] {
   return [
     packagePublicationCheck(packagePublicationReadiness),
-    {
-      id: "public-a2a-hosting",
-      status: "blocked-production",
-      code: "PUBLIC_A2A_HOSTING_UNPROVEN",
-      message: "A2A discovery, local public JWKS serving, local static discovery bundle generation, local static discovery artifact writing, local static discovery artifact validation, local static discovery loopback host smoke, local static hosting review, task routes, authenticated extended Agent Card access, SSE streaming, push notification configuration, injected push delivery, opt-in push HTTP transport, callback URL admission hardening, callback host allowlisting, local retry/attempt observability, local durable attempt evidence, local delivery queueing, and a local injected-transport worker are proven locally and over loopback/local handler or mocked paths only; public readiness is reported locally and opt-in artifact/local-host/public-discovery commands can prepare, validate, loopback-smoke, and write a redacted hosting-review packet for static files plus produce structured discovery evidence, but no public hosting run, production key distribution acceptance, valid operator-supplied structured public discovery report, valid structured public push delivery report, or valid structured external conformance proof is complete.",
-      evidence: "npm run proof:a2a-public-readiness",
-      next: `${A2A_PUBLIC_DISCOVERY_TEMPLATE_COMMAND}; ${A2A_PUBLIC_PUSH_DELIVERY_TEMPLATE_COMMAND}; ${A2A_EXTERNAL_CONFORMANCE_TEMPLATE_COMMAND}; run npm run a2a:write-public-proof-plan -- --out <ignored-json-path> to prepare redacted operator steps, use npm run proof:a2a-public-readiness to inspect blockers, then run npm run smoke:a2a-public-discovery only with operator-approved public A2A config.`,
-    },
+    publicA2AHostingCheck(a2aPublicReadiness),
     paymentProviderCheck(paymentProviderReadiness),
     marketplaceCheck(marketplaceReadiness),
     custodyCheck(custodyReadiness),
@@ -525,6 +529,41 @@ function productionBlockers(
       next: "Replace the safety gate only after physical safety, provider accountability, revocation, emergency stop, privacy, and incident response are approved.",
     },
   ];
+}
+
+function publicA2AHostingCheck(readiness: A2APublicReadinessReport): ProductEvidenceCheck {
+  if (readiness.publicReady) {
+    return {
+      id: "public-a2a-hosting",
+      status: "ready-live",
+      code: "A2A_PUBLIC_READINESS_REPORTS_VALID",
+      message: "Local A2A proof exists and operator-supplied public discovery, public push delivery, external conformance, public URL, JWKS, and task-auth evidence is valid for manual review.",
+      evidence: "npm run proof:a2a-public-readiness",
+      next: "Manually review the ignored structured reports before accepting public A2A hosting, key distribution, task auth, push delivery, or external conformance claims.",
+    };
+  }
+
+  if (!readiness.localProofOk) {
+    const local = readiness.checks.find((check) => check.id === "local-a2a-proof");
+    return {
+      id: "public-a2a-hosting",
+      status: "blocked-production",
+      code: local?.code ?? "A2A_LOCAL_PROOF_INCOMPLETE",
+      message: "Local A2A source, static discovery, push, loopback server, or script coverage is incomplete, so public A2A readiness cannot be evaluated.",
+      evidence: "npm run proof:a2a-public-readiness",
+      next: local?.next ?? "Restore local A2A proof, then rerun A2A public readiness.",
+    };
+  }
+
+  const blocked = readiness.checks.find((check) => check.status !== "proven-local" && check.status !== "ready-approval");
+  return {
+    id: "public-a2a-hosting",
+    status: "blocked-production",
+    code: "PUBLIC_A2A_HOSTING_UNPROVEN",
+    message: `A2A discovery, local public JWKS serving, local static discovery bundle generation, local static discovery artifact writing, local static discovery artifact validation, local static discovery loopback host smoke, local static hosting review, task routes, authenticated extended Agent Card access, SSE streaming, push notification configuration, injected push delivery, opt-in push HTTP transport, callback URL admission hardening, callback host allowlisting, local retry/attempt observability, local durable attempt evidence, local delivery queueing, and a local injected-transport worker are proven locally and over loopback/local handler or mocked paths only; public readiness is blocked by ${blocked?.code ?? "A2A_PUBLIC_READINESS_REPORT_MISSING"}.`,
+    evidence: "npm run proof:a2a-public-readiness",
+    next: `${A2A_PUBLIC_DISCOVERY_TEMPLATE_COMMAND}; ${A2A_PUBLIC_PUSH_DELIVERY_TEMPLATE_COMMAND}; ${A2A_EXTERNAL_CONFORMANCE_TEMPLATE_COMMAND}; run npm run a2a:write-public-proof-plan -- --out <ignored-json-path> to prepare redacted operator steps, use npm run proof:a2a-public-readiness to inspect blockers, then run npm run smoke:a2a-public-discovery only with operator-approved public A2A config.`,
+  };
 }
 
 function custodyCheck(readiness: CustodyReadinessReport): ProductEvidenceCheck {

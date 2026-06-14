@@ -255,7 +255,7 @@ function completionBlockersFor(input: {
       }))
     )),
     ...input.operatorLiveGates.gates
-      .filter((gate) => gate.status !== "proven-local" && gate.status !== "ready-to-run")
+      .filter((gate) => gate.status !== "proven-local" && gate.status !== "ready-to-run" && gate.status !== "ready-approval")
       .map((gate) => ({
         source: "operator-live-gates" as const,
         id: gate.id,

@@ -33,6 +33,7 @@ test("product status reports local proof gates and explicit live blockers withou
     const report = await checkProductStatus({
       cwd,
       env: {},
+      a2aPublicReadiness: blockedA2APublicReadiness(),
       custodyReadiness: blockedCustodyReadiness(),
       gasStationRuntimeReport: blockedGasStationRuntime(),
       scripts: completeScripts(),
@@ -97,6 +98,7 @@ test("product status artifact summarizes blockers without secret values", async 
     const report = await checkProductStatus({
       cwd,
       env: {},
+      a2aPublicReadiness: blockedA2APublicReadiness(),
       custodyReadiness: blockedCustodyReadiness(),
       gasStationRuntimeReport: blockedGasStationRuntime(),
       scripts: completeScripts(),
@@ -135,6 +137,7 @@ test("product status artifact writer uses restrictive local file permissions", a
     const artifact = await writeProductStatusArtifact({
       cwd,
       env: {},
+      a2aPublicReadiness: blockedA2APublicReadiness(),
       custodyReadiness: blockedCustodyReadiness(),
       gasStationRuntimeReport: blockedGasStationRuntime(),
       scripts: completeScripts(),
@@ -194,6 +197,7 @@ test("product status marks report-backed live gates ready without contacting end
     const report = await checkProductStatus({
       cwd,
       scripts: completeScripts(),
+      a2aPublicReadiness: blockedA2APublicReadiness(),
       custodyReadiness: blockedCustodyReadiness(),
       marketplaceReadiness: blockedMarketplaceReadiness(),
       packagePublicationReadiness: blockedPackagePublicationReadiness(),
@@ -260,6 +264,7 @@ test("product status blocks stale configured testnet digest reports without cont
     const report = await checkProductStatus({
       cwd,
       scripts: completeScripts(),
+      a2aPublicReadiness: blockedA2APublicReadiness(),
       custodyReadiness: blockedCustodyReadiness(),
       marketplaceReadiness: blockedMarketplaceReadiness(),
       packagePublicationReadiness: blockedPackagePublicationReadiness(),
@@ -289,6 +294,7 @@ test("product status can mark managed upstream runtime ready while upstream proo
         GASKIT_GAS_STATION_RUNTIME_MODE: "managed-upstream",
         GAS_STATION_URL: "https://gas-station.testnet.example",
       },
+      a2aPublicReadiness: blockedA2APublicReadiness(),
       gasStationRuntimeRunner: async () => {
         throw new Error("managed-upstream product status must not inspect Docker");
       },
@@ -317,6 +323,7 @@ test("product status can mark package publication report ready for approval with
     const report = await checkProductStatus({
       cwd,
       env: {},
+      a2aPublicReadiness: blockedA2APublicReadiness(),
       gasStationRuntimeReport: blockedGasStationRuntime(),
       scripts: completeScripts(),
       testnetDigestProof: verifiedTestnetDigestProof(),
@@ -365,6 +372,7 @@ test("product status can mark payment provider report ready for approval without
     const report = await checkProductStatus({
       cwd,
       env: {},
+      a2aPublicReadiness: blockedA2APublicReadiness(),
       gasStationRuntimeReport: blockedGasStationRuntime(),
       scripts: completeScripts(),
       testnetDigestProof: blockedTestnetDigestProof(),
@@ -402,12 +410,36 @@ test("product status can mark payment provider report ready for approval without
   }
 });
 
+test("product status can mark public A2A readiness ready for approval without exposing report values", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-product-status-"));
+  try {
+    const report = await checkProductStatus({
+      cwd,
+      env: {},
+      a2aPublicReadiness: readyA2APublicReadiness(),
+      gasStationRuntimeReport: blockedGasStationRuntime(),
+      scripts: completeScripts(),
+      testnetDigestProof: blockedTestnetDigestProof(),
+    });
+    const formatted = formatProductStatusReport(report);
+    const publicA2A = report.checks.find((check) => check.id === "public-a2a-hosting");
+
+    assert.equal(publicA2A?.status, "ready-live");
+    assert.equal(publicA2A?.code, "A2A_PUBLIC_READINESS_REPORTS_VALID");
+    assert.match(formatted, /A2A_PUBLIC_READINESS_REPORTS_VALID/);
+    assert.doesNotMatch(formatted, /a2a-public-discovery-report|public\.example|callback\.example|private-key|bearer-token/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
 test("product status can mark marketplace report ready for approval without exposing report values", async () => {
   const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-product-status-"));
   try {
     const report = await checkProductStatus({
       cwd,
       env: {},
+      a2aPublicReadiness: blockedA2APublicReadiness(),
       gasStationRuntimeReport: blockedGasStationRuntime(),
       scripts: completeScripts(),
       testnetDigestProof: blockedTestnetDigestProof(),
@@ -451,6 +483,7 @@ test("product status can mark custody report ready for approval without exposing
     const report = await checkProductStatus({
       cwd,
       env: {},
+      a2aPublicReadiness: blockedA2APublicReadiness(),
       custodyReadiness: {
         localProofOk: true,
         productionReady: true,
@@ -494,6 +527,7 @@ test("product status fails the local proof surface when required commands are mi
     const report = await checkProductStatus({
       cwd,
       env: {},
+      a2aPublicReadiness: blockedA2APublicReadiness(),
       gasStationRuntimeReport: blockedGasStationRuntime(),
       testnetDigestProof: blockedTestnetDigestProof(),
       scripts: {
@@ -529,6 +563,7 @@ test("product status keeps publish dry-run opt-in", async () => {
     const report = await checkProductStatus({
       cwd,
       env: {},
+      a2aPublicReadiness: blockedA2APublicReadiness(),
       gasStationRuntimeReport: blockedGasStationRuntime(),
       scripts,
       testnetDigestProof: blockedTestnetDigestProof(),
@@ -655,6 +690,78 @@ function blockedPaymentProviderReadiness() {
         message: "Structured report is missing.",
         evidence: "missing=PAYMENT_PROVIDER_LIVE_REPORT",
         next: "Provide a redacted structured report.",
+      },
+    ],
+  };
+}
+
+function blockedA2APublicReadiness() {
+  return {
+    localProofOk: true,
+    publicReady: false,
+    checks: [
+      {
+        id: "local-a2a-proof",
+        status: "proven-local" as const,
+        code: "A2A_LOCAL_PROOF_CONFIGURED",
+        message: "Local A2A proof exists.",
+        next: "Keep local proof current.",
+      },
+      {
+        id: "public-discovery",
+        status: "blocked-conformance" as const,
+        code: "A2A_PUBLIC_DISCOVERY_REPORT_MISSING",
+        message: "Structured public discovery report is missing.",
+        evidence: "missing=A2A_PUBLIC_DISCOVERY_REPORT",
+        next: "Provide a redacted structured report.",
+      },
+    ],
+  };
+}
+
+function readyA2APublicReadiness() {
+  return {
+    localProofOk: true,
+    publicReady: true,
+    checks: [
+      {
+        id: "local-a2a-proof",
+        status: "proven-local" as const,
+        code: "A2A_LOCAL_PROOF_CONFIGURED",
+        message: "Local A2A proof exists.",
+        next: "Keep local proof current.",
+      },
+      {
+        id: "public-agent-card-url",
+        status: "ready-approval" as const,
+        code: "A2A_PUBLIC_AGENT_CARD_URL_CONFIG_PRESENT",
+        message: "Public Agent Card URL is configured.",
+        evidence: "configuration-present-redacted",
+        next: "Review manually.",
+      },
+      {
+        id: "public-discovery",
+        status: "ready-approval" as const,
+        code: "A2A_PUBLIC_DISCOVERY_REPORT_VALID",
+        message: "Structured public discovery report is valid.",
+        evidence: "local-structured-report-valid-redacted",
+        next: "Review manually.",
+      },
+      {
+        id: "public-push-delivery",
+        status: "ready-approval" as const,
+        code: "A2A_PUBLIC_PUSH_DELIVERY_REPORT_VALID",
+        message: "Structured public push delivery report is valid.",
+        evidence: "local-structured-report-valid-redacted",
+        next: "Review manually.",
+      },
+      {
+        id: "external-conformance",
+        status: "ready-approval" as const,
+        code: "A2A_EXTERNAL_CONFORMANCE_REPORT_VALID",
+        message: "Structured external conformance report is valid.",
+        evidence: "local-structured-report-valid-redacted",
+        next: "Review manually.",
       },
     ],
   };

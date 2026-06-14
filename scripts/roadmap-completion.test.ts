@@ -33,7 +33,7 @@ test("roadmap completion audit stays incomplete while any roadmap gate is open",
   assert.ok(report.completionBlockers.some((blocker) => blocker.code === "DEVICE_ACCESS_SAFETY_DEFERRED"));
   assert.ok(report.nextCommands.some((command) => command.includes("operator:write-report-template -- --kind iota-names-live")));
   assert.match(formatted, /roadmap completion not-complete/);
-  assert.match(formatted, /operator-live-gates: sponsor-funding/);
+  assert.doesNotMatch(formatted, /operator-live-gates: sponsor-funding/);
   assert.doesNotMatch(formatted, /iotaprivkey|bearer-token-value|seed-phrase|mnemonic-value|graphql\.testnet\.example/i);
 });
 
@@ -62,14 +62,13 @@ test("roadmap completion artifact summarizes blockers without configured values"
     "phase-3-contract-workflows",
   ]);
   assert.deepEqual(parsed.blockedOperatorGateIds, [
-    "sponsor-funding",
     "iota-names-live",
     "public-a2a-hosting",
     "physical-device-access",
   ]);
   assert.ok(parsed.approvalRequiredGateIds.includes("sponsor-funding"));
   assert.ok(parsed.liveServiceGateIds.includes("public-a2a-hosting"));
-  assert.ok(parsed.blockerCodes.includes("SPONSOR_FUNDING_REPORT_VALID"));
+  assert.equal(parsed.blockerCodes.includes("SPONSOR_FUNDING_REPORT_VALID"), false);
   assert.match(parsed.boundaries.join("\n"), /roadmapComplete=false/);
   assert.doesNotMatch(raw, /0x1111111111111111111111111111111111111111111111111111111111111111/);
   assert.doesNotMatch(raw, /local-secret|private-key|bearer-token-value|raw faucet|graphql\.testnet\.example/i);
@@ -247,7 +246,7 @@ function operatorGatesFixture(): OperatorLiveGateReport {
       },
       {
         id: "sponsor-funding",
-        status: "requires-approval",
+        status: "ready-approval",
         code: "SPONSOR_FUNDING_REPORT_VALID",
         command: "npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json",
         approvalRequired: true,

@@ -8,11 +8,13 @@ It reads the product-status proof and classifies each gate as:
 - `proven-local` for deterministic local evidence that is already wired;
 - `ready-to-run` for non-networked commands that can run once local config is
   present;
+- `ready-approval` for valid ready-live evidence or structured reports that are
+  ready for manual operator review but still approval-required;
 - `blocked-config` for missing or failing local testnet, upstream diagnostic,
   IOTA Names, IOTA Identity, or VC trust-policy configuration;
 - `requires-approval` for live endpoint, registry, payment, public hosting,
-  marketplace, custody, or device gates that need explicit operator approval or
-  a dedicated slice;
+  marketplace, custody, or device gates that still lack accepted proof and need
+  explicit operator approval or a dedicated slice;
 - `blocked-production` for production claims without enough design or proof;
 - `deferred-safety` for physical-device access until a separate safety design
   is approved.
@@ -32,9 +34,10 @@ npm run operator:write-live-gate-report
 
 The artifact is written under `tmp/gaskit/`, which is ignored by Git. It uses
 kind `agentic-gaskit.operator-live-gate-report` and contains gate ids, blocker
-codes, approval flags, live-service flags, command names, messages, and next
-steps. It does not include configured endpoint values, names, addresses,
-profile paths, credentials, tokens, response bodies, or secret local paths.
+codes, ready-approval gate ids, approval flags, live-service flags, command
+names, messages, and next steps. It does not include configured endpoint
+values, names, addresses, profile paths, credentials, tokens, response bodies,
+or secret local paths.
 
 To prepare an ignored structured report skeleton for a later approved proof
 run, use:
@@ -103,6 +106,9 @@ hosts, marketplace systems, or physical devices.
   Faucet reports remain optional triage context and cannot clear funding.
 - Shows which live smokes would contact external services and require explicit
   operator intent.
+- Keeps valid ready-live reports visible as `ready-approval` instead of
+  completion blockers. These gates still carry `approvalRequired=true`, but
+  their success codes are not treated as missing-proof blocker codes.
 - Keeps package publication, public A2A hosting, live payment/provider proof,
   production marketplace, custody, and physical-device access out of automatic
   local verification claims.
@@ -220,7 +226,8 @@ hosts, marketplace systems, or physical devices.
   marketplace flows, production custody, or physical devices.
 - It does not turn report templates into accepted evidence; templates remain
   `pending-operator-proof` until an approved proof run replaces them.
-- It does not change `launchReady=false` while product-status blockers remain.
+- It does not change `launchReady=false` while product-status or launch
+  blockers remain.
 - The JSON artifact does not prove any live endpoint, package publication,
   payment provider, marketplace, custody, or physical-device claim.
 
