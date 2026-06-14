@@ -45,6 +45,22 @@ test("launch evidence reflects the current public local proof surface", async ()
   assert.match(readme, /2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H/);
 });
 
+test("testnet attempt log reflects current runtime-ready blocker chain", async () => {
+  const attempts = await readDoc("docs/testnet-attempts.md");
+
+  assert.match(attempts, /## 2026-06-14 runtime-ready reserve-skipped refresh/);
+  assert.match(attempts, /code=DOCKER_DIRECT_STACK_READY/);
+  assert.match(attempts, /gasStationReachabilityCode=GAS_STATION_ROOT_READY/);
+  assert.match(attempts, /SPONSOR_FUNDING_TOTAL_INSUFFICIENT/);
+  assert.match(attempts, /TESTNET_UPSTREAM_REPORT_RESERVE_SKIPPED/);
+  assert.match(attempts, /without\s+`--skip-reserve`/);
+  assert.match(attempts, /Later entries supersede this runtime blocker/);
+  assert.doesNotMatch(
+    attempts,
+    /Outcome: the real testnet transaction was not retried because the configured upstream Gas Station is offline\/unreachable\. The next required operator action is to start Docker\/Gas Station/,
+  );
+});
+
 test("README is product-first and avoids grant or funding framing", async () => {
   const readme = await readDoc("README.md");
 

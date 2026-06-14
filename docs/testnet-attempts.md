@@ -79,7 +79,11 @@ ok: IOTA RPC iota_getLatestCheckpointSequenceNumber HTTP 200
 fail: Gas Station reserve_gas compatibility probe fetch failed
 ```
 
-Outcome: the real testnet transaction was not retried because the configured upstream Gas Station is offline/unreachable. The next required operator action is to start Docker/Gas Station or point `GAS_STATION_URL` at a reachable upstream, then rerun `npm run diagnose:gas-station` before attempting execute.
+Outcome at the time: the real testnet transaction was not retried because the
+configured upstream Gas Station was offline/unreachable in that WSL session.
+Later entries supersede this runtime blocker: Docker/Gas Station is now
+reachable from the current workspace, so the active live blocker is sponsor
+funding followed by reserve_gas compatibility.
 
 ## 2026-05-05 Docker/Gas Station recovery retry
 
@@ -377,3 +381,48 @@ token, rendered Gas Station config, raw transaction bytes, user signature, or
 private key material was written to tracked docs. `npm run proof:live-status`
 now surfaces the funding-blocked reserve message and points the next step at
 rerunning the sponsor funding diagnostic before retrying reserve compatibility.
+
+## 2026-06-14 runtime-ready reserve-skipped refresh
+
+Docker Desktop remained reachable from WSL and the expected direct Docker
+stack was already running:
+
+```text
+ready=true
+code=DOCKER_DIRECT_STACK_READY
+startsContainers=false
+contactsLiveServices=false
+ready: docker-network: code=DOCKER_DIRECT_NETWORK_PRESENT
+ready: redis-container: code=DOCKER_DIRECT_CONTAINER_RUNNING
+ready: gas-station-container: code=DOCKER_DIRECT_CONTAINER_RUNNING
+```
+
+The current upstream diagnostic was refreshed with `--skip-reserve` to prove
+reachability without reserving gas:
+
+```bash
+npm run diagnose:gas-station -- --skip-reserve --report tmp/gaskit/testnet-upstream-diagnostic.json
+```
+
+Sanitized status result:
+
+```text
+gasStationUrl=<loopback-gas-station-url>
+iotaRpcUrl=<iota-testnet-rpc-url>
+bearerTokenConfigured=true
+sponsorFundingCode=SPONSOR_FUNDING_TOTAL_INSUFFICIENT
+ok: Gas Station root HTTP 200
+info: Gas Station /v1/health HTTP 404 (optional wrapper health endpoint)
+gasStationReachabilityCode=GAS_STATION_ROOT_READY
+ok: IOTA RPC iota_getLatestCheckpointSequenceNumber HTTP 200
+skip: reserve_gas compatibility probe
+```
+
+`npm run proof:live-status` and `npm run proof:product-status` now classify
+Gas Station runtime as ready and the upstream report as
+`TESTNET_UPSTREAM_REPORT_RESERVE_SKIPPED`. This is reachability evidence only,
+not reserve_gas compatibility or sponsored execution proof. The next live
+boundary is still to fund or consolidate the configured sponsor wallet, rerun
+the read-only sponsor funding diagnostic, and then rerun
+`npm run diagnose:gas-station -- --report <ignored-json-path>` without
+`--skip-reserve`.
