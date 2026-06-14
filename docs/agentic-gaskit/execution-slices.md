@@ -6182,3 +6182,70 @@ Escalation triggers:
 - Any request to treat the payment-provider readiness artifact as live x402,
   AP2, processor, facilitator, settlement, dispute, production payment,
   marketplace, or launch proof.
+
+## Slice 7.36: Marketplace Readiness Artifact Writer
+
+User-visible outcome:
+Operators and future agents can archive the current non-networked marketplace
+readiness state as a redacted ignored JSON artifact, so local marketplace
+read-model proof, production marketplace blockers, and safety boundaries can be
+audited without parsing stdout or contacting production marketplace systems,
+provider systems, payment systems, IOTA services, public A2A endpoints, or Gas
+Station endpoints.
+
+Likely files:
+
+- `scripts/check-marketplace-readiness.ts`
+- `scripts/marketplace-readiness.test.ts`
+- `docs/overview.md`
+- `docs/marketplace-readiness.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/CODEBASE_MAP.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `npm run proof:marketplace-readiness -- --json` prints a redacted
+  machine-readable artifact with schema version, kind, timestamp, local proof
+  status, production readiness status, proven-local check ids, ready-approval
+  check ids, blocked check ids, blocker codes, checks, and safety boundaries.
+- `npm run proof:marketplace-readiness -- --out <ignored-json-path>` writes
+  the same artifact with mode `600`.
+- The artifact does not contact production marketplace systems, provider
+  systems, payment systems, IOTA services, public A2A endpoints, or Gas
+  Station endpoints.
+- The artifact does not include provider secrets, session data, payment
+  credentials, authorization headers, raw payloads, response bodies, moderation
+  payloads, private prompts, signatures, or local secret paths.
+- `productionReady=false` and blocker codes remain explicit while an
+  operator-approved production marketplace report is missing.
+
+Verification:
+
+- Focused marketplace readiness and package-script tests.
+- `npm run proof:marketplace-readiness -- --out
+  tmp/gaskit/marketplace-readiness.json`.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run verify:fast`.
+
+Dependencies:
+Existing marketplace readiness gate and marketplace production proof-plan
+writer.
+
+Risk:
+Low to medium. This is a derived evidence artifact, but marketplace evidence
+can be mistaken for provider verification, moderation, settlement, dispute, or
+operations readiness unless blocker codes and safety boundaries stay explicit.
+
+Escalation triggers:
+
+- Any request to include provider secrets, session data, payment credentials,
+  authorization headers, raw payloads, response bodies, moderation payloads,
+  private prompts, signatures, or local secret paths.
+- Any request to treat the marketplace readiness artifact as production
+  marketplace, provider onboarding, provider verification, moderation, session
+  auth, live settlement, dispute workflow, operations, public launch, or
+  launch proof.

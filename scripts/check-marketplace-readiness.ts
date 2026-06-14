@@ -1,5 +1,5 @@
-import { access, readFile } from "node:fs/promises";
-import { isAbsolute, resolve } from "node:path";
+import { access, chmod, mkdir, readFile, writeFile } from "node:fs/promises";
+import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 export type MarketplaceReadinessStatus =
@@ -23,11 +23,35 @@ export interface MarketplaceReadinessReport {
   readonly checks: readonly MarketplaceReadinessCheck[];
 }
 
+export interface MarketplaceReadinessArtifact {
+  readonly schemaVersion: 1;
+  readonly kind: "agentic-gaskit.marketplace-readiness-report";
+  readonly generatedAt: string;
+  readonly localProofOk: boolean;
+  readonly productionReady: boolean;
+  readonly provenLocalCheckIds: readonly string[];
+  readonly readyApprovalCheckIds: readonly string[];
+  readonly blockedCheckIds: readonly string[];
+  readonly blockerCodes: readonly string[];
+  readonly checks: readonly MarketplaceReadinessCheck[];
+  readonly boundaries: readonly string[];
+}
+
 export interface MarketplaceReadinessOptions {
   readonly cwd?: string;
   readonly env?: NodeJS.ProcessEnv | Record<string, string | undefined>;
   readonly now?: Date;
   readonly scripts?: Record<string, string | undefined>;
+}
+
+export interface WriteMarketplaceReadinessArtifactOptions extends MarketplaceReadinessOptions {
+  readonly outFile?: string;
+}
+
+interface CliOptions {
+  readonly help: boolean;
+  readonly json: boolean;
+  readonly outFile?: string;
 }
 
 interface StructuredMarketplaceReport {
@@ -62,6 +86,23 @@ const REQUIRED_PRODUCTION_CHECKS = [
 
 const SECRET_FIELD_RE = /secret|token|private|credential|authorization|signature|mnemonic|seed|payload|header|instrument|session|cookie|password|prompt/i;
 
+const ARTIFACT_BOUNDARIES = [
+  "This report is non-networked and does not contact production marketplace systems, provider systems, payment systems, IOTA services, public A2A endpoints, or Gas Station endpoints.",
+  "productionReady=false means local marketplace proof or operator-approved production marketplace evidence remains blocked.",
+  "ready-approval checks require manual operator review before any provider onboarding, provider verification, moderation, session auth, settlement, dispute, operations, or production marketplace claim is accepted.",
+  "Do not commit generated reports, marketplace proof outputs, provider secrets, session data, payment credentials, authorization headers, raw payloads, response bodies, moderation payloads, private prompts, signatures, or local secret paths.",
+] as const;
+
+const usage = `usage: npm exec tsx -- scripts/check-marketplace-readiness.ts [--json] [--out <path>]
+
+Reports current Agentic GasKit marketplace readiness without contacting production marketplace systems.
+
+Options:
+  --json        Print a redacted machine-readable artifact.
+  --out <path>  Write the same JSON artifact to a local file with mode 0600.
+  --help        Show this help text.
+`;
+
 export async function checkMarketplaceReadiness(
   options: MarketplaceReadinessOptions = {},
 ): Promise<MarketplaceReadinessReport> {
@@ -94,6 +135,48 @@ export function formatMarketplaceReadinessReport(report: MarketplaceReadinessRep
     lines.push(`next=${check.next}`);
   }
   return lines.join("\n");
+}
+
+export function buildMarketplaceReadinessArtifact(
+  report: MarketplaceReadinessReport,
+  now = new Date(),
+): MarketplaceReadinessArtifact {
+  const provenLocalChecks = report.checks.filter((check) => check.status === "proven-local");
+  const readyApprovalChecks = report.checks.filter((check) => check.status === "ready-approval");
+  const blockedChecks = report.checks.filter((check) => check.status !== "proven-local" && check.status !== "ready-approval");
+
+  return {
+    schemaVersion: 1,
+    kind: "agentic-gaskit.marketplace-readiness-report",
+    generatedAt: now.toISOString(),
+    localProofOk: report.localProofOk,
+    productionReady: report.productionReady,
+    provenLocalCheckIds: provenLocalChecks.map((check) => check.id),
+    readyApprovalCheckIds: readyApprovalChecks.map((check) => check.id),
+    blockedCheckIds: blockedChecks.map((check) => check.id),
+    blockerCodes: blockedChecks.map((check) => check.code),
+    checks: report.checks,
+    boundaries: ARTIFACT_BOUNDARIES,
+  };
+}
+
+export async function writeMarketplaceReadinessArtifact(
+  options: WriteMarketplaceReadinessArtifactOptions = {},
+): Promise<MarketplaceReadinessArtifact> {
+  const cwd = options.cwd ?? process.cwd();
+  const report = await checkMarketplaceReadiness(options);
+  const artifact = buildMarketplaceReadinessArtifact(report, options.now);
+  if (options.outFile) {
+    const outPath = isAbsolute(options.outFile) ? options.outFile : resolve(cwd, options.outFile);
+    await mkdir(dirname(outPath), { recursive: true });
+    await writeFile(outPath, formatMarketplaceReadinessArtifact(artifact), { mode: 0o600 });
+    await chmod(outPath, 0o600);
+  }
+  return artifact;
+}
+
+export function formatMarketplaceReadinessArtifact(artifact: MarketplaceReadinessArtifact): string {
+  return `${JSON.stringify(artifact, null, 2)}\n`;
 }
 
 async function loadPackageScripts(cwd: string): Promise<Record<string, string | undefined>> {
@@ -289,7 +372,55 @@ function containsSecretLikeField(value: unknown): boolean {
   return false;
 }
 
+function parseArgs(args: readonly string[]): CliOptions {
+  let help = false;
+  let json = false;
+  let outFile: string | undefined;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg === "--help" || arg === "-h") {
+      help = true;
+      continue;
+    }
+    if (arg === "--json") {
+      json = true;
+      continue;
+    }
+    if (arg === "--out") {
+      const value = args[index + 1];
+      if (!value || value.startsWith("--")) throw new Error("--out requires a path.");
+      outFile = value;
+      index += 1;
+      continue;
+    }
+    throw new Error(`Unsupported argument: ${arg}`);
+  }
+
+  return { help, json, outFile };
+}
+
 async function main(): Promise<number> {
+  let options: CliOptions;
+  try {
+    options = parseArgs(process.argv.slice(2));
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    console.error(usage);
+    return 1;
+  }
+
+  if (options.help) {
+    console.log(usage.trimEnd());
+    return 0;
+  }
+
+  if (options.json || options.outFile) {
+    const artifact = await writeMarketplaceReadinessArtifact({ outFile: options.outFile });
+    console.log(formatMarketplaceReadinessArtifact(artifact).trimEnd());
+    return 0;
+  }
+
   const report = await checkMarketplaceReadiness();
   console.log(formatMarketplaceReadinessReport(report));
   return 0;

@@ -205,7 +205,8 @@ It also includes the first Agentic GasKit implementation slices:
 - non-networked marketplace production readiness gate for local read-model
   proof plus an operator-supplied redacted structured production marketplace
   report path before manual approval of provider, moderation, auth, settlement,
-  dispute, or operations claims
+  dispute, or operations claims, plus a redacted mode-600 local JSON artifact
+  writer for marketplace readiness audit snapshots
 - local redacted marketplace production proof-plan writer for provider
   onboarding, provider verification, moderation, auth, settlement, dispute,
   operations, required structured report fields, blocker codes, and proof

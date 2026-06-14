@@ -124,6 +124,13 @@ blocks production marketplace claims unless `MARKETPLACE_PRODUCTION_REPORT`
 points to an ignored redacted structured report from an operator-approved
 review.
 
+`npm run proof:marketplace-readiness -- --out
+tmp/gaskit/marketplace-readiness.json` writes the same readiness state as a
+redacted mode-0600 local JSON artifact for audit snapshots. The artifact does
+not contact production marketplace systems, provider systems, payment systems,
+IOTA services, public A2A endpoints, or Gas Station endpoints, and it does not
+clear production marketplace blockers.
+
 `npm run marketplace:write-production-proof-plan` adds a non-networked
 marketplace production proof-plan writer for operators:
 

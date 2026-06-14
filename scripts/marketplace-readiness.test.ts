@@ -1,13 +1,16 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import {
+  buildMarketplaceReadinessArtifact,
   checkMarketplaceReadiness,
+  formatMarketplaceReadinessArtifact,
   formatMarketplaceReadinessReport,
+  writeMarketplaceReadinessArtifact,
 } from "./check-marketplace-readiness.js";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -29,9 +32,17 @@ test("marketplace readiness reports local proof and missing production report wi
     now: new Date("2026-06-11T12:00:00.000Z"),
   });
   const formatted = formatMarketplaceReadinessReport(report);
+  const artifact = buildMarketplaceReadinessArtifact(report, new Date("2026-06-11T12:00:00.000Z"));
+  const artifactJson = formatMarketplaceReadinessArtifact(artifact);
 
   assert.equal(report.localProofOk, true);
   assert.equal(report.productionReady, false);
+  assert.equal(artifact.kind, "agentic-gaskit.marketplace-readiness-report");
+  assert.equal(artifact.localProofOk, true);
+  assert.equal(artifact.productionReady, false);
+  assert.ok(artifact.provenLocalCheckIds.includes("local-marketplace-read-model-proof"));
+  assert.ok(artifact.blockedCheckIds.includes("production-marketplace-report"));
+  assert.ok(artifact.blockerCodes.includes("MARKETPLACE_PRODUCTION_REPORT_MISSING"));
   assert.equal(
     report.checks.find((check) => check.id === "local-marketplace-read-model-proof")?.code,
     "MARKETPLACE_LOCAL_PROOF_CONFIGURED",
@@ -42,6 +53,33 @@ test("marketplace readiness reports local proof and missing production report wi
   );
   assert.match(formatted, /npm run smoke:marketplace-read-model/);
   assert.doesNotMatch(formatted, /private prompt|Bearer abc|session-id|payment-secret|credential/i);
+  assert.doesNotMatch(
+    artifactJson,
+    /marketplace-report\.json|unsafe\.json|fixture-session-id|Bearer abc|payment-secret-value|private-prompt-value|0x[0-9a-fA-F]{64}/i,
+  );
+});
+
+test("marketplace readiness artifact writer uses restrictive local file permissions", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-marketplace-artifact-"));
+  try {
+    const outFile = "tmp/gaskit/marketplace-readiness.json";
+    const artifact = await writeMarketplaceReadinessArtifact({
+      cwd: repoRoot,
+      env: {},
+      now: new Date("2026-06-11T12:00:00.000Z"),
+      outFile: join(cwd, outFile),
+    });
+    const written = JSON.parse(await readFile(join(cwd, outFile), "utf8")) as typeof artifact;
+    const mode = (await stat(join(cwd, outFile))).mode & 0o777;
+
+    assert.equal(artifact.kind, "agentic-gaskit.marketplace-readiness-report");
+    assert.equal(written.kind, "agentic-gaskit.marketplace-readiness-report");
+    assert.equal(written.productionReady, false);
+    assert.equal(written.blockerCodes.includes("MARKETPLACE_PRODUCTION_REPORT_MISSING"), true);
+    assert.equal(mode, 0o600);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
 });
 
 test("marketplace readiness accepts a recent redacted production report", async () => {

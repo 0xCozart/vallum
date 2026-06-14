@@ -43,7 +43,8 @@ surface in one machine-checkable place:
 - marketplace readiness wiring that checks local read-model source, docs,
   tests, smoke wiring, and accepts only an operator-supplied redacted structured
   production marketplace report path before moving marketplace evidence to
-  manual review;
+  manual review, with an optional redacted mode-600 local readiness artifact
+  for audit snapshots;
 - marketplace-production proof-plan wiring that writes a redacted non-networked
   command/report checklist before any operator-approved production marketplace
   review is attempted;
