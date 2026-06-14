@@ -31,8 +31,9 @@ surface in one machine-checkable place:
   before moving live payment/provider evidence to manual review, with an
   optional redacted mode-600 local readiness artifact for audit snapshots;
 - payment-provider proof-plan wiring that writes a redacted non-networked
-  command/report checklist before any operator-approved x402/AP2 provider proof
-  is attempted;
+  command/report checklist with kind
+  `agentic-gaskit.payment-provider-proof-plan` before any operator-approved
+  x402/AP2 provider proof is attempted;
 - package-publication readiness wiring that checks local package release docs,
   pack dry-runs, tarball install smoke, opt-in publish dry-run, and accepts only
   an operator-supplied redacted structured npm publication report path before

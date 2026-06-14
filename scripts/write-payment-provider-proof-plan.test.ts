@@ -25,7 +25,7 @@ test("payment provider proof plan reports current blockers without configured va
     const formatted = formatPaymentProviderProofPlan(plan);
 
     assert.equal(plan.schemaVersion, 1);
-    assert.equal(plan.kind, "payment-provider-proof-plan");
+    assert.equal(plan.kind, "agentic-gaskit.payment-provider-proof-plan");
     assert.equal(plan.status, "ready-for-approval");
     assert.equal(plan.localProofOk, true);
     assert.equal(plan.liveReady, true);
@@ -58,7 +58,7 @@ test("payment provider proof plan can write a redacted local JSON artifact", asy
     const raw = await readFile(join(cwd, "tmp/gaskit/payment-provider-proof-plan.json"), "utf8");
     const written = JSON.parse(raw) as typeof plan;
 
-    assert.equal(written.kind, "payment-provider-proof-plan");
+    assert.equal(written.kind, "agentic-gaskit.payment-provider-proof-plan");
     assert.equal(written.status, "blocked");
     assert.deepEqual(written.blockerCodes, plan.blockerCodes);
     assert.ok(written.blockerCodes.includes("PAYMENT_PROVIDER_LIVE_REPORT_MISSING"));

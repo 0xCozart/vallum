@@ -3288,7 +3288,7 @@ Acceptance criteria:
   payment providers, public endpoints, IOTA services, or Gas Station
   endpoints.
 - The command reuses `proof:payment-provider-readiness` classification and
-  emits a JSON plan with schema version, status, command order,
+  emits a JSON plan with schema version, kind, status, command order,
   `contactsPaymentProvider` flags, blocker codes, ready-approval codes,
   required operator input names, required structured report fields, required
   structured report check ids, checks, and safety boundaries.
@@ -6798,3 +6798,58 @@ Escalation triggers:
 - Any request to print or commit configured public endpoint values, report
   paths, private keys, bearer tokens, webhook secrets, raw payloads, response
   bodies, or local secret paths.
+
+## Slice 7.46: Payment Proof Plan Kind Namespacing
+
+User-visible outcome:
+The payment-provider proof-plan artifact uses the same `agentic-gaskit.*`
+namespacing convention as other readiness and proof-plan artifacts, making it
+clear that the file is an Agentic GasKit local planning artifact rather than
+generic payment-provider evidence.
+
+Likely files:
+
+- `scripts/write-payment-provider-proof-plan.ts`
+- `scripts/write-payment-provider-proof-plan.test.ts`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `npm run payment:write-provider-proof-plan` emits
+  `kind=agentic-gaskit.payment-provider-proof-plan`.
+- Tests assert the namespaced kind for in-memory and written artifacts.
+- Docs describe the namespaced proof-plan kind.
+- The change does not alter payment-provider readiness acceptance, structured
+  live report validation, provider contact behavior, x402/AP2 settlement
+  behavior, or production payment approval.
+- The plan remains non-networked local planning evidence only.
+
+Verification:
+
+- `node --import tsx --test scripts/write-payment-provider-proof-plan.test.ts
+  scripts/payment-provider-readiness.test.ts`
+- `npm run payment:write-provider-proof-plan -- --out
+  tmp/gaskit/payment-provider-proof-plan.json`
+- `npm run proof:payment-provider-readiness`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `git diff --check`
+- `npm run typecheck`
+
+Dependencies:
+Existing payment-provider readiness gate and proof-plan writer.
+
+Risk:
+Low. This is an artifact schema label change, but it should not be mistaken
+for live payment/provider proof, production settlement proof, AP2 conformance,
+or payment processor approval.
+
+Escalation triggers:
+
+- Any request to treat the proof plan as live payment/provider proof,
+  production settlement proof, AP2 conformance, or payment processor approval.
+- Any request to print or commit configured report paths, provider endpoints,
+  payment credentials, authorization headers, payment instruments, raw
+  payloads, response bodies, settlement ids, private keys, bearer tokens, or
+  report contents.
