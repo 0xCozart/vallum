@@ -53,7 +53,12 @@ test("live proof plan reports current blockers without configured values", async
     assert.ok(plan.commands.some((command) => command.id === "write-sponsor-funding-request" && !command.contactsLiveService));
     assert.ok(plan.commands.some((command) => command.id === "request-sponsor-faucet-funds" && command.requiresOperatorApproval));
     assert.ok(plan.commands.some((command) => command.id === "check-sponsor-funding" && command.contactsLiveService));
+    assert.ok(plan.commands.some((command) => command.id === "triage-testnet-upstream-reachability" && command.command.includes("--skip-reserve")));
     assert.ok(plan.commands.some((command) => command.id === "diagnose-testnet-upstream" && command.contactsLiveService));
+    assert.ok(
+      plan.commands.findIndex((command) => command.id === "triage-testnet-upstream-reachability")
+      < plan.commands.findIndex((command) => command.id === "diagnose-testnet-upstream"),
+    );
     assert.ok(plan.commands.some((command) => command.id === "smoke-iota-names-live" && command.command.includes("--report")));
     assert.ok(plan.commands.some((command) => command.id === "smoke-iota-identity-live" && command.command.includes("--report")));
     assert.equal(
@@ -61,6 +66,7 @@ test("live proof plan reports current blockers without configured values", async
       "missing=GASKIT_SPONSOR_FUNDING_REPORT",
     );
     assert.ok(plan.boundaries.some((boundary) => boundary.includes("only a passing sponsor funding report")));
+    assert.ok(plan.boundaries.some((boundary) => boundary.includes("--skip-reserve upstream diagnostic is reachability triage only")));
     assert.doesNotMatch(formatted, /graphql\.testnet\.example|researcher\.demo\.iota|identity\.testnet\.example|profiles\/researcher\.json/);
     assert.doesNotMatch(formatted, /0x1111111111111111111111111111111111111111111111111111111111111111/);
     assert.doesNotMatch(formatted, /agent-registry|agent-capability-key-1/);

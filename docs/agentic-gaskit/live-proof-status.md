@@ -159,11 +159,16 @@ npm run sponsor:request-faucet-funds -- --execute --out tmp/gaskit/sponsor-fauce
 npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json
 GASKIT_SPONSOR_FAUCET_REPORT=tmp/gaskit/sponsor-faucet-request.json npm run proof:live-status
 GASKIT_SPONSOR_FUNDING_REPORT=tmp/gaskit/sponsor-funding-report.json npm run proof:live-status
-GASKIT_SPONSOR_FUNDING_REPORT=tmp/gaskit/sponsor-funding-report.json GASKIT_TESTNET_UPSTREAM_REPORT=tmp/gaskit/testnet-upstream-diagnostic.json npm run proof:live-status -- --out tmp/gaskit/live-proof-status.json
+npm run diagnose:gas-station -- --skip-reserve --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
+GASKIT_SPONSOR_FUNDING_REPORT=tmp/gaskit/sponsor-funding-report.json GASKIT_TESTNET_UPSTREAM_REPORT=tmp/gaskit/testnet-upstream-diagnostic.json npm run proof:live-status -- --out tmp/gaskit/live-proof-status.json
 npm run smoke:iota-names-live -- --report tmp/gaskit/iota-names-live-report.json
 npm run smoke:iota-identity-live -- --report tmp/gaskit/iota-identity-live-report.json
 ```
+
+The `--skip-reserve` diagnostic is reachability triage only. It cannot clear
+`testnet-upstream`; a fresh diagnostic without `--skip-reserve` is still
+required after sponsor funding is ready.
 
 Live IOTA Identity proof readiness uses these non-secret variable names:
 
