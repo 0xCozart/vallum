@@ -7022,3 +7022,56 @@ Escalation triggers:
 - Any request to print or commit configured endpoint values, addresses, profile
   paths, credentials, tokens, response bodies, private keys, signer material,
   raw transaction bytes, report contents, or secret local paths.
+
+## Slice 7.50: A2A Static Hosting Review Kind Namespacing
+
+User-visible outcome:
+The A2A static-hosting review artifact uses the same `agentic-gaskit.*`
+namespacing convention as other local readiness and proof artifacts, making it
+clear that the file is an Agentic GasKit local preparation artifact rather than
+generic static-hosting review data.
+
+Likely files:
+
+- `scripts/write-a2a-static-hosting-review.ts`
+- `scripts/write-a2a-static-hosting-review.test.ts`
+- `docs/agentic-gaskit/a2a-public-readiness.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `npm run a2a:write-static-hosting-review` emits
+  `kind=agentic-gaskit.a2a-static-hosting-review`.
+- Tests assert the namespaced kind for the generated review packet.
+- A2A public-readiness docs describe the namespaced static-hosting review kind.
+- The change does not alter local artifact validation, public hosting
+  acceptance, public endpoint probing, public discovery evidence, push
+  delivery, external conformance, production auth, or key-management behavior.
+- The review remains non-networked local preparation evidence only.
+
+Verification:
+
+- `node --import tsx --test scripts/write-a2a-static-hosting-review.test.ts`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `git diff --check`
+- `npm run typecheck`
+
+Dependencies:
+Existing static discovery bundle writer, static bundle validator, and static
+hosting review writer.
+
+Risk:
+Low. This is an artifact schema label change, but it should not be mistaken
+for public A2A hosting, endpoint ownership, public discovery acceptance,
+production key management, or external conformance.
+
+Escalation triggers:
+
+- Any request to treat the static-hosting review artifact as public A2A
+  hosting, endpoint ownership, public discovery, public push delivery,
+  production auth/key-management, or external conformance proof.
+- Any request to print or commit configured public endpoint values, local output
+  paths, key ids, report paths, credentials, response bodies, raw artifact
+  contents, private keys, bearer tokens, webhook secrets, or local secret
+  paths.

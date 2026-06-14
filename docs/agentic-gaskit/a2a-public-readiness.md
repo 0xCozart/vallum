@@ -236,7 +236,8 @@ npm run a2a:write-static-hosting-review -- \
 ```
 
 The review packet validates the local artifact bundle first, then records only
-reviewable metadata: schema version, kind, canonical public file paths,
+reviewable metadata: schema version, kind
+`agentic-gaskit.a2a-static-hosting-review`, canonical public file paths,
 required response headers, command order, operator input names, and boundaries.
 It is safe for local handoff review but still reports
 `publicHostingProven=false` and `publicDiscoveryProven=false`; public proof

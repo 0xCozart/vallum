@@ -18,7 +18,7 @@ export interface A2AStaticHostingReviewCommand {
 
 export interface A2AStaticHostingReview {
   readonly schemaVersion: 1;
-  readonly kind: "a2a-static-hosting-review";
+  readonly kind: "agentic-gaskit.a2a-static-hosting-review";
   readonly generatedAt: string;
   readonly status: "ready-for-public-hosting-review";
   readonly localArtifactsValid: true;
@@ -110,7 +110,7 @@ export async function writeA2AStaticHostingReview(
   });
   const review: A2AStaticHostingReview = {
     schemaVersion: 1,
-    kind: "a2a-static-hosting-review",
+    kind: "agentic-gaskit.a2a-static-hosting-review",
     generatedAt: (options.now ?? new Date()).toISOString(),
     status: "ready-for-public-hosting-review",
     localArtifactsValid: true,

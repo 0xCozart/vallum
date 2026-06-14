@@ -38,7 +38,7 @@ test("A2A static hosting review validates artifacts and redacts deployment detai
     const written = await readFile(join(outDir, "hosting-review.json"), "utf8");
 
     assert.equal(review.schemaVersion, 1);
-    assert.equal(review.kind, "a2a-static-hosting-review");
+    assert.equal(review.kind, "agentic-gaskit.a2a-static-hosting-review");
     assert.equal(review.status, "ready-for-public-hosting-review");
     assert.equal(review.localArtifactsValid, true);
     assert.equal(review.publicHostingProven, false);
