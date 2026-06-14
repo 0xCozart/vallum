@@ -5471,6 +5471,58 @@ Escalation triggers:
 - Any request to classify `execute:testnet-demo` as the next command when
   report-backed digest proof is already available.
 
+## Slice 7.68: Live Proof Env Example Coverage
+
+User-visible outcome:
+Operators can see every current live proof, production proof, and structured
+report environment variable in `.env.example` without any usable committed
+endpoint, identity, credential, or report evidence.
+
+Likely files:
+
+- `.env.example`
+- `scripts/live-proof-env-example.test.ts`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `.env.example` documents commented inputs for sponsor funding, upstream
+  diagnostics, digest proof, IOTA Names, IOTA Identity, VC trust policy, A2A
+  public reports, payment-provider proof, marketplace proof, custody proof, and
+  package publication proof.
+- The documented report pointers use ignored `tmp/gaskit/*.json` paths.
+- Regression tests fail if a current live/prod proof variable is missing from
+  `.env.example` or accidentally enabled as an uncommented example.
+- `npm run readiness:testnet:example` still passes, proving the committed
+  example remains a placeholder-only example rather than live config.
+- No live IOTA lookup, reserve_gas probe, signing, sponsor gas spend,
+  sponsored execute, npm publish, public A2A probe, payment-provider action,
+  production marketplace action, custody/KMS action, external signer action, or
+  physical-device action is run by this slice.
+
+Verification:
+
+- `node --import tsx --test scripts/live-proof-env-example.test.ts`
+- `npm run readiness:testnet:example`
+- `npm run proof:live-status`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `npm run typecheck`
+- `git diff --check`
+
+Dependencies:
+Slices 2.5, 2.8, 4.19, 7.65.
+
+Risk:
+Low. This improves operator setup visibility, but examples must stay commented
+and non-authoritative so they do not become fake proof.
+
+Escalation triggers:
+
+- Any request to put real endpoint values, names, addresses, DIDs, profile
+  paths, credential refs, or external report contents in committed examples.
+- Any request to treat documented example variables as accepted evidence.
+
 ## Slice 7.66: Launch Digest Report Command Alignment
 
 User-visible outcome:
