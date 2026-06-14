@@ -25,12 +25,15 @@ test("launch readiness maps local evidence to live and production blockers", asy
   const phase1 = report.areas.find((area) => area.id === "phase-1-sponsored-policy-mvp");
   assert.ok(phase1?.evidencePaths.includes("scripts/write-sponsor-funding-request.ts"));
   assert.ok(phase1?.evidencePaths.includes("scripts/request-sponsor-faucet-funds.ts"));
+  assert.ok(phase1?.commands.includes("npm run operator:write-report-template -- --kind custody-production --out tmp/gaskit/custody-production-report-template.json"));
   assert.ok(phase1?.commands.includes("npm run sponsor:write-funding-request -- --out tmp/gaskit/sponsor-funding-request.json"));
   assert.ok(phase1?.commands.includes("npm run sponsor:request-faucet-funds -- --execute --out tmp/gaskit/sponsor-faucet-request.json"));
   assert.ok(phase1?.commands.includes("npm run sponsor:write-funding-request -- --faucet-report tmp/gaskit/sponsor-faucet-request.json --out tmp/gaskit/sponsor-funding-request.json"));
+  assert.ok(phase1?.commands.includes("npm run operator:write-report-template -- --kind testnet-digest --out tmp/gaskit/testnet-digest-report-template.json"));
   assert.ok(phase1?.commands.includes("npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json"));
   assert.equal(phase1?.commands.includes("npm run proof:testnet-digest:live"), false);
   assert.ok(phase1?.commands.includes("npm run proof:live-status"));
+  assert.ok(phase1?.commands.includes("npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json"));
   assert.ok(
     (phase1?.commands.indexOf("npm run sponsor:write-funding-request -- --faucet-report tmp/gaskit/sponsor-faucet-request.json --out tmp/gaskit/sponsor-funding-request.json") ?? -1)
       < (phase1?.commands.indexOf("npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json") ?? -1),
@@ -47,24 +50,58 @@ test("launch readiness maps local evidence to live and production blockers", asy
       < (phase1?.commands.indexOf("npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json") ?? -1),
   );
   assert.ok(
+    (phase1?.commands.indexOf("npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json") ?? -1)
+      < (phase1?.commands.indexOf("npm run diagnose:gas-station -- --skip-reserve --report tmp/gaskit/testnet-upstream-diagnostic.json") ?? -1),
+  );
+  assert.ok(
     (phase1?.commands.indexOf("npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json") ?? -1)
       < (phase1?.commands.indexOf("npm run execute:testnet-demo") ?? -1),
   );
-  assert.equal(report.areas.find((area) => area.id === "phase-2-identity-and-vc")?.status, "blocked-live");
+  const phase2 = report.areas.find((area) => area.id === "phase-2-identity-and-vc");
+  assert.equal(phase2?.status, "blocked-live");
+  assert.ok(phase2?.commands.includes("npm run operator:write-report-template -- --kind iota-names-live --out tmp/gaskit/iota-names-live-report-template.json"));
+  assert.ok(phase2?.commands.includes("npm run operator:write-report-template -- --kind iota-identity-live --out tmp/gaskit/iota-identity-live-report-template.json"));
+  assert.ok(phase2?.commands.includes("npm run operator:write-report-template -- --kind vc-validation-live --out tmp/gaskit/vc-validation-live-report-template.json"));
+  assert.ok(
+    (phase2?.commands.indexOf("npm run operator:write-report-template -- --kind iota-names-live --out tmp/gaskit/iota-names-live-report-template.json") ?? -1)
+      < (phase2?.commands.indexOf("npm run smoke:iota-names-live -- --report tmp/gaskit/iota-names-live-report.json") ?? -1),
+  );
+  assert.ok(
+    (phase2?.commands.indexOf("npm run operator:write-report-template -- --kind iota-identity-live --out tmp/gaskit/iota-identity-live-report-template.json") ?? -1)
+      < (phase2?.commands.indexOf("npm run smoke:iota-identity-live -- --report tmp/gaskit/iota-identity-live-report.json") ?? -1),
+  );
   const standards = report.areas.find((area) => area.id === "phase-4-standards-bridges");
   assert.equal(standards?.status, "blocked-production");
+  assert.ok(standards?.commands.includes("npm run operator:write-report-template -- --kind payment-provider-live --out tmp/gaskit/payment-provider-live-report-template.json"));
+  assert.ok(standards?.commands.includes("npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/gaskit/a2a-public-discovery-report-template.json"));
+  assert.ok(standards?.commands.includes("npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/gaskit/a2a-public-push-delivery-report-template.json"));
+  assert.ok(standards?.commands.includes("npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/gaskit/a2a-external-conformance-report-template.json"));
   assert.ok(standards?.commands.includes("npm run a2a:write-public-proof-plan"));
   assert.ok(standards?.commands.includes("npm run proof:a2a-public-readiness"));
+  assert.ok(
+    (standards?.commands.indexOf("npm run operator:write-report-template -- --kind payment-provider-live --out tmp/gaskit/payment-provider-live-report-template.json") ?? -1)
+      < (standards?.commands.indexOf("npm run payment:write-provider-proof-plan") ?? -1),
+  );
   assert.ok(
     (standards?.commands.indexOf("npm run a2a:write-public-proof-plan") ?? -1)
       < (standards?.commands.indexOf("npm run proof:a2a-public-readiness") ?? -1),
   );
-  assert.equal(report.areas.find((area) => area.id === "phase-6-package-release")?.status, "blocked-production");
+  const marketplace = report.areas.find((area) => area.id === "phase-5-marketplace-operator");
+  assert.equal(marketplace?.status, "blocked-production");
+  assert.ok(marketplace?.commands.includes("npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json"));
+  const packageRelease = report.areas.find((area) => area.id === "phase-6-package-release");
+  assert.equal(packageRelease?.status, "blocked-production");
+  assert.ok(packageRelease?.commands.includes("npm run operator:write-report-template -- --kind package-publication --out tmp/gaskit/package-publication-report-template.json"));
   assert.equal(report.areas.find((area) => area.id === "phase-3-contract-workflows")?.status, "deferred-safety");
   assert.ok(
     report.areas
       .find((area) => area.id === "packet-h-final-product-status")
       ?.blockerCodes.includes("GAS_STATION_DOCKER_DAEMON_UNAVAILABLE"),
+  );
+  assert.ok(
+    report.areas
+      .find((area) => area.id === "packet-h-final-product-status")
+      ?.commands.includes("npm run operator:write-report-template -- --kind <kind> --out <ignored-report-template.json>"),
   );
   assert.match(formatted, /TESTNET_ENV_FILE_MISSING/);
   assert.match(formatted, /GAS_STATION_DOCKER_DAEMON_UNAVAILABLE/);

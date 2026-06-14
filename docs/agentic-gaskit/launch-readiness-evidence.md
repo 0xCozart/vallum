@@ -72,6 +72,7 @@ npm run proof:launch-readiness -- --out tmp/gaskit/launch-readiness.json
 npm run proof:live-status
 npm run live:write-proof-plan -- --out tmp/gaskit/live-proof-plan.json
 npm run proof:testnet-digest
+npm run operator:write-report-template -- --kind testnet-digest --out tmp/gaskit/testnet-digest-report-template.json
 npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json
 npm run gas-station:render-config
 npm run gas-station:runtime-preflight
@@ -81,20 +82,33 @@ npm run sponsor:request-faucet-funds -- --execute --out tmp/gaskit/sponsor-fauce
 npm run sponsor:write-funding-request -- --faucet-report tmp/gaskit/sponsor-faucet-request.json --out tmp/gaskit/sponsor-funding-request.json
 npm run proof:live-status
 npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json
+npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json
 npm run diagnose:gas-station -- --skip-reserve --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
+npm run operator:write-report-template -- --kind iota-names-live --out tmp/gaskit/iota-names-live-report-template.json
+npm run smoke:iota-names-live -- --report tmp/gaskit/iota-names-live-report.json
+npm run operator:write-report-template -- --kind iota-identity-live --out tmp/gaskit/iota-identity-live-report-template.json
+npm run smoke:iota-identity-live -- --report tmp/gaskit/iota-identity-live-report.json
+npm run operator:write-report-template -- --kind vc-validation-live --out tmp/gaskit/vc-validation-live-report-template.json
 npm run a2a:write-static-discovery-bundle -- --agent-card <signed-card.json> --jwks <jwks.json> --public-base-url <url> --public-jwks-url <url> --out-dir <dir>
 npm run a2a:check-static-discovery-bundle -- --out-dir <dir> --expected-public-base-url <url> --expected-public-jwks-url <url>
+npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/gaskit/a2a-public-discovery-report-template.json
+npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/gaskit/a2a-public-push-delivery-report-template.json
+npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/gaskit/a2a-external-conformance-report-template.json
 npm run a2a:write-public-proof-plan -- --out tmp/gaskit/a2a-public-proof-plan.json
 npm run proof:a2a-public-readiness
-npm run proof:package-publication-readiness
+npm run operator:write-report-template -- --kind package-publication --out tmp/gaskit/package-publication-report-template.json
 npm run package:write-publication-proof-plan -- --out tmp/gaskit/package-publication-proof-plan.json
-npm run proof:payment-provider-readiness
-npm run proof:marketplace-readiness
-npm run marketplace:write-production-proof-plan -- --out tmp/gaskit/marketplace-production-proof-plan.json
-npm run proof:custody-readiness
-npm run custody:write-production-proof-plan -- --out tmp/gaskit/custody-production-proof-plan.json
+npm run proof:package-publication-readiness
+npm run operator:write-report-template -- --kind payment-provider-live --out tmp/gaskit/payment-provider-live-report-template.json
 npm run payment:write-provider-proof-plan -- --out tmp/gaskit/payment-provider-proof-plan.json
+npm run proof:payment-provider-readiness
+npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json
+npm run marketplace:write-production-proof-plan -- --out tmp/gaskit/marketplace-production-proof-plan.json
+npm run proof:marketplace-readiness
+npm run operator:write-report-template -- --kind custody-production --out tmp/gaskit/custody-production-report-template.json
+npm run custody:write-production-proof-plan -- --out tmp/gaskit/custody-production-proof-plan.json
+npm run proof:custody-readiness
 npm run verify:fast
 npm run proof:verification-profiles
 npm run proof:operator-gates

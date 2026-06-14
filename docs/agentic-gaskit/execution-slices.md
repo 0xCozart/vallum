@@ -7715,3 +7715,66 @@ Escalation triggers:
 - Any request to include endpoint values, names, addresses, DIDs, credential
   refs, report contents, local paths to sensitive files, or credentials in
   public docs.
+
+## Slice 7.73: Launch Template Command Alignment
+
+User-visible outcome:
+The launch-readiness matrix points each remaining operator-owned live or
+production proof at the matching ignored `operator:write-report-template`
+command before the proof-plan, readiness, smoke, diagnostic, or report command.
+
+Likely files:
+
+- `scripts/check-launch-readiness.ts`
+- `scripts/launch-readiness.test.ts`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- Phase 1 launch commands include template generation for custody-production,
+  testnet-digest, and testnet-upstream reports without changing the live
+  blocker classification.
+- Phase 2 launch commands include templates for IOTA Names, IOTA Identity, and
+  VC validation before the corresponding opt-in live proof or accepted-report
+  path.
+- Phase 4 launch commands include templates for payment-provider live proof,
+  A2A public discovery, A2A public push delivery, and A2A external conformance.
+- Phase 5 and Phase 6 launch commands include templates for marketplace
+  production and package publication.
+- Packet H final status uses the kind-specific generic template form:
+  `npm run operator:write-report-template -- --kind <kind> --out
+  <ignored-report-template.json>`.
+- Launch-readiness tests fail if the matrix drops these specific template
+  commands or places upstream and identity template commands after the proof
+  command they are meant to prepare.
+- The change does not accept pending templates as passing reports, run live
+  commands, change product-status completion, or weaken redaction boundaries.
+
+Verification:
+
+- `node --import tsx --test scripts/launch-readiness.test.ts
+  scripts/reviewer-docs.test.ts`
+- `npm run proof:launch-readiness`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `npm run typecheck`
+- `git diff --check`
+
+Dependencies:
+Slices 7.70 through 7.72, which added the supported operator report-template
+kinds and aligned the operator runbook.
+
+Risk:
+Low. This is operator path alignment only, but stale launch commands can cause
+the next reviewer or operator to skip the structured report template and create
+unaccepted ad hoc proof artifacts.
+
+Escalation triggers:
+
+- Any request to treat a generated template as passing live, publication,
+  payment, marketplace, custody, public A2A, or VC proof.
+- Any request to include endpoint values, names, addresses, DIDs, credential
+  refs, local secret paths, report contents, credentials, tokens, private keys,
+  raw transaction bytes, signatures, or raw upstream/provider bodies in launch
+  docs or generated output.
