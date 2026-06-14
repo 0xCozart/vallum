@@ -22,6 +22,13 @@ test("launch readiness maps local evidence to live and production blockers", asy
   assert.equal(report.launchReady, false);
   assert.equal(report.localEvidenceOk, true);
   assert.equal(report.areas.find((area) => area.id === "phase-1-sponsored-policy-mvp")?.status, "blocked-live");
+  const phase1 = report.areas.find((area) => area.id === "phase-1-sponsored-policy-mvp");
+  assert.ok(phase1?.commands.includes("npm run diagnose:gas-station -- --skip-reserve --report tmp/gaskit/testnet-upstream-diagnostic.json"));
+  assert.ok(phase1?.commands.includes("npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json"));
+  assert.ok(
+    (phase1?.commands.indexOf("npm run diagnose:gas-station -- --skip-reserve --report tmp/gaskit/testnet-upstream-diagnostic.json") ?? -1)
+      < (phase1?.commands.indexOf("npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json") ?? -1),
+  );
   assert.equal(report.areas.find((area) => area.id === "phase-2-identity-and-vc")?.status, "blocked-live");
   const standards = report.areas.find((area) => area.id === "phase-4-standards-bridges");
   assert.equal(standards?.status, "blocked-production");

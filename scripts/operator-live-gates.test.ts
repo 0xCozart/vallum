@@ -50,7 +50,10 @@ test("operator live gates report current blockers without secret values", async 
       "npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json",
     );
     assert.equal(findGate(report, "testnet-upstream").status, "blocked-config");
-    assert.equal(findGate(report, "testnet-upstream").command, "npm run diagnose:gas-station");
+    assert.equal(
+      findGate(report, "testnet-upstream").command,
+      "npm run live:write-proof-plan && npm run diagnose:gas-station -- --report <ignored-json-path>",
+    );
     assert.equal(
       findGate(report, "iota-names-live").command,
       "npm run live:write-proof-plan && npm run smoke:iota-names-live -- --report <ignored-json-path>",

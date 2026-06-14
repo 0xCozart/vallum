@@ -76,7 +76,7 @@ const GATE_COMMANDS: Record<string, string | undefined> = {
   "testnet-readiness": "npm run readiness:testnet",
   "gas-station-runtime": "npm run gas-station:runtime-preflight",
   "sponsor-funding": "npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json",
-  "testnet-upstream": "npm run diagnose:gas-station",
+  "testnet-upstream": "npm run live:write-proof-plan && npm run diagnose:gas-station -- --report <ignored-json-path>",
   "iota-names-live": "npm run live:write-proof-plan && npm run smoke:iota-names-live -- --report <ignored-json-path>",
   "iota-identity-live": "npm run live:write-proof-plan && npm run smoke:iota-identity-live -- --report <ignored-json-path>",
   "vc-validation-live": "npm run live:write-proof-plan && npm run smoke:iota-identity-live -- --report <ignored-json-path>",

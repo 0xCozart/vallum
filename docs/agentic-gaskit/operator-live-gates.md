@@ -235,10 +235,15 @@ npm run gas-station:render-config
 npm run gas-station:runtime-preflight
 GASKIT_GAS_STATION_RUNTIME_MODE=managed-upstream npm run gas-station:runtime-preflight
 npm run gas-station:docker-direct -- --dry-run
+npm run diagnose:gas-station -- --skip-reserve --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run smoke:iota-names-live -- --report tmp/gaskit/iota-names-live-report.json
 npm run smoke:iota-identity-live -- --report tmp/gaskit/iota-identity-live-report.json
 ```
+
+The `--skip-reserve` diagnostic is reachability triage only. It cannot clear
+`testnet-upstream`; the full diagnostic without `--skip-reserve` must pass
+before fresh sponsored execution is ready.
 
 Only run live commands after operator-owned local credentials are configured
 outside the repo and the operator explicitly intends to run that proof.

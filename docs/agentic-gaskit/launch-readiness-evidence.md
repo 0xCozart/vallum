@@ -76,6 +76,7 @@ npm run proof:testnet-digest:live
 npm run gas-station:render-config
 npm run gas-station:runtime-preflight
 npm run gas-station:docker-direct -- --dry-run
+npm run diagnose:gas-station -- --skip-reserve --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run a2a:write-static-discovery-bundle -- --agent-card <signed-card.json> --jwks <jwks.json> --public-base-url <url> --public-jwks-url <url> --out-dir <dir>
 npm run a2a:check-static-discovery-bundle -- --out-dir <dir> --expected-public-base-url <url> --expected-public-jwks-url <url>
@@ -96,6 +97,10 @@ npm run operator:write-live-gate-report
 npm run readiness:testnet
 npm run verify:local
 ```
+
+The `--skip-reserve` diagnostic is reachability triage only. It does not clear
+launch readiness; the full diagnostic without `--skip-reserve` must pass before
+`testnet-upstream` can support fresh sponsored execution claims.
 
 Run live commands only after operator-owned local credentials are configured
 outside the repo and the operator explicitly intends to run that proof.
