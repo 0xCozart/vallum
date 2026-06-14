@@ -208,6 +208,8 @@ test("product status marks report-backed live gates ready without contacting end
     assert.equal(report.localProofOk, true);
     assert.equal(report.checks.find((check) => check.id === "testnet-readiness")?.status, "ready-live");
     assert.equal(report.checks.find((check) => check.id === "gas-station-runtime")?.status, "ready-live");
+    assert.match(report.checks.find((check) => check.id === "gas-station-runtime")?.next ?? "", /diagnose:gas-station/);
+    assert.doesNotMatch(report.checks.find((check) => check.id === "gas-station-runtime")?.next ?? "", /Start the local Gas Station/);
     assert.equal(report.checks.find((check) => check.id === "sponsor-funding")?.status, "ready-live");
     assert.equal(report.checks.find((check) => check.id === "testnet-upstream")?.status, "ready-live");
     assert.equal(report.checks.find((check) => check.id === "sponsor-funding")?.evidence, "sponsor-funding-report-valid-redacted");

@@ -54,7 +54,7 @@ reports:
 - `TESTNET_READINESS_CONFIG_PRESENT`
 - `GAS_STATION_RUNTIME_READY`
 - `SPONSOR_FUNDING_TOTAL_INSUFFICIENT`
-- `TESTNET_UPSTREAM_REPORT_FAILED`
+- `TESTNET_UPSTREAM_REPORT_RESERVE_SKIPPED`
 - `IOTA_NAMES_LIVE_CONFIG_MISSING`
 - `IOTA_IDENTITY_LIVE_CONFIG_MISSING`
 - `VC_TRUST_POLICY_CONFIG_MISSING`
@@ -91,15 +91,13 @@ of repeating that API version.
 The current sanitized upstream diagnostic reaches the local Gas Station root
 and IOTA testnet RPC. It classifies raw upstream reachability as
 `GAS_STATION_ROOT_READY`; `/v1/health` is treated as an informational wrapper
-health probe because the raw upstream container may not expose it. The
-reserve_gas compatibility probe still returns HTTP 500 and records the bounded
-reserve failure code `RESERVE_GAS_SPONSOR_FUNDING_BLOCKED`, because the
-configured sponsor funding report is also blocked with
-`SPONSOR_FUNDING_TOTAL_INSUFFICIENT`. `npm run proof:live-status` classifies
-that evidence as `TESTNET_UPSTREAM_REPORT_FAILED` but points the next step at
-sponsor funding first. This means the next testnet execution boundary is
-sponsor funding, then reserve compatibility, not Docker connectivity, optional
-wrapper health, or `.env` shape.
+health probe because the raw upstream container may not expose it. The latest
+report was generated with `--skip-reserve`, so `npm run proof:live-status`
+classifies that evidence as `TESTNET_UPSTREAM_REPORT_RESERVE_SKIPPED` and
+keeps the upstream gate blocked. This means the next testnet execution
+boundary is sponsor funding, then a fresh diagnostic without `--skip-reserve`
+to prove reserve_gas compatibility, not Docker connectivity, optional wrapper
+health, or `.env` shape.
 
 Blocked or ready live-proof checks include fixed evidence labels such as
 `sponsor-funding-report-loaded-redacted`,

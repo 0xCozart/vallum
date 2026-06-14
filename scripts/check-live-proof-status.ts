@@ -208,7 +208,7 @@ async function checkGasStationRuntimeStatus(
       evidence: "gas-station-runtime-preflight-ready",
       next: report.checks.some((check) => check.code === "GAS_STATION_MANAGED_UPSTREAM_MODE_SELECTED")
         ? "Run npm run diagnose:gas-station -- --report <ignored-json-path> to prove the managed upstream without printing secrets."
-        : "Start the local Gas Station through Docker Compose or npm run gas-station:docker-direct -- --execute if needed, then run npm run diagnose:gas-station -- --report <ignored-json-path>.",
+        : "Local Gas Station runtime is ready; run npm run diagnose:gas-station -- --report <ignored-json-path> to prove IOTA RPC, Gas Station reachability, and reserve_gas compatibility.",
     };
   }
 
@@ -365,6 +365,9 @@ function nextForFailedTestnetUpstream(report: TestnetUpstreamDiagnosticReport): 
   }
   if (report.reserveGas.code === "RESERVE_GAS_REQUEST_FAILED") {
     return "Confirm the configured Gas Station endpoint is reachable from this workspace, regenerate the sanitized diagnostic report, then rerun this gate.";
+  }
+  if (report.reserveGas.skipped || report.reserveGas.code === "RESERVE_GAS_SKIPPED") {
+    return "Use --skip-reserve only for reachability triage. Ensure sponsor funding is ready, then rerun npm run diagnose:gas-station -- --report <ignored-json-path> without --skip-reserve to prove reserve_gas compatibility.";
   }
   return "Bring the configured Gas Station upstream online, prove reserve_gas compatibility, regenerate the sanitized report, then rerun this gate.";
 }

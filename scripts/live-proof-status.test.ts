@@ -193,6 +193,28 @@ test("live proof status blocks skipped reserve diagnostic reports", async () => 
 
     assert.equal(upstream?.status, "blocked");
     assert.equal(upstream?.code, "TESTNET_UPSTREAM_REPORT_RESERVE_SKIPPED");
+    assert.match(upstream?.next ?? "", /without --skip-reserve/);
+    assert.doesNotMatch(upstream?.next ?? "", /Bring the configured Gas Station upstream online/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("live proof status routes ready local Gas Station runtime to diagnostics", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  try {
+    const report = await checkLiveProofStatus({
+      cwd,
+      env: {},
+      gasStationRuntimeReport: readyGasStationRuntime(),
+    });
+    const runtime = report.checks.find((check) => check.id === "gas-station-runtime");
+
+    assert.equal(runtime?.status, "ready");
+    assert.equal(runtime?.code, "GAS_STATION_RUNTIME_READY");
+    assert.match(runtime?.next ?? "", /diagnose:gas-station/);
+    assert.doesNotMatch(runtime?.next ?? "", /Start the local Gas Station/);
+    assert.doesNotMatch(runtime?.next ?? "", /docker-direct -- --execute/);
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }
