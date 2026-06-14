@@ -70,6 +70,7 @@ test("product status reports local proof gates and explicit live blockers withou
     assert.match(formatted, /PRODUCTION_CUSTODY_OUT_OF_SCOPE/);
     assert.match(formatted, /npm run proof:custody-readiness/);
     assert.match(formatted, /DEVICE_ACCESS_SAFETY_DEFERRED/);
+    assert.doesNotMatch(formatted, /see-status/);
     assert.doesNotMatch(formatted, /local-secret|iotaprivkey|fake-private-key|seed-phrase|mnemonic-value/i);
   } finally {
     await rm(cwd, { recursive: true, force: true });
@@ -204,10 +205,13 @@ test("product status marks report-backed live gates ready without contacting end
     assert.equal(report.checks.find((check) => check.id === "gas-station-runtime")?.status, "ready-live");
     assert.equal(report.checks.find((check) => check.id === "sponsor-funding")?.status, "ready-live");
     assert.equal(report.checks.find((check) => check.id === "testnet-upstream")?.status, "ready-live");
+    assert.equal(report.checks.find((check) => check.id === "sponsor-funding")?.evidence, "sponsor-funding-report-valid-redacted");
+    assert.equal(report.checks.find((check) => check.id === "testnet-upstream")?.evidence, "testnet-upstream-report-valid-redacted");
     assert.equal(report.checks.find((check) => check.id === "iota-names-live")?.status, "ready-live");
     assert.equal(report.checks.find((check) => check.id === "iota-identity-live")?.status, "ready-live");
     assert.equal(report.checks.find((check) => check.id === "vc-validation-live")?.status, "ready-live");
     assert.equal(report.checks.find((check) => check.id === "npm-registry-publication")?.status, "blocked-production");
+    assert.doesNotMatch(formatted, /see-status/);
     assert.doesNotMatch(
       formatted,
       /graphql\.testnet\.example|identity\.testnet\.example|researcher\.json|fake-testnet-sponsor-key|fake-gas-station-auth|jwt-secret|fake-upstream-bearer/,

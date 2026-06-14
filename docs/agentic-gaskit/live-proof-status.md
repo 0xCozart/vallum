@@ -19,11 +19,13 @@ npm run proof:live-status -- --out tmp/gaskit/live-proof-status.json
 The command does not contact IOTA Names, IOTA Identity, IOTA RPC, Gas Station,
 payment facilitators, A2A endpoints, or npm. It inspects local configuration
 shape and prints blocker codes, missing variable names, readiness check ids,
-and next commands. It never prints configured secret values or endpoint values.
+redacted evidence labels, and next commands. It never prints configured secret
+values, endpoint values, local report paths, full addresses, profile paths, or
+raw upstream bodies.
 The `--json` and `--out` forms produce the same redacted machine-readable
-status artifact with check ids, blocker codes, messages, next steps, and proof
-boundaries. The output artifact is local evidence only, is written with mode
-0600, and must stay ignored.
+status artifact with check ids, blocker codes, messages, redacted evidence
+labels, next steps, and proof boundaries. The output artifact is local evidence
+only, is written with mode 0600, and must stay ignored.
 
 For a redacted command-order artifact before live work, run:
 
@@ -90,6 +92,13 @@ that evidence as `TESTNET_UPSTREAM_REPORT_FAILED` but points the next step at
 sponsor funding first. This means the next testnet execution boundary is
 sponsor funding, then reserve compatibility, not Docker connectivity, optional
 wrapper health, or `.env` shape.
+
+Blocked or ready live-proof checks include fixed evidence labels such as
+`sponsor-funding-report-loaded-redacted`,
+`testnet-upstream-report-loaded-redacted`, and
+`iota-identity-live-report-valid-redacted`. These labels are intentionally not
+paths or endpoint values; they only tell the operator which ignored structured
+report class was loaded, missing, invalid, or accepted.
 
 ## What The Command Proves
 

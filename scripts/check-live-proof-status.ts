@@ -41,6 +41,7 @@ export interface LiveProofCheck {
   readonly status: LiveProofStatus;
   readonly code: string;
   readonly message: string;
+  readonly evidence?: string;
   readonly missing?: readonly string[];
   readonly next?: string;
 }
@@ -204,6 +205,7 @@ async function checkGasStationRuntimeStatus(
       status: "ready",
       code: report.code,
       message: report.message,
+      evidence: "gas-station-runtime-preflight-ready",
       next: report.checks.some((check) => check.code === "GAS_STATION_MANAGED_UPSTREAM_MODE_SELECTED")
         ? "Run npm run diagnose:gas-station -- --report <ignored-json-path> to prove the managed upstream without printing secrets."
         : "Start the local Gas Station through Docker Compose or npm run gas-station:docker-direct -- --execute if needed, then run npm run diagnose:gas-station -- --report <ignored-json-path>.",
@@ -215,6 +217,7 @@ async function checkGasStationRuntimeStatus(
     status: "blocked",
     code: report.code,
     message: report.message,
+    evidence: `blocked=${report.code}`,
     next: report.code === "GAS_STATION_MANAGED_UPSTREAM_CONFIG_MISSING"
       ? "Set GAS_STATION_URL outside committed files or switch GASKIT_GAS_STATION_RUNTIME_MODE back to local-docker, then rerun npm run gas-station:runtime-preflight."
       : "Run npm run gas-station:render-config, enable the Docker daemon and either Compose or direct Docker fallback for this workspace, or explicitly choose managed-upstream mode with a configured Gas Station URL, then rerun npm run gas-station:runtime-preflight.",
@@ -234,6 +237,7 @@ async function checkSponsorFundingStatus(
       code: "SPONSOR_FUNDING_REPORT_MISSING",
       missing: [SPONSOR_FUNDING_REPORT_ENV],
       message: "No sanitized sponsor funding report is configured.",
+      evidence: `missing=${SPONSOR_FUNDING_REPORT_ENV}`,
       next: `${faucetContext ?? "Run npm run sponsor:request-faucet-funds -- --execute --out <ignored-json-path> only with operator approval, or fund the sponsor address manually."} Then run npm run sponsor:check-funding -- --report <ignored-json-path>.`,
     };
   }
@@ -247,6 +251,7 @@ async function checkSponsorFundingStatus(
         status: "ready",
         code: validation.code,
         message: validation.message,
+        evidence: "sponsor-funding-report-valid-redacted",
         next: "Run npm run diagnose:gas-station -- --report <ignored-json-path> to prove reserve_gas compatibility.",
       };
     }
@@ -255,6 +260,7 @@ async function checkSponsorFundingStatus(
       status: "blocked",
       code: validation.code,
       message: validation.message,
+      evidence: "sponsor-funding-report-loaded-redacted",
       next: `${faucetContext ?? "Fund or consolidate the configured sponsor wallet."} Rerun npm run sponsor:check-funding -- --report <ignored-json-path>, then rerun this gate.`,
     };
   } catch {
@@ -263,6 +269,7 @@ async function checkSponsorFundingStatus(
       status: "blocked",
       code: "SPONSOR_FUNDING_REPORT_INVALID",
       message: "Configured sponsor funding report could not be loaded or validated.",
+      evidence: "sponsor-funding-report-invalid-redacted",
       next: "Regenerate the report with npm run sponsor:check-funding -- --report <ignored-json-path> without committing or printing secrets.",
     };
   }
@@ -311,6 +318,7 @@ async function checkTestnetUpstreamStatus(
       code: "TESTNET_UPSTREAM_REPORT_MISSING",
       missing: [TESTNET_UPSTREAM_REPORT_ENV],
       message: "No sanitized testnet upstream diagnostic report is configured.",
+      evidence: `missing=${TESTNET_UPSTREAM_REPORT_ENV}`,
       next: "Run npm run diagnose:gas-station -- --report <ignored-json-path> after Gas Station is intentionally online; use --skip-reserve only for reachability triage.",
     };
   }
@@ -324,6 +332,7 @@ async function checkTestnetUpstreamStatus(
         status: "ready",
         code: validation.code,
         message: validation.message,
+        evidence: "testnet-upstream-report-valid-redacted",
         next: "With explicit operator intent, run npm run execute:testnet-demo to prove a fresh sponsored testnet transaction.",
       };
     }
@@ -332,6 +341,7 @@ async function checkTestnetUpstreamStatus(
       status: "blocked",
       code: validation.code,
       message: validation.message,
+      evidence: "testnet-upstream-report-loaded-redacted",
       next: nextForFailedTestnetUpstream(report),
     };
   } catch {
@@ -340,6 +350,7 @@ async function checkTestnetUpstreamStatus(
       status: "blocked",
       code: "TESTNET_UPSTREAM_REPORT_INVALID",
       message: "Configured testnet upstream diagnostic report could not be loaded or validated.",
+      evidence: "testnet-upstream-report-invalid-redacted",
       next: "Regenerate the report with npm run diagnose:gas-station -- --report <ignored-json-path> without committing or printing secrets.",
     };
   }
@@ -363,6 +374,9 @@ export function formatLiveProofStatusReport(report: LiveProofStatusReport): stri
   for (const check of report.checks) {
     lines.push(`${check.status}: ${check.id}: code=${check.code}`);
     lines.push(`message=${check.message}`);
+    if (check.evidence) {
+      lines.push(`evidence=${check.evidence}`);
+    }
     if (check.missing && check.missing.length > 0) {
       lines.push(`missing=${check.missing.join(",")}`);
     }
@@ -455,6 +469,7 @@ async function checkIotaNamesStatus(
       code: "IOTA_NAMES_LIVE_REPORT_MISSING",
       missing: [IOTA_NAMES_LIVE_REPORT_ENV],
       message: "No sanitized IOTA Names live smoke report is configured.",
+      evidence: `missing=${IOTA_NAMES_LIVE_REPORT_ENV}`,
       next: "Run npm run smoke:iota-names-live -- --report <ignored-json-path> with operator approval, then rerun this gate.",
     };
   }
@@ -468,6 +483,7 @@ async function checkIotaNamesStatus(
         status: "ready",
         code: validation.code,
         message: validation.message,
+        evidence: "iota-names-live-report-valid-redacted",
         next: "Keep the report current; rerun npm run smoke:iota-names-live -- --report <ignored-json-path> when operator-owned Names inputs change.",
       };
     }
@@ -476,6 +492,7 @@ async function checkIotaNamesStatus(
       status: "blocked",
       code: validation.code,
       message: validation.message,
+      evidence: "iota-names-live-report-loaded-redacted",
       next: "Fix IOTA Names configuration or name/address binding, rerun npm run smoke:iota-names-live -- --report <ignored-json-path>, then rerun this gate.",
     };
   } catch {
@@ -484,6 +501,7 @@ async function checkIotaNamesStatus(
       status: "blocked",
       code: "IOTA_NAMES_LIVE_REPORT_INVALID",
       message: "Configured IOTA Names live smoke report could not be loaded or validated.",
+      evidence: "iota-names-live-report-invalid-redacted",
       next: "Regenerate the report with npm run smoke:iota-names-live -- --report <ignored-json-path> without committing endpoint values.",
     };
   }
@@ -525,6 +543,7 @@ async function checkIotaIdentityStatus(
       code: "IOTA_IDENTITY_LIVE_REPORT_MISSING",
       missing: [IOTA_IDENTITY_LIVE_REPORT_ENV],
       message: "No sanitized IOTA Identity live smoke report is configured.",
+      evidence: `missing=${IOTA_IDENTITY_LIVE_REPORT_ENV}`,
       next: "Run npm run smoke:iota-identity-live -- --report <ignored-json-path> with operator approval, then rerun this gate.",
     };
   }
@@ -538,6 +557,7 @@ async function checkIotaIdentityStatus(
         status: "ready",
         code: validation.code,
         message: validation.message,
+        evidence: "iota-identity-live-report-valid-redacted",
         next: "Keep the report current; rerun npm run smoke:iota-identity-live -- --report <ignored-json-path> when operator-owned Identity inputs change.",
       };
     }
@@ -546,6 +566,7 @@ async function checkIotaIdentityStatus(
       status: "blocked",
       code: validation.code,
       message: validation.message,
+      evidence: "iota-identity-live-report-loaded-redacted",
       next: "Fix IOTA Identity configuration, profile, or credential evidence, rerun npm run smoke:iota-identity-live -- --report <ignored-json-path>, then rerun this gate.",
     };
   } catch {
@@ -554,6 +575,7 @@ async function checkIotaIdentityStatus(
       status: "blocked",
       code: "IOTA_IDENTITY_LIVE_REPORT_INVALID",
       message: "Configured IOTA Identity live smoke report could not be loaded or validated.",
+      evidence: "iota-identity-live-report-invalid-redacted",
       next: "Regenerate the report with npm run smoke:iota-identity-live -- --report <ignored-json-path> without committing endpoint values or profile paths.",
     };
   }
@@ -598,6 +620,7 @@ function checkVcTrustPolicyStatus(env: Record<string, string | undefined>): Live
     status: "ready",
     code: "VC_TRUST_POLICY_CONFIG_PRESENT",
     message: "Live VC trust-policy configuration is present for the local fail-closed evaluator.",
+    evidence: "vc-trust-policy-config-present-redacted",
     next: "Use this configuration when implementing and running the live IOTA Identity credential proof command.",
   };
 }
@@ -608,6 +631,7 @@ function invalidVcTrustPolicyStatus(message: string): LiveProofCheck {
     status: "blocked",
     code: "VC_TRUST_POLICY_CONFIG_INVALID",
     message,
+    evidence: "vc-trust-policy-config-invalid-redacted",
     next: "Fix the trust-policy variable shape without committing or printing live credential values.",
   };
 }

@@ -339,9 +339,16 @@ function mapLiveProofCheck(check: LiveProofCheck): ProductEvidenceCheck {
     status: check.status === "ready" ? "ready-live" : "blocked-live",
     code: check.code,
     message: check.message,
-    evidence: check.status === "ready" ? "configuration-present-non-networked" : `missing=${check.missing?.join(",") ?? "see-status"}`,
+    evidence: liveProofEvidence(check),
     next: check.next,
   };
+}
+
+function liveProofEvidence(check: LiveProofCheck): string {
+  if (check.evidence) return check.evidence;
+  if (check.status === "ready") return "configuration-present-non-networked";
+  if (check.missing && check.missing.length > 0) return `missing=${check.missing.join(",")}`;
+  return `blocked=${check.code}`;
 }
 
 function productionBlockers(

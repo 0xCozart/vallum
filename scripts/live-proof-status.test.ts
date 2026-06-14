@@ -106,6 +106,8 @@ test("live proof status blocks insufficient sponsor funding reports", async () =
 
     assert.equal(funding?.status, "blocked");
     assert.equal(funding?.code, "SPONSOR_FUNDING_TOTAL_INSUFFICIENT");
+    assert.equal(funding?.evidence, "sponsor-funding-report-loaded-redacted");
+    assert.match(formatted, /evidence=sponsor-funding-report-loaded-redacted/);
     assert.doesNotMatch(formatted, /sponsor-funding-report\.json/);
   } finally {
     await rm(cwd, { recursive: true, force: true });
@@ -237,6 +239,7 @@ test("live proof status routes reserve failures blocked by sponsor funding to fu
 
     assert.equal(upstream?.status, "blocked");
     assert.equal(upstream?.code, "TESTNET_UPSTREAM_REPORT_FAILED");
+    assert.equal(upstream?.evidence, "testnet-upstream-report-loaded-redacted");
     assert.match(upstream?.message ?? "", /sponsor funding report is not ready/);
     assert.match(upstream?.next ?? "", /sponsor:check-funding/);
     assert.doesNotMatch(upstream?.next ?? "", /sponsor-funding-report\.json|upstream-report\.json/);

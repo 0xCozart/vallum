@@ -6438,3 +6438,71 @@ Escalation triggers:
 - Any new Apex map warning after validation.
 - Any conflict between this map and `AGENTS.md`, `CLAUDE.md`, or the reviewed
   Apex profile.
+
+## Slice 7.40: Live Blocker Evidence Labels
+
+User-visible outcome:
+`npm run proof:live-status`, `npm run proof:product-status`, and
+`npm run proof:operator-gates` keep current live/testnet blockers actionable by
+surfacing fixed redacted evidence labels for loaded, missing, invalid, or
+accepted reports instead of falling back to weak `see-status` output. The
+labels must never reveal report paths, endpoint values, addresses, tokens, raw
+upstream bodies, or local secret paths.
+
+Likely files:
+
+- `scripts/check-live-proof-status.ts`
+- `scripts/check-product-status.ts`
+- `scripts/live-proof-status.test.ts`
+- `scripts/product-status.test.ts`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/CODEBASE_MAP.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- Live proof checks can carry a redacted `evidence` label.
+- Product status preserves that redacted evidence label when mapping
+  live-proof checks.
+- Blocked live/testnet product status output does not use `see-status`.
+- Loaded sponsor funding and upstream diagnostic reports are represented by
+  safe labels such as `sponsor-funding-report-loaded-redacted` and
+  `testnet-upstream-report-loaded-redacted`.
+- Ready report-backed gates use safe labels such as
+  `sponsor-funding-report-valid-redacted` and
+  `testnet-upstream-report-valid-redacted`.
+- Tests prove the labels are present while report paths, endpoint values,
+  addresses, credentials, and secret-like values stay absent.
+
+Verification:
+
+- `node --import tsx --test scripts/live-proof-status.test.ts
+  scripts/product-status.test.ts`
+- `npm run proof:product-status`
+- `npm run proof:operator-gates`
+- `npm run typecheck`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `git diff --check`
+- `npm run verify:fast`
+
+Dependencies:
+Existing live-proof, product-status, operator-gate, sponsor-funding, and
+testnet-upstream report gates.
+
+Risk:
+Medium. This touches status evidence for live/testnet blockers. The labels must
+help operators identify the evidence class without leaking private report
+paths, configured endpoint values, addresses, tokens, raw responses, faucet
+task ids, or secret local paths.
+
+Escalation triggers:
+
+- Any request to print ignored report paths, endpoint values, full sponsor
+  addresses, raw upstream/faucet bodies, bearer tokens, app keys, private keys,
+  raw transaction bytes, user signatures, or local secret paths.
+- Any change that marks sponsor funding, reserve compatibility, Names,
+  Identity, VC, package publication, public A2A, payment, marketplace, custody,
+  or device gates as ready without a valid structured report or explicit
+  operator-approved proof.

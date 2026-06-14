@@ -234,6 +234,9 @@ External proof boundaries:
 
 - Script-driven proof gates: `scripts/check-*.ts`, `scripts/write-*.ts`,
   `scripts/*report*.ts`, and matching `scripts/*.test.ts`.
+- Live/product status evidence labels: `scripts/check-live-proof-status.ts`,
+  `scripts/check-product-status.ts`, `scripts/live-proof-status.test.ts`,
+  `scripts/product-status.test.ts`.
 - Package-script wiring: `package.json`, `scripts/package-scripts.test.ts`.
 - Public product and operator docs: `docs/overview.md`,
   `docs/agentic-gaskit/*.md`, `docs/marketplace-readiness.md`,

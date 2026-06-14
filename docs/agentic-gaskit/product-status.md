@@ -111,12 +111,19 @@ marketplace, or safety work before those claims can be made.
 - Live/testnet gates are either ready to run with safe local configuration,
   local Docker or explicit managed-upstream Gas Station runtime prerequisites,
   and sanitized upstream evidence, or blocked with exact missing/runtime/report
-  check ids.
+  check ids plus redacted evidence labels.
 - Production and safety claims remain explicit blockers instead of implied
   roadmap completion.
 - Structured report templates can be generated locally without contacting live
   services, and they are intentionally not passing evidence until an approved
   proof run updates them.
+
+For live/testnet report-backed gates, product status preserves the fixed
+redacted evidence labels emitted by `npm run proof:live-status`, such as
+`sponsor-funding-report-loaded-redacted` or
+`testnet-upstream-report-valid-redacted`. These labels are deliberately not
+local paths, endpoint values, addresses, profile paths, tokens, or raw response
+content.
 
 ## What It Does Not Prove
 
