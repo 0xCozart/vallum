@@ -69,6 +69,10 @@ hosts, marketplace systems, or physical devices.
   `npm run proof:package-publication-readiness` command, which validates local
   package release proof plus an ignored structured npm publication report
   before manual acceptance.
+- Lets operators prepare that review with
+  `npm run package:write-publication-proof-plan`, a redacted local plan that
+  lists package names, command order, required report fields, required check
+  ids, approval boundaries, and blocker codes without running real publication.
 - Points production marketplace review at the non-networked
   `npm run proof:marketplace-readiness` command, which validates local
   marketplace read-model proof plus an ignored structured production
@@ -123,6 +127,7 @@ npm run proof:payment-provider-readiness
 npm run proof:marketplace-readiness
 npm run proof:custody-readiness
 npm run live:write-proof-plan -- --out tmp/gaskit/live-proof-plan.json
+npm run package:write-publication-proof-plan -- --out tmp/gaskit/package-publication-proof-plan.json
 npm run payment:write-provider-proof-plan -- --out tmp/gaskit/payment-provider-proof-plan.json
 npm run smoke:a2a-public-discovery
 npm run verify:fast

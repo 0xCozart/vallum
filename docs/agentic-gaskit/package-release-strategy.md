@@ -105,6 +105,19 @@ registry install, provenance review, and rollback review. It must not include
 npm tokens, OTPs, npmrc contents, credentials, authorization headers, raw
 registry responses, signatures, or local secret paths.
 
+`npm run package:write-publication-proof-plan` adds a non-networked
+publication proof-plan writer for operators:
+
+- builds first;
+- contacts no npm registry and runs no real `npm publish`;
+- emits command order, current blocker codes, package names, required
+  structured report fields, required check ids, and proof boundaries;
+- can write an ignored local JSON artifact such as
+  `tmp/gaskit/package-publication-proof-plan.json`;
+- keeps npm publication credentials, OTPs, npmrc contents, authorization
+  headers, raw registry responses, signatures, package-owner account details,
+  and local secret paths out of output and Git.
+
 ## Explicit Non-Claims
 
 No package is claimed as published to npm today.

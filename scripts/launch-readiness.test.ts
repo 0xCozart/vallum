@@ -119,6 +119,7 @@ async function writeEvidenceTree(cwd: string): Promise<void> {
     "scripts/package-publish-dry-run.ts",
     "scripts/smoke-package-install.ts",
     "scripts/check-package-publication-readiness.ts",
+    "scripts/write-package-publication-proof-plan.ts",
     "scripts/package-publish.test.ts",
     "scripts/package-install-smoke.test.ts",
     "docs/agentic-gaskit/product-status.md",

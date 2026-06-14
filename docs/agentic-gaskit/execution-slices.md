@@ -3649,6 +3649,78 @@ Escalation triggers:
   registry install, package-name transfer, namespace rename, or rollback
   decision.
 
+## Slice 6.5: Package Publication Proof Plan Packet
+
+User-visible outcome:
+Release operators have a non-networked proof-plan command that turns the
+package publication readiness gate into command order, package names, required
+structured report fields, required check ids, blocker codes, and proof
+boundaries before any real npm registry work.
+
+Likely files:
+
+- `scripts/write-package-publication-proof-plan.ts`
+- `scripts/write-package-publication-proof-plan.test.ts`
+- `scripts/check-operator-live-gates.ts`
+- `scripts/check-launch-readiness.ts`
+- `scripts/package-scripts.test.ts`
+- `scripts/operator-live-gates.test.ts`
+- `scripts/launch-readiness.test.ts`
+- `docs/agentic-gaskit/package-release-strategy.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/CODEBASE_MAP.md`
+- `package.json`
+
+Acceptance criteria:
+
+- `npm run package:write-publication-proof-plan` builds first and does not
+  contact npm or run real `npm publish`.
+- The plan reports current public package names, current blocker codes, ready
+  approval codes, command order, required operator input names, required
+  structured report fields, required structured report check ids, and safety
+  boundaries.
+- The plan can write a mode-0600 ignored local JSON artifact.
+- The plan does not print or require npm tokens, OTPs, npmrc contents,
+  credentials, authorization headers, raw registry responses, signatures,
+  package-owner account details, or local secret paths.
+- Operator live gates point npm publication review at the plan before package
+  publication readiness and any operator-approved publish workflow.
+- Launch readiness includes the plan as Phase 6 package-release evidence
+  without clearing npm publication blockers.
+
+Verification:
+
+- Focused package publication proof-plan tests.
+- Focused package-publication readiness, package-script, operator-gate,
+  product-status, and launch-readiness tests.
+- `npm run package:write-publication-proof-plan -- --out
+  tmp/gaskit/package-publication-proof-plan.json`.
+- `npm run proof:package-publication-readiness`.
+- `npm run proof:operator-gates`.
+- `npm run proof:product-status`.
+- `npm run proof:launch-readiness`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slices 6.1, 6.2, 6.3, and 6.4.
+
+Risk:
+Medium. A proof plan can be mistaken for real registry publication,
+account-ownership proof, package-name availability, provenance signing,
+registry installability, or rollback approval unless the artifact stays
+redacted, opt-in, and manually reviewed.
+
+Escalation triggers:
+
+- Any request to run real `npm publish`.
+- Any npm token, OTP, npm organization ownership, provenance signing,
+  registry install, package-name transfer, namespace rename, or rollback
+  decision.
+
 ## Slice 7.1: Product Status Proof Gate
 
 User-visible outcome:

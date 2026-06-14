@@ -36,6 +36,9 @@ surface in one machine-checkable place:
   pack dry-runs, tarball install smoke, opt-in publish dry-run, and accepts only
   an operator-supplied redacted structured npm publication report path before
   moving registry evidence to manual review;
+- package-publication proof-plan wiring that writes a redacted non-networked
+  command/report checklist before any operator-approved npm publication proof
+  is attempted;
 - marketplace readiness wiring that checks local read-model source, docs,
   tests, smoke wiring, and accepts only an operator-supplied redacted structured
   production marketplace report path before moving marketplace evidence to
@@ -129,6 +132,7 @@ npm run a2a:check-static-discovery-bundle -- --out-dir <dir> --expected-public-b
 npm run smoke:a2a-static-discovery-local -- --out-dir <dir> --expected-public-base-url <url> --expected-public-jwks-url <url>
 npm run proof:a2a-public-readiness
 npm run proof:package-publication-readiness
+npm run package:write-publication-proof-plan -- --out tmp/gaskit/package-publication-proof-plan.json
 npm run proof:payment-provider-readiness
 npm run proof:marketplace-readiness
 npm run proof:custody-readiness

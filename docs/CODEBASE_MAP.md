@@ -161,6 +161,10 @@ It also includes the first Agentic GasKit implementation slices:
 - non-networked package publication readiness gate for local release proof plus
   an operator-supplied redacted structured npm publication report path before
   manual approval of registry publication claims
+- local redacted package publication proof-plan writer for npm publication
+  command order, current package names, required structured report fields,
+  required check ids, blocker codes, and proof boundaries before real registry
+  work
 - device access safety gate that blocks physical-device implementation and
   limits any future proof to virtual or simulated resources until a separate
   approved safety design exists
@@ -212,6 +216,7 @@ roadmap unless later slices implement and verify them.
   `scripts/package-publish-dry-run.ts`,
   `scripts/smoke-package-install.ts`,
   `scripts/check-package-publication-readiness.ts`,
+  `scripts/write-package-publication-proof-plan.ts`,
   `scripts/package-install-smoke.test.ts`,
   `scripts/package-publish-dry-run.test.ts`,
   `scripts/package-publish.test.ts`, `scripts/package-scripts.test.ts`
