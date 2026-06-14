@@ -6,6 +6,7 @@ import { collectPublishablePackages } from "./package-publish-dry-run.js";
 
 export type OperatorReportTemplateKind =
   | "testnet-upstream"
+  | "testnet-digest"
   | "a2a-public-discovery"
   | "a2a-public-push-delivery"
   | "a2a-external-conformance"
@@ -72,6 +73,20 @@ const TESTNET_UPSTREAM_CHECKS = [
   "redaction-review",
 ] as const;
 
+const TESTNET_DIGEST_NOTES = [
+  ...COMMON_NOTES,
+  "This template is not accepted as passing digest evidence; run the live digest proof command with --report to write the accepted report shape.",
+  "The live digest proof command performs a read-only IOTA RPC lookup of a documented public digest; it does not sign, reserve gas, execute transactions, or spend sponsor gas.",
+] as const;
+
+const TESTNET_DIGEST_CHECKS = [
+  "documented-digest-present",
+  "read-only-live-lookup",
+  "successful-effects-status",
+  "fresh-observation-time",
+  "redaction-review",
+] as const;
+
 const PAYMENT_CHECKS = [
   "x402-verify",
   "x402-settle",
@@ -118,6 +133,7 @@ The template remains result=pending-operator-proof until a real approved proof r
 
 kinds:
   testnet-upstream
+  testnet-digest
   a2a-public-discovery
   a2a-public-push-delivery
   a2a-external-conformance
@@ -184,6 +200,25 @@ export async function buildOperatorReportTemplate(
         ],
         checks: TESTNET_UPSTREAM_CHECKS,
         notes: TESTNET_UPSTREAM_NOTES,
+      };
+    case "testnet-digest":
+      return {
+        ...base,
+        kind: "agentic-gaskit.testnet-digest-proof-template",
+        acceptedReportKind: "agentic-gaskit.testnet-digest-proof-report",
+        acceptedReportEnv: "GASKIT_TESTNET_DIGEST_REPORT",
+        requiredEnv: [
+          "IOTA_RPC_URL",
+        ],
+        commands: [
+          "npm run proof:testnet-digest",
+          "npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json",
+          "npm run proof:live-status",
+          "npm run proof:product-status",
+          "npm run proof:operator-gates",
+        ],
+        checks: TESTNET_DIGEST_CHECKS,
+        notes: TESTNET_DIGEST_NOTES,
       };
     case "a2a-public-discovery":
       return stripUndefined({
@@ -327,6 +362,7 @@ function readArg(argv: readonly string[], index: number, name: string): string {
 function parseKind(value: string): OperatorReportTemplateKind {
   const allowed = new Set<OperatorReportTemplateKind>([
     "testnet-upstream",
+    "testnet-digest",
     "a2a-public-discovery",
     "a2a-public-push-delivery",
     "a2a-external-conformance",

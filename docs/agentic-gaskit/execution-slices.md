@@ -7535,3 +7535,62 @@ Escalation triggers:
   local secret paths in status gates.
 - Any request to include `smoke:iota-identity-live` in default local
   verification.
+
+## Slice 7.70: Testnet Digest Operator Report Template
+
+User-visible outcome:
+Operators can generate a redacted pending template for the
+`GASKIT_TESTNET_DIGEST_REPORT` artifact that now clears
+`testnet-sponsored-execute` in live-status/product-status when replaced by a
+current passing report from the read-only live digest proof command.
+
+Likely files:
+
+- `scripts/write-operator-report-template.ts`
+- `scripts/write-operator-report-template.test.ts`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `npm run operator:write-report-template -- --kind testnet-digest --out
+  <ignored-json-path>` writes a mode `0600` pending template.
+- The template records `kind=agentic-gaskit.testnet-digest-proof-template`,
+  `acceptedReportKind=agentic-gaskit.testnet-digest-proof-report`, and
+  `acceptedReportEnv=GASKIT_TESTNET_DIGEST_REPORT`.
+- The template points operators at `npm run proof:testnet-digest` before
+  `npm run proof:testnet-digest:live -- --report
+  tmp/gaskit/testnet-digest-proof.json`.
+- Tests prove the generated template is not accepted by the digest report
+  validator as passing evidence.
+- The change does not run IOTA RPC, sign transactions, reserve gas, execute
+  transactions, spend sponsor gas, print configured values, or alter live
+  readiness acceptance.
+
+Verification:
+
+- `node --import tsx --test scripts/write-operator-report-template.test.ts
+  scripts/testnet-digest-proof.test.ts`
+- `npm run operator:write-report-template -- --kind testnet-digest --out
+  tmp/gaskit/testnet-digest-report-template.json`
+- `npm run proof:operator-gates`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `npm run typecheck`
+- `git diff --check`
+
+Dependencies:
+Existing testnet digest proof report validator, live-status digest gate, and
+operator report template writer.
+
+Risk:
+Low. This is operator scaffolding only, but it sits next to live/testnet proof
+language and must not be confused with passing sponsored-execute evidence.
+
+Escalation triggers:
+
+- Any request to treat a pending template as passing digest proof.
+- Any request for the template writer to contact IOTA RPC, run sponsored
+  execution, publish packages, probe public A2A endpoints, contact payment
+  providers, operate marketplace systems, touch custody/KMS, or print report
+  contents, endpoint values, addresses, credentials, transaction bytes, or
+  local secret paths.

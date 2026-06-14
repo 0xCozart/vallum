@@ -6,6 +6,7 @@ import test from "node:test";
 
 import { checkA2APublicReadiness } from "./check-a2a-public-readiness.js";
 import { checkPackagePublicationReadiness } from "./check-package-publication-readiness.js";
+import { loadTestnetDigestReport } from "./testnet-digest-report.js";
 import { loadTestnetUpstreamReport } from "./testnet-upstream-report.js";
 import {
   buildOperatorReportTemplate,
@@ -46,6 +47,43 @@ test("operator report template builds testnet upstream guidance without accepted
 
   await assert.rejects(
     () => loadTestnetUpstreamReport(outFile),
+    /invalid shape/,
+  );
+});
+
+test("operator report template builds testnet digest guidance without accepted proof shape", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "gaskit-testnet-digest-template-"));
+  const outFile = join(cwd, "testnet-digest-report-template.json");
+
+  await writeOperatorReportTemplate({
+    kind: "testnet-digest",
+    now: new Date("2026-06-14T12:00:00.000Z"),
+    outFile,
+  });
+
+  const mode = (await stat(outFile)).mode & 0o777;
+  assert.equal(mode, 0o600);
+
+  const parsed = JSON.parse(await readFile(outFile, "utf8")) as Record<string, unknown>;
+  assert.equal(parsed.kind, "agentic-gaskit.testnet-digest-proof-template");
+  assert.equal(parsed.result, "pending-operator-proof");
+  assert.equal(parsed.acceptedReportKind, "agentic-gaskit.testnet-digest-proof-report");
+  assert.equal(parsed.acceptedReportEnv, "GASKIT_TESTNET_DIGEST_REPORT");
+  assert.deepEqual(parsed.requiredEnv, ["IOTA_RPC_URL"]);
+  assert.ok((parsed.commands as string[]).includes("npm run proof:testnet-digest"));
+  assert.ok((parsed.commands as string[]).includes("npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json"));
+  assert.ok(
+    (parsed.commands as string[]).indexOf("npm run proof:testnet-digest")
+      < (parsed.commands as string[]).indexOf("npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json"),
+  );
+  assert.ok((parsed.commands as string[]).includes("npm run proof:live-status"));
+  assert.ok((parsed.checks as string[]).includes("read-only-live-lookup"));
+  assert.ok((parsed.checks as string[]).includes("successful-effects-status"));
+  assert.ok((parsed.notes as string[]).some((note) => note.includes("not accepted as passing digest evidence")));
+  assert.ok((parsed.notes as string[]).some((note) => note.includes("does not sign, reserve gas, execute transactions, or spend sponsor gas")));
+
+  await assert.rejects(
+    () => loadTestnetDigestReport(outFile),
     /invalid shape/,
   );
 });
