@@ -28,6 +28,7 @@ test("sponsor faucet request requires explicit execute before contacting live se
       GAS_STATION_KEYPAIR: sponsorKey,
       IOTA_FAUCET_URL: "https://faucet.testnet.example",
     },
+    outFile: await tempFaucetReportPath(),
     requestFunds: async () => {
       calls += 1;
       return 100;
@@ -49,6 +50,7 @@ test("sponsor faucet request blocks missing faucet configuration", async () => {
   const report = await requestSponsorFaucetFunds({
     env: { GAS_STATION_KEYPAIR: sponsorKey },
     execute: true,
+    outFile: await tempFaucetReportPath(),
   });
 
   assert.equal(report.result, "blocked");
@@ -62,6 +64,7 @@ test("sponsor faucet request rejects unsafe faucet URLs without contacting them"
     env: { GAS_STATION_KEYPAIR: sponsorKey },
     execute: true,
     faucetUrl: "http://192.168.0.20:9123",
+    outFile: await tempFaucetReportPath(),
     requestFunds: async () => {
       calls += 1;
       return 100;
@@ -201,6 +204,7 @@ test("sponsor faucet request can select the documented v0 endpoint", async () =>
       execute: true,
       faucetApiVersion: "v0-documented",
       faucetUrl: "https://faucet.testnet.example",
+      outFile: await tempFaucetReportPath(),
     });
     const formatted = formatSponsorFaucetRequestReport(report);
 
@@ -304,6 +308,7 @@ test("sponsor faucet auto mode falls back from unknown v1 faucet errors to the d
       },
       execute: true,
       faucetUrl: "https://faucet.testnet.example",
+      outFile: await tempFaucetReportPath(),
     });
     const formatted = formatSponsorFaucetRequestReport(report);
 
@@ -340,6 +345,7 @@ test("sponsor faucet auto mode does not fall back on concrete v1 faucet blockers
       },
       execute: true,
       faucetUrl: "https://faucet.testnet.example",
+      outFile: await tempFaucetReportPath(),
     });
 
     assert.equal(report.result, "failed");
@@ -369,6 +375,7 @@ test("sponsor faucet request records documented v0 HTTP failure metadata", async
       execute: true,
       faucetApiVersion: "v0-documented",
       faucetUrl: "https://faucet.testnet.example",
+      outFile: await tempFaucetReportPath(),
     });
     const formatted = formatSponsorFaucetRequestReport(report);
 
@@ -400,6 +407,7 @@ test("sponsor faucet request records safe HTTP failure metadata without raw resp
       },
       execute: true,
       faucetUrl: "https://faucet.testnet.example",
+      outFile: await tempFaucetReportPath(),
     });
     const formatted = formatSponsorFaucetRequestReport(report);
 
@@ -430,6 +438,7 @@ test("sponsor faucet request records bounded faucet error codes without raw body
       },
       execute: true,
       faucetUrl: "https://faucet.testnet.example",
+      outFile: await tempFaucetReportPath(),
     });
     const formatted = formatSponsorFaucetRequestReport(report);
 
@@ -459,6 +468,7 @@ test("sponsor faucet request preserves v1 metadata for rate limits", async () =>
       },
       execute: true,
       faucetUrl: "https://faucet.testnet.example",
+      outFile: await tempFaucetReportPath(),
     });
 
     assert.equal(report.result, "failed");
@@ -480,6 +490,7 @@ test("sponsor faucet request redacts failed faucet responses", async () => {
       IOTA_FAUCET_URL: "https://faucet.testnet.example",
     },
     execute: true,
+    outFile: await tempFaucetReportPath(),
     requestFunds: async () => {
       throw new Error(rawError);
     },
@@ -495,4 +506,9 @@ test("sponsor faucet request redacts failed faucet responses", async () => {
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+async function tempFaucetReportPath(): Promise<string> {
+  const cwd = await mkdtemp(join(tmpdir(), "gaskit-sponsor-faucet-"));
+  return join(cwd, "tmp/gaskit/sponsor-faucet-request.json");
 }
