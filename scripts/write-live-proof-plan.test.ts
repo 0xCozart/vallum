@@ -57,18 +57,43 @@ test("live proof plan reports current blockers without configured values", async
     assert.ok(plan.commands.some((command) => command.id === "request-sponsor-faucet-funds" && command.requiresOperatorApproval));
     assert.ok(plan.commands.some((command) => command.id === "check-sponsor-funding" && command.contactsLiveService));
     assert.ok(plan.commands.some((command) => command.id === "triage-testnet-upstream-reachability" && command.command.includes("--skip-reserve")));
+    assert.ok(plan.commands.some((command) => command.id === "write-testnet-upstream-report-template" && command.command.includes("--kind testnet-upstream") && !command.contactsLiveService));
     assert.ok(plan.commands.some((command) => command.id === "diagnose-testnet-upstream" && command.contactsLiveService));
+    assert.ok(plan.commands.some((command) => command.id === "write-testnet-digest-report-template" && command.command.includes("--kind testnet-digest") && !command.requiresOperatorApproval));
     assert.ok(plan.commands.some((command) => command.id === "check-testnet-digest-live" && command.command.includes("proof:testnet-digest:live -- --report")));
+    assert.ok(plan.commands.some((command) => command.id === "write-iota-names-live-report-template" && command.command.includes("--kind iota-names-live")));
+    assert.ok(plan.commands.some((command) => command.id === "write-iota-identity-live-report-template" && command.command.includes("--kind iota-identity-live")));
+    assert.ok(plan.commands.some((command) => command.id === "write-vc-validation-live-report-template" && command.command.includes("--kind vc-validation-live")));
     assert.ok(
       plan.commands.findIndex((command) => command.id === "triage-testnet-upstream-reachability")
+      < plan.commands.findIndex((command) => command.id === "write-testnet-upstream-report-template"),
+    );
+    assert.ok(
+      plan.commands.findIndex((command) => command.id === "write-testnet-upstream-report-template")
       < plan.commands.findIndex((command) => command.id === "diagnose-testnet-upstream"),
     );
     assert.ok(
       plan.commands.findIndex((command) => command.id === "diagnose-testnet-upstream")
+      < plan.commands.findIndex((command) => command.id === "write-testnet-digest-report-template"),
+    );
+    assert.ok(
+      plan.commands.findIndex((command) => command.id === "write-testnet-digest-report-template")
       < plan.commands.findIndex((command) => command.id === "check-testnet-digest-live"),
     );
     assert.ok(plan.commands.some((command) => command.id === "smoke-iota-names-live" && command.command.includes("--report")));
     assert.ok(plan.commands.some((command) => command.id === "smoke-iota-identity-live" && command.command.includes("--report")));
+    assert.ok(
+      plan.commands.findIndex((command) => command.id === "write-iota-names-live-report-template")
+      < plan.commands.findIndex((command) => command.id === "smoke-iota-names-live"),
+    );
+    assert.ok(
+      plan.commands.findIndex((command) => command.id === "write-iota-identity-live-report-template")
+      < plan.commands.findIndex((command) => command.id === "smoke-iota-identity-live"),
+    );
+    assert.ok(
+      plan.commands.findIndex((command) => command.id === "smoke-iota-identity-live")
+      < plan.commands.findIndex((command) => command.id === "write-vc-validation-live-report-template"),
+    );
     assert.equal(
       plan.checks.find((check) => check.id === "sponsor-funding")?.evidence,
       "missing=GASKIT_SPONSOR_FUNDING_REPORT",

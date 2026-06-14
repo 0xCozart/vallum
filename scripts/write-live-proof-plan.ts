@@ -132,10 +132,22 @@ const PLAN_COMMANDS: readonly LiveProofPlanCommand[] = [
     requiresOperatorApproval: true,
   },
   {
+    id: "write-testnet-upstream-report-template",
+    command: "npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json",
+    contactsLiveService: false,
+    requiresOperatorApproval: false,
+  },
+  {
     id: "diagnose-testnet-upstream",
     command: "npm run diagnose:gas-station -- --report <ignored-json-path>",
     contactsLiveService: true,
     requiresOperatorApproval: true,
+  },
+  {
+    id: "write-testnet-digest-report-template",
+    command: "npm run operator:write-report-template -- --kind testnet-digest --out tmp/gaskit/testnet-digest-report-template.json",
+    contactsLiveService: false,
+    requiresOperatorApproval: false,
   },
   {
     id: "check-testnet-digest-live",
@@ -144,16 +156,34 @@ const PLAN_COMMANDS: readonly LiveProofPlanCommand[] = [
     requiresOperatorApproval: true,
   },
   {
+    id: "write-iota-names-live-report-template",
+    command: "npm run operator:write-report-template -- --kind iota-names-live --out tmp/gaskit/iota-names-live-report-template.json",
+    contactsLiveService: false,
+    requiresOperatorApproval: false,
+  },
+  {
     id: "smoke-iota-names-live",
     command: "npm run smoke:iota-names-live -- --report <ignored-json-path>",
     contactsLiveService: true,
     requiresOperatorApproval: true,
   },
   {
+    id: "write-iota-identity-live-report-template",
+    command: "npm run operator:write-report-template -- --kind iota-identity-live --out tmp/gaskit/iota-identity-live-report-template.json",
+    contactsLiveService: false,
+    requiresOperatorApproval: false,
+  },
+  {
     id: "smoke-iota-identity-live",
     command: "npm run smoke:iota-identity-live -- --report <ignored-json-path>",
     contactsLiveService: true,
     requiresOperatorApproval: true,
+  },
+  {
+    id: "write-vc-validation-live-report-template",
+    command: "npm run operator:write-report-template -- --kind vc-validation-live --out tmp/gaskit/vc-validation-live-report-template.json",
+    contactsLiveService: false,
+    requiresOperatorApproval: false,
   },
   {
     id: "check-live-proof-status",

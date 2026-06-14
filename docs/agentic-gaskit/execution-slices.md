@@ -7836,3 +7836,63 @@ Escalation triggers:
   refs, local secret paths, report contents, credentials, tokens, private keys,
   raw transaction bytes, signatures, or raw upstream/provider bodies in gate
   output or public docs.
+
+## Slice 7.75: Live Proof Plan Template Command Alignment
+
+User-visible outcome:
+`npm run live:write-proof-plan` includes the matching ignored
+`operator:write-report-template` commands before the live proof commands they
+prepare, so the operator-owned live proof path uses accepted report shapes
+instead of ad hoc JSON.
+
+Likely files:
+
+- `scripts/write-live-proof-plan.ts`
+- `scripts/write-live-proof-plan.test.ts`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- The live proof plan includes `testnet-upstream` template generation before
+  the full upstream diagnostic command.
+- The live proof plan includes `testnet-digest` template generation before the
+  read-only digest lookup command.
+- The live proof plan includes `iota-names-live` and `iota-identity-live`
+  template generation before their corresponding live smoke commands.
+- The live proof plan includes `vc-validation-live` template generation after
+  the IOTA Identity live smoke command, because VC validation consumes the
+  accepted IOTA Identity report plus trust-policy configuration.
+- Template commands are marked non-live and do not require operator approval;
+  diagnostics, digest lookup, and smokes still require approval and can contact
+  live services.
+- Tests assert command presence and order without leaking configured endpoint,
+  name, address, profile, DID, credential, or trust-policy values.
+- The change does not run live commands, accept templates as proof, or change
+  live-proof readiness classification.
+
+Verification:
+
+- `node --import tsx --test scripts/write-live-proof-plan.test.ts`
+- `npm run live:write-proof-plan -- --out tmp/gaskit/live-proof-plan.json`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `npm run typecheck`
+- `git diff --check`
+
+Dependencies:
+Slices 7.70 through 7.74.
+
+Risk:
+Low. This is command-order and artifact-guidance alignment only, but a stale
+live proof plan can send operators toward report files that downstream gates
+will reject.
+
+Escalation triggers:
+
+- Any request to treat generated templates as passing live Names, Identity, VC,
+  upstream, digest, or sponsored execute evidence.
+- Any request to include endpoint values, names, addresses, DIDs, credential
+  refs, trust-policy values, local secret paths, report contents, credentials,
+  tokens, private keys, raw transaction bytes, signatures, or raw upstream
+  bodies in the live proof plan or public docs.

@@ -42,6 +42,10 @@ It includes the sponsor funding request, faucet request, and read-only funding
 diagnostic in the command order, but still treats faucet reports as optional
 triage context only; a passing sponsor funding report is required before the
 funding gate can clear.
+It also includes ignored report-template commands before the testnet upstream,
+testnet digest, IOTA Names, IOTA Identity, and VC validation proof steps. Those
+templates are planning artifacts only; accepted proof still comes from the
+sanitized diagnostic, digest lookup, or live smoke reports.
 
 ## Current Local Status
 
@@ -164,11 +168,16 @@ npm run proof:live-status
 GASKIT_SPONSOR_FAUCET_REPORT=tmp/gaskit/sponsor-faucet-request.json npm run proof:live-status
 GASKIT_SPONSOR_FUNDING_REPORT=tmp/gaskit/sponsor-funding-report.json npm run proof:live-status
 npm run diagnose:gas-station -- --skip-reserve --report tmp/gaskit/testnet-upstream-diagnostic.json
+npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
+npm run operator:write-report-template -- --kind testnet-digest --out tmp/gaskit/testnet-digest-report-template.json
 npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json
 GASKIT_SPONSOR_FUNDING_REPORT=tmp/gaskit/sponsor-funding-report.json GASKIT_TESTNET_UPSTREAM_REPORT=tmp/gaskit/testnet-upstream-diagnostic.json GASKIT_TESTNET_DIGEST_REPORT=tmp/gaskit/testnet-digest-proof.json npm run proof:live-status -- --out tmp/gaskit/live-proof-status.json
+npm run operator:write-report-template -- --kind iota-names-live --out tmp/gaskit/iota-names-live-report-template.json
 npm run smoke:iota-names-live -- --report tmp/gaskit/iota-names-live-report.json
+npm run operator:write-report-template -- --kind iota-identity-live --out tmp/gaskit/iota-identity-live-report-template.json
 npm run smoke:iota-identity-live -- --report tmp/gaskit/iota-identity-live-report.json
+npm run operator:write-report-template -- --kind vc-validation-live --out tmp/gaskit/vc-validation-live-report-template.json
 ```
 
 The `--skip-reserve` diagnostic is reachability triage only. It cannot clear
