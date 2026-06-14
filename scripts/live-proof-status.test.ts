@@ -39,6 +39,8 @@ test("live proof status reports exact blockers without secret values", async () 
     assert.match(formatted, /GASKIT_SPONSOR_FUNDING_REPORT/);
     assert.match(formatted, /GASKIT_TESTNET_UPSTREAM_REPORT/);
     assert.match(formatted, /GASKIT_TESTNET_DIGEST_REPORT/);
+    assert.match(formatted, /operator:write-report-template -- --kind testnet-upstream/);
+    assert.match(formatted, /operator:write-report-template -- --kind testnet-digest/);
     assert.match(formatted, /IOTA_NAMES_GRAPHQL_URL/);
     assert.match(formatted, /IOTA_IDENTITY_PROOF_ENDPOINT/);
     assert.match(formatted, /IOTA_IDENTITY_TRUSTED_ISSUER_DIDS/);

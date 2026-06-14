@@ -8344,3 +8344,60 @@ Escalation triggers:
   private keys, signatures, raw payloads, raw response bodies, webhook secrets,
   account details, full addresses, or local secret paths in readiness output or
   public docs.
+
+## Slice 7.84: Live Status Testnet Report Template Guidance
+
+User-visible outcome:
+`npm run proof:live-status` points missing `GASKIT_TESTNET_UPSTREAM_REPORT` and
+`GASKIT_TESTNET_DIGEST_REPORT` blockers at their matching ignored
+report-template commands before instructing operators to run the approved
+diagnostic or read-only digest lookup.
+
+Likely files:
+
+- `scripts/check-live-proof-status.ts`
+- `scripts/live-proof-status.test.ts`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- Missing testnet upstream report output includes
+  `npm run operator:write-report-template -- --kind testnet-upstream`.
+- Missing testnet digest report output includes
+  `npm run operator:write-report-template -- --kind testnet-digest`.
+- The live-status gate still reports `TESTNET_UPSTREAM_REPORT_MISSING` and
+  `TESTNET_DIGEST_REPORT_MISSING` until valid ignored structured reports are
+  configured.
+- Report-template generation remains a non-networked planning artifact and is
+  not accepted as IOTA RPC, Gas Station reachability, reserve_gas compatibility,
+  digest lookup, or sponsored execute proof.
+- Focused tests preserve redaction of sponsor keys, bearer tokens, endpoint
+  values, report paths, transaction bytes, signatures, raw RPC output, faucet
+  task ids, and full addresses.
+
+Verification:
+
+- `node --import tsx --test scripts/live-proof-status.test.ts`
+- `npm run proof:live-status`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `npm run typecheck`
+- `git diff --check`
+
+Dependencies:
+Slices 7.7, 7.10, 7.31, 7.70, 7.73, 7.75, 7.77, and 7.83.
+
+Risk:
+Low. This changes direct live-status guidance only, but stale output can cause
+operators to skip structured templates before generating upstream or digest
+reports.
+
+Escalation triggers:
+
+- Any request to treat generated templates, funding reports, `--skip-reserve`
+  diagnostics, or read-only digest lookups as fresh sponsored execute proof.
+- Any request to include endpoint values, local report paths, sponsor keys,
+  bearer tokens, transaction bytes, raw signatures, raw RPC responses, faucet
+  task ids, full addresses, or local secret paths in readiness output or public
+  docs.

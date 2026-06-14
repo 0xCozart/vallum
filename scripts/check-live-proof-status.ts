@@ -112,6 +112,8 @@ const TESTNET_UPSTREAM_REPORT_ENV = "GASKIT_TESTNET_UPSTREAM_REPORT";
 const TESTNET_DIGEST_REPORT_ENV = "GASKIT_TESTNET_DIGEST_REPORT";
 const IOTA_NAMES_LIVE_REPORT_ENV = "IOTA_NAMES_LIVE_REPORT";
 const IOTA_IDENTITY_LIVE_REPORT_ENV = "IOTA_IDENTITY_LIVE_REPORT";
+const TESTNET_UPSTREAM_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json";
+const TESTNET_DIGEST_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind testnet-digest --out tmp/gaskit/testnet-digest-report-template.json";
 const IOTA_NAMES_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind iota-names-live --out tmp/gaskit/iota-names-live-report-template.json";
 const IOTA_IDENTITY_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind iota-identity-live --out tmp/gaskit/iota-identity-live-report-template.json";
 const VC_VALIDATION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind vc-validation-live --out tmp/gaskit/vc-validation-live-report-template.json";
@@ -340,7 +342,7 @@ async function checkTestnetUpstreamStatus(
       missing: [TESTNET_UPSTREAM_REPORT_ENV],
       message: "No sanitized testnet upstream diagnostic report is configured.",
       evidence: `missing=${TESTNET_UPSTREAM_REPORT_ENV}`,
-      next: "Run npm run diagnose:gas-station -- --report <ignored-json-path> after Gas Station is intentionally online; use --skip-reserve only for reachability triage.",
+      next: `${TESTNET_UPSTREAM_TEMPLATE_COMMAND}; run npm run diagnose:gas-station -- --report <ignored-json-path> after Gas Station is intentionally online; use --skip-reserve only for reachability triage.`,
     };
   }
 
@@ -406,7 +408,7 @@ async function checkTestnetDigestStatus(
       missing: [TESTNET_DIGEST_REPORT_ENV],
       message: "No sanitized testnet sponsored execute digest proof report is configured.",
       evidence: `missing=${TESTNET_DIGEST_REPORT_ENV}`,
-      next: "Run npm run proof:testnet-digest:live -- --report <ignored-json-path> with operator approval, then rerun this gate.",
+      next: `${TESTNET_DIGEST_TEMPLATE_COMMAND}; run npm run proof:testnet-digest:live -- --report <ignored-json-path> with operator approval, then rerun this gate.`,
     };
   }
 
