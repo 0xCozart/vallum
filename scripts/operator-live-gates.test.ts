@@ -42,7 +42,7 @@ test("operator live gates report current blockers without secret values", async 
     assert.equal(findGate(report, "vc-validation-live").contactsLiveService, true);
     assert.equal(
       findGate(report, "vc-validation-live").command,
-      "npm run live:write-proof-plan && npm run smoke:iota-identity-live -- --report <ignored-json-path>",
+      "npm run operator:write-report-template -- --kind vc-validation-live --out tmp/gaskit/vc-validation-live-report-template.json && npm run live:write-proof-plan && npm run smoke:iota-identity-live -- --report <ignored-json-path>",
     );
     assert.equal(findGate(report, "testnet-readiness").status, "blocked-config");
     assert.equal(findGate(report, "gas-station-runtime").status, "blocked-config");
@@ -59,40 +59,43 @@ test("operator live gates report current blockers without secret values", async 
     assert.equal(findGate(report, "testnet-upstream").status, "blocked-config");
     assert.equal(
       findGate(report, "testnet-upstream").command,
-      "npm run live:write-proof-plan && npm run diagnose:gas-station -- --report <ignored-json-path>",
+      "npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json && npm run live:write-proof-plan && npm run diagnose:gas-station -- --report <ignored-json-path>",
     );
     assert.equal(findGate(report, "testnet-sponsored-execute").status, "blocked-config");
     assert.equal(findGate(report, "testnet-sponsored-execute").approvalRequired, true);
     assert.equal(findGate(report, "testnet-sponsored-execute").contactsLiveService, true);
-    assert.equal(findGate(report, "testnet-sponsored-execute").command, "npm run execute:testnet-demo");
+    assert.equal(
+      findGate(report, "testnet-sponsored-execute").command,
+      "npm run operator:write-report-template -- --kind testnet-digest --out tmp/gaskit/testnet-digest-report-template.json && npm run execute:testnet-demo",
+    );
     assert.equal(
       findGate(report, "iota-names-live").command,
-      "npm run live:write-proof-plan && npm run smoke:iota-names-live -- --report <ignored-json-path>",
+      "npm run operator:write-report-template -- --kind iota-names-live --out tmp/gaskit/iota-names-live-report-template.json && npm run live:write-proof-plan && npm run smoke:iota-names-live -- --report <ignored-json-path>",
     );
     assert.equal(
       findGate(report, "iota-identity-live").command,
-      "npm run live:write-proof-plan && npm run smoke:iota-identity-live -- --report <ignored-json-path>",
+      "npm run operator:write-report-template -- --kind iota-identity-live --out tmp/gaskit/iota-identity-live-report-template.json && npm run live:write-proof-plan && npm run smoke:iota-identity-live -- --report <ignored-json-path>",
     );
     assert.equal(findGate(report, "npm-registry-publication").status, "requires-approval");
     assert.equal(
       findGate(report, "npm-registry-publication").command,
-      "npm run package:write-publication-proof-plan && npm run proof:package-publication-readiness && operator-approved npm publish workflow",
+      "npm run operator:write-report-template -- --kind package-publication --out tmp/gaskit/package-publication-report-template.json && npm run package:write-publication-proof-plan && npm run proof:package-publication-readiness && operator-approved npm publish workflow",
     );
     assert.equal(
       findGate(report, "public-a2a-hosting").command,
-      "npm run a2a:write-public-proof-plan && npm run proof:a2a-public-readiness && npm run smoke:a2a-public-discovery",
+      "npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/gaskit/a2a-public-discovery-report-template.json && npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/gaskit/a2a-public-push-delivery-report-template.json && npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/gaskit/a2a-external-conformance-report-template.json && npm run a2a:write-public-proof-plan && npm run proof:a2a-public-readiness && npm run smoke:a2a-public-discovery",
     );
     assert.equal(
       findGate(report, "live-payment-provider").command,
-      "npm run payment:write-provider-proof-plan && npm run proof:payment-provider-readiness",
+      "npm run operator:write-report-template -- --kind payment-provider-live --out tmp/gaskit/payment-provider-live-report-template.json && npm run payment:write-provider-proof-plan && npm run proof:payment-provider-readiness",
     );
     assert.equal(
       findGate(report, "production-marketplace").command,
-      "npm run marketplace:write-production-proof-plan && npm run proof:marketplace-readiness && dedicated production marketplace readiness slice",
+      "npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json && npm run marketplace:write-production-proof-plan && npm run proof:marketplace-readiness && dedicated production marketplace readiness slice",
     );
     assert.equal(
       findGate(report, "production-custody").command,
-      "npm run custody:write-production-proof-plan && npm run proof:custody-readiness && dedicated custody/security design slice",
+      "npm run operator:write-report-template -- --kind custody-production --out tmp/gaskit/custody-production-report-template.json && npm run custody:write-production-proof-plan && npm run proof:custody-readiness && dedicated custody/security design slice",
     );
     assert.equal(findGate(report, "physical-device-access").status, "deferred-safety");
     assert.doesNotMatch(formatted, /graphql\.testnet\.example|researcher\.demo\.iota|identity\.testnet\.example|profiles\/researcher\.json/);
@@ -165,7 +168,7 @@ test("operator live gates route documented sponsored execute proof to read-only 
   assert.equal(gate.status, "requires-approval");
   assert.equal(gate.approvalRequired, true);
   assert.equal(gate.contactsLiveService, true);
-  assert.equal(gate.command, "npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json");
+  assert.equal(gate.command, "npm run operator:write-report-template -- --kind testnet-digest --out tmp/gaskit/testnet-digest-report-template.json && npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json");
 });
 
 test("operator live gates require approval for configured live endpoint smokes", async () => {
@@ -273,7 +276,7 @@ test("operator live gate artifact reports blockers without configured values", a
   assert.ok(artifact.blockerCodes.includes("IOTA_NAMES_LIVE_REPORT_VALID"));
   assert.ok(artifact.approvalRequiredGateIds.includes("iota-names-live"));
   assert.ok(artifact.liveServiceGateIds.includes("iota-names-live"));
-  assert.ok(artifact.gates.some((gate) => gate.command === "npm run live:write-proof-plan && npm run smoke:iota-names-live -- --report <ignored-json-path>"));
+  assert.ok(artifact.gates.some((gate) => gate.command === "npm run operator:write-report-template -- --kind iota-names-live --out tmp/gaskit/iota-names-live-report-template.json && npm run live:write-proof-plan && npm run smoke:iota-names-live -- --report <ignored-json-path>"));
   assert.doesNotMatch(formatted, /graphql\.testnet\.example|researcher\.demo\.iota/);
   assert.doesNotMatch(formatted, /0x1111111111111111111111111111111111111111111111111111111111111111/);
 });

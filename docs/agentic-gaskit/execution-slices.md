@@ -7778,3 +7778,61 @@ Escalation triggers:
   refs, local secret paths, report contents, credentials, tokens, private keys,
   raw transaction bytes, signatures, or raw upstream/provider bodies in launch
   docs or generated output.
+
+## Slice 7.74: Operator Gate Template Command Alignment
+
+User-visible outcome:
+`npm run proof:operator-gates` prints command strings that start with the
+matching ignored `operator:write-report-template` command for each
+operator-owned live, publication, public A2A, payment, marketplace, or custody
+proof gate.
+
+Likely files:
+
+- `scripts/check-operator-live-gates.ts`
+- `scripts/operator-live-gates.test.ts`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `testnet-upstream` command output starts with the `testnet-upstream`
+  template before live proof plan and diagnostic commands.
+- `testnet-sponsored-execute` command output starts with the `testnet-digest`
+  template before either the read-only digest lookup or the operator-approved
+  sponsored execute command.
+- IOTA Names, IOTA Identity, and VC gate command output starts with the
+  matching live identity template before live proof plan and smoke commands.
+- Package publication, public A2A hosting, payment provider, marketplace, and
+  custody gate command output starts with the matching production/public proof
+  template command or commands.
+- Operator-gate tests assert the exact template-first command strings and keep
+  configured endpoint/name/address/profile values redacted.
+- The change does not run live commands, change approval requirements,
+  classify templates as passing evidence, or change product completion.
+
+Verification:
+
+- `node --import tsx --test scripts/operator-live-gates.test.ts`
+- `npm run proof:operator-gates`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `npm run typecheck`
+- `git diff --check`
+
+Dependencies:
+Slices 7.70 through 7.73.
+
+Risk:
+Low. This is operator command guidance, but stale `proof:operator-gates`
+output can cause operators to create ad hoc reports that readiness validators
+will not accept.
+
+Escalation triggers:
+
+- Any request to treat generated templates as passing live, publication,
+  payment, marketplace, custody, public A2A, VC, or sponsored execute proof.
+- Any request to include endpoint values, names, addresses, DIDs, credential
+  refs, local secret paths, report contents, credentials, tokens, private keys,
+  raw transaction bytes, signatures, or raw upstream/provider bodies in gate
+  output or public docs.

@@ -148,6 +148,10 @@ hosts, marketplace systems, or physical devices.
   report fields and required check ids match the existing readiness validators
   before any approved live, publication, marketplace, custody, or public A2A
   proof run fills them in.
+- Includes those report-template commands directly in the relevant
+  `proof:operator-gates` command field, so the operator path starts with an
+  ignored template before the proof-plan, readiness, live-smoke, diagnostic, or
+  publication command that can produce or validate accepted evidence.
 - Includes a `testnet-upstream` template for self-hosted or managed Gas
   Station proof planning. It lists the optional `--skip-reserve` reachability
   diagnostic before the full reserve diagnostic, but that template is not
