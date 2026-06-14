@@ -70,6 +70,7 @@ interface StructuredPackagePublicationReport {
 
 const MAX_REPORT_BYTES = 64 * 1024;
 const MAX_REPORT_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+const PACKAGE_PUBLICATION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind package-publication --out tmp/gaskit/package-publication-report-template.json";
 const REQUIRED_SOURCE_PATHS = [
   "docs/agentic-gaskit/package-release-strategy.md",
   "scripts/package-publish-dry-run.ts",
@@ -282,7 +283,7 @@ async function checkRegistryReport(
       code: "PACKAGE_PUBLICATION_REPORT_MISSING",
       message: "Registry publication proof requires an operator-supplied structured report path.",
       evidence: "missing=PACKAGE_PUBLICATION_REPORT",
-      next: "Run a dedicated operator-approved npm publication proof and set PACKAGE_PUBLICATION_REPORT to the ignored local structured report path.",
+      next: `${PACKAGE_PUBLICATION_TEMPLATE_COMMAND}; run a dedicated operator-approved npm publication proof and set PACKAGE_PUBLICATION_REPORT to the ignored local structured report path.`,
     };
   }
 

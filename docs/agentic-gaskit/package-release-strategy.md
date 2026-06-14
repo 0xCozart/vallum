@@ -97,6 +97,16 @@ publication readiness gate:
   points to an ignored redacted structured report from an operator-approved
   publication proof.
 
+When the structured report is missing, the readiness gate points operators at
+the ignored report-template command first:
+
+```bash
+npm run operator:write-report-template -- --kind package-publication --out tmp/gaskit/package-publication-report-template.json
+```
+
+The template is preparation only. It remains `pending-operator-proof` until a
+real operator-approved publication proof fills in status-only passing evidence.
+
 The structured report must be status-only JSON with `schemaVersion=1`,
 `kind=agentic-gaskit.package-publication-proof`, `result=passed`,
 `registry=npm`, a recent `observedAt`, every current public package name, and

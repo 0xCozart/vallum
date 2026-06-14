@@ -43,6 +43,7 @@ test("package publication readiness reports local proof and missing registry rep
     report.checks.find((check) => check.id === "npm-registry-publication-report")?.code,
     "PACKAGE_PUBLICATION_REPORT_MISSING",
   );
+  assert.match(formatted, /operator:write-report-template -- --kind package-publication/);
   assert.match(formatted, /npm run publish:dry-run/);
   assert.doesNotMatch(formatted, /npm_token|otp|password|credential|secret/i);
   assert.doesNotMatch(artifactJson, /npm_token|fixture-redacted-but-still-forbidden|publication-report\.json|0x[0-9a-fA-F]{64}/);

@@ -8066,3 +8066,54 @@ Escalation triggers:
   credentials, tokens, private keys, payment-provider payloads, webhook bodies,
   registry auth, raw transaction bytes, signatures, or raw provider bodies in
   product-status output or public docs.
+
+## Slice 7.79: Package Publication Readiness Template Guidance
+
+User-visible outcome:
+`npm run proof:package-publication-readiness` points a missing
+`PACKAGE_PUBLICATION_REPORT` blocker at the ignored `package-publication`
+report-template command before instructing operators to run the approved npm
+publication proof and set the structured report path.
+
+Likely files:
+
+- `scripts/check-package-publication-readiness.ts`
+- `scripts/package-publication-readiness.test.ts`
+- `docs/agentic-gaskit/package-release-strategy.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- Missing package publication report output includes
+  `npm run operator:write-report-template -- --kind package-publication`.
+- The readiness gate still reports `PACKAGE_PUBLICATION_REPORT_MISSING` until
+  a valid ignored structured report is configured.
+- Report-template generation remains a non-networked preparation artifact and
+  is not accepted as registry publication evidence.
+- Focused tests preserve redaction of npm tokens, OTPs, npmrc contents,
+  credentials, raw registry responses, signatures, and local report paths.
+
+Verification:
+
+- `node --import tsx --test scripts/package-publication-readiness.test.ts`
+- `npm run proof:package-publication-readiness`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `npm run typecheck`
+- `git diff --check`
+
+Dependencies:
+Slices 7.72 through 7.78.
+
+Risk:
+Low. This changes readiness guidance only, but stale direct readiness output
+can cause operators to skip the structured template and create unaccepted npm
+publication proof artifacts.
+
+Escalation triggers:
+
+- Any request to treat generated templates, dry runs, local tarball installs,
+  or package proof plans as real npm publication.
+- Any request to include npm tokens, OTPs, npmrc contents, registry auth,
+  package-owner account details, raw registry responses, signatures, or local
+  secret paths in readiness output or public docs.
