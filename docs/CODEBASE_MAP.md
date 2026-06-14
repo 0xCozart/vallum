@@ -268,7 +268,9 @@ roadmap unless later slices implement and verify them.
   `scripts/check-live-proof-status.ts`, `scripts/live-proof-status.test.ts`,
   `scripts/write-live-proof-plan.ts`
 - Testnet upstream diagnostics: `scripts/diagnose-gas-station-upstream.ts`,
-  `scripts/testnet-upstream-report.ts`, `docs/testnet-attempts.md`
+  `scripts/testnet-upstream-report.ts`, `docs/testnet-attempts.md`; the
+  diagnostic prints status-only endpoint results and writes bounded JSON
+  readiness metadata without raw upstream response bodies
 - Sponsor funding diagnostic and report gate:
   `scripts/check-sponsor-funding.ts`, `scripts/sponsor-funding-report.ts`,
   `scripts/check-sponsor-funding.test.ts`

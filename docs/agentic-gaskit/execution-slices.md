@@ -5149,3 +5149,66 @@ Escalation triggers:
 - Any request to treat faucet success as reserve_gas compatibility or
   sponsored execution readiness.
 - Any request to run `execute:testnet-demo` without explicit operator approval.
+
+## Slice 7.20: Testnet Upstream Diagnostic Stdout Redaction
+
+User-visible outcome:
+Operators can refresh Gas Station/IOTA RPC upstream diagnostics with Docker
+connected while stdout and tracked evidence remain status-only and do not print
+raw upstream response bodies.
+
+Likely files:
+
+- `scripts/diagnose-gas-station-upstream.ts`
+- `scripts/diagnose-gas-station-upstream.test.ts`
+- `docs/testnet-attempts.md`
+- `docs/CODEBASE_MAP.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `npm run diagnose:gas-station -- --report <ignored-json-path>` still checks
+  Gas Station root reachability, Gas Station `/v1/health`, IOTA RPC status, and
+  the reserve_gas compatibility probe.
+- Diagnostic stdout prints only endpoint names, pass/fail state, and HTTP
+  status for HTTP checks.
+- Raw upstream response bodies are not returned by diagnostic helper APIs,
+  printed to stdout, written into tracked docs, or stored in the sanitized JSON
+  report.
+- The existing upstream report shape remains compatible with live-status,
+  product-status, launch-readiness, operator gates, and execute prerequisites.
+- Sponsor funding remains a separate blocker from reserve_gas compatibility.
+
+Verification:
+
+- Focused diagnostic and package-script tests.
+- `npm run sponsor:check-funding -- --report
+  tmp/gaskit/sponsor-funding-report.json`, recording only redacted output.
+- `GASKIT_SPONSOR_FUNDING_REPORT=tmp/gaskit/sponsor-funding-report.json npm
+  run proof:live-status`.
+- `npm run diagnose:gas-station -- --report
+  tmp/gaskit/testnet-upstream-diagnostic.json`, recording only status output.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slices 7.7-7.19, local `.env` testnet configuration, and Docker-connected local
+Gas Station runtime.
+
+Risk:
+Low to medium. The diagnostic contacts live/configured services and reserve_gas
+compatibility can fail for operational reasons. This slice must improve
+redaction without claiming funding, reserve_gas readiness, or sponsored
+execution.
+
+Escalation triggers:
+
+- Any request to print raw upstream error bodies, bearer tokens, signer
+  material, rendered Gas Station config, full sponsor address, raw transaction
+  bytes, or user signatures.
+- Any request to treat Gas Station root reachability or IOTA RPC reachability
+  as reserve_gas compatibility.
+- Any request to run `execute:testnet-demo` without explicit operator approval.

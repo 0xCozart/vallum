@@ -101,8 +101,8 @@ Sanitized Gas Station observations:
 gasStationUrl=http://127.0.0.1:9527
 iotaRpcUrl=https://api.testnet.iota.cafe
 bearerTokenConfigured=true
-ok: Gas Station root HTTP 200 "OK"
-fail: Gas Station /v1/health HTTP 404 {}
+ok: Gas Station root HTTP 200
+fail: Gas Station /v1/health HTTP 404
 ok: IOTA RPC iota_getLatestCheckpointSequenceNumber HTTP 200
 ok: Gas Station reserve_gas compatibility probe HTTP 200
 ```
@@ -171,7 +171,7 @@ iotaRpcUrl=https://api.testnet.iota.cafe
 bearerTokenConfigured=true
 fail: Gas Station root fetch failed
 fail: Gas Station /v1/health fetch failed
-ok: IOTA RPC iota_getLatestCheckpointSequenceNumber HTTP 200 {"jsonrpc":"2.0","id":1,"result":"226298093"}
+ok: IOTA RPC iota_getLatestCheckpointSequenceNumber HTTP 200
 skip: reserve_gas compatibility probe
 report=tmp/gaskit/testnet-upstream-diagnostic.json
 ```
@@ -269,9 +269,9 @@ plus IOTA RPC reachability without reserve_gas:
 gasStationUrl=http://127.0.0.1:9527
 iotaRpcUrl=https://api.testnet.iota.cafe
 bearerTokenConfigured=true
-ok: Gas Station root HTTP 200 "OK"
-fail: Gas Station /v1/health HTTP 404 {}
-ok: IOTA RPC iota_getLatestCheckpointSequenceNumber HTTP 200 {"jsonrpc":"2.0","id":1,"result":"227569957"}
+ok: Gas Station root HTTP 200
+fail: Gas Station /v1/health HTTP 404
+ok: IOTA RPC iota_getLatestCheckpointSequenceNumber HTTP 200
 skip: reserve_gas compatibility probe
 ```
 
@@ -282,11 +282,14 @@ aligned without printing the token value. A follow-up reserve diagnostic then
 failed after authentication:
 
 ```text
-ok: Gas Station root HTTP 200 "OK"
-fail: Gas Station /v1/health HTTP 404 {}
-ok: IOTA RPC iota_getLatestCheckpointSequenceNumber HTTP 200 {"jsonrpc":"2.0","id":1,"result":"227570503"}
-fail: Gas Station reserve_gas compatibility probe HTTP 500 {"result":null,"error":"Unable to reserve gas coins for the given budget."}
+ok: Gas Station root HTTP 200
+fail: Gas Station /v1/health HTTP 404
+ok: IOTA RPC iota_getLatestCheckpointSequenceNumber HTTP 200
+fail: Gas Station reserve_gas compatibility probe HTTP 500
 ```
+
+Current diagnostics intentionally print status-only endpoint results and keep
+raw upstream response bodies out of stdout and tracked evidence.
 
 The sponsor funding diagnostic explains the reserve failure without printing
 the sponsor key or full sponsor address:

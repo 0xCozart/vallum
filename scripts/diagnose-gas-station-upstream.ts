@@ -1,5 +1,6 @@
 import { access, mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { loadEnvFile } from "../apps/policy-gateway-service/src/readiness.js";
 import {
@@ -70,30 +71,20 @@ function redactUrl(value: string | undefined): string {
   }
 }
 
-function summarizeJson(value: unknown): string {
-  try {
-    return JSON.stringify(value).slice(0, 700);
-  } catch {
-    return String(value).slice(0, 700);
-  }
+export async function fetchStatus(url: string, init?: RequestInit): Promise<{ ok: boolean; status: number }> {
+  const response = await fetch(url, init);
+  await response.arrayBuffer();
+  return { ok: response.ok, status: response.status };
 }
 
-async function fetchJson(url: string, init?: RequestInit): Promise<{ ok: boolean; status: number; body: unknown }> {
-  const response = await fetch(url, init);
-  const text = await response.text();
-  let body: unknown = text;
-  try {
-    body = text ? JSON.parse(text) : {};
-  } catch {
-    body = text.slice(0, 700);
-  }
-  return { ok: response.ok, status: response.status, body };
+export function formatHttpCheckLog(input: { readonly ok: boolean; readonly name: string; readonly status: number }): string {
+  return `${input.ok ? "ok" : "fail"}: ${input.name} HTTP ${input.status}`;
 }
 
 async function checkHttp(name: string, url: string, init?: RequestInit): Promise<TestnetUpstreamEndpointCheck> {
   try {
-    const result = await fetchJson(url, init);
-    console.log(`${result.ok ? "ok" : "fail"}: ${name} HTTP ${result.status} ${summarizeJson(result.body)}`);
+    const result = await fetchStatus(url, init);
+    console.log(formatHttpCheckLog({ ok: result.ok, name, status: result.status }));
     return { configured: true, ok: result.ok, status: result.status };
   } catch (error) {
     console.log(`fail: ${name} ${error instanceof Error ? error.message : "request failed"}`);
@@ -200,4 +191,6 @@ async function main(): Promise<number> {
   return ok ? 0 : 1;
 }
 
-process.exitCode = await main();
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  process.exitCode = await main();
+}
