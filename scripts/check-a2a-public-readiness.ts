@@ -81,6 +81,9 @@ const REQUIRED_SOURCE_PATHS = [
 ] as const;
 
 const ALLOWED_TASK_AUTH_DECISIONS = new Set(["bearer", "oauth2", "mtls"]);
+const A2A_PUBLIC_DISCOVERY_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/gaskit/a2a-public-discovery-report-template.json";
+const A2A_PUBLIC_PUSH_DELIVERY_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/gaskit/a2a-public-push-delivery-report-template.json";
+const A2A_EXTERNAL_CONFORMANCE_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/gaskit/a2a-external-conformance-report-template.json";
 
 const ARTIFACT_BOUNDARIES = [
   "This report is non-networked and does not contact public A2A endpoints.",
@@ -572,7 +575,7 @@ async function checkPublicDiscoveryReport(
       code: "A2A_PUBLIC_DISCOVERY_REPORT_MISSING",
       message: "A2A public discovery and JWKS evidence has not been supplied.",
       evidence: "missing=A2A_PUBLIC_DISCOVERY_REPORT",
-      next: "Run npm run smoke:a2a-public-discovery -- --report <local-report-path> only after operator approval and provide the report path outside committed docs.",
+      next: `${A2A_PUBLIC_DISCOVERY_TEMPLATE_COMMAND}; run npm run smoke:a2a-public-discovery -- --report <local-report-path> only after operator approval and provide the report path outside committed docs.`,
     };
   }
 
@@ -626,7 +629,7 @@ async function checkPublicPushDeliveryReport(
       code: "A2A_PUBLIC_PUSH_DELIVERY_REPORT_MISSING",
       message: "A2A public push webhook delivery evidence has not been supplied.",
       evidence: "missing=A2A_PUBLIC_PUSH_DELIVERY_REPORT",
-      next: "Provide a local structured public push delivery report path outside committed docs only after an operator-approved public webhook delivery proof run.",
+      next: `${A2A_PUBLIC_PUSH_DELIVERY_TEMPLATE_COMMAND}; provide a local structured public push delivery report path outside committed docs only after an operator-approved public webhook delivery proof run.`,
     };
   }
 
@@ -678,7 +681,7 @@ async function checkConformanceReport(
       code: "A2A_EXTERNAL_CONFORMANCE_REPORT_MISSING",
       message: "External A2A conformance evidence has not been supplied.",
       evidence: "missing=A2A_EXTERNAL_CONFORMANCE_REPORT",
-      next: "Provide a local structured conformance report path outside committed docs only after an operator-approved public A2A proof run.",
+      next: `${A2A_EXTERNAL_CONFORMANCE_TEMPLATE_COMMAND}; provide a local structured conformance report path outside committed docs only after an operator-approved public A2A proof run.`,
     };
   }
 

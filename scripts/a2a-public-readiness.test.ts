@@ -77,6 +77,9 @@ test("A2A public readiness reports local proof while public gates remain blocked
     assert.equal(findCheck(report, "public-push-delivery").status, "blocked-conformance");
     assert.equal(findCheck(report, "public-push-delivery").code, "A2A_PUBLIC_PUSH_DELIVERY_REPORT_MISSING");
     assert.equal(findCheck(report, "external-conformance").code, "A2A_EXTERNAL_CONFORMANCE_REPORT_MISSING");
+    assert.match(formatted, /operator:write-report-template -- --kind a2a-public-discovery/);
+    assert.match(formatted, /operator:write-report-template -- --kind a2a-public-push-delivery/);
+    assert.match(formatted, /operator:write-report-template -- --kind a2a-external-conformance/);
     assert.match(formatted, /Agentic GasKit A2A public readiness blocked/);
     assert.doesNotMatch(formatted, /secret|token|private/i);
   } finally {

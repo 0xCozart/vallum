@@ -40,6 +40,21 @@ input names, and safety boundaries without printing configured URLs, auth
 decisions, report paths, key ids, credentials, response bodies, or report
 contents.
 
+When the public A2A structured reports are missing, generate the status-only
+templates first:
+
+```bash
+npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/gaskit/a2a-public-discovery-report-template.json
+npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/gaskit/a2a-public-push-delivery-report-template.json
+npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/gaskit/a2a-external-conformance-report-template.json
+```
+
+The generated templates are preparation material only. They do not fetch public
+Agent Cards, publish JWKS material, operate public endpoints, deliver webhooks,
+run external conformance tools, or prove endpoint ownership, and they are not
+accepted as public A2A evidence until an operator completes the required proof
+runs and sets the matching ignored structured report paths.
+
 When an operator has approved public A2A infrastructure and supplied local
 configuration, `npm run smoke:a2a-public-discovery` is the opt-in networked
 probe for public Agent Card and JWKS discovery. It is not part of local

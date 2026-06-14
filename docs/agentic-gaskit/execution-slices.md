@@ -8284,3 +8284,63 @@ Escalation triggers:
   material, credentials, authorization headers, raw payloads, raw response
   bodies, account details, signatures, exported keys, full addresses, or local
   secret paths in readiness output or public docs.
+
+## Slice 7.83: A2A Public Readiness Template Guidance
+
+User-visible outcome:
+`npm run proof:a2a-public-readiness` points missing
+`A2A_PUBLIC_DISCOVERY_REPORT`, `A2A_PUBLIC_PUSH_DELIVERY_REPORT`, and
+`A2A_EXTERNAL_CONFORMANCE_REPORT` blockers at their matching ignored
+report-template commands before instructing operators to run approved public
+A2A proof work and set structured report paths.
+
+Likely files:
+
+- `scripts/check-a2a-public-readiness.ts`
+- `scripts/a2a-public-readiness.test.ts`
+- `docs/agentic-gaskit/a2a-public-readiness.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- Missing public discovery output includes
+  `npm run operator:write-report-template -- --kind a2a-public-discovery`.
+- Missing public push delivery output includes
+  `npm run operator:write-report-template -- --kind a2a-public-push-delivery`.
+- Missing external conformance output includes
+  `npm run operator:write-report-template -- --kind a2a-external-conformance`.
+- The readiness gate still reports the matching missing-report blocker codes
+  until valid ignored structured reports are configured.
+- Report-template generation remains a non-networked preparation artifact and
+  is not accepted as public hosting, endpoint ownership, public JWKS, webhook
+  delivery, task-route auth, or external conformance evidence.
+- Focused tests preserve redaction of tokens, credentials, private keys,
+  signatures, payloads, raw responses, configured public URLs, unsafe local
+  report paths, and full addresses while allowing the safe template filenames.
+
+Verification:
+
+- `node --import tsx --test scripts/a2a-public-readiness.test.ts`
+- `npm run proof:a2a-public-readiness`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `npm run typecheck`
+- `git diff --check`
+
+Dependencies:
+Slices 4.3 through 4.21, 7.35, 7.45, 7.78, and 7.82.
+
+Risk:
+Low to medium. This changes readiness guidance only, but stale direct readiness
+output can cause operators to skip structured templates and create unaccepted
+public A2A evidence artifacts.
+
+Escalation triggers:
+
+- Any request to treat generated templates, local static-discovery artifacts,
+  loopback smokes, readiness artifacts, or public proof plans as public A2A
+  hosting, endpoint ownership, webhook delivery, or external conformance proof.
+- Any request to include configured public URLs, bearer tokens, credentials,
+  private keys, signatures, raw payloads, raw response bodies, webhook secrets,
+  account details, full addresses, or local secret paths in readiness output or
+  public docs.
