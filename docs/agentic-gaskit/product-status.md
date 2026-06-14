@@ -99,6 +99,12 @@ boundary: it means the current repo has deterministic local proof but still
 requires configured live/testnet, registry, public hosting, payment, custody,
 marketplace, or safety work before those claims can be made.
 
+For production blockers with existing proof-plan writers, the `next` guidance
+starts with the redacted local plan command before any approval-required
+publication, public A2A, payment-provider, marketplace, or custody proof run.
+Those proof plans are operator preparation artifacts; they are not passing
+production evidence by themselves.
+
 ## What It Proves
 
 - `npm run verify:local` is wired to deterministic local tests, Move tests,

@@ -6853,3 +6853,60 @@ Escalation triggers:
   payment credentials, authorization headers, payment instruments, raw
   payloads, response bodies, settlement ids, private keys, bearer tokens, or
   report contents.
+
+## Slice 7.47: Production Proof Plan Status Guidance
+
+User-visible outcome:
+Product-status output points package publication, production marketplace, and
+production custody blockers at their redacted proof-plan writers before any
+approval-required proof run or structured report acceptance.
+
+Likely files:
+
+- `scripts/check-product-status.ts`
+- `scripts/product-status.test.ts`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- The `NPM_PUBLICATION_UNRUN` next step includes
+  `npm run package:write-publication-proof-plan`.
+- The `PRODUCTION_MARKETPLACE_BLOCKED` next step includes
+  `npm run marketplace:write-production-proof-plan`.
+- The `PRODUCTION_CUSTODY_OUT_OF_SCOPE` next step includes
+  `npm run custody:write-production-proof-plan`.
+- Product-status tests assert all three proof-plan commands are surfaced in
+  formatted output.
+- Docs describe proof plans as redacted local preparation artifacts, not
+  passing production evidence.
+- The change does not alter readiness acceptance, report validation, npm
+  publication, payment-provider behavior, marketplace operation, custody/KMS
+  behavior, public A2A behavior, or live/testnet behavior.
+
+Verification:
+
+- `node --import tsx --test scripts/product-status.test.ts`
+- `npm run proof:product-status`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `git diff --check`
+- `npm run typecheck`
+
+Dependencies:
+Existing product-status gate and package, marketplace, and custody proof-plan
+writers.
+
+Risk:
+Low. This is status guidance only, but it must not imply that proof-plan
+generation is npm publication proof, marketplace production approval, custody
+approval, KMS approval, or legal/incident-response approval.
+
+Escalation triggers:
+
+- Any request to treat proof-plan generation as production readiness or as a
+  substitute for operator-approved structured report evidence.
+- Any request to print or commit configured report paths, provider endpoints,
+  payment credentials, authorization headers, payment instruments, raw
+  payloads, response bodies, settlement ids, private keys, bearer tokens,
+  custody/KMS details, npm credentials, or report contents.

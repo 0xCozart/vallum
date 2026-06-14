@@ -62,6 +62,7 @@ test("product status reports local proof gates and explicit live blockers withou
     assert.match(formatted, /not-complete/);
     assert.match(formatted, /NPM_PUBLICATION_UNRUN/);
     assert.match(formatted, /npm run proof:package-publication-readiness/);
+    assert.match(formatted, /npm run package:write-publication-proof-plan/);
     assert.match(formatted, /PUBLIC_A2A_HOSTING_UNPROVEN/);
     assert.match(formatted, /npm run a2a:write-public-proof-plan/);
     assert.match(formatted, /npm run smoke:a2a-public-discovery only with operator-approved public A2A config/);
@@ -69,8 +70,10 @@ test("product status reports local proof gates and explicit live blockers withou
     assert.match(formatted, /npm run proof:payment-provider-readiness/);
     assert.match(formatted, /PRODUCTION_MARKETPLACE_BLOCKED/);
     assert.match(formatted, /npm run proof:marketplace-readiness/);
+    assert.match(formatted, /npm run marketplace:write-production-proof-plan/);
     assert.match(formatted, /PRODUCTION_CUSTODY_OUT_OF_SCOPE/);
     assert.match(formatted, /npm run proof:custody-readiness/);
+    assert.match(formatted, /npm run custody:write-production-proof-plan/);
     assert.match(formatted, /DEVICE_ACCESS_SAFETY_DEFERRED/);
     assert.doesNotMatch(formatted, /see-status/);
     assert.doesNotMatch(formatted, /local-secret|iotaprivkey|fake-private-key|seed-phrase|mnemonic-value/i);

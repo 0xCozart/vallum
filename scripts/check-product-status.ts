@@ -411,7 +411,7 @@ function custodyCheck(readiness: CustodyReadinessReport): ProductEvidenceCheck {
     code: "PRODUCTION_CUSTODY_OUT_OF_SCOPE",
     message: `Agent wallets use signer references locally; production custody, KMS, recovery export, staking, bonding, and slashing remain blocked by ${live?.code ?? "CUSTODY_PRODUCTION_REPORT_MISSING"}.`,
     evidence: "npm run proof:custody-readiness",
-    next: "Complete a dedicated operator-approved custody, KMS, recovery, legal, and incident-response review, save a redacted structured report outside tracked files, set CUSTODY_PRODUCTION_REPORT, and rerun readiness/status gates.",
+    next: "Run npm run custody:write-production-proof-plan, complete a dedicated operator-approved custody, KMS, recovery, legal, and incident-response review, save a redacted structured report outside tracked files, set CUSTODY_PRODUCTION_REPORT, and rerun readiness/status gates.",
   };
 }
 
@@ -446,7 +446,7 @@ function marketplaceCheck(readiness: MarketplaceReadinessReport): ProductEvidenc
     code: "PRODUCTION_MARKETPLACE_BLOCKED",
     message: `Marketplace work is limited to local read-model evidence; production provider onboarding, moderation, public scoring, custody, and settlement remain blocked by ${live?.code ?? "MARKETPLACE_PRODUCTION_REPORT_MISSING"}.`,
     evidence: "npm run proof:marketplace-readiness",
-    next: "Complete a dedicated operator-approved production marketplace review, save a redacted structured report outside tracked files, set MARKETPLACE_PRODUCTION_REPORT, and rerun readiness/status gates.",
+    next: "Run npm run marketplace:write-production-proof-plan, complete a dedicated operator-approved production marketplace review, save a redacted structured report outside tracked files, set MARKETPLACE_PRODUCTION_REPORT, and rerun readiness/status gates.",
   };
 }
 
@@ -481,7 +481,7 @@ function packagePublicationCheck(readiness: PackagePublicationReadinessReport): 
     code: "NPM_PUBLICATION_UNRUN",
     message: `Packages are locally packable, installable from tarballs, and dry-run publishable; npm registry publication proof remains blocked by ${live?.code ?? "PACKAGE_PUBLICATION_REPORT_MISSING"}.`,
     evidence: "npm run proof:package-publication-readiness",
-    next: "Run a dedicated operator-approved npm publication proof, save a redacted structured report outside tracked files, set PACKAGE_PUBLICATION_REPORT, and rerun readiness/status gates.",
+    next: "Run npm run package:write-publication-proof-plan, complete a dedicated operator-approved npm publication proof, save a redacted structured report outside tracked files, set PACKAGE_PUBLICATION_REPORT, and rerun readiness/status gates.",
   };
 }
 
