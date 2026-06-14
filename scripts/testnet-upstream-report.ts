@@ -17,6 +17,17 @@ export interface TestnetUpstreamReserveCheck {
   readonly message?: string;
 }
 
+export interface TestnetUpstreamReachabilityCheck {
+  readonly ok: boolean;
+  readonly code: TestnetUpstreamReachabilityCode;
+  readonly message: string;
+}
+
+export type TestnetUpstreamReachabilityCode =
+  | "GAS_STATION_ROOT_READY"
+  | "GAS_STATION_V1_HEALTH_READY"
+  | "GAS_STATION_UNREACHABLE";
+
 export type TestnetUpstreamReserveCode =
   | "RESERVE_GAS_READY"
   | "RESERVE_GAS_SKIPPED"
@@ -31,6 +42,7 @@ export interface TestnetUpstreamDiagnosticReport {
   readonly observedAt: string;
   readonly gasStationRoot: TestnetUpstreamEndpointCheck;
   readonly gasStationV1Health: TestnetUpstreamEndpointCheck;
+  readonly gasStationReachability?: TestnetUpstreamReachabilityCheck;
   readonly iotaRpc: TestnetUpstreamEndpointCheck;
   readonly reserveGas: TestnetUpstreamReserveCheck;
   readonly ok: boolean;
@@ -76,11 +88,17 @@ export function validateTestnetUpstreamReport(
       message: "Testnet upstream diagnostic report is older than 24 hours.",
     };
   }
-  if (!report.iotaRpc.ok || (!report.gasStationRoot.ok && !report.gasStationV1Health.ok)) {
+  const reachability = report.gasStationReachability ?? classifyGasStationReachability({
+    root: report.gasStationRoot,
+    v1Health: report.gasStationV1Health,
+  });
+  if (!report.iotaRpc.ok || !reachability.ok) {
     return {
       ok: false,
       code: "TESTNET_UPSTREAM_REPORT_FAILED",
-      message: "Testnet upstream diagnostic report did not prove both IOTA RPC and Gas Station reachability.",
+      message: !report.iotaRpc.ok
+        ? "Testnet upstream diagnostic report did not prove IOTA RPC reachability."
+        : reachability.message,
     };
   }
   if (report.reserveGas.skipped || !report.reserveGas.ok) {
@@ -106,6 +124,31 @@ export function validateTestnetUpstreamReport(
   };
 }
 
+export function classifyGasStationReachability(input: {
+  readonly root: TestnetUpstreamEndpointCheck;
+  readonly v1Health: TestnetUpstreamEndpointCheck;
+}): TestnetUpstreamReachabilityCheck {
+  if (input.root.ok) {
+    return {
+      ok: true,
+      code: "GAS_STATION_ROOT_READY",
+      message: "Gas Station root endpoint is reachable; wrapper /v1/health may be absent on raw upstream containers.",
+    };
+  }
+  if (input.v1Health.ok) {
+    return {
+      ok: true,
+      code: "GAS_STATION_V1_HEALTH_READY",
+      message: "Gas Station wrapper health endpoint is reachable.",
+    };
+  }
+  return {
+    ok: false,
+    code: "GAS_STATION_UNREACHABLE",
+    message: "Testnet upstream diagnostic report did not prove Gas Station reachability.",
+  };
+}
+
 function isReportShape(value: unknown): value is TestnetUpstreamDiagnosticReport {
   if (!value || typeof value !== "object") return false;
   const report = value as Record<string, unknown>;
@@ -114,6 +157,7 @@ function isReportShape(value: unknown): value is TestnetUpstreamDiagnosticReport
     && typeof report.observedAt === "string"
     && isEndpointCheck(report.gasStationRoot)
     && isEndpointCheck(report.gasStationV1Health)
+    && (report.gasStationReachability === undefined || isReachabilityCheck(report.gasStationReachability))
     && isEndpointCheck(report.iotaRpc)
     && isReserveCheck(report.reserveGas)
     && typeof report.ok === "boolean";
@@ -135,6 +179,20 @@ function isReserveCheck(value: unknown): value is TestnetUpstreamReserveCheck {
     && (check.status === undefined || Number.isInteger(check.status))
     && (check.code === undefined || isReserveCode(check.code))
     && (check.message === undefined || typeof check.message === "string");
+}
+
+function isReachabilityCheck(value: unknown): value is TestnetUpstreamReachabilityCheck {
+  if (!value || typeof value !== "object") return false;
+  const check = value as Record<string, unknown>;
+  return typeof check.ok === "boolean"
+    && isReachabilityCode(check.code)
+    && typeof check.message === "string";
+}
+
+function isReachabilityCode(value: unknown): value is TestnetUpstreamReachabilityCode {
+  return value === "GAS_STATION_ROOT_READY"
+    || value === "GAS_STATION_V1_HEALTH_READY"
+    || value === "GAS_STATION_UNREACHABLE";
 }
 
 function isReserveCode(value: unknown): value is TestnetUpstreamReserveCode {

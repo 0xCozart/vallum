@@ -5607,3 +5607,67 @@ Escalation triggers:
   bytes, user signatures, or sponsor signer material.
 - Any request to treat `RESERVE_GAS_SPONSOR_FUNDING_BLOCKED` as a passing
   reserve compatibility proof.
+
+## Slice 7.27: Gas Station Reachability Classification
+
+User-visible outcome:
+Operators can distinguish raw Gas Station upstream reachability from optional
+wrapper health endpoint availability when Docker is connected, without
+weakening the reserve_gas compatibility gate or printing raw upstream bodies.
+
+Likely files:
+
+- `scripts/diagnose-gas-station-upstream.ts`
+- `scripts/diagnose-gas-station-upstream.test.ts`
+- `scripts/testnet-upstream-report.ts`
+- `docs/CODEBASE_MAP.md`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/testnet-readiness.md`
+- `docs/testnet-attempts.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `npm run diagnose:gas-station -- --report <ignored-json-path>` emits a
+  bounded `gasStationReachabilityCode` in stdout and writes optional
+  `gasStationReachability` metadata into the sanitized report.
+- A raw upstream root HTTP 200 with wrapper `/v1/health` HTTP 404 is classified
+  as `GAS_STATION_ROOT_READY`; the wrapper-health probe is logged as
+  informational rather than a fatal failure.
+- Existing older upstream diagnostic reports without
+  `gasStationReachability` remain valid.
+- A report still cannot pass unless IOTA RPC reachability and reserve_gas
+  compatibility both pass; the current sponsor-funding-blocked reserve probe
+  remains `TESTNET_UPSTREAM_REPORT_FAILED`.
+- The diagnostic still does not print or store raw upstream response bodies,
+  faucet task ids, full sponsor addresses, sponsor signer material, rendered
+  Gas Station config, bearer tokens, raw transaction bytes, user signatures, or
+  local secret paths.
+
+Verification:
+
+- Focused diagnostic, live-status, and sponsored-execute prerequisite tests.
+- `npm run diagnose:gas-station -- --report
+  tmp/gaskit/testnet-upstream-diagnostic.json` on the current machine,
+  recording only sanitized status output.
+- `npm run proof:live-status -- --out tmp/gaskit/live-proof-status.json`.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slices 7.7, 7.18, 7.25, and 7.26.
+
+Risk:
+Low. The change improves operator triage, but must not allow root reachability
+or optional wrapper health to stand in for reserve_gas compatibility.
+
+Escalation triggers:
+
+- Any request to treat `GAS_STATION_ROOT_READY` as reserve_gas compatibility,
+  sponsored execution proof, or sponsor funding proof.
+- Any request to print or store raw Gas Station response bodies, bearer tokens,
+  rendered Gas Station config, full sponsor addresses, raw transaction bytes,
+  user signatures, or sponsor signer material.

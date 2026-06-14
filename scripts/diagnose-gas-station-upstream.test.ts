@@ -6,7 +6,10 @@ import {
   fetchStatus,
   formatHttpCheckLog,
 } from "./diagnose-gas-station-upstream.js";
-import { validateTestnetUpstreamReport } from "./testnet-upstream-report.js";
+import {
+  classifyGasStationReachability,
+  validateTestnetUpstreamReport,
+} from "./testnet-upstream-report.js";
 
 test("gas station diagnostic HTTP logs omit raw response bodies", () => {
   const rawBody = "upstream body with bearer-looking secret and reserve internals";
@@ -19,6 +22,44 @@ test("gas station diagnostic HTTP logs omit raw response bodies", () => {
   assert.equal(line, "fail: Gas Station reserve_gas compatibility probe HTTP 500");
   assert.doesNotMatch(line, /bearer|secret|reserve internals|upstream body/i);
   assert.doesNotMatch(line, new RegExp(rawBody));
+});
+
+test("gas station optional wrapper health logs as informational when absent", () => {
+  const line = formatHttpCheckLog({
+    ok: false,
+    name: "Gas Station /v1/health",
+    optional: true,
+    optionalReason: "optional wrapper health endpoint",
+    status: 404,
+  });
+
+  assert.equal(line, "info: Gas Station /v1/health HTTP 404 (optional wrapper health endpoint)");
+  assert.doesNotMatch(line, /bearer|secret|token|private|raw/i);
+});
+
+test("gas station reachability classification accepts raw upstream root health", () => {
+  assert.deepEqual(
+    classifyGasStationReachability({
+      root: { configured: true, ok: true, status: 200 },
+      v1Health: { configured: true, ok: false, status: 404 },
+    }),
+    {
+      ok: true,
+      code: "GAS_STATION_ROOT_READY",
+      message: "Gas Station root endpoint is reachable; wrapper /v1/health may be absent on raw upstream containers.",
+    },
+  );
+  assert.deepEqual(
+    classifyGasStationReachability({
+      root: { configured: true, ok: false },
+      v1Health: { configured: true, ok: true, status: 200 },
+    }),
+    {
+      ok: true,
+      code: "GAS_STATION_V1_HEALTH_READY",
+      message: "Gas Station wrapper health endpoint is reachable.",
+    },
+  );
 });
 
 test("gas station diagnostic status fetch consumes but does not return response bodies", async () => {
@@ -106,4 +147,31 @@ test("testnet upstream validation surfaces sanitized reserve failure messages", 
     "reserve_gas compatibility probe failed while the sponsor funding report is not ready.",
   );
   assert.doesNotMatch(validation.message, /bearer|token|private|mnemonic|0x[a-f0-9]{64}|raw/i);
+});
+
+test("testnet upstream validation accepts root reachability without wrapper health", () => {
+  const validation = validateTestnetUpstreamReport({
+    schemaVersion: 1,
+    kind: "agentic-gaskit.testnet-upstream-diagnostic",
+    observedAt: new Date().toISOString(),
+    gasStationRoot: { configured: true, ok: true, status: 200 },
+    gasStationV1Health: { configured: true, ok: false, status: 404 },
+    gasStationReachability: {
+      ok: true,
+      code: "GAS_STATION_ROOT_READY",
+      message: "Gas Station root endpoint is reachable; wrapper /v1/health may be absent on raw upstream containers.",
+    },
+    iotaRpc: { configured: true, ok: true, status: 200 },
+    reserveGas: {
+      skipped: false,
+      ok: true,
+      status: 200,
+      code: "RESERVE_GAS_READY",
+      message: "reserve_gas compatibility probe passed.",
+    },
+    ok: true,
+  });
+
+  assert.equal(validation.ok, true);
+  assert.equal(validation.code, "TESTNET_UPSTREAM_REPORT_VALID");
 });

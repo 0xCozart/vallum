@@ -150,8 +150,11 @@ building/signing a transaction unless all of these are true:
   report when running the non-networked proof gates.
 - `GASKIT_TESTNET_UPSTREAM_REPORT` points at a current sanitized report created
   by `npm run diagnose:gas-station -- --report <ignored-json-path>` without
-  `--skip-reserve`. Failed reserve probes include a bounded `reserveGas.code`
-  such as `RESERVE_GAS_SPONSOR_FUNDING_BLOCKED`,
+  `--skip-reserve`. The report includes a bounded Gas Station reachability code
+  such as `GAS_STATION_ROOT_READY` or `GAS_STATION_V1_HEALTH_READY`; the raw
+  upstream root endpoint can prove reachability even when optional wrapper
+  `/v1/health` is absent. Failed reserve probes include a bounded
+  `reserveGas.code` such as `RESERVE_GAS_SPONSOR_FUNDING_BLOCKED`,
   `RESERVE_GAS_AUTH_MISSING`, `RESERVE_GAS_REQUEST_FAILED`, or
   `RESERVE_GAS_HTTP_STATUS` without raw upstream bodies.
 

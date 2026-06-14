@@ -318,6 +318,36 @@ reachability are proven on this machine. Fresh sponsored execution remains
 blocked because the configured sponsor wallet has no readable testnet IOTA gas
 coins. No sponsored execute was attempted.
 
+## 2026-06-14 upstream reachability classification refresh
+
+The upstream diagnostic was refreshed after adding bounded Gas Station
+reachability classification:
+
+```bash
+npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
+```
+
+Sanitized status result:
+
+```text
+gasStationUrl=<loopback-gas-station-url>
+iotaRpcUrl=<iota-testnet-rpc-url>
+bearerTokenConfigured=true
+sponsorFundingCode=SPONSOR_FUNDING_TOTAL_INSUFFICIENT
+ok: Gas Station root HTTP 200
+info: Gas Station /v1/health HTTP 404 (optional wrapper health endpoint)
+gasStationReachabilityCode=GAS_STATION_ROOT_READY
+ok: IOTA RPC iota_getLatestCheckpointSequenceNumber HTTP 200
+fail: Gas Station reserve_gas compatibility probe HTTP 500
+reserveGasCode=RESERVE_GAS_SPONSOR_FUNDING_BLOCKED
+```
+
+The ignored JSON report now records `gasStationReachability.code` and keeps
+the optional wrapper health 404 separate from upstream reachability. The
+report remains blocked because reserve_gas compatibility still fails while the
+configured sponsor funding report is blocked with
+`SPONSOR_FUNDING_TOTAL_INSUFFICIENT`.
+
 ## 2026-06-14 reserve failure classification refresh
 
 The upstream diagnostic was refreshed after adding bounded reserve failure

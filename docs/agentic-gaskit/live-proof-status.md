@@ -79,15 +79,17 @@ request, or completed request in its next step. It never clears
 `sponsor-funding`; only a passing sponsor funding report can do that.
 
 The current sanitized upstream diagnostic reaches the local Gas Station root
-and IOTA testnet RPC, but `/v1/health` returns HTTP 404 and the reserve_gas
-compatibility probe returns HTTP 500. The diagnostic now records the bounded
+and IOTA testnet RPC. It classifies raw upstream reachability as
+`GAS_STATION_ROOT_READY`; `/v1/health` is treated as an informational wrapper
+health probe because the raw upstream container may not expose it. The
+reserve_gas compatibility probe still returns HTTP 500 and records the bounded
 reserve failure code `RESERVE_GAS_SPONSOR_FUNDING_BLOCKED`, because the
 configured sponsor funding report is also blocked with
 `SPONSOR_FUNDING_TOTAL_INSUFFICIENT`. `npm run proof:live-status` classifies
 that evidence as `TESTNET_UPSTREAM_REPORT_FAILED` but points the next step at
 sponsor funding first. This means the next testnet execution boundary is
-sponsor funding, then reserve compatibility, not Docker connectivity or
-`.env` shape.
+sponsor funding, then reserve compatibility, not Docker connectivity, optional
+wrapper health, or `.env` shape.
 
 ## What The Command Proves
 
@@ -100,7 +102,8 @@ sponsor funding, then reserve compatibility, not Docker connectivity or
   blocker is listed
 - sanitized testnet upstream diagnostic report status is present and proves
   IOTA RPC, Gas Station reachability, and reserve_gas compatibility, or the
-  exact upstream report blocker and bounded reserve failure code is listed
+  exact upstream report blocker plus bounded Gas Station reachability and
+  reserve failure codes are listed
 - IOTA Names live smoke configuration is present and uses an HTTPS or loopback
   GraphQL endpoint, or the exact missing variables are listed
 - IOTA Identity live smoke configuration is present and uses an HTTPS or

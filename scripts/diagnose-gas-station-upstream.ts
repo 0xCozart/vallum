@@ -6,6 +6,7 @@ import { loadEnvFile } from "../apps/policy-gateway-service/src/readiness.js";
 import {
   TESTNET_UPSTREAM_REPORT_KIND,
   TESTNET_UPSTREAM_REPORT_SCHEMA_VERSION,
+  classifyGasStationReachability,
   type TestnetUpstreamDiagnosticReport,
   type TestnetUpstreamEndpointCheck,
   type TestnetUpstreamReserveCheck,
@@ -83,17 +84,38 @@ export async function fetchStatus(url: string, init?: RequestInit): Promise<{ ok
   return { ok: response.ok, status: response.status };
 }
 
-export function formatHttpCheckLog(input: { readonly ok: boolean; readonly name: string; readonly status: number }): string {
-  return `${input.ok ? "ok" : "fail"}: ${input.name} HTTP ${input.status}`;
+export function formatHttpCheckLog(input: {
+  readonly ok: boolean;
+  readonly name: string;
+  readonly optional?: boolean;
+  readonly optionalReason?: string;
+  readonly status: number;
+}): string {
+  const level = input.ok ? "ok" : input.optional ? "info" : "fail";
+  const reason = !input.ok && input.optional && input.optionalReason ? ` (${input.optionalReason})` : "";
+  return `${level}: ${input.name} HTTP ${input.status}${reason}`;
 }
 
-async function checkHttp(name: string, url: string, init?: RequestInit): Promise<TestnetUpstreamEndpointCheck> {
+async function checkHttp(
+  name: string,
+  url: string,
+  init?: RequestInit,
+  options: { readonly optionalReason?: string } = {},
+): Promise<TestnetUpstreamEndpointCheck> {
   try {
     const result = await fetchStatus(url, init);
-    console.log(formatHttpCheckLog({ ok: result.ok, name, status: result.status }));
+    console.log(formatHttpCheckLog({
+      ok: result.ok,
+      name,
+      optional: Boolean(options.optionalReason),
+      optionalReason: options.optionalReason,
+      status: result.status,
+    }));
     return { configured: true, ok: result.ok, status: result.status };
   } catch (error) {
-    console.log(`fail: ${name} ${error instanceof Error ? error.message : "request failed"}`);
+    const level = options.optionalReason ? "info" : "fail";
+    const reason = options.optionalReason ? ` (${options.optionalReason})` : "";
+    console.log(`${level}: ${name} ${error instanceof Error ? error.message : "request failed"}${reason}`);
     return { configured: true, ok: false };
   }
 }
@@ -214,8 +236,18 @@ async function main(): Promise<number> {
     ok = false;
   } else {
     gasStationRoot = await checkHttp("Gas Station root", `${gasStationUrl}/`);
-    gasStationV1Health = await checkHttp("Gas Station /v1/health", `${gasStationUrl}/v1/health`);
-    ok = (gasStationRoot.ok || gasStationV1Health.ok) && ok;
+    gasStationV1Health = await checkHttp(
+      "Gas Station /v1/health",
+      `${gasStationUrl}/v1/health`,
+      undefined,
+      { optionalReason: "optional wrapper health endpoint" },
+    );
+    const reachability = classifyGasStationReachability({
+      root: gasStationRoot,
+      v1Health: gasStationV1Health,
+    });
+    console.log(`gasStationReachabilityCode=${reachability.code}`);
+    ok = reachability.ok && ok;
   }
 
   if (!rpcUrl) {
@@ -263,6 +295,10 @@ async function main(): Promise<number> {
       observedAt: new Date().toISOString(),
       gasStationRoot,
       gasStationV1Health,
+      gasStationReachability: classifyGasStationReachability({
+        root: gasStationRoot,
+        v1Health: gasStationV1Health,
+      }),
       iotaRpc,
       reserveGas,
       ok,

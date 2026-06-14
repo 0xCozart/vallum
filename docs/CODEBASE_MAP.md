@@ -123,7 +123,9 @@ It also includes the first Agentic GasKit implementation slices:
   `.env` readiness from current IOTA RPC, Gas Station reachability, and
   reserve_gas compatibility proof, with bounded reserve failure codes that can
   classify funding, auth, request, skipped, ready, and generic HTTP outcomes
-  without storing raw upstream bodies
+  without storing raw upstream bodies, plus a bounded Gas Station reachability
+  code that treats raw upstream root health as valid while keeping wrapper
+  `/v1/health` absence informational
 - local Gas Station config renderer and compose template for turning ignored
   `.env` values into an ignored official-style `config.local.yaml` before
   starting the `iotaledger/gas-station` container
