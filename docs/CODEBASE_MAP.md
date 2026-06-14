@@ -121,7 +121,9 @@ It also includes the first Agentic GasKit implementation slices:
   artifacts, and safety boundaries before live proof commands are run
 - opt-in sanitized testnet upstream diagnostic report gate that separates
   `.env` readiness from current IOTA RPC, Gas Station reachability, and
-  reserve_gas compatibility proof
+  reserve_gas compatibility proof, with bounded reserve failure codes that can
+  classify funding, auth, request, skipped, ready, and generic HTTP outcomes
+  without storing raw upstream bodies
 - local Gas Station config renderer and compose template for turning ignored
   `.env` values into an ignored official-style `config.local.yaml` before
   starting the `iotaledger/gas-station` container

@@ -150,7 +150,10 @@ building/signing a transaction unless all of these are true:
   report when running the non-networked proof gates.
 - `GASKIT_TESTNET_UPSTREAM_REPORT` points at a current sanitized report created
   by `npm run diagnose:gas-station -- --report <ignored-json-path>` without
-  `--skip-reserve`.
+  `--skip-reserve`. Failed reserve probes include a bounded `reserveGas.code`
+  such as `RESERVE_GAS_SPONSOR_FUNDING_BLOCKED`,
+  `RESERVE_GAS_AUTH_MISSING`, `RESERVE_GAS_REQUEST_FAILED`, or
+  `RESERVE_GAS_HTTP_STATUS` without raw upstream bodies.
 
 `gas-station:runtime-preflight` defaults to `local-docker`, which requires the
 ignored rendered config plus a reachable Docker daemon and either Docker

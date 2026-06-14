@@ -5541,3 +5541,69 @@ Escalation triggers:
   funding, reserve_gas compatibility, live Names/Identity, package
   publication, production custody, production payment, marketplace, or public
   A2A readiness has passed.
+
+## Slice 7.26: Reserve Failure Classification
+
+User-visible outcome:
+Operators can tell whether the current `reserve_gas` diagnostic failure should
+be routed to sponsor funding, auth/config, network reachability, or generic
+upstream compatibility triage, without printing raw Gas Station responses or
+secret values.
+
+Likely files:
+
+- `scripts/diagnose-gas-station-upstream.ts`
+- `scripts/diagnose-gas-station-upstream.test.ts`
+- `scripts/testnet-upstream-report.ts`
+- `scripts/check-live-proof-status.ts`
+- `scripts/live-proof-status.test.ts`
+- `docs/CODEBASE_MAP.md`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/testnet-readiness.md`
+- `docs/testnet-attempts.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `npm run diagnose:gas-station -- --report <ignored-json-path>` can write a
+  sanitized `reserveGas.code` and message for skipped, ready, missing-auth,
+  sponsor-funding-blocked, request-failed, and generic HTTP reserve outcomes.
+- A configured `GASKIT_SPONSOR_FUNDING_REPORT` can classify reserve failure as
+  `RESERVE_GAS_SPONSOR_FUNDING_BLOCKED` when the funding report is not ready.
+- `npm run proof:live-status` surfaces the bounded reserve message and routes
+  the next step to sponsor funding when the reserve failure is funding-blocked.
+- Existing older diagnostic reports without `reserveGas.code` remain valid.
+- The diagnostic still does not print or store raw upstream response bodies,
+  faucet task ids, full sponsor addresses, sponsor signer material, rendered
+  Gas Station config, bearer tokens, raw transaction bytes, user signatures, or
+  local secret paths.
+
+Verification:
+
+- Focused diagnostic, live-status, sponsored-execute prerequisite,
+  product-status, operator-gate, and package-script tests.
+- `npm run diagnose:gas-station -- --report
+  tmp/gaskit/testnet-upstream-diagnostic.json` on the current machine,
+  recording only sanitized status output.
+- `npm run proof:live-status -- --out tmp/gaskit/live-proof-status.json`.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slices 7.18-7.25 and the current sanitized sponsor funding report path.
+
+Risk:
+Low to medium. The report remains status-only, but clearer reserve
+classification could be mistaken for readiness. The gate must remain blocked
+until reserve_gas actually passes.
+
+Escalation triggers:
+
+- Any request to parse, print, or store raw Gas Station response bodies, bearer
+  tokens, rendered Gas Station config, full sponsor addresses, raw transaction
+  bytes, user signatures, or sponsor signer material.
+- Any request to treat `RESERVE_GAS_SPONSOR_FUNDING_BLOCKED` as a passing
+  reserve compatibility proof.

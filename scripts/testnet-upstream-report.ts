@@ -13,7 +13,17 @@ export interface TestnetUpstreamReserveCheck {
   readonly skipped: boolean;
   readonly ok: boolean;
   readonly status?: number;
+  readonly code?: TestnetUpstreamReserveCode;
+  readonly message?: string;
 }
+
+export type TestnetUpstreamReserveCode =
+  | "RESERVE_GAS_READY"
+  | "RESERVE_GAS_SKIPPED"
+  | "RESERVE_GAS_AUTH_MISSING"
+  | "RESERVE_GAS_SPONSOR_FUNDING_BLOCKED"
+  | "RESERVE_GAS_HTTP_STATUS"
+  | "RESERVE_GAS_REQUEST_FAILED";
 
 export interface TestnetUpstreamDiagnosticReport {
   readonly schemaVersion: typeof TESTNET_UPSTREAM_REPORT_SCHEMA_VERSION;
@@ -79,7 +89,7 @@ export function validateTestnetUpstreamReport(
       code: report.reserveGas.skipped ? "TESTNET_UPSTREAM_REPORT_RESERVE_SKIPPED" : "TESTNET_UPSTREAM_REPORT_FAILED",
       message: report.reserveGas.skipped
         ? "Testnet upstream diagnostic report skipped reserve_gas compatibility proof."
-        : "Testnet upstream diagnostic report did not prove reserve_gas compatibility.",
+        : report.reserveGas.message ?? "Testnet upstream diagnostic report did not prove reserve_gas compatibility.",
     };
   }
   if (!report.ok) {
@@ -122,5 +132,16 @@ function isReserveCheck(value: unknown): value is TestnetUpstreamReserveCheck {
   const check = value as Record<string, unknown>;
   return typeof check.skipped === "boolean"
     && typeof check.ok === "boolean"
-    && (check.status === undefined || Number.isInteger(check.status));
+    && (check.status === undefined || Number.isInteger(check.status))
+    && (check.code === undefined || isReserveCode(check.code))
+    && (check.message === undefined || typeof check.message === "string");
+}
+
+function isReserveCode(value: unknown): value is TestnetUpstreamReserveCode {
+  return value === "RESERVE_GAS_READY"
+    || value === "RESERVE_GAS_SKIPPED"
+    || value === "RESERVE_GAS_AUTH_MISSING"
+    || value === "RESERVE_GAS_SPONSOR_FUNDING_BLOCKED"
+    || value === "RESERVE_GAS_HTTP_STATUS"
+    || value === "RESERVE_GAS_REQUEST_FAILED";
 }

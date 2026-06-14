@@ -10,6 +10,10 @@ import {
   type TestnetUpstreamEndpointCheck,
   type TestnetUpstreamReserveCheck,
 } from "./testnet-upstream-report.js";
+import {
+  loadSponsorFundingReport,
+  validateSponsorFundingReport,
+} from "./sponsor-funding-report.js";
 
 interface CliOptions {
   envFile: string;
@@ -27,6 +31,8 @@ Checks the configured live Gas Station boundary without printing secrets:
 - optional sanitized JSON diagnostic report output
 
 The reserve probe uses a small gas_budget and should only be run against a funded, intended testnet Gas Station.`;
+
+const SPONSOR_FUNDING_REPORT_ENV = "GASKIT_SPONSOR_FUNDING_REPORT";
 
 function parseArgs(argv: string[]): CliOptions {
   const options: CliOptions = { envFile: ".env", help: false, skipReserve: false };
@@ -92,9 +98,70 @@ async function checkHttp(name: string, url: string, init?: RequestInit): Promise
   }
 }
 
-async function checkReserveGas(url: string, init: RequestInit): Promise<TestnetUpstreamReserveCheck> {
+export function classifyReserveGasResult(input: {
+  readonly bearerTokenConfigured: boolean;
+  readonly ok: boolean;
+  readonly skipped: boolean;
+  readonly sponsorFundingCode?: string;
+  readonly status?: number;
+}): Pick<TestnetUpstreamReserveCheck, "code" | "message"> {
+  if (input.skipped) {
+    return {
+      code: "RESERVE_GAS_SKIPPED",
+      message: "reserve_gas compatibility probe was skipped by operator request.",
+    };
+  }
+  if (input.ok) {
+    return {
+      code: "RESERVE_GAS_READY",
+      message: "reserve_gas compatibility probe passed.",
+    };
+  }
+  if (!input.bearerTokenConfigured) {
+    return {
+      code: "RESERVE_GAS_AUTH_MISSING",
+      message: "reserve_gas compatibility probe failed while no bearer token was configured.",
+    };
+  }
+  if (
+    input.sponsorFundingCode === "SPONSOR_FUNDING_TOTAL_INSUFFICIENT"
+    || input.sponsorFundingCode === "SPONSOR_FUNDING_COIN_FRAGMENTED"
+  ) {
+    return {
+      code: "RESERVE_GAS_SPONSOR_FUNDING_BLOCKED",
+      message: "reserve_gas compatibility probe failed while the sponsor funding report is not ready.",
+    };
+  }
+  if (input.status === undefined) {
+    return {
+      code: "RESERVE_GAS_REQUEST_FAILED",
+      message: "reserve_gas compatibility probe failed before an HTTP status was available.",
+    };
+  }
+  return {
+    code: "RESERVE_GAS_HTTP_STATUS",
+    message: "reserve_gas compatibility probe returned a non-passing HTTP status.",
+  };
+}
+
+async function checkReserveGas(
+  url: string,
+  init: RequestInit,
+  context: {
+    readonly bearerTokenConfigured: boolean;
+    readonly sponsorFundingCode?: string;
+  },
+): Promise<TestnetUpstreamReserveCheck> {
   const result = await checkHttp("Gas Station reserve_gas compatibility probe", url, init);
-  return { skipped: false, ok: result.ok, status: result.status };
+  const classification = classifyReserveGasResult({
+    bearerTokenConfigured: context.bearerTokenConfigured,
+    ok: result.ok,
+    skipped: false,
+    sponsorFundingCode: context.sponsorFundingCode,
+    status: result.status,
+  });
+  console.log(`reserveGasCode=${classification.code}`);
+  return { skipped: false, ok: result.ok, status: result.status, ...classification };
 }
 
 async function writeReport(path: string, report: TestnetUpstreamDiagnosticReport): Promise<void> {
@@ -129,10 +196,12 @@ async function main(): Promise<number> {
   const gasStationUrl = env.GAS_STATION_URL?.replace(/\/+$/, "");
   const rpcUrl = env.IOTA_RPC_URL;
   const token = env.GAS_STATION_BEARER_TOKEN;
+  const sponsorFundingCode = await readSponsorFundingCode(env);
 
   console.log(`gasStationUrl=${redactUrl(gasStationUrl)}`);
   console.log(`iotaRpcUrl=${redactUrl(rpcUrl)}`);
   console.log(`bearerTokenConfigured=${Boolean(token)}`);
+  if (sponsorFundingCode) console.log(`sponsorFundingCode=${sponsorFundingCode}`);
 
   let ok = true;
   let gasStationRoot: TestnetUpstreamEndpointCheck = { configured: Boolean(gasStationUrl), ok: false };
@@ -168,11 +237,23 @@ async function main(): Promise<number> {
       method: "POST",
       headers,
       body: JSON.stringify({ gas_budget: 50000000, reserve_duration_secs: 120 }),
+    }, {
+      bearerTokenConfigured: Boolean(token),
+      sponsorFundingCode,
     });
     ok = reserveGas.ok && ok;
   } else if (options.skipReserve) {
     console.log("skip: reserve_gas compatibility probe");
-    reserveGas = { skipped: true, ok: false };
+    reserveGas = {
+      skipped: true,
+      ok: false,
+      ...classifyReserveGasResult({
+        bearerTokenConfigured: Boolean(token),
+        ok: false,
+        skipped: true,
+        sponsorFundingCode,
+      }),
+    };
   }
 
   if (options.reportPath) {
@@ -189,6 +270,17 @@ async function main(): Promise<number> {
   }
 
   return ok ? 0 : 1;
+}
+
+async function readSponsorFundingCode(env: Record<string, string | undefined>): Promise<string | undefined> {
+  const reportPath = env[SPONSOR_FUNDING_REPORT_ENV]?.trim();
+  if (!reportPath) return undefined;
+  try {
+    const report = await loadSponsorFundingReport(resolve(process.cwd(), reportPath));
+    return validateSponsorFundingReport(report).code;
+  } catch {
+    return "SPONSOR_FUNDING_REPORT_INVALID";
+  }
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

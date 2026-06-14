@@ -10,6 +10,7 @@ import {
 import {
   loadTestnetUpstreamReport,
   validateTestnetUpstreamReport,
+  type TestnetUpstreamDiagnosticReport,
 } from "./testnet-upstream-report.js";
 import {
   loadSponsorFundingReport,
@@ -330,7 +331,7 @@ async function checkTestnetUpstreamStatus(
       status: "blocked",
       code: validation.code,
       message: validation.message,
-      next: "Bring the configured Gas Station upstream online, prove reserve_gas compatibility, regenerate the sanitized report, then rerun this gate.",
+      next: nextForFailedTestnetUpstream(report),
     };
   } catch {
     return {
@@ -341,6 +342,19 @@ async function checkTestnetUpstreamStatus(
       next: "Regenerate the report with npm run diagnose:gas-station -- --report <ignored-json-path> without committing or printing secrets.",
     };
   }
+}
+
+function nextForFailedTestnetUpstream(report: TestnetUpstreamDiagnosticReport): string {
+  if (report.reserveGas.code === "RESERVE_GAS_SPONSOR_FUNDING_BLOCKED") {
+    return "Fund or consolidate the configured sponsor wallet, rerun npm run sponsor:check-funding -- --report <ignored-json-path>, then rerun npm run diagnose:gas-station -- --report <ignored-json-path>.";
+  }
+  if (report.reserveGas.code === "RESERVE_GAS_AUTH_MISSING") {
+    return "Configure the Gas Station bearer token outside committed files, rerun readiness and runtime checks, then rerun npm run diagnose:gas-station -- --report <ignored-json-path>.";
+  }
+  if (report.reserveGas.code === "RESERVE_GAS_REQUEST_FAILED") {
+    return "Confirm the configured Gas Station endpoint is reachable from this workspace, regenerate the sanitized diagnostic report, then rerun this gate.";
+  }
+  return "Bring the configured Gas Station upstream online, prove reserve_gas compatibility, regenerate the sanitized report, then rerun this gate.";
 }
 
 export function formatLiveProofStatusReport(report: LiveProofStatusReport): string {

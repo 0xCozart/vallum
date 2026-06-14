@@ -195,6 +195,55 @@ test("live proof status blocks skipped reserve diagnostic reports", async () => 
   }
 });
 
+test("live proof status routes reserve failures blocked by sponsor funding to funding next steps", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  try {
+    await writeFile(join(cwd, "sponsor-funding-report.json"), JSON.stringify({
+      ...readySponsorFundingReport(),
+      ready: false,
+      code: "SPONSOR_FUNDING_TOTAL_INSUFFICIENT",
+      message: "Sponsor wallet total IOTA balance is below the requested reserve budget.",
+      totalBalanceMist: "0",
+      coinObjectCount: 0,
+      sampledCoinCount: 0,
+      maxSampledCoinBalanceMist: "0",
+    }));
+    await writeFile(join(cwd, "upstream-report.json"), JSON.stringify({
+      schemaVersion: 1,
+      kind: "agentic-gaskit.testnet-upstream-diagnostic",
+      observedAt: new Date().toISOString(),
+      gasStationRoot: { configured: true, ok: true, status: 200 },
+      gasStationV1Health: { configured: true, ok: false, status: 404 },
+      iotaRpc: { configured: true, ok: true, status: 200 },
+      reserveGas: {
+        skipped: false,
+        ok: false,
+        status: 500,
+        code: "RESERVE_GAS_SPONSOR_FUNDING_BLOCKED",
+        message: "reserve_gas compatibility probe failed while the sponsor funding report is not ready.",
+      },
+      ok: false,
+    }));
+    const report = await checkLiveProofStatus({
+      cwd,
+      gasStationRuntimeReport: readyGasStationRuntime(),
+      env: {
+        GASKIT_SPONSOR_FUNDING_REPORT: "sponsor-funding-report.json",
+        GASKIT_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
+      },
+    });
+    const upstream = report.checks.find((check) => check.id === "testnet-upstream");
+
+    assert.equal(upstream?.status, "blocked");
+    assert.equal(upstream?.code, "TESTNET_UPSTREAM_REPORT_FAILED");
+    assert.match(upstream?.message ?? "", /sponsor funding report is not ready/);
+    assert.match(upstream?.next ?? "", /sponsor:check-funding/);
+    assert.doesNotMatch(upstream?.next ?? "", /sponsor-funding-report\.json|upstream-report\.json/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
 test("live proof status marks explicit managed upstream runtime ready without Docker", async () => {
   const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
   try {
