@@ -51,6 +51,7 @@ test("marketplace readiness reports local proof and missing production report wi
     report.checks.find((check) => check.id === "production-marketplace-report")?.code,
     "MARKETPLACE_PRODUCTION_REPORT_MISSING",
   );
+  assert.match(formatted, /operator:write-report-template -- --kind marketplace-production/);
   assert.match(formatted, /npm run smoke:marketplace-read-model/);
   assert.doesNotMatch(formatted, /private prompt|Bearer abc|session-id|payment-secret|credential/i);
   assert.doesNotMatch(

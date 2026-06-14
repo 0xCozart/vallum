@@ -65,6 +65,7 @@ interface StructuredMarketplaceReport {
 
 const MAX_REPORT_BYTES = 64 * 1024;
 const MAX_REPORT_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+const MARKETPLACE_PRODUCTION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json";
 const REQUIRED_SOURCE_PATHS = [
   "packages/marketplace/src/index.ts",
   "packages/marketplace/src/marketplace.test.ts",
@@ -254,7 +255,7 @@ async function checkProductionReport(
       code: "MARKETPLACE_PRODUCTION_REPORT_MISSING",
       message: "Production marketplace proof requires an operator-supplied structured report path.",
       evidence: "missing=MARKETPLACE_PRODUCTION_REPORT",
-      next: "Complete a dedicated operator-approved production marketplace review and set MARKETPLACE_PRODUCTION_REPORT to the ignored local structured report path.",
+      next: `${MARKETPLACE_PRODUCTION_TEMPLATE_COMMAND}; complete a dedicated operator-approved production marketplace review and set MARKETPLACE_PRODUCTION_REPORT to the ignored local structured report path.`,
     };
   }
 

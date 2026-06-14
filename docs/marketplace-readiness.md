@@ -124,6 +124,19 @@ blocks production marketplace claims unless `MARKETPLACE_PRODUCTION_REPORT`
 points to an ignored redacted structured report from an operator-approved
 review.
 
+When `MARKETPLACE_PRODUCTION_REPORT` is missing, generate the status-only
+template first:
+
+```bash
+npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json
+```
+
+The generated template is preparation material only. It does not contact
+production marketplace systems, provider systems, payment systems, IOTA
+services, public A2A endpoints, or Gas Station endpoints, and it is not accepted
+as production marketplace proof until an operator completes the required review
+and sets `MARKETPLACE_PRODUCTION_REPORT` to a valid ignored structured report.
+
 `npm run proof:marketplace-readiness -- --out
 tmp/gaskit/marketplace-readiness.json` writes the same readiness state as a
 redacted mode-0600 local JSON artifact for audit snapshots. The artifact does

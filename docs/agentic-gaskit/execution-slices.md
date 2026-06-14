@@ -8169,3 +8169,61 @@ Escalation triggers:
 - Any request to include provider credentials, authorization headers,
   signatures, payment instruments, raw payloads, raw response bodies, account
   details, or local secret paths in readiness output or public docs.
+
+## Slice 7.81: Marketplace Readiness Template Guidance
+
+User-visible outcome:
+`npm run proof:marketplace-readiness` points a missing
+`MARKETPLACE_PRODUCTION_REPORT` blocker at the ignored
+`marketplace-production` report-template command before instructing operators to
+complete the approved production marketplace review and set the structured
+report path.
+
+Likely files:
+
+- `scripts/check-marketplace-readiness.ts`
+- `scripts/marketplace-readiness.test.ts`
+- `docs/marketplace-readiness.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- Missing marketplace production report output includes
+  `npm run operator:write-report-template -- --kind marketplace-production`.
+- The readiness gate still reports `MARKETPLACE_PRODUCTION_REPORT_MISSING`
+  until a valid ignored structured report is configured.
+- Report-template generation remains a non-networked preparation artifact and
+  is not accepted as provider onboarding, provider verification, moderation,
+  session authorization, settlement, dispute workflow, operations, or
+  production marketplace evidence.
+- Focused tests preserve redaction of provider secrets, session data, payment
+  credentials, authorization headers, raw payloads, signatures, private prompts,
+  unsafe local report paths, and full addresses while allowing the safe template
+  filename.
+
+Verification:
+
+- `node --import tsx --test scripts/marketplace-readiness.test.ts`
+- `npm run proof:marketplace-readiness`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `npm run typecheck`
+- `git diff --check`
+
+Dependencies:
+Slices 5.2, 5.3, 7.35, 7.45, 7.78, and 7.80.
+
+Risk:
+Low. This changes readiness guidance only, but stale direct readiness output can
+cause operators to skip the structured template and create unaccepted
+marketplace proof artifacts.
+
+Escalation triggers:
+
+- Any request to treat generated templates, local marketplace read-model tests,
+  readiness artifacts, or marketplace proof plans as production provider or
+  marketplace operation proof.
+- Any request to include provider secrets, session data, payment credentials,
+  authorization headers, raw payloads, raw response bodies, moderation payloads,
+  account details, private prompts, signatures, full addresses, or local secret
+  paths in readiness output or public docs.
