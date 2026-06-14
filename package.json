@@ -54,6 +54,7 @@
     "custody:write-production-proof-plan": "npm run build && tsx scripts/write-custody-production-proof-plan.ts",
     "package:write-publication-proof-plan": "npm run build && tsx scripts/write-package-publication-proof-plan.ts",
     "payment:write-provider-proof-plan": "npm run build && tsx scripts/write-payment-provider-proof-plan.ts",
+    "operator:write-report-template": "npm run build && tsx scripts/write-operator-report-template.ts",
     "proof:verification-profiles": "npm run build && tsx scripts/check-verification-profiles.ts",
     "readiness:testnet": "npm run build && tsx scripts/check-testnet-readiness.ts",
     "gas-station:render-config": "npm run build && tsx scripts/render-gas-station-config.ts",

@@ -42,10 +42,11 @@ test("product status reports local proof gates and explicit live blockers withou
     assert.equal(report.complete, false);
     assert.equal(report.localProofOk, true);
     assert.deepEqual(
-      report.checks.slice(0, 8).map((check) => [check.id, check.status, check.code]),
+      report.checks.slice(0, 9).map((check) => [check.id, check.status, check.code]),
       [
         ["local-verification", "proven-local", "LOCAL_VERIFY_SURFACE_CONFIGURED"],
         ["package-release-local", "proven-local", "PACKAGE_RELEASE_GATES_CONFIGURED"],
+        ["operator-report-template", "proven-local", "OPERATOR_REPORT_TEMPLATE_WRITER_CONFIGURED"],
         ["testnet-readiness", "blocked-live", "TESTNET_ENV_FILE_MISSING"],
         ["gas-station-runtime", "blocked-live", "GAS_STATION_DOCKER_DAEMON_UNAVAILABLE"],
         ["testnet-upstream", "blocked-live", "TESTNET_UPSTREAM_REPORT_MISSING"],
@@ -402,6 +403,7 @@ function completeScripts(overrides: Record<string, string | undefined> = {}): Re
     "pack:check": "npm run build && npm pack --dry-run -w @iota-gaskit/sdk",
     "smoke:package-install": "npm run build && tsx scripts/smoke-package-install.ts",
     "publish:dry-run": "npm run build && tsx scripts/package-publish-dry-run.ts",
+    "operator:write-report-template": "npm run build && tsx scripts/write-operator-report-template.ts",
     build: "npm run build -w @iota-gaskit/marketplace",
     "smoke:marketplace-read-model": "npm run build && tsx scripts/smoke-marketplace-read-model.ts",
     ...overrides,

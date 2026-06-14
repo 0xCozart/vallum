@@ -206,6 +206,7 @@ const AREA_DEFINITIONS = [
       "scripts/check-product-status.ts",
       "docs/agentic-gaskit/operator-live-gates.md",
       "scripts/check-operator-live-gates.ts",
+      "scripts/write-operator-report-template.ts",
       "docs/agentic-gaskit/verification-profiles.md",
       "scripts/check-verification-profiles.ts",
       "docs/agentic-gaskit/execution-slices.md",
@@ -217,6 +218,7 @@ const AREA_DEFINITIONS = [
       "npm run proof:product-status",
       "npm run proof:launch-readiness",
       "npm run proof:operator-gates",
+      "npm run operator:write-report-template",
       "npm run verify:local",
     ],
     productCheckIds: [

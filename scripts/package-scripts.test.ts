@@ -242,6 +242,16 @@ test("operator live gate report writer is non-networked and opt-in", () => {
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /write-live-gate-report/);
 });
 
+test("operator structured report template writer is non-networked and opt-in", () => {
+  assert.equal(
+    packageJson.scripts?.["operator:write-report-template"],
+    "npm run build && tsx scripts/write-operator-report-template.ts",
+  );
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /write-report-template/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /write-report-template/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /write-report-template/);
+});
+
 test("A2A static discovery bundle tools are opt-in and excluded from local verification", () => {
   assert.equal(
     packageJson.scripts?.["a2a:write-static-discovery-bundle"],

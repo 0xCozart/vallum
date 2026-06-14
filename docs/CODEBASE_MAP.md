@@ -145,6 +145,11 @@ It also includes the first Agentic GasKit implementation slices:
   approval-required live commands, production blockers, and safety deferrals
   before execution, plus an opt-in redacted local JSON artifact writer for
   handoff/audit evidence before any live command is approved
+- non-networked operator structured report-template writer that emits ignored
+  local JSON templates for package publication, payment-provider,
+  marketplace, custody, and public A2A reports with
+  `result=pending-operator-proof`, so templates cannot clear readiness gates
+  without a later operator-approved proof run
 - fast verification profile plus non-networked verification-profile audit that
   keeps day-to-day iteration bounded while preserving `verify:local` as the
   full reviewer/release/launch evidence gate
@@ -278,6 +283,9 @@ roadmap unless later slices implement and verify them.
   `docs/agentic-gaskit/operator-live-gates.md`,
   `scripts/check-operator-live-gates.ts`,
   `scripts/operator-live-gates.test.ts`
+- Operator report templates:
+  `scripts/write-operator-report-template.ts`,
+  `scripts/write-operator-report-template.test.ts`
 - Verification profiles:
   `docs/agentic-gaskit/verification-profiles.md`,
   `scripts/check-verification-profiles.ts`,

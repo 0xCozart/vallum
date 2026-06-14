@@ -122,6 +122,7 @@ export async function checkProductStatus(options: ProductStatusOptions = {}): Pr
   const checks: ProductEvidenceCheck[] = [
     checkLocalVerificationCoverage(scripts),
     checkPackageReleaseCoverage(scripts),
+    checkOperatorReportTemplateCoverage(scripts),
     ...liveStatus.checks.map(mapLiveProofCheck),
     ...productionBlockers(paymentProviderReadiness, packagePublicationReadiness, marketplaceReadiness, custodyReadiness),
   ];
@@ -129,7 +130,11 @@ export async function checkProductStatus(options: ProductStatusOptions = {}): Pr
   return {
     complete: checks.every((check) => check.status === "proven-local" || check.status === "ready-live"),
     localProofOk: checks
-      .filter((check) => check.id === "local-verification" || check.id === "package-release-local")
+      .filter((check) => (
+        check.id === "local-verification"
+        || check.id === "package-release-local"
+        || check.id === "operator-report-template"
+      ))
       .every((check) => check.status === "proven-local"),
     checks,
   };
@@ -211,6 +216,38 @@ function checkPackageReleaseCoverage(scripts: Record<string, string | undefined>
     code: "PACKAGE_RELEASE_GATES_CONFIGURED",
     message: "Local package dry-run, local tarball install smoke, and opt-in publish dry-run gates are configured without real publication.",
     evidence: "npm run pack:check; npm run smoke:package-install; npm run publish:dry-run",
+  };
+}
+
+function checkOperatorReportTemplateCoverage(scripts: Record<string, string | undefined>): ProductEvidenceCheck {
+  const writer = scripts["operator:write-report-template"] ?? "";
+  const verifyFast = scripts["verify:fast"] ?? "";
+  const verifyLocal = scripts["verify:local"] ?? "";
+  const grantCheck = scripts["grant:check"] ?? "";
+  const missing: string[] = [];
+
+  if (!writer.includes("scripts/write-operator-report-template.ts")) missing.push("operator:write-report-template");
+  if (verifyFast.includes("write-report-template")) missing.push("operator report template must stay out of verify:fast");
+  if (verifyLocal.includes("write-report-template")) missing.push("operator report template must stay out of verify:local");
+  if (grantCheck.includes("write-report-template")) missing.push("operator report template must stay out of grant:check");
+
+  if (missing.length > 0) {
+    return {
+      id: "operator-report-template",
+      status: "blocked-production",
+      code: "OPERATOR_REPORT_TEMPLATE_WIRING_INCOMPLETE",
+      message: "Operator structured report template wiring is missing or included in automatic verification.",
+      evidence: `missing=${missing.join(",")}`,
+      next: "Restore the opt-in operator report-template writer and keep it outside default local verification.",
+    };
+  }
+
+  return {
+    id: "operator-report-template",
+    status: "proven-local",
+    code: "OPERATOR_REPORT_TEMPLATE_WRITER_CONFIGURED",
+    message: "Operator structured report templates can be generated as ignored local artifacts without being accepted as passing evidence.",
+    evidence: "npm run operator:write-report-template -- --kind <kind> --out <ignored-report-template.json>",
   };
 }
 

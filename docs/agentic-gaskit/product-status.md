@@ -53,6 +53,10 @@ surface in one machine-checkable place:
 - custody-production proof-plan wiring that writes a redacted non-networked
   command/report checklist before any operator-approved custody, KMS, recovery,
   legal, or incident-response review is attempted;
+- operator report-template wiring that writes ignored local structured JSON
+  templates for package publication, payment-provider, marketplace, custody,
+  and public A2A reports while keeping `result=pending-operator-proof` until a
+  real approved proof run fills in passing evidence;
 - launch-readiness evidence matrix and operator live-gate runbook wiring;
 - live/testnet readiness, local Gas Station runtime preflight status,
   sanitized testnet upstream diagnostic report status, IOTA Names, IOTA
@@ -96,6 +100,9 @@ marketplace, or safety work before those claims can be made.
   blocked with exact missing/runtime/report check ids.
 - Production and safety claims remain explicit blockers instead of implied
   roadmap completion.
+- Structured report templates can be generated locally without contacting live
+  services, and they are intentionally not passing evidence until an approved
+  proof run updates them.
 
 ## What It Does Not Prove
 
@@ -112,6 +119,8 @@ marketplace, or safety work before those claims can be made.
   report and the operator manually accepts it.
 - Public A2A hosting, production key management, external conformance, public
   push delivery, or production auth decisions.
+- Any operator report template by itself. Templates remain
+  `pending-operator-proof` and do not clear readiness blockers.
 - Production marketplace, provider verification, moderation, public scoring, or
   live settlement unless `npm run proof:marketplace-readiness` validates an
   ignored structured report and the operator manually accepts it.
@@ -145,6 +154,11 @@ npm run marketplace:write-production-proof-plan -- --out tmp/gaskit/marketplace-
 npm run proof:custody-readiness
 npm run custody:write-production-proof-plan -- --out tmp/gaskit/custody-production-proof-plan.json
 npm run payment:write-provider-proof-plan -- --out tmp/gaskit/payment-provider-proof-plan.json
+npm run operator:write-report-template -- --kind package-publication --out tmp/gaskit/package-publication-report-template.json
+npm run operator:write-report-template -- --kind payment-provider-live --out tmp/gaskit/payment-provider-live-report-template.json
+npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json
+npm run operator:write-report-template -- --kind custody-production --out tmp/gaskit/custody-production-report-template.json
+npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/gaskit/a2a-public-discovery-report-template.json
 npm run proof:verification-profiles
 npm run proof:live-status
 npm run proof:launch-readiness

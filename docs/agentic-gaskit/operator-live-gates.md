@@ -36,6 +36,21 @@ names, messages, and next steps. It does not include configured endpoint
 values, names, addresses, profile paths, credentials, tokens, response bodies,
 or secret local paths.
 
+To prepare an ignored structured report skeleton for a later approved proof
+run, use:
+
+```bash
+npm run operator:write-report-template -- --kind package-publication --out tmp/gaskit/package-publication-report-template.json
+```
+
+The template writer is also non-networked. It can write templates for
+`a2a-public-discovery`, `a2a-public-push-delivery`,
+`a2a-external-conformance`, `payment-provider-live`,
+`package-publication`, `marketplace-production`, and `custody-production`.
+Generated templates keep `result=pending-operator-proof`; a readiness gate will
+not accept the report until a real operator-approved proof run replaces that
+status with passing evidence.
+
 Expected status in an unconfigured checkout:
 
 ```text
@@ -98,6 +113,11 @@ hosts, marketplace systems, or physical devices.
   `npm run payment:write-provider-proof-plan`, a redacted local plan that lists
   command order, required report fields, approval boundaries, and blocker
   codes without running provider calls.
+- Lets operators generate ignored structured report templates with
+  `npm run operator:write-report-template -- --kind <kind> --out <path>` so the
+  report fields and required check ids match the existing readiness validators
+  before any approved live, publication, marketplace, custody, or public A2A
+  proof run fills them in.
 - Points public A2A hosting/conformance review at the non-networked
   `npm run proof:a2a-public-readiness` command before any public endpoint is
   probed, then at `npm run smoke:a2a-public-discovery` only after
@@ -118,6 +138,8 @@ hosts, marketplace systems, or physical devices.
   readiness/report gate.
 - It does not operate public A2A hosting, live payment providers, production
   marketplace flows, production custody, or physical devices.
+- It does not turn report templates into accepted evidence; templates remain
+  `pending-operator-proof` until an approved proof run replaces them.
 - It does not change `launchReady=false` while product-status blockers remain.
 - The JSON artifact does not prove any live endpoint, package publication,
   payment provider, marketplace, custody, or physical-device claim.
@@ -141,6 +163,11 @@ npm run custody:write-production-proof-plan -- --out tmp/gaskit/custody-producti
 npm run live:write-proof-plan -- --out tmp/gaskit/live-proof-plan.json
 npm run package:write-publication-proof-plan -- --out tmp/gaskit/package-publication-proof-plan.json
 npm run payment:write-provider-proof-plan -- --out tmp/gaskit/payment-provider-proof-plan.json
+npm run operator:write-report-template -- --kind package-publication --out tmp/gaskit/package-publication-report-template.json
+npm run operator:write-report-template -- --kind payment-provider-live --out tmp/gaskit/payment-provider-live-report-template.json
+npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json
+npm run operator:write-report-template -- --kind custody-production --out tmp/gaskit/custody-production-report-template.json
+npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/gaskit/a2a-public-discovery-report-template.json
 npm run smoke:a2a-public-discovery
 npm run verify:fast
 npm run proof:verification-profiles

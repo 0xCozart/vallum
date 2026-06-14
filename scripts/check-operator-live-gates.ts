@@ -72,6 +72,7 @@ interface CliOptions {
 const GATE_COMMANDS: Record<string, string | undefined> = {
   "local-verification": "npm run verify:local",
   "package-release-local": "npm run pack:check && npm run smoke:package-install && npm run publish:dry-run",
+  "operator-report-template": "npm run operator:write-report-template -- --kind <kind> --out <ignored-report-template.json>",
   "testnet-readiness": "npm run readiness:testnet",
   "gas-station-runtime": "npm run gas-station:runtime-preflight",
   "testnet-upstream": "npm run diagnose:gas-station",
