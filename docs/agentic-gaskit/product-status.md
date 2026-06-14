@@ -51,7 +51,8 @@ surface in one machine-checkable place:
 - custody readiness wiring that checks local signer-reference account source,
   docs, tests, build coverage, and accepts only an operator-supplied redacted
   structured production custody report path before moving custody evidence to
-  manual review;
+  manual review, with an optional redacted mode-600 local readiness artifact
+  for audit snapshots;
 - custody-production proof-plan wiring that writes a redacted non-networked
   command/report checklist before any operator-approved custody, KMS, recovery,
   legal, or incident-response review is attempted;

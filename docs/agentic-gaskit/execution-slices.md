@@ -6249,3 +6249,68 @@ Escalation triggers:
   marketplace, provider onboarding, provider verification, moderation, session
   auth, live settlement, dispute workflow, operations, public launch, or
   launch proof.
+
+## Slice 7.37: Custody Readiness Artifact Writer
+
+User-visible outcome:
+Operators and future agents can archive the current non-networked custody
+readiness state as a redacted ignored JSON artifact, so local signer-reference
+proof, production custody blockers, and safety boundaries can be audited
+without parsing stdout or contacting KMS providers, external signers, custody
+providers, IOTA services, Gas Station endpoints, or live wallet
+infrastructure.
+
+Likely files:
+
+- `scripts/check-custody-readiness.ts`
+- `scripts/custody-readiness.test.ts`
+- `docs/overview.md`
+- `docs/agentic-gaskit/account-wallet-safety.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/CODEBASE_MAP.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `npm run proof:custody-readiness -- --json` prints a redacted
+  machine-readable artifact with schema version, kind, timestamp, local proof
+  status, production readiness status, proven-local check ids, ready-approval
+  check ids, blocked check ids, blocker codes, checks, and safety boundaries.
+- `npm run proof:custody-readiness -- --out <ignored-json-path>` writes the
+  same artifact with mode `600`.
+- The artifact does not contact KMS providers, external signers, custody
+  providers, IOTA services, Gas Station endpoints, or live wallet
+  infrastructure.
+- The artifact does not include seeds, mnemonics, private keys, raw keypairs,
+  signer material, credentials, authorization headers, payloads, signatures,
+  exported keys, or local secret paths.
+- `productionReady=false` and blocker codes remain explicit while an
+  operator-approved production custody report is missing.
+
+Verification:
+
+- Focused custody readiness and package-script tests.
+- `npm run proof:custody-readiness -- --out
+  tmp/gaskit/custody-readiness.json`.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run verify:fast`.
+
+Dependencies:
+Existing custody readiness gate and custody production proof-plan writer.
+
+Risk:
+Medium. Custody evidence can be mistaken for production KMS, external signer,
+recovery, staking, bonding, slashing, or signer-operation readiness unless
+blocker codes and safety boundaries stay explicit.
+
+Escalation triggers:
+
+- Any request to include seeds, mnemonics, private keys, raw keypairs, signer
+  material, credentials, authorization headers, payloads, signatures, exported
+  keys, or local secret paths.
+- Any request to treat the custody readiness artifact as production custody,
+  KMS readiness, external signer operation, recovery export approval, staking,
+  bonding, slashing, signer-operation approval, or launch proof.

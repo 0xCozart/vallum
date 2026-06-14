@@ -1,13 +1,16 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import {
+  buildCustodyReadinessArtifact,
   checkCustodyReadiness,
+  formatCustodyReadinessArtifact,
   formatCustodyReadinessReport,
+  writeCustodyReadinessArtifact,
 } from "./check-custody-readiness.js";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -29,9 +32,17 @@ test("custody readiness reports local signer-reference proof and missing product
     now: new Date("2026-06-11T12:00:00.000Z"),
   });
   const formatted = formatCustodyReadinessReport(report);
+  const artifact = buildCustodyReadinessArtifact(report, new Date("2026-06-11T12:00:00.000Z"));
+  const artifactJson = formatCustodyReadinessArtifact(artifact);
 
   assert.equal(report.localProofOk, true);
   assert.equal(report.productionReady, false);
+  assert.equal(artifact.kind, "agentic-gaskit.custody-readiness-report");
+  assert.equal(artifact.localProofOk, true);
+  assert.equal(artifact.productionReady, false);
+  assert.ok(artifact.provenLocalCheckIds.includes("local-signer-reference-proof"));
+  assert.ok(artifact.blockedCheckIds.includes("production-custody-report"));
+  assert.ok(artifact.blockerCodes.includes("CUSTODY_PRODUCTION_REPORT_MISSING"));
   assert.equal(
     report.checks.find((check) => check.id === "local-signer-reference-proof")?.code,
     "CUSTODY_LOCAL_SIGNER_REFERENCE_PROOF_CONFIGURED",
@@ -42,6 +53,33 @@ test("custody readiness reports local signer-reference proof and missing product
   );
   assert.match(formatted, /packages\/accounts\/src\/accounts\.test\.ts/);
   assert.doesNotMatch(formatted, /seed phrase|private key|raw keypair|credential|bearer token/i);
+  assert.doesNotMatch(
+    artifactJson,
+    /custody-report\.json|unsafe\.json|fixture-redacted-key-material|seed phrase value|raw keypair value|Bearer abc|0x[0-9a-fA-F]{64}/i,
+  );
+});
+
+test("custody readiness artifact writer uses restrictive local file permissions", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-custody-artifact-"));
+  try {
+    const outFile = "tmp/gaskit/custody-readiness.json";
+    const artifact = await writeCustodyReadinessArtifact({
+      cwd: repoRoot,
+      env: {},
+      now: new Date("2026-06-11T12:00:00.000Z"),
+      outFile: join(cwd, outFile),
+    });
+    const written = JSON.parse(await readFile(join(cwd, outFile), "utf8")) as typeof artifact;
+    const mode = (await stat(join(cwd, outFile))).mode & 0o777;
+
+    assert.equal(artifact.kind, "agentic-gaskit.custody-readiness-report");
+    assert.equal(written.kind, "agentic-gaskit.custody-readiness-report");
+    assert.equal(written.productionReady, false);
+    assert.equal(written.blockerCodes.includes("CUSTODY_PRODUCTION_REPORT_MISSING"), true);
+    assert.equal(mode, 0o600);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
 });
 
 test("custody readiness accepts a recent redacted production report", async () => {

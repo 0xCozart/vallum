@@ -229,7 +229,8 @@ It also includes the first Agentic GasKit implementation slices:
 - non-networked production custody readiness gate for local signer-reference
   account proof plus an operator-supplied redacted structured custody report
   path before manual approval of KMS, recovery, staking, bonding, slashing, or
-  signer-operation claims
+  signer-operation claims, plus a redacted mode-600 local JSON artifact writer
+  for custody readiness audit snapshots
 - local redacted custody production proof-plan writer for signer-reference,
   no secret exposure, KMS/external signer, recovery/export,
   rotation/revocation, audit logging, legal/security, incident response,

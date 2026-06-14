@@ -128,6 +128,12 @@ The report must not include seeds, mnemonics, private keys, raw keypairs,
 signer material, credentials, payloads, headers, signatures, or local secret
 paths.
 
+`npm run proof:custody-readiness -- --out tmp/gaskit/custody-readiness.json`
+writes the same readiness state as a redacted mode-0600 local JSON artifact for
+audit snapshots. The artifact does not contact KMS providers, external
+signers, custody providers, IOTA services, Gas Station endpoints, or live
+wallet infrastructure, and it does not clear production custody blockers.
+
 `npm run custody:write-production-proof-plan` adds a non-networked custody
 production proof-plan writer for operators:
 

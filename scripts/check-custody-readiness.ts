@@ -1,5 +1,5 @@
-import { access, readFile } from "node:fs/promises";
-import { isAbsolute, resolve } from "node:path";
+import { access, chmod, mkdir, readFile, writeFile } from "node:fs/promises";
+import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 export type CustodyReadinessStatus =
@@ -23,11 +23,35 @@ export interface CustodyReadinessReport {
   readonly checks: readonly CustodyReadinessCheck[];
 }
 
+export interface CustodyReadinessArtifact {
+  readonly schemaVersion: 1;
+  readonly kind: "agentic-gaskit.custody-readiness-report";
+  readonly generatedAt: string;
+  readonly localProofOk: boolean;
+  readonly productionReady: boolean;
+  readonly provenLocalCheckIds: readonly string[];
+  readonly readyApprovalCheckIds: readonly string[];
+  readonly blockedCheckIds: readonly string[];
+  readonly blockerCodes: readonly string[];
+  readonly checks: readonly CustodyReadinessCheck[];
+  readonly boundaries: readonly string[];
+}
+
 export interface CustodyReadinessOptions {
   readonly cwd?: string;
   readonly env?: NodeJS.ProcessEnv | Record<string, string | undefined>;
   readonly now?: Date;
   readonly scripts?: Record<string, string | undefined>;
+}
+
+export interface WriteCustodyReadinessArtifactOptions extends CustodyReadinessOptions {
+  readonly outFile?: string;
+}
+
+interface CliOptions {
+  readonly help: boolean;
+  readonly json: boolean;
+  readonly outFile?: string;
 }
 
 interface StructuredCustodyReport {
@@ -62,6 +86,23 @@ const REQUIRED_PRODUCTION_CHECKS = [
 
 const SECRET_FIELD_RE = /seed|mnemonic|private|rawKeypair|raw_keypair|secret|token|credential|authorization|signature|payload|header|password|session|cookie|keyMaterial|exportedKey/i;
 
+const ARTIFACT_BOUNDARIES = [
+  "This report is non-networked and does not contact KMS providers, external signers, custody providers, IOTA services, Gas Station endpoints, or live wallet infrastructure.",
+  "productionReady=false means local signer-reference proof or operator-approved production custody evidence remains blocked.",
+  "ready-approval checks require manual operator review before any production custody, KMS, external signer, recovery export, staking, bonding, slashing, or signer-operation claim is accepted.",
+  "Do not commit generated reports, custody proof outputs, seeds, mnemonics, private keys, raw keypairs, signer material, credentials, authorization headers, payloads, signatures, exported keys, or local secret paths.",
+] as const;
+
+const usage = `usage: npm exec tsx -- scripts/check-custody-readiness.ts [--json] [--out <path>]
+
+Reports current Agentic GasKit custody readiness without contacting custody systems or live signer infrastructure.
+
+Options:
+  --json        Print a redacted machine-readable artifact.
+  --out <path>  Write the same JSON artifact to a local file with mode 0600.
+  --help        Show this help text.
+`;
+
 export async function checkCustodyReadiness(
   options: CustodyReadinessOptions = {},
 ): Promise<CustodyReadinessReport> {
@@ -94,6 +135,48 @@ export function formatCustodyReadinessReport(report: CustodyReadinessReport): st
     lines.push(`next=${check.next}`);
   }
   return lines.join("\n");
+}
+
+export function buildCustodyReadinessArtifact(
+  report: CustodyReadinessReport,
+  now = new Date(),
+): CustodyReadinessArtifact {
+  const provenLocalChecks = report.checks.filter((check) => check.status === "proven-local");
+  const readyApprovalChecks = report.checks.filter((check) => check.status === "ready-approval");
+  const blockedChecks = report.checks.filter((check) => check.status !== "proven-local" && check.status !== "ready-approval");
+
+  return {
+    schemaVersion: 1,
+    kind: "agentic-gaskit.custody-readiness-report",
+    generatedAt: now.toISOString(),
+    localProofOk: report.localProofOk,
+    productionReady: report.productionReady,
+    provenLocalCheckIds: provenLocalChecks.map((check) => check.id),
+    readyApprovalCheckIds: readyApprovalChecks.map((check) => check.id),
+    blockedCheckIds: blockedChecks.map((check) => check.id),
+    blockerCodes: blockedChecks.map((check) => check.code),
+    checks: report.checks,
+    boundaries: ARTIFACT_BOUNDARIES,
+  };
+}
+
+export async function writeCustodyReadinessArtifact(
+  options: WriteCustodyReadinessArtifactOptions = {},
+): Promise<CustodyReadinessArtifact> {
+  const cwd = options.cwd ?? process.cwd();
+  const report = await checkCustodyReadiness(options);
+  const artifact = buildCustodyReadinessArtifact(report, options.now);
+  if (options.outFile) {
+    const outPath = isAbsolute(options.outFile) ? options.outFile : resolve(cwd, options.outFile);
+    await mkdir(dirname(outPath), { recursive: true });
+    await writeFile(outPath, formatCustodyReadinessArtifact(artifact), { mode: 0o600 });
+    await chmod(outPath, 0o600);
+  }
+  return artifact;
+}
+
+export function formatCustodyReadinessArtifact(artifact: CustodyReadinessArtifact): string {
+  return `${JSON.stringify(artifact, null, 2)}\n`;
 }
 
 async function loadPackageScripts(cwd: string): Promise<Record<string, string | undefined>> {
@@ -286,7 +369,55 @@ function containsSecretLikeField(value: unknown): boolean {
   return false;
 }
 
+function parseArgs(args: readonly string[]): CliOptions {
+  let help = false;
+  let json = false;
+  let outFile: string | undefined;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg === "--help" || arg === "-h") {
+      help = true;
+      continue;
+    }
+    if (arg === "--json") {
+      json = true;
+      continue;
+    }
+    if (arg === "--out") {
+      const value = args[index + 1];
+      if (!value || value.startsWith("--")) throw new Error("--out requires a path.");
+      outFile = value;
+      index += 1;
+      continue;
+    }
+    throw new Error(`Unsupported argument: ${arg}`);
+  }
+
+  return { help, json, outFile };
+}
+
 async function main(): Promise<number> {
+  let options: CliOptions;
+  try {
+    options = parseArgs(process.argv.slice(2));
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    console.error(usage);
+    return 1;
+  }
+
+  if (options.help) {
+    console.log(usage.trimEnd());
+    return 0;
+  }
+
+  if (options.json || options.outFile) {
+    const artifact = await writeCustodyReadinessArtifact({ outFile: options.outFile });
+    console.log(formatCustodyReadinessArtifact(artifact).trimEnd());
+    return 0;
+  }
+
   const report = await checkCustodyReadiness();
   console.log(formatCustodyReadinessReport(report));
   return 0;
