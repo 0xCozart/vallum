@@ -111,6 +111,16 @@ test("testnet digest proof has offline and opt-in live commands", () => {
   assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /npm run proof:testnet-digest:live/);
 });
 
+test("live proof plan is non-networked and opt-in", () => {
+  assert.equal(
+    packageJson.scripts?.["live:write-proof-plan"],
+    "npm run build && tsx scripts/write-live-proof-plan.ts",
+  );
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /write-live-proof-plan/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /write-live-proof-plan/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /write-live-proof-plan/);
+});
+
 test("A2A public readiness proof is non-networked and wired into local verification", () => {
   assert.equal(
     packageJson.scripts?.["proof:a2a-public-readiness"],

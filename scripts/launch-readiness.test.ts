@@ -90,6 +90,7 @@ async function writeEvidenceTree(cwd: string): Promise<void> {
     "packages/registry/src/profileSchema.ts",
     "packages/registry/src/iotaNamesAdapter.ts",
     "packages/registry/src/iotaIdentityAdapter.ts",
+    "scripts/write-live-proof-plan.ts",
     "scripts/smoke-iota-names-live.ts",
     "scripts/smoke-iota-identity-live.ts",
     "docs/agentic-gaskit/live-proof-status.md",

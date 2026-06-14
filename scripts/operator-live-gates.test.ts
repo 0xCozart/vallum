@@ -44,6 +44,14 @@ test("operator live gates report current blockers without secret values", async 
     assert.equal(findGate(report, "gas-station-runtime").command, "npm run gas-station:runtime-preflight");
     assert.equal(findGate(report, "testnet-upstream").status, "blocked-config");
     assert.equal(findGate(report, "testnet-upstream").command, "npm run diagnose:gas-station");
+    assert.equal(
+      findGate(report, "iota-names-live").command,
+      "npm run live:write-proof-plan && npm run smoke:iota-names-live",
+    );
+    assert.equal(
+      findGate(report, "iota-identity-live").command,
+      "npm run live:write-proof-plan && npm run smoke:iota-identity-live",
+    );
     assert.equal(findGate(report, "npm-registry-publication").status, "requires-approval");
     assert.equal(
       findGate(report, "npm-registry-publication").command,
@@ -213,7 +221,7 @@ test("operator live gate artifact reports blockers without configured values", a
   assert.ok(artifact.blockerCodes.includes("IOTA_NAMES_LIVE_CONFIG_PRESENT"));
   assert.ok(artifact.approvalRequiredGateIds.includes("iota-names-live"));
   assert.ok(artifact.liveServiceGateIds.includes("iota-names-live"));
-  assert.ok(artifact.gates.some((gate) => gate.command === "npm run smoke:iota-names-live"));
+  assert.ok(artifact.gates.some((gate) => gate.command === "npm run live:write-proof-plan && npm run smoke:iota-names-live"));
   assert.doesNotMatch(formatted, /graphql\.testnet\.example|researcher\.demo\.iota/);
   assert.doesNotMatch(formatted, /0x1111111111111111111111111111111111111111111111111111111111111111/);
 });

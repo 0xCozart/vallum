@@ -77,6 +77,7 @@ const AREA_DEFINITIONS = [
       "packages/registry/src/profileSchema.ts",
       "packages/registry/src/iotaNamesAdapter.ts",
       "packages/registry/src/iotaIdentityAdapter.ts",
+      "scripts/write-live-proof-plan.ts",
       "scripts/smoke-iota-names-live.ts",
       "scripts/smoke-iota-identity-live.ts",
       "docs/agentic-gaskit/live-proof-status.md",
@@ -84,6 +85,7 @@ const AREA_DEFINITIONS = [
     commands: [
       "npm test",
       "npm run proof:live-status",
+      "npm run live:write-proof-plan",
       "npm run smoke:iota-names-live",
       "npm run smoke:iota-identity-live",
     ],
