@@ -2,7 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { requestIotaFromFaucet, FaucetRateLimitError } from "@iota/iota-sdk/faucet";
+import { FaucetRateLimitError } from "@iota/iota-sdk/faucet";
 
 import { loadEnvFile } from "../apps/policy-gateway-service/src/readiness.js";
 import { sponsorAddressFromGasStationKeypair } from "./check-sponsor-funding.js";
@@ -29,6 +29,9 @@ export interface SponsorFaucetRequestReport {
   readonly signsTransactions: false;
   readonly sponsorAddressRedacted?: string;
   readonly faucetUrlConfigured: boolean;
+  readonly faucetApiVersion?: "v1-batch" | "v0-documented";
+  readonly faucetHttpStatus?: number;
+  readonly faucetFailureKind?: "http-status" | "invalid-json" | "faucet-error" | "network-error" | "discarded" | "poll-timeout";
   readonly amountMist?: string;
   readonly reportPath?: string;
   readonly nextCommands: readonly string[];
@@ -143,7 +146,8 @@ export async function requestSponsorFaucetFunds(
   }
 
   try {
-    const amount = await (options.requestFunds ?? requestIotaFromFaucet)({
+    const defaultRequester = options.requestFunds === undefined;
+    const amount = await (options.requestFunds ?? requestIotaFromDefaultFaucet)({
       host: faucetUrl,
       recipient: sponsorAddress,
     });
@@ -154,20 +158,135 @@ export async function requestSponsorFaucetFunds(
       message: "Sponsor faucet request completed; rerun the funding diagnostic to verify readable coin balance.",
       contactsLiveService: true,
       sponsorAddressRedacted,
+      faucetApiVersion: defaultRequester ? "v1-batch" : undefined,
       amountMist: amount === undefined ? undefined : String(amount),
     });
   } catch (error) {
+    const sanitized = sanitizedFaucetError(error);
     return writeReport(reportPath, {
       ...base,
       result: "failed",
-      code: error instanceof FaucetRateLimitError ? "SPONSOR_FAUCET_RATE_LIMITED" : "SPONSOR_FAUCET_FAILED",
-      message: error instanceof FaucetRateLimitError
+      code: sanitized.rateLimited ? "SPONSOR_FAUCET_RATE_LIMITED" : "SPONSOR_FAUCET_FAILED",
+      message: sanitized.rateLimited
         ? "Sponsor faucet request was rate limited; retry later."
         : "Sponsor faucet request failed without exposing raw faucet response details.",
       contactsLiveService: true,
       sponsorAddressRedacted,
+      faucetApiVersion: sanitized.apiVersion,
+      faucetHttpStatus: sanitized.httpStatus,
+      faucetFailureKind: sanitized.failureKind,
     });
   }
+}
+
+export async function requestIotaFromDocumentedFaucet(input: {
+  readonly host: string;
+  readonly recipient: string;
+}): Promise<number | undefined> {
+  const endpoint = new URL("/gas", input.host).toString();
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        FixedAmountRequest: {
+          recipient: input.recipient,
+        },
+      }),
+    });
+  } catch {
+    throw new SanitizedFaucetRequestError("network-error");
+  }
+  if (response.status === 429) {
+    throw new SanitizedFaucetRequestError("http-status", 429, "v0-documented", true);
+  }
+  if (!response.ok) {
+    throw new SanitizedFaucetRequestError("http-status", response.status);
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = await response.json();
+  } catch {
+    throw new SanitizedFaucetRequestError("invalid-json", response.status);
+  }
+
+  if (!parsed || typeof parsed !== "object") {
+    throw new SanitizedFaucetRequestError("invalid-json", response.status);
+  }
+  const body = parsed as { error?: unknown; transferredGasObjects?: unknown };
+  if (body.error) {
+    throw new SanitizedFaucetRequestError("faucet-error", response.status);
+  }
+  if (!Array.isArray(body.transferredGasObjects)) {
+    return undefined;
+  }
+  return body.transferredGasObjects.reduce((total, coin) => {
+    if (!coin || typeof coin !== "object") return total;
+    const amount = (coin as { amount?: unknown }).amount;
+    return typeof amount === "number" && Number.isFinite(amount) ? total + amount : total;
+  }, 0);
+}
+
+export async function requestIotaFromDefaultFaucet(input: {
+  readonly host: string;
+  readonly recipient: string;
+  readonly maxAttempts?: number;
+  readonly delayMs?: number;
+}): Promise<number | undefined> {
+  const maxAttempts = input.maxAttempts ?? 20;
+  const delayMs = input.delayMs ?? 1500;
+  const initial = await faucetFetchJson({
+    apiVersion: "v1-batch",
+    host: input.host,
+    path: "/v1/gas",
+    method: "POST",
+    body: {
+      FixedAmountRequest: {
+        recipient: input.recipient,
+      },
+    },
+  });
+  const task = typeof initial.task === "string" && initial.task.trim() !== "" ? initial.task.trim() : undefined;
+  if (!task) {
+    throw new SanitizedFaucetRequestError("invalid-json", undefined, "v1-batch");
+  }
+
+  for (let attempt = 0; attempt <= maxAttempts; attempt += 1) {
+    const statusResponse = await faucetFetchJson({
+      apiVersion: "v1-batch",
+      host: input.host,
+      path: `/v1/status/${encodeURIComponent(task)}`,
+      method: "GET",
+    });
+    const statusEnvelope = statusResponse.status;
+    const status = statusEnvelope && typeof statusEnvelope === "object"
+      ? (statusEnvelope as { status?: unknown }).status
+      : undefined;
+    if (status === "SUCCEEDED") {
+      const transferred = (statusEnvelope as { transferred_gas_objects?: { sent?: unknown } }).transferred_gas_objects;
+      const sent = transferred && typeof transferred === "object" && Array.isArray(transferred.sent)
+        ? transferred.sent
+        : [];
+      return sent.reduce((total, coin) => {
+        if (!coin || typeof coin !== "object") return total;
+        const amount = (coin as { amount?: unknown }).amount;
+        return typeof amount === "number" && Number.isFinite(amount) ? total + amount : total;
+      }, 0);
+    }
+    if (status === "DISCARDED") {
+      throw new SanitizedFaucetRequestError("discarded", undefined, "v1-batch");
+    }
+    if (status !== "INPROGRESS") {
+      throw new SanitizedFaucetRequestError("invalid-json", undefined, "v1-batch");
+    }
+    if (attempt < maxAttempts) {
+      await new Promise((resolveDelay) => setTimeout(resolveDelay, delayMs));
+    }
+  }
+
+  throw new SanitizedFaucetRequestError("poll-timeout", undefined, "v1-batch");
 }
 
 export function formatSponsorFaucetRequestReport(report: SponsorFaucetRequestReport): string {
@@ -182,6 +301,9 @@ export function formatSponsorFaucetRequestReport(report: SponsorFaucetRequestRep
     `signsTransactions=${report.signsTransactions}`,
     `network=${report.network}`,
     `faucetUrlConfigured=${report.faucetUrlConfigured}`,
+    ...(report.faucetApiVersion ? [`faucetApiVersion=${report.faucetApiVersion}`] : []),
+    ...(report.faucetHttpStatus ? [`faucetHttpStatus=${report.faucetHttpStatus}`] : []),
+    ...(report.faucetFailureKind ? [`faucetFailureKind=${report.faucetFailureKind}`] : []),
     ...(report.sponsorAddressRedacted ? [`sponsorAddress=${report.sponsorAddressRedacted}`] : []),
     ...(report.amountMist ? [`amountMist=${report.amountMist}`] : []),
     ...(report.reportPath ? [`report=${report.reportPath}`] : []),
@@ -257,6 +379,77 @@ function isSafeFaucetUrl(value: string): boolean {
   } catch {
     return false;
   }
+}
+
+class SanitizedFaucetRequestError extends Error {
+  constructor(
+    readonly failureKind: NonNullable<SponsorFaucetRequestReport["faucetFailureKind"]>,
+    readonly httpStatus?: number,
+    readonly apiVersion: NonNullable<SponsorFaucetRequestReport["faucetApiVersion"]> = "v0-documented",
+    readonly rateLimited: boolean = false,
+  ) {
+    super("Sanitized sponsor faucet request failure.");
+  }
+}
+
+async function faucetFetchJson(input: {
+  readonly apiVersion: NonNullable<SponsorFaucetRequestReport["faucetApiVersion"]>;
+  readonly host: string;
+  readonly path: string;
+  readonly method: "GET" | "POST";
+  readonly body?: Record<string, unknown>;
+}): Promise<Record<string, unknown>> {
+  let response: Response;
+  try {
+    response = await fetch(new URL(input.path, input.host), {
+      method: input.method,
+      headers: { "Content-Type": "application/json" },
+      body: input.body ? JSON.stringify(input.body) : undefined,
+    });
+  } catch {
+    throw new SanitizedFaucetRequestError("network-error", undefined, input.apiVersion);
+  }
+  if (response.status === 429) {
+    throw new SanitizedFaucetRequestError("http-status", 429, input.apiVersion, true);
+  }
+  if (!response.ok) {
+    throw new SanitizedFaucetRequestError("http-status", response.status, input.apiVersion);
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = await response.json();
+  } catch {
+    throw new SanitizedFaucetRequestError("invalid-json", response.status, input.apiVersion);
+  }
+  if (!parsed || typeof parsed !== "object") {
+    throw new SanitizedFaucetRequestError("invalid-json", response.status, input.apiVersion);
+  }
+  const body = parsed as Record<string, unknown>;
+  if (body.error) {
+    throw new SanitizedFaucetRequestError("faucet-error", response.status, input.apiVersion);
+  }
+  return body;
+}
+
+function sanitizedFaucetError(error: unknown): {
+  readonly rateLimited: boolean;
+  readonly apiVersion?: SponsorFaucetRequestReport["faucetApiVersion"];
+  readonly httpStatus?: number;
+  readonly failureKind?: SponsorFaucetRequestReport["faucetFailureKind"];
+} {
+  if (error instanceof FaucetRateLimitError) {
+    return { rateLimited: true, apiVersion: "v0-documented", httpStatus: 429, failureKind: "http-status" };
+  }
+  if (error instanceof SanitizedFaucetRequestError) {
+    return {
+      rateLimited: error.rateLimited,
+      apiVersion: error.apiVersion,
+      httpStatus: error.httpStatus,
+      failureKind: error.failureKind,
+    };
+  }
+  return { rateLimited: false };
 }
 
 function redactAddress(value: string): string {

@@ -142,7 +142,9 @@ It also includes the first Agentic GasKit implementation slices:
 - opt-in sponsor faucet request helper that requires explicit `--execute` plus
   an operator-provided faucet URL, sends only the public sponsor address to the
   faucet, writes a sanitized ignored report, and still keeps funding separate
-  from reserve_gas and sponsored execution proof
+  from reserve_gas and sponsored execution proof; the helper uses the IOTA
+  faucet batch endpoint and records only safe endpoint/status metadata on
+  faucet failures
 - explicit managed-upstream Gas Station runtime mode for operators who provide
   a separately managed Gas Station at `GAS_STATION_URL`; the mode skips Docker
   inspection but still requires sanitized upstream diagnostics before sponsored

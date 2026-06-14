@@ -8,6 +8,8 @@ import { Ed25519Keypair } from "@iota/iota-sdk/keypairs/ed25519";
 
 import {
   formatSponsorFaucetRequestReport,
+  requestIotaFromDocumentedFaucet,
+  requestIotaFromDefaultFaucet,
   requestSponsorFaucetFunds,
   type SponsorFaucetRequester,
 } from "./request-sponsor-faucet-funds.js";
@@ -100,6 +102,142 @@ test("sponsor faucet request calls injected faucet and writes sanitized report",
   assert.doesNotMatch(JSON.stringify(artifact), new RegExp(escapeRegExp(sponsorAddress)));
   assert.doesNotMatch(JSON.stringify(artifact), new RegExp(escapeRegExp(sponsorKey)));
   assert.doesNotMatch(formatted, new RegExp(escapeRegExp(sponsorAddress)));
+});
+
+test("documented faucet requester posts fixed amount requests to the /gas endpoint", async () => {
+  const originalFetch = globalThis.fetch;
+  const recipient = "0x1111111111111111111111111111111111111111111111111111111111111111";
+  try {
+    globalThis.fetch = (async (url, init) => {
+      assert.equal(String(url), "https://faucet.testnet.example/gas");
+      assert.equal(init?.method, "POST");
+      assert.deepEqual(JSON.parse(String(init?.body)), {
+        FixedAmountRequest: {
+          recipient,
+        },
+      });
+      return new Response(JSON.stringify({
+        transferredGasObjects: [
+          { amount: 100, id: "coin-1", transferTxDigest: "digest-1" },
+          { amount: 200, id: "coin-2", transferTxDigest: "digest-2" },
+        ],
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }) as typeof fetch;
+
+    const amount = await requestIotaFromDocumentedFaucet({
+      host: "https://faucet.testnet.example",
+      recipient,
+    });
+
+    assert.equal(amount, 300);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("default faucet requester uses the batch /v1/gas endpoint and polls status", async () => {
+  const originalFetch = globalThis.fetch;
+  const recipient = "0x1111111111111111111111111111111111111111111111111111111111111111";
+  const seen: string[] = [];
+  try {
+    globalThis.fetch = (async (url, init) => {
+      seen.push(`${init?.method ?? "GET"} ${String(url)}`);
+      if (String(url).endsWith("/v1/gas")) {
+        assert.equal(init?.method, "POST");
+        assert.deepEqual(JSON.parse(String(init?.body)), {
+          FixedAmountRequest: {
+            recipient,
+          },
+        });
+        return new Response(JSON.stringify({ task: "task-1" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      assert.equal(String(url), "https://faucet.testnet.example/v1/status/task-1");
+      assert.equal(init?.method, "GET");
+      return new Response(JSON.stringify({
+        status: {
+          status: "SUCCEEDED",
+          transferred_gas_objects: {
+            sent: [
+              { amount: 100, id: "coin-1", transferTxDigest: "digest-1" },
+              { amount: 200, id: "coin-2", transferTxDigest: "digest-2" },
+            ],
+          },
+        },
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }) as typeof fetch;
+
+    const amount = await requestIotaFromDefaultFaucet({
+      host: "https://faucet.testnet.example",
+      recipient,
+      delayMs: 0,
+    });
+
+    assert.equal(amount, 300);
+    assert.deepEqual(seen, [
+      "POST https://faucet.testnet.example/v1/gas",
+      "GET https://faucet.testnet.example/v1/status/task-1",
+    ]);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("sponsor faucet request records safe HTTP failure metadata without raw response bodies", async () => {
+  const originalFetch = globalThis.fetch;
+  const rawResponse = "pretend faucet body with secret-looking value";
+  try {
+    globalThis.fetch = (async () => new Response(rawResponse, { status: 503 })) as typeof fetch;
+
+    const report = await requestSponsorFaucetFunds({
+      env: {
+        GAS_STATION_KEYPAIR: sponsorKey,
+      },
+      execute: true,
+      faucetUrl: "https://faucet.testnet.example",
+    });
+    const formatted = formatSponsorFaucetRequestReport(report);
+
+    assert.equal(report.result, "failed");
+    assert.equal(report.code, "SPONSOR_FAUCET_FAILED");
+    assert.equal(report.faucetApiVersion, "v1-batch");
+    assert.equal(report.faucetHttpStatus, 503);
+    assert.equal(report.faucetFailureKind, "http-status");
+    assert.doesNotMatch(formatted, new RegExp(escapeRegExp(rawResponse)));
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("sponsor faucet request preserves v1 metadata for rate limits", async () => {
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = (async () => new Response("", { status: 429 })) as typeof fetch;
+
+    const report = await requestSponsorFaucetFunds({
+      env: {
+        GAS_STATION_KEYPAIR: sponsorKey,
+      },
+      execute: true,
+      faucetUrl: "https://faucet.testnet.example",
+    });
+
+    assert.equal(report.result, "failed");
+    assert.equal(report.code, "SPONSOR_FAUCET_RATE_LIMITED");
+    assert.equal(report.faucetApiVersion, "v1-batch");
+    assert.equal(report.faucetHttpStatus, 429);
+    assert.equal(report.faucetFailureKind, "http-status");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });
 
 test("sponsor faucet request redacts failed faucet responses", async () => {

@@ -5091,3 +5091,61 @@ Escalation triggers:
 - Any request to treat a passing funding report as proof that reserve_gas or
   sponsored execution is ready.
 - Any request to run `execute:testnet-demo` without explicit operator approval.
+
+## Slice 7.19: Sponsor Faucet Compatibility And Safe Failure Metadata
+
+User-visible outcome:
+Operators can use the sponsor faucet helper against the IOTA faucet batch API
+and receive actionable, sanitized failure metadata when the faucet accepts the
+request at the HTTP layer but rejects it at the faucet layer.
+
+Likely files:
+
+- `scripts/request-sponsor-faucet-funds.ts`
+- `scripts/request-sponsor-faucet-funds.test.ts`
+- `docs/CODEBASE_MAP.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- The default faucet requester submits `FixedAmountRequest` to `/v1/gas` and
+  polls `/v1/status/<task>` without printing task ids, raw faucet responses, or
+  the full sponsor address.
+- The helper still requires `--execute`, still accepts only HTTPS or loopback
+  HTTP faucet URLs, and still sends only the public sponsor address.
+- Sanitized reports can include `faucetApiVersion`, HTTP status, and a bounded
+  failure kind, but never raw faucet response bodies.
+- Live faucet failures do not count as sponsor funding proof.
+- Funding diagnostics still decide whether sponsor funding is ready.
+
+Verification:
+
+- Focused sponsor faucet and package-script tests.
+- `npm run sponsor:request-faucet-funds -- --execute --faucet-url
+  https://faucet.testnet.iota.cafe --out
+  tmp/gaskit/sponsor-faucet-request.json`, recording only sanitized output.
+- `npm run sponsor:check-funding -- --report
+  tmp/gaskit/sponsor-funding-report.json`, recording only redacted output.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slices 7.15-7.18 and local `.env` testnet signer configuration.
+
+Risk:
+Medium. Faucet requests contact a public testnet service and reveal the public
+sponsor address to that service. The helper must continue to redact stdout and
+reports, and a faucet failure or success must remain separate from reserve_gas
+compatibility and sponsored execution proof.
+
+Escalation triggers:
+
+- Any request to print raw faucet response bodies, task ids, full sponsor
+  address, sponsor private key, rendered Gas Station config, bearer token, raw
+  transaction bytes, or user signatures.
+- Any request to treat faucet success as reserve_gas compatibility or
+  sponsored execution readiness.
+- Any request to run `execute:testnet-demo` without explicit operator approval.
