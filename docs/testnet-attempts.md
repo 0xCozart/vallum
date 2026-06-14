@@ -133,7 +133,7 @@ The command builds one real sponsored testnet transaction for the allowlisted de
 0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0::demo_badge::mint_badge
 ```
 
-It generates an ephemeral user key locally, reserves Gas Station gas through the policy gateway, builds a transaction with the ephemeral user as sender and the reserved sponsor/gas coin as gas owner/payment, signs with the ephemeral user key, then submits via `executeSponsoredTransaction`. The script prints only public addresses/ids/digests, never private keys or bearer tokens.
+It generates an ephemeral user key locally, reserves Gas Station gas through the policy gateway, builds a transaction with the ephemeral user as sender and the reserved sponsor/gas coin as gas owner/payment, signs with the ephemeral user key, then submits via `executeSponsoredTransaction`. The script prints redacted addresses and execution ids plus public digests, never private keys or bearer tokens.
 
 Additional compatibility issue discovered and fixed: the official Gas Station requires numeric `reservation_id` values on `execute_tx`, even though the SDK exposes reservation ids as strings for public API stability. The gateway now stores both the public string id and the original upstream id shape, validates public execute requests by string, and forwards the original numeric id back to the official upstream.
 
@@ -143,11 +143,11 @@ Sanitized successful run:
 gatewayBaseUrl=http://127.0.0.1:8787
 iotaRpcUrl=https://api.testnet.iota.cafe
 demoTarget=0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0::demo_badge::mint_badge
-ephemeralUserAddress=0x80b3fadd46ab8aac6563a1e733deda1c63ca5e54c667662ab63cc8f4e3253b5b
+ephemeralUserAddress=0x80b3fadd...253b5b
 reservedGas=true
-reservationId=13
-gasKitTransactionId=gaskit_5dc3c921-8b51-4f2c-ad54-795e0503b726
-sponsorAddress=0xd046a4fb78f6ad84a08232db7f4f23164f6e406063ac021f8c86d0cf29b9b868
+reservationId=<redacted-id>
+gasKitTransactionId=gaskit_5...3b726
+sponsorAddress=0xd046a4fb...29b9b868
 executed=true
 transactionDigest=2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H
 ```
@@ -238,6 +238,39 @@ demo package target and public digest plus redacted identifiers; it did not
 record sponsor keys, bearer tokens, app keys, raw transaction bytes, user
 signatures, full sponsor/user addresses, full reservation ids, or full gateway
 transaction ids.
+
+## 2026-06-14 fresh sponsored testnet execute refresh
+
+After confirming the local gateway, funded sponsor report, Gas Station runtime
+preflight, and upstream reserve compatibility were current, one fresh sponsored
+testnet transaction was executed with an ignored sanitized report:
+
+```bash
+npm run execute:testnet-demo -- --report tmp/gaskit/sponsored-execute-report.json
+```
+
+Sanitized successful run:
+
+```text
+gatewayConfigured=true
+iotaRpcConfigured=true
+demoTarget=0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0::demo_badge::mint_badge
+ephemeralUserAddress=0xacbb7110...56e0ba6e
+reservedGas=true
+reservationId=<redacted-id>
+gasKitTransactionId=gaskit_e...787967
+sponsorAddress=0xd046a4fb...29b9b868
+executed=true
+transactionDigest=Fc32GFCU95wUGs5iGjewJuMxxXwtRrjzLh3LUGrf85uf
+```
+
+Outcome: the current machine again proves the real IOTA testnet sponsored
+transaction path end-to-end through the local policy gateway, local Gas
+Station, and IOTA testnet RPC. The command consumed testnet gas only and
+captured the operational report in an ignored local file. No sponsor key,
+bearer token, app key, raw transaction bytes, user signature, full
+sponsor/user address, full reservation id, or full gateway transaction id was
+written to tracked evidence.
 
 ## 2026-06-11 upstream diagnostic report gate
 

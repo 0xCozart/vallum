@@ -8401,3 +8401,69 @@ Escalation triggers:
   bearer tokens, transaction bytes, raw signatures, raw RPC responses, faucet
   task ids, full addresses, or local secret paths in readiness output or public
   docs.
+
+## Slice 7.85: Fresh Testnet Digest Evidence Refresh
+
+User-visible outcome:
+The documented sponsored IOTA testnet execute digest is refreshed from a new
+operator-approved live run, the public digest proof checker points at the
+latest digest, and tracked evidence keeps addresses and execution identifiers
+redacted.
+
+Likely files:
+
+- `scripts/check-testnet-digest-proof.ts`
+- `scripts/testnet-digest-proof.test.ts`
+- `docs/testnet-attempts.md`
+- `docs/agentic-gaskit/testnet-digest-proof.md`
+- `docs/reviewer-walkthrough.md`
+- `README.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `npm run execute:testnet-demo -- --report
+  tmp/gaskit/sponsored-execute-report.json` succeeds only after local
+  readiness, runtime preflight, funded sponsor report, and upstream reserve
+  compatibility are already configured.
+- The new public digest is present in `scripts/check-testnet-digest-proof.ts`,
+  `docs/testnet-attempts.md`, `docs/agentic-gaskit/testnet-digest-proof.md`,
+  and `docs/reviewer-walkthrough.md`.
+- `npm run proof:testnet-digest` passes without contacting live services.
+- `npm run proof:testnet-digest:live -- --digest <fresh-digest> --report
+  tmp/gaskit/testnet-digest-proof.json` verifies the fresh digest through a
+  read-only IOTA testnet lookup and writes only an ignored sanitized report.
+- Tracked evidence does not include sponsor keys, bearer tokens, app keys, raw
+  transaction bytes, raw signatures, raw upstream responses, local secret
+  paths, full addresses, full reservation ids, or full gateway transaction ids.
+
+Verification:
+
+- `npm run execute:testnet-demo -- --report
+  tmp/gaskit/sponsored-execute-report.json`
+- `node --import tsx --test scripts/testnet-digest-proof.test.ts`
+- `npm run proof:testnet-digest`
+- `npm run proof:testnet-digest:live -- --digest <fresh-digest> --report
+  tmp/gaskit/testnet-digest-proof.json`
+- `npm run proof:product-status`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `git diff --check`
+
+Dependencies:
+Slices 7.7, 7.31, 7.64, 7.70, 7.73, 7.75, 7.77, and 7.84.
+
+Risk:
+Medium. This slice spends testnet gas and updates public evidence surfaces; it
+must not change gateway, SDK, policy, or sponsor-key handling semantics.
+
+Escalation triggers:
+
+- Any request to print or commit `.env` values, sponsor keys, bearer tokens,
+  app keys, raw transaction bytes, raw signatures, raw upstream response
+  bodies, full addresses, local report paths, or ignored report contents.
+- Any request to treat a stale ignored digest report or documented-only digest
+  as current live lookup proof.
+- Any request to run the live execute command without explicit operator intent,
+  local readiness, Gas Station runtime readiness, sponsor funding proof, and
+  reserve_gas compatibility proof.
