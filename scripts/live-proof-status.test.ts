@@ -418,7 +418,7 @@ test("live proof status blocks unsafe identity proof endpoints without printing 
   }
 });
 
-test("live proof status validates VC trust policy config without printing values", async () => {
+test("live proof status blocks VC trust policy config without an identity smoke report", async () => {
   const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
   try {
     const report = await checkLiveProofStatus({
@@ -435,8 +435,73 @@ test("live proof status validates VC trust policy config without printing values
     const formatted = formatLiveProofStatusReport(report);
     const vc = report.checks.find((check) => check.id === "vc-validation-live");
 
+    assert.equal(vc?.status, "blocked");
+    assert.equal(vc?.code, "VC_VALIDATION_LIVE_REPORT_MISSING");
+    assert.deepEqual(vc?.missing, ["IOTA_IDENTITY_LIVE_REPORT"]);
+    assert.doesNotMatch(formatted, /agent-registry|agent-capability-key-1/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("live proof status validates VC trust policy with current credential evidence report", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  try {
+    await writeFile(join(cwd, "iota-identity-report.json"), JSON.stringify(readyIotaIdentityReport()));
+    const report = await checkLiveProofStatus({
+      cwd,
+      gasStationRuntimeReport: readyGasStationRuntime(),
+      env: {
+        IOTA_IDENTITY_PROOF_ENDPOINT: "https://identity.testnet.example/proof",
+        IOTA_IDENTITY_PROFILE_PATH: "profiles/researcher.json",
+        IOTA_IDENTITY_LIVE_REPORT: "iota-identity-report.json",
+        IOTA_IDENTITY_TRUSTED_ISSUER_DIDS: "did:iota:issuer:agent-registry",
+        IOTA_IDENTITY_ALLOWED_VERIFICATION_METHODS: "#agent-capability-key-1",
+        IOTA_IDENTITY_REQUIRED_CREDENTIAL_TYPES: "VerifiableCredential,AgentCapabilityCredential",
+        IOTA_IDENTITY_ACCEPTED_STATUS_TYPES: "RevocationBitmap2022,StatusList2021Entry",
+        IOTA_IDENTITY_CACHE_TTL_MS: "60000",
+      },
+    });
+    const formatted = formatLiveProofStatusReport(report);
+    const vc = report.checks.find((check) => check.id === "vc-validation-live");
+
     assert.equal(vc?.status, "ready");
-    assert.equal(vc?.code, "VC_TRUST_POLICY_CONFIG_PRESENT");
+    assert.equal(vc?.code, "VC_VALIDATION_LIVE_REPORT_VALID");
+    assert.equal(vc?.evidence, "vc-live-report-valid-redacted");
+    assert.doesNotMatch(formatted, /iota-identity-report\.json|identity\.testnet\.example|researcher\.json/);
+    assert.doesNotMatch(formatted, /agent-registry|agent-capability-key-1/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("live proof status blocks VC validation when identity report has no credential evidence", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  try {
+    await writeFile(join(cwd, "iota-identity-report.json"), JSON.stringify({
+      ...readyIotaIdentityReport(),
+      credentialRefsChecked: 0,
+    }));
+    const report = await checkLiveProofStatus({
+      cwd,
+      gasStationRuntimeReport: readyGasStationRuntime(),
+      env: {
+        IOTA_IDENTITY_PROOF_ENDPOINT: "https://identity.testnet.example/proof",
+        IOTA_IDENTITY_PROFILE_PATH: "profiles/researcher.json",
+        IOTA_IDENTITY_LIVE_REPORT: "iota-identity-report.json",
+        IOTA_IDENTITY_TRUSTED_ISSUER_DIDS: "did:iota:issuer:agent-registry",
+        IOTA_IDENTITY_ALLOWED_VERIFICATION_METHODS: "#agent-capability-key-1",
+        IOTA_IDENTITY_REQUIRED_CREDENTIAL_TYPES: "VerifiableCredential,AgentCapabilityCredential",
+        IOTA_IDENTITY_ACCEPTED_STATUS_TYPES: "RevocationBitmap2022,StatusList2021Entry",
+        IOTA_IDENTITY_CACHE_TTL_MS: "60000",
+      },
+    });
+    const formatted = formatLiveProofStatusReport(report);
+    const vc = report.checks.find((check) => check.id === "vc-validation-live");
+
+    assert.equal(vc?.status, "blocked");
+    assert.equal(vc?.code, "VC_VALIDATION_CREDENTIAL_EVIDENCE_MISSING");
+    assert.doesNotMatch(formatted, /iota-identity-report\.json|identity\.testnet\.example|researcher\.json/);
     assert.doesNotMatch(formatted, /agent-registry|agent-capability-key-1/);
   } finally {
     await rm(cwd, { recursive: true, force: true });

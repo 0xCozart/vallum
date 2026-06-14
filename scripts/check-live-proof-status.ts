@@ -139,7 +139,7 @@ export async function checkLiveProofStatus(
     await checkTestnetUpstreamStatus(mergedEnv, cwd),
     await checkIotaNamesStatus(mergedEnv, cwd),
     await checkIotaIdentityStatus(mergedEnv, cwd),
-    checkVcTrustPolicyStatus(mergedEnv),
+    await checkVcTrustPolicyStatus(mergedEnv, cwd),
   ];
 
   return {
@@ -596,7 +596,10 @@ async function checkIotaIdentityStatus(
   }
 }
 
-function checkVcTrustPolicyStatus(env: Record<string, string | undefined>): LiveProofCheck {
+async function checkVcTrustPolicyStatus(
+  env: Record<string, string | undefined>,
+  cwd: string,
+): Promise<LiveProofCheck> {
   const missing = VC_TRUST_POLICY_REQUIRED_ENV.filter((key) => !readEnv(env, key));
   if (missing.length > 0) {
     return {
@@ -630,13 +633,75 @@ function checkVcTrustPolicyStatus(env: Record<string, string | undefined>): Live
     return invalidVcTrustPolicyStatus("Credential cache TTL must be a positive integer in milliseconds.");
   }
 
+  const reportPath = readEnv(env, IOTA_IDENTITY_LIVE_REPORT_ENV);
+  if (!reportPath) {
+    return {
+      id: "vc-validation-live",
+      status: "blocked",
+      code: "VC_VALIDATION_LIVE_REPORT_MISSING",
+      missing: [IOTA_IDENTITY_LIVE_REPORT_ENV],
+      message: "Live VC validation requires a current passing IOTA Identity live smoke report with credential evidence.",
+      evidence: `missing=${IOTA_IDENTITY_LIVE_REPORT_ENV}`,
+      next: "Run npm run smoke:iota-identity-live -- --report <ignored-json-path> with operator approval, then rerun this gate.",
+    };
+  }
+
+  try {
+    const report = await loadIotaIdentityLiveReport(resolve(cwd, reportPath));
+    const validation = validateIotaIdentityLiveReport(report);
+    if (!validation.ok) {
+      return {
+        id: "vc-validation-live",
+        status: "blocked",
+        code: validation.code,
+        message: "Live VC validation requires a valid current IOTA Identity live smoke report.",
+        evidence: "iota-identity-live-report-loaded-redacted",
+        next: "Fix IOTA Identity credential evidence, rerun npm run smoke:iota-identity-live -- --report <ignored-json-path>, then rerun this gate.",
+      };
+    }
+    if (report.trustPolicyConfigured !== true) {
+      return {
+        id: "vc-validation-live",
+        status: "blocked",
+        code: "VC_VALIDATION_LIVE_REPORT_TRUST_POLICY_MISSING",
+        message: "IOTA Identity live smoke report did not record trust-policy configuration.",
+        evidence: "iota-identity-live-report-loaded-redacted",
+        next: "Regenerate the IOTA Identity live smoke report with trust-policy variables configured outside committed files.",
+      };
+    }
+    const credentialRefsChecked = report.credentialRefsChecked;
+    if (
+      typeof credentialRefsChecked !== "number"
+      || !Number.isSafeInteger(credentialRefsChecked)
+      || credentialRefsChecked <= 0
+    ) {
+      return {
+        id: "vc-validation-live",
+        status: "blocked",
+        code: "VC_VALIDATION_CREDENTIAL_EVIDENCE_MISSING",
+        message: "IOTA Identity live smoke report did not prove any credential references.",
+        evidence: "iota-identity-live-report-loaded-redacted",
+        next: "Use an Agent Profile with credential evidence, rerun npm run smoke:iota-identity-live -- --report <ignored-json-path>, then rerun this gate.",
+      };
+    }
+  } catch {
+    return {
+      id: "vc-validation-live",
+      status: "blocked",
+      code: "VC_VALIDATION_LIVE_REPORT_INVALID",
+      message: "Configured IOTA Identity live smoke report could not be loaded or validated for VC evidence.",
+      evidence: "iota-identity-live-report-invalid-redacted",
+      next: "Regenerate the report with npm run smoke:iota-identity-live -- --report <ignored-json-path> without committing endpoint values, profile paths, DIDs, credential refs, or response bodies.",
+    };
+  }
+
   return {
     id: "vc-validation-live",
     status: "ready",
-    code: "VC_TRUST_POLICY_CONFIG_PRESENT",
-    message: "Live VC trust-policy configuration is present for the local fail-closed evaluator.",
-    evidence: "vc-trust-policy-config-present-redacted",
-    next: "Use this configuration when implementing and running the live IOTA Identity credential proof command.",
+    code: "VC_VALIDATION_LIVE_REPORT_VALID",
+    message: "Live VC validation has a current IOTA Identity live smoke report with credential evidence and configured trust policy.",
+    evidence: "vc-live-report-valid-redacted",
+    next: "Keep the IOTA Identity live report current when operator-owned VC trust policy or credential evidence changes.",
   };
 }
 

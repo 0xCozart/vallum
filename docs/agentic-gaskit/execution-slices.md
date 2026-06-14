@@ -7079,3 +7079,68 @@ Escalation triggers:
   paths, key ids, report paths, credentials, response bodies, raw artifact
   contents, private keys, bearer tokens, webhook secrets, or local secret
   paths.
+
+## Slice 7.62: VC Live Report Gate
+
+User-visible outcome:
+Live VC validation can no longer be marked ready from trust-policy variable
+shape alone. Operators must provide a current passing IOTA Identity live smoke
+report with credential evidence before live-status, product-status,
+launch-readiness, or operator gates can mark VC validation ready.
+
+Likely files:
+
+- `scripts/check-live-proof-status.ts`
+- `scripts/live-proof-status.test.ts`
+- `scripts/write-live-proof-plan.ts`
+- `scripts/write-live-proof-plan.test.ts`
+- `scripts/product-status.test.ts`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/testnet-readiness.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `vc-validation-live` still blocks missing or malformed VC trust-policy
+  variables without printing configured values.
+- When VC trust-policy variables are valid but `IOTA_IDENTITY_LIVE_REPORT` is
+  missing, `vc-validation-live` reports
+  `VC_VALIDATION_LIVE_REPORT_MISSING`.
+- A current passing IOTA Identity live report only marks VC validation ready
+  when it records trust-policy configuration and at least one checked
+  credential reference.
+- Invalid, stale, missing-trust-policy, or zero-credential reports keep
+  `vc-validation-live` blocked with redacted evidence labels.
+- The change does not contact IOTA Identity, IOTA Names, IOTA RPC, Gas
+  Station, payment providers, A2A endpoints, or npm.
+- The live smoke remains opt-in and stays out of default local verification.
+
+Verification:
+
+- `node --import tsx --test scripts/live-proof-status.test.ts`
+- `node --import tsx --test scripts/write-live-proof-plan.test.ts`
+- `node --import tsx --test scripts/product-status.test.ts`
+- `npm run proof:live-status`
+- `npm run proof:product-status`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `npm run typecheck`
+- `git diff --check`
+
+Dependencies:
+Slices 7.21, 7.23, and the existing IOTA Identity live smoke report gate.
+
+Risk:
+Medium. This tightens a live proof boundary and can expose additional blockers
+for operators who previously configured only trust-policy variables. That is
+the intended launch-safety behavior.
+
+Escalation triggers:
+
+- Any request to treat VC trust-policy variable shape as live credential proof
+  without a current passing IOTA Identity live smoke report.
+- Any request to print configured endpoint values, profile paths, DIDs,
+  credential refs, raw proof bodies, credential evidence, report contents, or
+  local secret paths in status gates.
+- Any request to include `smoke:iota-identity-live` in default local
+  verification.

@@ -261,7 +261,9 @@ tmp/gaskit/iota-identity-live-report.json` is the report-backed IOTA Identity
 proof path. It contacts the configured proof endpoint only after operator-owned
 Identity variables are present, writes a sanitized ignored report, and does not
 print endpoint values, profile paths, DIDs, credential refs, raw proof
-responses, or local secret paths.
+responses, or local secret paths. `vc-validation-live` also requires this
+current report to show trust-policy configuration and at least one checked
+credential reference; trust-policy variable shape alone is not live VC proof.
 
 Only after those preconditions pass should an operator use explicit intent to
 run the live sponsored testnet execute.

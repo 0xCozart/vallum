@@ -40,7 +40,7 @@ test("live proof plan reports current blockers without configured values", async
     assert.ok(plan.blockerCodes.includes("TESTNET_UPSTREAM_REPORT_MISSING"));
     assert.ok(plan.blockerCodes.includes("IOTA_NAMES_LIVE_REPORT_MISSING"));
     assert.ok(plan.blockerCodes.includes("IOTA_IDENTITY_LIVE_REPORT_MISSING"));
-    assert.ok(plan.readyCodes.includes("VC_TRUST_POLICY_CONFIG_PRESENT"));
+    assert.ok(plan.blockerCodes.includes("VC_VALIDATION_LIVE_REPORT_MISSING"));
     assert.ok(plan.requiredOperatorInputs.includes("GASKIT_SPONSOR_FUNDING_REPORT"));
     assert.ok(plan.optionalOperatorInputs.includes("GASKIT_SPONSOR_FAUCET_REPORT"));
     assert.ok(plan.requiredEvidenceArtifacts.includes("sanitized sponsor funding report"));
@@ -49,7 +49,7 @@ test("live proof plan reports current blockers without configured values", async
     assert.ok(plan.requiredEvidenceArtifacts.includes("sanitized IOTA Names live smoke report"));
     assert.ok(plan.requiredOperatorInputs.includes("IOTA_IDENTITY_PROOF_ENDPOINT"));
     assert.ok(plan.requiredOperatorInputs.includes("IOTA_IDENTITY_LIVE_REPORT"));
-    assert.ok(plan.requiredEvidenceArtifacts.includes("sanitized IOTA Identity live smoke report"));
+    assert.ok(plan.requiredEvidenceArtifacts.includes("sanitized IOTA Identity live smoke report with credential evidence"));
     assert.ok(plan.commands.some((command) => command.id === "write-sponsor-funding-request" && !command.contactsLiveService));
     assert.ok(plan.commands.some((command) => command.id === "request-sponsor-faucet-funds" && command.requiresOperatorApproval));
     assert.ok(plan.commands.some((command) => command.id === "check-sponsor-funding" && command.contactsLiveService));

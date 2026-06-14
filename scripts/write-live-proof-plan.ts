@@ -76,7 +76,7 @@ const REQUIRED_EVIDENCE_ARTIFACTS = [
   "sanitized sponsor funding report",
   "sanitized testnet upstream diagnostic report",
   "sanitized IOTA Names live smoke report",
-  "sanitized IOTA Identity live smoke report",
+  "sanitized IOTA Identity live smoke report with credential evidence",
   "VC trust-policy configuration review",
 ] as const;
 
@@ -159,6 +159,7 @@ const BOUNDARIES = [
   "This plan is non-networked and does not contact IOTA RPC, Gas Station HTTP, IOTA Names, or IOTA Identity.",
   "Sponsor faucet requests, sponsor funding diagnostics, testnet upstream diagnostics, and live smoke commands contact live services, and they require explicit operator approval.",
   "A sponsor faucet report is optional triage context; only a passing sponsor funding report can clear sponsor-funding readiness.",
+  "VC live validation requires a current passing IOTA Identity live smoke report with credential evidence, not only trust-policy variable shape.",
   "The --skip-reserve upstream diagnostic is reachability triage only; it cannot clear reserve_gas compatibility, sponsored execution, or testnet-upstream readiness.",
   "Do not commit reports, endpoint values, profile paths, names, addresses, credentials, tokens, private keys, raw transaction bytes, user signatures, response bodies, credential payloads, or local secret paths.",
   "ready-to-run means the live proof commands are configured for operator review; it is not production, mainnet, custody, marketplace, or payment approval.",

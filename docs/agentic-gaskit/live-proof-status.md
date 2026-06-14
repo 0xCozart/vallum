@@ -120,15 +120,16 @@ report class was loaded, missing, invalid, or accepted.
   IOTA RPC, Gas Station reachability, and reserve_gas compatibility, or the
   exact upstream report blocker plus bounded Gas Station reachability and
   reserve failure codes are listed
-- IOTA Names live smoke configuration is present and uses an HTTPS or loopback
-  GraphQL endpoint, or the exact missing variables are listed
-- IOTA Identity live smoke configuration is present and uses an HTTPS or
-  loopback proof endpoint, or the exact missing variables are listed
+- IOTA Names live smoke configuration and a current sanitized report are
+  present, or the exact missing variables/report blocker is listed
+- IOTA Identity live smoke configuration and a current sanitized report are
+  present, or the exact missing variables/report blocker is listed
 - local VC trust-policy evaluation exists for trusted issuers, verification
   methods, credential types, supported revocation status mechanisms, credential
   expiry, max credential age, and cache-policy binding
 - live VC validation remains blocked until the trust-policy variables are
-  configured and a dedicated live credential-validation command exists
+  configured and the current IOTA Identity live smoke report proves credential
+  evidence against that policy
 
 ## What It Does Not Prove
 
@@ -194,10 +195,12 @@ Those values are configuration readiness only. `npm run smoke:iota-identity-live
 -- --report <ignored-json-path>` contacts the configured proof endpoint and
 writes a sanitized ignored report proving that the endpoint can resolve the
 profile DIDs and return credential evidence accepted by the local trust policy.
-The report omits endpoint values, profile paths, DIDs, credential references,
-raw proof responses, and private local paths. It still does not prove that the
-endpoint is backed by production key management, public provider verification,
-production policy acceptance, or mainnet operation.
+The `vc-validation-live` gate now requires that current report, the report's
+trust-policy flag, and at least one checked credential reference before it can
+move to ready. The report omits endpoint values, profile paths, DIDs,
+credential references, raw proof responses, and private local paths. It still
+does not prove that the endpoint is backed by production key management, public
+provider verification, production policy acceptance, or mainnet operation.
 
 `npm run execute:testnet-demo` contacts live IOTA services and can spend
 sponsored testnet gas. Run it only with explicit operator intent and
