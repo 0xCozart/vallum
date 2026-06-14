@@ -158,6 +158,7 @@ export async function buildOperatorReportTemplate(
         kind: "agentic-gaskit.testnet-upstream-proof-template",
         diagnosticReportKind: "agentic-gaskit.testnet-upstream-diagnostic",
         acceptedReportEnv: "GASKIT_TESTNET_UPSTREAM_REPORT",
+        sponsorFundingReportEnv: "GASKIT_SPONSOR_FUNDING_REPORT",
         runtimeModeEnv: "GASKIT_GAS_STATION_RUNTIME_MODE",
         supportedRuntimeModes: ["local-docker", "managed-upstream"],
         requiredEnv: [
@@ -170,7 +171,7 @@ export async function buildOperatorReportTemplate(
           "npm run gas-station:docker-direct -- --status",
           "npm run sponsor:write-funding-request -- --out tmp/gaskit/sponsor-funding-request.json",
           "npm run sponsor:request-faucet-funds -- --execute --out tmp/gaskit/sponsor-faucet-request.json",
-          "npm run sponsor:check-funding",
+          "npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json",
           "npm run diagnose:gas-station -- --report <ignored-json-path>",
           "npm run proof:live-status",
           "npm run execute:testnet-demo",

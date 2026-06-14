@@ -142,10 +142,12 @@ building/signing a transaction unless all of these are true:
   sponsor:request-faucet-funds -- --execute --out
   tmp/gaskit/sponsor-faucet-request.json` can request testnet gas from
   `IOTA_FAUCET_URL` or `--faucet-url`; it requires explicit `--execute`.
-  Then `npm run sponsor:check-funding` reports whether the configured sponsor
-  wallet has enough readable testnet IOTA balance and sampled coin shape for
-  the reserve budget. It is read-only and prints no private key or full
-  sponsor address.
+  Then `npm run sponsor:check-funding -- --report
+  tmp/gaskit/sponsor-funding-report.json` reports whether the configured
+  sponsor wallet has enough readable testnet IOTA balance and sampled coin
+  shape for the reserve budget. It is read-only and prints no private key or
+  full sponsor address. Point `GASKIT_SPONSOR_FUNDING_REPORT` at that ignored
+  report when running the non-networked proof gates.
 - `GASKIT_TESTNET_UPSTREAM_REPORT` points at a current sanitized report created
   by `npm run diagnose:gas-station -- --report <ignored-json-path>` without
   `--skip-reserve`.
@@ -197,10 +199,12 @@ sign, reserve gas, or execute transactions. Faucet success is not accepted as
 reserve_gas compatibility; rerun the funding diagnostic and upstream
 diagnostic afterward.
 
-`npm run sponsor:check-funding` can be used as a read-only funding diagnostic
-when reserve_gas fails after auth succeeds. It contacts IOTA RPC, but it does
-not reserve gas, sign transactions, execute transactions, or print sponsor
-signer material.
+`npm run sponsor:check-funding -- --report
+tmp/gaskit/sponsor-funding-report.json` can be used as a read-only funding
+diagnostic when reserve_gas fails after auth succeeds. It contacts IOTA RPC,
+but it does not reserve gas, sign transactions, execute transactions, or print
+sponsor signer material. The ignored report contains only the redacted sponsor
+address and aggregate numeric funding fields.
 
 Only after those preconditions pass should an operator use explicit intent to
 run the live sponsored testnet execute.

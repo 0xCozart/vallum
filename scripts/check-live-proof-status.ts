@@ -12,6 +12,10 @@ import {
   validateTestnetUpstreamReport,
 } from "./testnet-upstream-report.js";
 import {
+  loadSponsorFundingReport,
+  validateSponsorFundingReport,
+} from "./sponsor-funding-report.js";
+import {
   checkGasStationRuntimePreflight,
   type GasStationRuntimeCommandRunner,
   type GasStationRuntimePreflightReport,
@@ -66,6 +70,7 @@ const VC_TRUST_POLICY_STATUS_TYPES = new Set([
   "StatusList2021Entry",
 ]);
 const LIVE_TESTNET_ENV_FILE = ".env";
+const SPONSOR_FUNDING_REPORT_ENV = "GASKIT_SPONSOR_FUNDING_REPORT";
 const TESTNET_UPSTREAM_REPORT_ENV = "GASKIT_TESTNET_UPSTREAM_REPORT";
 
 export async function checkLiveProofStatus(
@@ -79,6 +84,7 @@ export async function checkLiveProofStatus(
   const checks: LiveProofCheck[] = [
     await checkTestnetReadinessStatus(envFile, cwd),
     await checkGasStationRuntimeStatus(options, cwd, mergedEnv),
+    await checkSponsorFundingStatus(mergedEnv, cwd),
     await checkTestnetUpstreamStatus(mergedEnv, cwd),
     checkIotaNamesStatus(mergedEnv),
     checkIotaIdentityStatus(mergedEnv),
@@ -122,6 +128,52 @@ async function checkGasStationRuntimeStatus(
       ? "Set GAS_STATION_URL outside committed files or switch GASKIT_GAS_STATION_RUNTIME_MODE back to local-docker, then rerun npm run gas-station:runtime-preflight."
       : "Run npm run gas-station:render-config, enable the Docker daemon and either Compose or direct Docker fallback for this workspace, or explicitly choose managed-upstream mode with a configured Gas Station URL, then rerun npm run gas-station:runtime-preflight.",
   };
+}
+
+async function checkSponsorFundingStatus(
+  env: Record<string, string | undefined>,
+  cwd: string,
+): Promise<LiveProofCheck> {
+  const reportPath = readEnv(env, SPONSOR_FUNDING_REPORT_ENV);
+  if (!reportPath) {
+    return {
+      id: "sponsor-funding",
+      status: "blocked",
+      code: "SPONSOR_FUNDING_REPORT_MISSING",
+      missing: [SPONSOR_FUNDING_REPORT_ENV],
+      message: "No sanitized sponsor funding report is configured.",
+      next: "Run npm run sponsor:check-funding -- --report <ignored-json-path> after funding or faucet request steps.",
+    };
+  }
+
+  try {
+    const report = await loadSponsorFundingReport(resolve(cwd, reportPath));
+    const validation = validateSponsorFundingReport(report);
+    if (validation.ok) {
+      return {
+        id: "sponsor-funding",
+        status: "ready",
+        code: validation.code,
+        message: validation.message,
+        next: "Run npm run diagnose:gas-station -- --report <ignored-json-path> to prove reserve_gas compatibility.",
+      };
+    }
+    return {
+      id: "sponsor-funding",
+      status: "blocked",
+      code: validation.code,
+      message: validation.message,
+      next: "Fund or consolidate the configured sponsor wallet, rerun npm run sponsor:check-funding -- --report <ignored-json-path>, then rerun this gate.",
+    };
+  } catch {
+    return {
+      id: "sponsor-funding",
+      status: "blocked",
+      code: "SPONSOR_FUNDING_REPORT_INVALID",
+      message: "Configured sponsor funding report could not be loaded or validated.",
+      next: "Regenerate the report with npm run sponsor:check-funding -- --report <ignored-json-path> without committing or printing secrets.",
+    };
+  }
 }
 
 async function checkTestnetUpstreamStatus(

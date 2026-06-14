@@ -60,7 +60,10 @@ Operators who intentionally use a separately managed Gas Station can set
 In that mode `npm run gas-station:runtime-preflight` does not inspect Docker
 and does not contact the managed endpoint; it only verifies that managed mode
 and `GAS_STATION_URL` are configured without printing the URL. The
-`testnet-upstream` gate still requires a current passing
+`sponsor-funding` gate still requires a current passing
+`npm run sponsor:check-funding -- --report <ignored-json-path>` report before
+reserve compatibility can be considered ready. The `testnet-upstream` gate
+still requires a current passing
 `npm run diagnose:gas-station -- --report <ignored-json-path>` report before a
 fresh sponsored execute is ready.
 
@@ -80,6 +83,9 @@ funding, not `.env` shape.
   the exact readiness blocker ids are listed
 - local Gas Station runtime prerequisites are present through local Docker or
   explicit managed-upstream mode, or the exact runtime/config blocker is listed
+- sanitized sponsor funding report status is present and proves enough sampled
+  IOTA balance for the requested reserve budget, or the exact funding report
+  blocker is listed
 - sanitized testnet upstream diagnostic report status is present and proves
   IOTA RPC, Gas Station reachability, and reserve_gas compatibility, or the
   exact upstream report blocker is listed
@@ -119,7 +125,8 @@ npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gask
 npm run gas-station:docker-direct -- --status
 npm run sponsor:write-funding-request -- --out tmp/gaskit/sponsor-funding-request.json
 npm run sponsor:request-faucet-funds -- --execute --out tmp/gaskit/sponsor-faucet-request.json
-npm run sponsor:check-funding
+npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json
+GASKIT_SPONSOR_FUNDING_REPORT=tmp/gaskit/sponsor-funding-report.json npm run proof:live-status
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run smoke:iota-names-live
 npm run smoke:iota-identity-live

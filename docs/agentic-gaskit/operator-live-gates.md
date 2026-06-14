@@ -74,6 +74,10 @@ hosts, marketplace systems, or physical devices.
   when a separately managed Gas Station is configured; that skips Docker
   inspection but still leaves upstream reachability and reserve compatibility
   to the sanitized `testnet-upstream` diagnostic report.
+- Separates sponsor-wallet testnet balance proof from reserve compatibility
+  with the `sponsor-funding` gate. The accepted evidence is a sanitized
+  ignored report written by `npm run sponsor:check-funding -- --report
+  <ignored-json-path>` and referenced through `GASKIT_SPONSOR_FUNDING_REPORT`.
 - Separates local testnet `.env` readiness from live Gas Station upstream
   readiness using the sanitized `testnet-upstream` diagnostic report gate.
 - Points IOTA Names, IOTA Identity, and VC live proof prep at
@@ -138,6 +142,11 @@ hosts, marketplace systems, or physical devices.
   `IOTA_FAUCET_URL` or pass `--faucet-url`. The command writes a sanitized
   ignored report, requires explicit `--execute`, and does not prove reserve_gas
   compatibility.
+- Lets operators write the funding evidence report with
+  `npm run sponsor:check-funding -- --report
+  tmp/gaskit/sponsor-funding-report.json`. The command contacts IOTA RPC, but
+  writes only redacted address and aggregate funding fields, and does not sign,
+  reserve gas, execute transactions, or print sponsor signer material.
 - Points public A2A hosting/conformance review at the non-networked
   `npm run proof:a2a-public-readiness` command before any public endpoint is
   probed, then at `npm run smoke:a2a-public-discovery` only after
@@ -187,7 +196,7 @@ npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gask
 npm run gas-station:docker-direct -- --status
 npm run sponsor:write-funding-request -- --out tmp/gaskit/sponsor-funding-request.json
 npm run sponsor:request-faucet-funds -- --execute --out tmp/gaskit/sponsor-faucet-request.json
-npm run sponsor:check-funding
+npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json
 npm run operator:write-report-template -- --kind package-publication --out tmp/gaskit/package-publication-report-template.json
 npm run operator:write-report-template -- --kind payment-provider-live --out tmp/gaskit/payment-provider-live-report-template.json
 npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json

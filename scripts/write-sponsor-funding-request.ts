@@ -93,7 +93,7 @@ export async function buildSponsorFundingRequest(
       "After funding, rerun the read-only funding diagnostic before retrying the upstream diagnostic.",
     ],
     nextCommands: [
-      "npm run sponsor:check-funding",
+      "npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json",
       "npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json",
       "npm run proof:live-status",
     ],
@@ -117,7 +117,7 @@ export function formatSponsorFundingRequestSummary(request: SponsorFundingReques
     `spendsGas=${request.spendsGas}`,
     `signsTransactions=${request.signsTransactions}`,
     `minimumBalanceMist=${request.minimumBalanceMist}`,
-    "next=Fund the public sponsor address from the ignored artifact, then run npm run sponsor:check-funding.",
+    "next=Fund the public sponsor address from the ignored artifact, then run npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json.",
   ].join("\n");
 }
 

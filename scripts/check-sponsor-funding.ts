@@ -1,11 +1,16 @@
 import { IotaClient } from "@iota/iota-sdk/client";
 import { Ed25519Keypair } from "@iota/iota-sdk/keypairs/ed25519";
 import { IOTA_TYPE_ARG } from "@iota/iota-sdk/utils";
-import { resolve } from "node:path";
+import { mkdir, writeFile } from "node:fs/promises";
+import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { loadEnvFile } from "../apps/policy-gateway-service/src/readiness.js";
 import { gasStationKeypairForConfig } from "./render-gas-station-config.js";
+import {
+  buildSponsorFundingEvidenceReport,
+  formatSponsorFundingEvidenceReport,
+} from "./sponsor-funding-report.js";
 
 export type SponsorFundingCode =
   | "SPONSOR_FUNDING_READY"
@@ -54,6 +59,7 @@ interface CliOptions {
   readonly envFile: string;
   readonly help: boolean;
   readonly minBalanceMist: string;
+  readonly reportFile?: string;
 }
 
 type MutableCliOptions = {
@@ -62,10 +68,11 @@ type MutableCliOptions = {
 
 const DEFAULT_MIN_BALANCE_MIST = "50000000";
 const DEFAULT_COIN_LIMIT = 50;
-const usage = `usage: npm exec tsx -- scripts/check-sponsor-funding.ts [--env-file <path>] [--min-balance-mist <mist>]
+const usage = `usage: npm exec tsx -- scripts/check-sponsor-funding.ts [--env-file <path>] [--min-balance-mist <mist>] [--report <path>]
 
 Checks the configured sponsor wallet funding through IOTA RPC without printing private keys or full addresses.
-This is read-only: it derives the public sponsor address locally, queries balance/coins, does not sign, does not reserve gas, and does not execute transactions.`;
+This is read-only: it derives the public sponsor address locally, queries balance/coins, does not sign, does not reserve gas, and does not execute transactions.
+--report writes a sanitized local JSON report with mode 0600 for live proof gates.`;
 
 export async function checkSponsorFunding(
   options: CheckSponsorFundingOptions = {},
@@ -151,7 +158,7 @@ export function formatSponsorFundingReport(report: SponsorFundingReport): string
   if (report.hasNextCoinPage !== undefined) lines.push(`hasNextCoinPage=${report.hasNextCoinPage}`);
   lines.push(report.ready
     ? "next=npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json"
-    : "next=Fund or consolidate the configured sponsor wallet on testnet, then rerun npm run sponsor:check-funding.");
+    : "next=Fund or consolidate the configured sponsor wallet on testnet, then rerun npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json.");
   return lines.join("\n");
 }
 
@@ -174,6 +181,13 @@ function parseArgs(argv: readonly string[]): CliOptions {
       const value = argv[index + 1];
       if (!value) throw new Error("--min-balance-mist requires a positive integer.");
       options.minBalanceMist = value;
+      index += 1;
+      continue;
+    }
+    if (arg === "--report") {
+      const value = argv[index + 1];
+      if (!value) throw new Error("--report requires a path.");
+      options.reportFile = value;
       index += 1;
       continue;
     }
@@ -229,8 +243,22 @@ async function main(): Promise<number> {
     envFile: resolve(process.cwd(), options.envFile),
     minBalanceMist: options.minBalanceMist,
   });
+  if (options.reportFile) {
+    await writeSponsorFundingReportFile(options.reportFile, report);
+  }
   console.log(formatSponsorFundingReport(report));
+  if (options.reportFile) {
+    console.log(`report=${options.reportFile}`);
+  }
   return report.ready ? 0 : 1;
+}
+
+async function writeSponsorFundingReportFile(path: string, report: SponsorFundingReport): Promise<void> {
+  const outFile = isAbsolute(path) ? path : resolve(process.cwd(), path);
+  await mkdir(dirname(outFile), { recursive: true });
+  await writeFile(outFile, `${formatSponsorFundingEvidenceReport(buildSponsorFundingEvidenceReport(report))}\n`, {
+    mode: 0o600,
+  });
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

@@ -75,6 +75,7 @@ const GATE_COMMANDS: Record<string, string | undefined> = {
   "operator-report-template": "npm run operator:write-report-template -- --kind <kind> --out <ignored-report-template.json>",
   "testnet-readiness": "npm run readiness:testnet",
   "gas-station-runtime": "npm run gas-station:runtime-preflight",
+  "sponsor-funding": "npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json",
   "testnet-upstream": "npm run diagnose:gas-station",
   "iota-names-live": "npm run live:write-proof-plan && npm run smoke:iota-names-live",
   "iota-identity-live": "npm run live:write-proof-plan && npm run smoke:iota-identity-live",
@@ -88,6 +89,7 @@ const GATE_COMMANDS: Record<string, string | undefined> = {
 };
 
 const LIVE_SERVICE_GATES = new Set([
+  "sponsor-funding",
   "testnet-upstream",
   "iota-names-live",
   "iota-identity-live",
@@ -98,6 +100,7 @@ const LIVE_SERVICE_GATES = new Set([
 ]);
 
 const APPROVAL_REQUIRED_GATES = new Set([
+  "sponsor-funding",
   "testnet-upstream",
   "iota-names-live",
   "iota-identity-live",

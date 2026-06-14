@@ -42,6 +42,13 @@ test("operator live gates report current blockers without secret values", async 
     assert.equal(findGate(report, "gas-station-runtime").approvalRequired, false);
     assert.equal(findGate(report, "gas-station-runtime").contactsLiveService, false);
     assert.equal(findGate(report, "gas-station-runtime").command, "npm run gas-station:runtime-preflight");
+    assert.equal(findGate(report, "sponsor-funding").status, "blocked-config");
+    assert.equal(findGate(report, "sponsor-funding").approvalRequired, true);
+    assert.equal(findGate(report, "sponsor-funding").contactsLiveService, true);
+    assert.equal(
+      findGate(report, "sponsor-funding").command,
+      "npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json",
+    );
     assert.equal(findGate(report, "testnet-upstream").status, "blocked-config");
     assert.equal(findGate(report, "testnet-upstream").command, "npm run diagnose:gas-station");
     assert.equal(
@@ -132,6 +139,12 @@ test("operator live gates require approval for configured live endpoint smokes",
   const report = await checkOperatorLiveGates({
     productStatus: productStatusFixture([
       {
+        id: "sponsor-funding",
+        status: "ready-live",
+        code: "SPONSOR_FUNDING_REPORT_VALID",
+        message: "Sponsor funding report proves enough sampled IOTA balance for the requested reserve budget.",
+      },
+      {
         id: "testnet-upstream",
         status: "ready-live",
         code: "TESTNET_UPSTREAM_REPORT_VALID",
@@ -152,7 +165,7 @@ test("operator live gates require approval for configured live endpoint smokes",
     ]),
   });
 
-  for (const id of ["testnet-upstream", "iota-names-live", "iota-identity-live"]) {
+  for (const id of ["sponsor-funding", "testnet-upstream", "iota-names-live", "iota-identity-live"]) {
     const gate = findGate(report, id);
     assert.equal(gate.status, "requires-approval");
     assert.equal(gate.approvalRequired, true);

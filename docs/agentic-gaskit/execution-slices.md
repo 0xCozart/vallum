@@ -5013,3 +5013,81 @@ Escalation triggers:
 - Any request to treat faucet success as reserve_gas compatibility or
   sponsored execution readiness.
 - Any request to run `execute:testnet-demo` without explicit operator approval.
+
+## Slice 7.18: Sponsor Funding Report Gate
+
+User-visible outcome:
+Operators can convert the read-only sponsor funding diagnostic into a sanitized
+ignored JSON report that live proof, product status, launch readiness, and
+operator gates consume before reserve_gas proof. This keeps sponsor funding
+readiness separate from Docker runtime readiness and Gas Station upstream
+compatibility.
+
+Likely files:
+
+- `scripts/sponsor-funding-report.ts`
+- `scripts/check-sponsor-funding.ts`
+- `scripts/check-live-proof-status.ts`
+- `scripts/check-product-status.ts`
+- `scripts/check-launch-readiness.ts`
+- `scripts/check-operator-live-gates.ts`
+- `scripts/write-operator-report-template.ts`
+- focused tests for those scripts
+- `docs/testnet-readiness.md`
+- `docs/deployment.md`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/CODEBASE_MAP.md`
+
+Acceptance criteria:
+
+- `npm run sponsor:check-funding -- --report
+  tmp/gaskit/sponsor-funding-report.json` writes a mode-0600 sanitized report
+  whether funding is ready or blocked.
+- The report includes only a redacted sponsor address and aggregate numeric
+  funding fields; it never includes the full sponsor address, signer material,
+  bearer tokens, raw RPC bodies, raw transaction bytes, or user signatures.
+- `npm run proof:live-status` reports `sponsor-funding` separately from
+  `gas-station-runtime` and `testnet-upstream`, using
+  `GASKIT_SPONSOR_FUNDING_REPORT`.
+- Product status, launch readiness, and operator gates inherit the
+  `sponsor-funding` blocker or readiness without contacting live services
+  themselves.
+- Operator gates classify `sponsor-funding` as a live-service command requiring
+  explicit approval because the diagnostic contacts IOTA RPC.
+- The testnet upstream operator template includes the sponsor funding report
+  command and accepted environment variable before upstream diagnostics.
+
+Verification:
+
+- Focused sponsor funding, live proof status, product status, launch readiness,
+  operator gate, operator template, and package-script tests.
+- `npm run sponsor:check-funding -- --report
+  tmp/gaskit/sponsor-funding-report.json`, recording only redacted output.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run proof:live-status`.
+- `npm run proof:product-status`.
+- `npm run proof:launch-readiness`.
+- `npm run proof:operator-gates`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slices 7.15-7.17 and local `.env` testnet signer configuration.
+
+Risk:
+Medium. The command contacts IOTA RPC and derives a public sponsor address
+locally, so the report must remain redacted and ignored. A passing funding
+report is still not reserve_gas compatibility or sponsored execution proof.
+
+Escalation triggers:
+
+- Any request to commit or print the full sponsor address, private key,
+  rendered Gas Station config, bearer token, raw RPC response, raw transaction
+  bytes, or user signatures.
+- Any request to treat a passing funding report as proof that reserve_gas or
+  sponsored execution is ready.
+- Any request to run `execute:testnet-demo` without explicit operator approval.

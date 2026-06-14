@@ -77,7 +77,7 @@ export async function requestSponsorFaucetFunds(
   const outFile = options.outFile ?? DEFAULT_OUT_FILE;
   const reportPath = resolve(process.cwd(), outFile);
   const nextCommands = [
-    "npm run sponsor:check-funding",
+    "npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json",
     "npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json",
     "npm run proof:live-status",
   ];

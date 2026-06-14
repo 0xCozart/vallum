@@ -42,13 +42,14 @@ test("product status reports local proof gates and explicit live blockers withou
     assert.equal(report.complete, false);
     assert.equal(report.localProofOk, true);
     assert.deepEqual(
-      report.checks.slice(0, 9).map((check) => [check.id, check.status, check.code]),
+      report.checks.slice(0, 10).map((check) => [check.id, check.status, check.code]),
       [
         ["local-verification", "proven-local", "LOCAL_VERIFY_SURFACE_CONFIGURED"],
         ["package-release-local", "proven-local", "PACKAGE_RELEASE_GATES_CONFIGURED"],
         ["operator-report-template", "proven-local", "OPERATOR_REPORT_TEMPLATE_WRITER_CONFIGURED"],
         ["testnet-readiness", "blocked-live", "TESTNET_ENV_FILE_MISSING"],
         ["gas-station-runtime", "blocked-live", "GAS_STATION_DOCKER_DAEMON_UNAVAILABLE"],
+        ["sponsor-funding", "blocked-live", "SPONSOR_FUNDING_REPORT_MISSING"],
         ["testnet-upstream", "blocked-live", "TESTNET_UPSTREAM_REPORT_MISSING"],
         ["iota-names-live", "blocked-live", "IOTA_NAMES_LIVE_CONFIG_MISSING"],
         ["iota-identity-live", "blocked-live", "IOTA_IDENTITY_LIVE_CONFIG_MISSING"],
@@ -102,6 +103,7 @@ test("product status marks configured live gates ready without contacting endpoi
       reserveGas: { skipped: false, ok: true, status: 200 },
       ok: true,
     }));
+    await writeFile(join(cwd, "sponsor-funding-report.json"), JSON.stringify(readySponsorFundingReport()));
 
     const report = await checkProductStatus({
       cwd,
@@ -111,6 +113,7 @@ test("product status marks configured live gates ready without contacting endpoi
       packagePublicationReadiness: blockedPackagePublicationReadiness(),
       gasStationRuntimeReport: readyGasStationRuntime(),
       env: {
+        GASKIT_SPONSOR_FUNDING_REPORT: "sponsor-funding-report.json",
         GASKIT_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
         IOTA_NAMES_GRAPHQL_URL: "https://graphql.testnet.example/iota",
         IOTA_NAMES_NAME: "researcher.demo.iota",
@@ -130,6 +133,7 @@ test("product status marks configured live gates ready without contacting endpoi
     assert.equal(report.localProofOk, true);
     assert.equal(report.checks.find((check) => check.id === "testnet-readiness")?.status, "ready-live");
     assert.equal(report.checks.find((check) => check.id === "gas-station-runtime")?.status, "ready-live");
+    assert.equal(report.checks.find((check) => check.id === "sponsor-funding")?.status, "ready-live");
     assert.equal(report.checks.find((check) => check.id === "testnet-upstream")?.status, "ready-live");
     assert.equal(report.checks.find((check) => check.id === "iota-names-live")?.status, "ready-live");
     assert.equal(report.checks.find((check) => check.id === "iota-identity-live")?.status, "ready-live");
@@ -166,6 +170,7 @@ test("product status can mark managed upstream runtime ready while upstream proo
 
     assert.equal(report.complete, false);
     assert.equal(report.checks.find((check) => check.id === "gas-station-runtime")?.status, "ready-live");
+    assert.equal(report.checks.find((check) => check.id === "sponsor-funding")?.code, "SPONSOR_FUNDING_REPORT_MISSING");
     assert.equal(report.checks.find((check) => check.id === "testnet-upstream")?.code, "TESTNET_UPSTREAM_REPORT_MISSING");
     assert.doesNotMatch(formatted, /gas-station\.testnet\.example/);
   } finally {
@@ -551,5 +556,27 @@ function blockedGasStationRuntime() {
     code: "GAS_STATION_DOCKER_DAEMON_UNAVAILABLE" as const,
     message: "Docker daemon is not reachable.",
     checks: [],
+  };
+}
+
+function readySponsorFundingReport() {
+  return {
+    schemaVersion: 1,
+    kind: "agentic-gaskit.sponsor-funding-report",
+    observedAt: new Date().toISOString(),
+    ready: true,
+    code: "SPONSOR_FUNDING_READY",
+    message: "Sponsor wallet has enough sampled IOTA balance for the requested reserve budget.",
+    contactsLiveService: true,
+    spendsGas: false,
+    signsTransactions: false,
+    sponsorAddressRedacted: "0x12345678...90abcdef",
+    coinType: "0x2::iota::IOTA",
+    requiredMist: "50000000",
+    totalBalanceMist: "100000000",
+    coinObjectCount: 1,
+    sampledCoinCount: 1,
+    maxSampledCoinBalanceMist: "100000000",
+    hasNextCoinPage: false,
   };
 }

@@ -111,7 +111,7 @@ marketplace, or safety work before those claims can be made.
   `npm run proof:package-publication-readiness` validates an ignored structured
   report and the operator manually accepts it.
 - Fresh sponsored IOTA testnet execution unless `testnet-readiness`,
-  `gas-station-runtime`, and `testnet-upstream` are ready and
+  `gas-station-runtime`, `sponsor-funding`, and `testnet-upstream` are ready and
   `npm run execute:testnet-demo` passes with explicit operator intent.
   Managed-upstream runtime mode only satisfies the runtime prerequisite; it
   does not replace the required passing upstream diagnostic report.
@@ -146,6 +146,7 @@ npm run gas-station:runtime-preflight
 GASKIT_GAS_STATION_RUNTIME_MODE=managed-upstream npm run gas-station:runtime-preflight
 npm run gas-station:docker-direct -- --dry-run
 npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json
+npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run a2a:write-static-discovery-bundle -- --agent-card <signed-card.json> --jwks <jwks.json> --public-base-url <url> --public-jwks-url <url> --out-dir <dir>
 npm run a2a:check-static-discovery-bundle -- --out-dir <dir> --expected-public-base-url <url> --expected-public-jwks-url <url>
@@ -168,7 +169,7 @@ npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/
 npm run gas-station:docker-direct -- --status
 npm run sponsor:write-funding-request -- --out tmp/gaskit/sponsor-funding-request.json
 npm run sponsor:request-faucet-funds -- --execute --out tmp/gaskit/sponsor-faucet-request.json
-npm run sponsor:check-funding
+npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json
 npm run proof:verification-profiles
 npm run proof:live-status
 npm run proof:launch-readiness

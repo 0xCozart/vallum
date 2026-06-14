@@ -87,6 +87,7 @@ async function writeEvidenceTree(cwd: string): Promise<void> {
     "examples/agent-escrow/agent-escrow-demo.ts",
     "docs/testnet-attempts.md",
     "scripts/check-gas-station-runtime-preflight.ts",
+    "scripts/check-sponsor-funding.ts",
     "scripts/check-testnet-digest-proof.ts",
     "packages/registry/src/profileSchema.ts",
     "packages/registry/src/iotaNamesAdapter.ts",
@@ -145,6 +146,7 @@ function completeProductStatus(): ProductStatusReport {
   const checks = [
     "testnet-readiness",
     "gas-station-runtime",
+    "sponsor-funding",
     "testnet-upstream",
     "iota-names-live",
     "iota-identity-live",
@@ -185,6 +187,12 @@ function productStatusWithLiveBlockers(): ProductStatusReport {
         status: "blocked-live",
         code: "GAS_STATION_DOCKER_DAEMON_UNAVAILABLE",
         message: "Synthetic missing Gas Station runtime for launch-readiness mapping tests.",
+      },
+      {
+        id: "sponsor-funding",
+        status: "blocked-live",
+        code: "SPONSOR_FUNDING_REPORT_MISSING",
+        message: "Synthetic missing sponsor funding report for launch-readiness mapping tests.",
       },
       {
         id: "testnet-upstream",

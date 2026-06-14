@@ -27,13 +27,14 @@ test("operator report template builds testnet upstream guidance without accepted
   assert.equal(parsed.result, "pending-operator-proof");
   assert.equal(parsed.diagnosticReportKind, "agentic-gaskit.testnet-upstream-diagnostic");
   assert.equal(parsed.acceptedReportEnv, "GASKIT_TESTNET_UPSTREAM_REPORT");
+  assert.equal(parsed.sponsorFundingReportEnv, "GASKIT_SPONSOR_FUNDING_REPORT");
   assert.deepEqual(parsed.supportedRuntimeModes, ["local-docker", "managed-upstream"]);
   assert.deepEqual(parsed.requiredEnv, ["IOTA_RPC_URL", "GAS_STATION_URL", "GAS_STATION_BEARER_TOKEN"]);
   assert.ok((parsed.commands as string[]).includes("npm run diagnose:gas-station -- --report <ignored-json-path>"));
   assert.ok((parsed.commands as string[]).includes("npm run gas-station:docker-direct -- --status"));
   assert.ok((parsed.commands as string[]).includes("npm run sponsor:write-funding-request -- --out tmp/gaskit/sponsor-funding-request.json"));
   assert.ok((parsed.commands as string[]).includes("npm run sponsor:request-faucet-funds -- --execute --out tmp/gaskit/sponsor-faucet-request.json"));
-  assert.ok((parsed.commands as string[]).includes("npm run sponsor:check-funding"));
+  assert.ok((parsed.commands as string[]).includes("npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json"));
   assert.ok((parsed.checks as string[]).includes("sponsor-funding-readiness"));
   assert.ok((parsed.checks as string[]).includes("reserve-gas-compatibility"));
 

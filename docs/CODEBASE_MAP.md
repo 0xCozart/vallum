@@ -131,6 +131,10 @@ It also includes the first Agentic GasKit implementation slices:
   locally, queries IOTA RPC for balance and sampled coin shape, and prints only
   redacted address/numeric readiness fields without signing, reserving, or
   executing
+- sanitized sponsor funding report gate that lets the read-only funding
+  diagnostic write an ignored redacted JSON report and lets live proof,
+  product-status, launch-readiness, and operator-gate checks separate sponsor
+  funding from Gas Station runtime and reserve_gas compatibility
 - opt-in sponsor funding request artifact writer that writes the full public
   sponsor address only to an ignored local JSON artifact for testnet funding,
   while keeping stdout redacted and avoiding live service contact, signing,
@@ -263,6 +267,9 @@ roadmap unless later slices implement and verify them.
   `scripts/write-live-proof-plan.ts`
 - Testnet upstream diagnostics: `scripts/diagnose-gas-station-upstream.ts`,
   `scripts/testnet-upstream-report.ts`, `docs/testnet-attempts.md`
+- Sponsor funding diagnostic and report gate:
+  `scripts/check-sponsor-funding.ts`, `scripts/sponsor-funding-report.ts`,
+  `scripts/check-sponsor-funding.test.ts`
 - Sponsor funding request: `scripts/write-sponsor-funding-request.ts`,
   `scripts/write-sponsor-funding-request.test.ts`
 - Sponsor faucet request: `scripts/request-sponsor-faucet-funds.ts`,
