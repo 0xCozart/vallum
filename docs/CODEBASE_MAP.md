@@ -166,6 +166,9 @@ It also includes the first Agentic GasKit implementation slices:
 - non-networked product status proof command for local proof, live/testnet,
   package publication, A2A hosting, payment, marketplace, custody, and device
   safety claim boundaries
+- redacted product status artifact writer for archiving the current
+  non-networked product blockers, ready-live checks, local proof ids, and
+  safety boundaries to an ignored mode-600 local JSON file
 - non-networked payment-provider readiness gate for local x402/AP2 source/test
   evidence plus an operator-supplied redacted structured live-report path before
   manual approval of live facilitator, processor, or settlement claims

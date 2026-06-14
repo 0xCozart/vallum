@@ -5739,3 +5739,66 @@ Escalation triggers:
   raw transaction bytes, or user signatures.
 - Any request to treat faucet context or a funding request artifact as
   sponsor funding, reserve_gas compatibility, or sponsored execution proof.
+
+## Slice 7.29: Product Status Artifact Writer
+
+User-visible outcome:
+Operators and future agents can archive the current non-networked product
+status as a redacted ignored JSON artifact, so master-plan audits can compare
+local proof, ready-live checks, blockers, and claim boundaries without parsing
+stdout or clearing any live/production gate.
+
+Likely files:
+
+- `scripts/check-product-status.ts`
+- `scripts/product-status.test.ts`
+- `docs/CODEBASE_MAP.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `npm run proof:product-status -- --json` prints a redacted
+  machine-readable artifact with schema version, kind, timestamp, completion
+  status, local proof status, proven-local ids, ready-live ids, blocked ids,
+  blocker codes, checks, and safety boundaries.
+- `npm run proof:product-status -- --out <ignored-json-path>` writes the same
+  artifact with mode `600`.
+- The artifact does not contact live services, publish packages, run payment
+  providers, operate public A2A endpoints, reserve gas, sign transactions, or
+  execute transactions.
+- The artifact does not include configured endpoint values, profile paths,
+  full sponsor addresses, raw upstream bodies, signer material, bearer tokens,
+  rendered Gas Station config, raw transaction bytes, user signatures, or local
+  secret paths.
+- `complete=false` and blocker codes remain explicit while sponsor funding,
+  testnet upstream, Names/Identity/VC, npm publication, public A2A, payment,
+  marketplace, custody, or device-safety gates are unresolved.
+
+Verification:
+
+- Focused product-status and package-script tests.
+- `npm run proof:product-status -- --out tmp/gaskit/product-status.json`.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run verify:fast`.
+
+Dependencies:
+Existing product-status, live-proof status, launch-readiness, and operator-gate
+reports.
+
+Risk:
+Low. This is a derived evidence artifact, but it must not become a passing
+proof or an accidental place to store configured values.
+
+Escalation triggers:
+
+- Any request to include configured endpoint values, profile paths, full
+  sponsor addresses, raw upstream bodies, signer material, bearer tokens,
+  rendered Gas Station config, raw transaction bytes, user signatures, or local
+  secret paths.
+- Any request to treat a product-status artifact as live/testnet, publication,
+  production custody, production payment, marketplace, public A2A, or launch
+  readiness proof.

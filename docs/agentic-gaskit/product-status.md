@@ -71,6 +71,16 @@ Run it from the repository root:
 npm run proof:product-status
 ```
 
+For a redacted machine-readable artifact, use:
+
+```bash
+npm run proof:product-status -- --json
+npm run proof:product-status -- --out tmp/gaskit/product-status.json
+```
+
+The `--out` file is written with mode `600`. It is a local audit artifact, not
+passing evidence by itself, and it must stay outside committed files.
+
 Expected status in an unconfigured checkout:
 
 ```text
@@ -139,6 +149,7 @@ Use the audit output to choose the next gate:
 ```bash
 npm run verify:local
 npm run verify:fast
+npm run proof:product-status -- --out tmp/gaskit/product-status.json
 npm run proof:testnet-digest
 npm run proof:testnet-digest:live
 npm run gas-station:render-config

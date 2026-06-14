@@ -1,12 +1,15 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 
 import {
+  buildProductStatusArtifact,
   checkProductStatus,
+  formatProductStatusArtifact,
   formatProductStatusReport,
+  writeProductStatusArtifact,
 } from "./check-product-status.js";
 
 const validPolicy = `apps:
@@ -68,6 +71,68 @@ test("product status reports local proof gates and explicit live blockers withou
     assert.match(formatted, /npm run proof:custody-readiness/);
     assert.match(formatted, /DEVICE_ACCESS_SAFETY_DEFERRED/);
     assert.doesNotMatch(formatted, /local-secret|iotaprivkey|fake-private-key|seed-phrase|mnemonic-value/i);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("product status artifact summarizes blockers without secret values", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-product-status-"));
+  try {
+    const report = await checkProductStatus({
+      cwd,
+      env: {},
+      custodyReadiness: blockedCustodyReadiness(),
+      gasStationRuntimeReport: blockedGasStationRuntime(),
+      scripts: completeScripts(),
+      marketplaceReadiness: blockedMarketplaceReadiness(),
+      packagePublicationReadiness: blockedPackagePublicationReadiness(),
+      paymentProviderReadiness: blockedPaymentProviderReadiness(),
+    });
+    const artifact = buildProductStatusArtifact(report, new Date("2026-06-14T12:00:00.000Z"));
+    const json = formatProductStatusArtifact(artifact);
+    const parsed = JSON.parse(json) as typeof artifact;
+
+    assert.equal(parsed.kind, "agentic-gaskit.product-status-report");
+    assert.equal(parsed.complete, false);
+    assert.equal(parsed.localProofOk, true);
+    assert.deepEqual(parsed.provenLocalCheckIds, [
+      "local-verification",
+      "package-release-local",
+      "operator-report-template",
+    ]);
+    assert.equal(parsed.blockerCodes.includes("SPONSOR_FUNDING_REPORT_MISSING"), true);
+    assert.equal(parsed.blockerCodes.includes("NPM_PUBLICATION_UNRUN"), true);
+    assert.equal(parsed.blockerCodes.includes("PUBLIC_A2A_HOSTING_UNPROVEN"), true);
+    assert.match(parsed.boundaries.join("\n"), /complete=false/);
+    assert.doesNotMatch(json, /local-secret|iotaprivkey|fake-private-key|seed-phrase|mnemonic-value/i);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("product status artifact writer uses restrictive local file permissions", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-product-status-"));
+  try {
+    const outFile = "tmp/gaskit/product-status.json";
+    const artifact = await writeProductStatusArtifact({
+      cwd,
+      env: {},
+      custodyReadiness: blockedCustodyReadiness(),
+      gasStationRuntimeReport: blockedGasStationRuntime(),
+      scripts: completeScripts(),
+      marketplaceReadiness: blockedMarketplaceReadiness(),
+      packagePublicationReadiness: blockedPackagePublicationReadiness(),
+      paymentProviderReadiness: blockedPaymentProviderReadiness(),
+      now: new Date("2026-06-14T12:00:00.000Z"),
+      outFile,
+    });
+    const written = await readFile(join(cwd, outFile), "utf8");
+    const mode = (await stat(join(cwd, outFile))).mode & 0o777;
+
+    assert.equal(artifact.kind, "agentic-gaskit.product-status-report");
+    assert.equal(JSON.parse(written).kind, "agentic-gaskit.product-status-report");
+    assert.equal(mode, 0o600);
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }

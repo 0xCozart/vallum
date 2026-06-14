@@ -1,5 +1,5 @@
-import { readFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
+import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { checkLiveProofStatus, type LiveProofCheck } from "./check-live-proof-status.js";
@@ -46,6 +46,20 @@ export interface ProductStatusReport {
   readonly checks: readonly ProductEvidenceCheck[];
 }
 
+export interface ProductStatusArtifact {
+  readonly schemaVersion: 1;
+  readonly kind: "agentic-gaskit.product-status-report";
+  readonly generatedAt: string;
+  readonly complete: boolean;
+  readonly localProofOk: boolean;
+  readonly provenLocalCheckIds: readonly string[];
+  readonly readyLiveCheckIds: readonly string[];
+  readonly blockedCheckIds: readonly string[];
+  readonly blockerCodes: readonly string[];
+  readonly checks: readonly ProductEvidenceCheck[];
+  readonly boundaries: readonly string[];
+}
+
 export interface ProductStatusOptions {
   readonly cwd?: string;
   readonly env?: NodeJS.ProcessEnv | Record<string, string | undefined>;
@@ -56,6 +70,11 @@ export interface ProductStatusOptions {
   readonly packagePublicationReadiness?: PackagePublicationReadinessReport;
   readonly paymentProviderReadiness?: PaymentProviderReadinessReport;
   readonly scripts?: Record<string, string | undefined>;
+}
+
+export interface WriteProductStatusArtifactOptions extends ProductStatusOptions {
+  readonly now?: Date;
+  readonly outFile?: string;
 }
 
 const LOCAL_VERIFY_REQUIRED_PARTS = [
@@ -89,6 +108,23 @@ const LOCAL_VERIFY_REQUIRED_PARTS = [
   "npm run docs:check",
   "npm run secrets:scan",
 ] as const;
+
+const ARTIFACT_BOUNDARIES = [
+  "This report is non-networked and does not run live proof commands.",
+  "complete=false means at least one live, production, publication, custody, payment, marketplace, A2A, or safety gate remains blocked.",
+  "Do not commit generated reports, live proof artifacts, credentials, tokens, private keys, raw transaction bytes, user signatures, response bodies, endpoint values, profile paths, full sponsor addresses, or secret local paths.",
+  "Ready-live checks are readiness or report-valid states only; they still require operator review or explicit operator intent before live execution.",
+] as const;
+
+const usage = `usage: npm exec tsx -- scripts/check-product-status.ts [--json] [--out <path>]
+
+Reports current Agentic GasKit product status without contacting live proof services.
+
+Options:
+  --json        Print a redacted machine-readable artifact.
+  --out <path>  Write the same JSON artifact to a local file with mode 0600.
+  --help        Show this help text.
+`;
 
 export async function checkProductStatus(options: ProductStatusOptions = {}): Promise<ProductStatusReport> {
   const cwd = options.cwd ?? process.cwd();
@@ -155,6 +191,52 @@ export function formatProductStatusReport(report: ProductStatusReport): string {
   }
 
   return lines.join("\n");
+}
+
+export function buildProductStatusArtifact(
+  report: ProductStatusReport,
+  now = new Date(),
+): ProductStatusArtifact {
+  const blockedChecks = report.checks.filter((check) => (
+    check.status !== "proven-local" && check.status !== "ready-live"
+  ));
+
+  return {
+    schemaVersion: 1,
+    kind: "agentic-gaskit.product-status-report",
+    generatedAt: now.toISOString(),
+    complete: report.complete,
+    localProofOk: report.localProofOk,
+    provenLocalCheckIds: report.checks
+      .filter((check) => check.status === "proven-local")
+      .map((check) => check.id),
+    readyLiveCheckIds: report.checks
+      .filter((check) => check.status === "ready-live")
+      .map((check) => check.id),
+    blockedCheckIds: blockedChecks.map((check) => check.id),
+    blockerCodes: blockedChecks.map((check) => check.code),
+    checks: report.checks,
+    boundaries: ARTIFACT_BOUNDARIES,
+  };
+}
+
+export async function writeProductStatusArtifact(
+  options: WriteProductStatusArtifactOptions = {},
+): Promise<ProductStatusArtifact> {
+  const cwd = options.cwd ?? process.cwd();
+  const report = await checkProductStatus(options);
+  const artifact = buildProductStatusArtifact(report, options.now);
+  if (options.outFile) {
+    const outPath = resolveOutputPath(cwd, options.outFile);
+    await mkdir(dirname(outPath), { recursive: true });
+    await writeFile(outPath, formatProductStatusArtifact(artifact), { mode: 0o600 });
+    await chmod(outPath, 0o600);
+  }
+  return artifact;
+}
+
+export function formatProductStatusArtifact(artifact: ProductStatusArtifact): string {
+  return `${JSON.stringify(artifact, null, 2)}\n`;
 }
 
 async function loadPackageScripts(cwd: string): Promise<Record<string, string | undefined>> {
@@ -431,7 +513,67 @@ function paymentProviderCheck(readiness: PaymentProviderReadinessReport): Produc
   };
 }
 
-async function main(): Promise<number> {
+interface CliOptions {
+  readonly help: boolean;
+  readonly json: boolean;
+  readonly outFile?: string;
+}
+
+function parseArgs(args: readonly string[]): CliOptions {
+  let help = false;
+  let json = false;
+  let outFile: string | undefined;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg === "--help" || arg === "-h") {
+      help = true;
+      continue;
+    }
+    if (arg === "--json") {
+      json = true;
+      continue;
+    }
+    if (arg === "--out") {
+      const value = args[index + 1];
+      if (!value || value.startsWith("--")) {
+        throw new Error("--out requires a path.");
+      }
+      outFile = value;
+      index += 1;
+      continue;
+    }
+    throw new Error(`Unsupported argument: ${arg}`);
+  }
+
+  return { help, json, outFile };
+}
+
+function resolveOutputPath(cwd: string, outFile: string): string {
+  return isAbsolute(outFile) ? outFile : resolve(cwd, outFile);
+}
+
+async function main(args = process.argv.slice(2)): Promise<number> {
+  let options: CliOptions;
+  try {
+    options = parseArgs(args);
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    console.error(usage);
+    return 1;
+  }
+
+  if (options.help) {
+    console.log(usage.trimEnd());
+    return 0;
+  }
+
+  if (options.json || options.outFile) {
+    const artifact = await writeProductStatusArtifact({ outFile: options.outFile });
+    console.log(formatProductStatusArtifact(artifact).trimEnd());
+    return 0;
+  }
+
   const report = await checkProductStatus();
   console.log(formatProductStatusReport(report));
   return 0;
