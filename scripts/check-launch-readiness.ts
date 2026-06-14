@@ -38,10 +38,11 @@ export interface LaunchReadinessOptions {
 const AREA_DEFINITIONS = [
   {
     id: "phase-1-sponsored-policy-mvp",
-    claim: "Agents can use local/mock signer-reference wallets, manifests, policy-gated sponsorship, MCP tools, escrow, and receipts without secret exposure, with a non-networked custody readiness gate for production signer/custody review.",
+    claim: "Agents can use local/mock signer-reference wallets, manifests, policy-gated sponsorship, MCP tools, escrow, and receipts without secret exposure, with a non-networked custody readiness gate and redacted custody production proof-plan writer for production signer/custody review.",
     evidencePaths: [
       "packages/accounts/src/index.ts",
       "scripts/check-custody-readiness.ts",
+      "scripts/write-custody-production-proof-plan.ts",
       "packages/manifest/src/validate.ts",
       "packages/policy-gateway/src/evaluatePolicy.ts",
       "packages/sdk/src/requestSponsoredAction.ts",
@@ -56,6 +57,7 @@ const AREA_DEFINITIONS = [
     ],
     commands: [
       "npm test",
+      "npm run custody:write-production-proof-plan",
       "npm run proof:custody-readiness",
       "npm run contracts:test",
       "npm run smoke:agent-escrow",

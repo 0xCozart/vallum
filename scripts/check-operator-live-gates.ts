@@ -82,7 +82,7 @@ const GATE_COMMANDS: Record<string, string | undefined> = {
   "public-a2a-hosting": "npm run proof:a2a-public-readiness && npm run smoke:a2a-public-discovery",
   "live-payment-provider": "npm run payment:write-provider-proof-plan && npm run proof:payment-provider-readiness",
   "production-marketplace": "npm run marketplace:write-production-proof-plan && npm run proof:marketplace-readiness && dedicated production marketplace readiness slice",
-  "production-custody": "npm run proof:custody-readiness && dedicated custody/security design slice",
+  "production-custody": "npm run custody:write-production-proof-plan && npm run proof:custody-readiness && dedicated custody/security design slice",
   "physical-device-access": "dedicated physical device safety design slice",
 };
 

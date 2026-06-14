@@ -176,6 +176,11 @@ It also includes the first Agentic GasKit implementation slices:
   account proof plus an operator-supplied redacted structured custody report
   path before manual approval of KMS, recovery, staking, bonding, slashing, or
   signer-operation claims
+- local redacted custody production proof-plan writer for signer-reference,
+  no secret exposure, KMS/external signer, recovery/export,
+  rotation/revocation, audit logging, legal/security, incident response,
+  required structured report fields, blocker codes, and proof boundaries before
+  production custody review
 - pure profile capability policy check
 - contract template metadata registry consumed by agent policy allow-lists
 
@@ -208,7 +213,8 @@ roadmap unless later slices implement and verify them.
 - Policy engine: `packages/policy-gateway/src/`
 - Shared types: `packages/shared-types/src/`
 - Agent accounts and custody readiness: `packages/accounts/src/`,
-  `scripts/check-custody-readiness.ts`
+  `scripts/check-custody-readiness.ts`,
+  `scripts/write-custody-production-proof-plan.ts`
 - Agent manifests: `packages/manifest/src/`
 - Agent registry/profile schema, local resolver, and adapters:
   `packages/registry/src/`

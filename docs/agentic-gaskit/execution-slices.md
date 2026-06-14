@@ -262,6 +262,78 @@ Escalation triggers:
   provider funds, recovery export, staking, bonding, slashing, or mainnet
   signer behavior.
 
+## Slice 1.0.2: Custody Production Proof Plan Packet
+
+User-visible outcome:
+Custody operators have a non-networked proof-plan command that turns the
+custody production readiness gate into command order, required structured
+report fields, required check ids, blocker codes, and proof boundaries before
+any production custody, KMS, external signer, recovery, staking, bonding,
+slashing, or signer-operation review.
+
+Likely files:
+
+- `scripts/write-custody-production-proof-plan.ts`
+- `scripts/write-custody-production-proof-plan.test.ts`
+- `scripts/check-operator-live-gates.ts`
+- `scripts/check-launch-readiness.ts`
+- `scripts/package-scripts.test.ts`
+- `scripts/operator-live-gates.test.ts`
+- `scripts/launch-readiness.test.ts`
+- `docs/agentic-gaskit/account-wallet-safety.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/CODEBASE_MAP.md`
+- `package.json`
+
+Acceptance criteria:
+
+- `npm run custody:write-production-proof-plan` builds first and does not
+  contact KMS, external signers, custody providers, IOTA services, Gas Station,
+  or live wallet infrastructure.
+- The plan reports current blocker codes, ready approval codes, command order,
+  required operator input names, required structured report fields, required
+  structured report check ids, and safety boundaries.
+- The plan can write a mode-0600 ignored local JSON artifact.
+- The plan does not print or require seeds, mnemonics, private keys, raw
+  keypairs, signer material, credentials, authorization headers, payloads,
+  signatures, exported keys, or local secret paths.
+- Operator live gates point production custody review at the plan before
+  custody readiness and any dedicated custody/security design slice.
+- Launch readiness includes the plan as Phase 1 custody evidence without
+  clearing production custody blockers.
+
+Verification:
+
+- Focused custody production proof-plan tests.
+- Focused custody-readiness, package-script, operator-gate, product-status,
+  and launch-readiness tests.
+- `npm run custody:write-production-proof-plan -- --out
+  tmp/gaskit/custody-production-proof-plan.json`.
+- `npm run proof:custody-readiness`.
+- `npm run proof:operator-gates`.
+- `npm run proof:product-status`.
+- `npm run proof:launch-readiness`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `npm run typecheck`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slice 1.0.1.
+
+Risk:
+High. A proof plan can be mistaken for production custody, KMS readiness,
+recovery/export approval, staking, bonding, slashing, or signer-operation
+approval unless the artifact stays redacted, opt-in, and manually reviewed.
+
+Escalation triggers:
+
+- Any request to create production custody infrastructure, integrate KMS or
+  external signers, export recovery material, handle signer material, stake,
+  bond, slash, or approve custody operations.
+
 ## Slice 1.1: Manifest Schema
 
 User-visible outcome:

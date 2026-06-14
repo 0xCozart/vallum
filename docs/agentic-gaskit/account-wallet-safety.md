@@ -127,3 +127,17 @@ logging, legal/security review, and incident response.
 The report must not include seeds, mnemonics, private keys, raw keypairs,
 signer material, credentials, payloads, headers, signatures, or local secret
 paths.
+
+`npm run custody:write-production-proof-plan` adds a non-networked custody
+production proof-plan writer for operators:
+
+- builds first;
+- contacts no KMS, external signer, custody provider, IOTA service, Gas
+  Station endpoint, or live wallet infrastructure;
+- emits command order, current blocker codes, required structured report
+  fields, required check ids, and proof boundaries;
+- can write an ignored local JSON artifact such as
+  `tmp/gaskit/custody-production-proof-plan.json`;
+- keeps seeds, mnemonics, private keys, raw keypairs, signer material,
+  credentials, authorization headers, payloads, signatures, exported keys, and
+  local secret paths out of output and Git.

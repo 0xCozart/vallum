@@ -212,6 +212,16 @@ test("custody readiness proof is non-networked and opt-in", () => {
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /custody-readiness/);
 });
 
+test("custody production proof plan is non-networked and opt-in", () => {
+  assert.equal(
+    packageJson.scripts?.["custody:write-production-proof-plan"],
+    "npm run build && tsx scripts/write-custody-production-proof-plan.ts",
+  );
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /write-custody-production-proof-plan/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /write-custody-production-proof-plan/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /write-custody-production-proof-plan/);
+});
+
 test("A2A public proof plan is non-networked and opt-in", () => {
   assert.equal(
     packageJson.scripts?.["a2a:write-public-proof-plan"],

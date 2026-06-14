@@ -86,6 +86,11 @@ hosts, marketplace systems, or physical devices.
   `npm run proof:custody-readiness` command, which validates local
   signer-reference proof plus an ignored structured custody report before
   manual acceptance.
+- Lets operators prepare that review with
+  `npm run custody:write-production-proof-plan`, a redacted local plan that
+  lists custody review command order, required report fields, required check
+  ids, approval boundaries, and blocker codes without contacting KMS, external
+  signers, custody providers, or live wallet infrastructure.
 - Points live payment/provider review at the non-networked
   `npm run proof:payment-provider-readiness` command, which validates local
   x402/AP2 proof plus an ignored structured report before manual acceptance.
@@ -132,6 +137,7 @@ npm run proof:payment-provider-readiness
 npm run proof:marketplace-readiness
 npm run marketplace:write-production-proof-plan -- --out tmp/gaskit/marketplace-production-proof-plan.json
 npm run proof:custody-readiness
+npm run custody:write-production-proof-plan -- --out tmp/gaskit/custody-production-proof-plan.json
 npm run live:write-proof-plan -- --out tmp/gaskit/live-proof-plan.json
 npm run package:write-publication-proof-plan -- --out tmp/gaskit/package-publication-proof-plan.json
 npm run payment:write-provider-proof-plan -- --out tmp/gaskit/payment-provider-proof-plan.json

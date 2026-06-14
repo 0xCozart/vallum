@@ -76,6 +76,7 @@ async function writeEvidenceTree(cwd: string): Promise<void> {
   const paths = [
     "packages/accounts/src/index.ts",
     "scripts/check-custody-readiness.ts",
+    "scripts/write-custody-production-proof-plan.ts",
     "packages/manifest/src/validate.ts",
     "packages/policy-gateway/src/evaluatePolicy.ts",
     "packages/sdk/src/requestSponsoredAction.ts",

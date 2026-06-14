@@ -50,6 +50,9 @@ surface in one machine-checkable place:
   docs, tests, build coverage, and accepts only an operator-supplied redacted
   structured production custody report path before moving custody evidence to
   manual review;
+- custody-production proof-plan wiring that writes a redacted non-networked
+  command/report checklist before any operator-approved custody, KMS, recovery,
+  legal, or incident-response review is attempted;
 - launch-readiness evidence matrix and operator live-gate runbook wiring;
 - live/testnet readiness, local Gas Station runtime preflight status,
   sanitized testnet upstream diagnostic report status, IOTA Names, IOTA
@@ -140,6 +143,7 @@ npm run proof:payment-provider-readiness
 npm run proof:marketplace-readiness
 npm run marketplace:write-production-proof-plan -- --out tmp/gaskit/marketplace-production-proof-plan.json
 npm run proof:custody-readiness
+npm run custody:write-production-proof-plan -- --out tmp/gaskit/custody-production-proof-plan.json
 npm run payment:write-provider-proof-plan -- --out tmp/gaskit/payment-provider-proof-plan.json
 npm run proof:verification-profiles
 npm run proof:live-status
