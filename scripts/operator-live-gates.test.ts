@@ -37,6 +37,13 @@ test("operator live gates report current blockers without secret values", async 
     assert.equal(findGate(report, "iota-names-live").approvalRequired, true);
     assert.equal(findGate(report, "iota-names-live").contactsLiveService, true);
     assert.equal(findGate(report, "iota-identity-live").status, "blocked-config");
+    assert.equal(findGate(report, "vc-validation-live").status, "blocked-config");
+    assert.equal(findGate(report, "vc-validation-live").approvalRequired, true);
+    assert.equal(findGate(report, "vc-validation-live").contactsLiveService, true);
+    assert.equal(
+      findGate(report, "vc-validation-live").command,
+      "npm run live:write-proof-plan && npm run smoke:iota-identity-live -- --report <ignored-json-path>",
+    );
     assert.equal(findGate(report, "testnet-readiness").status, "blocked-config");
     assert.equal(findGate(report, "gas-station-runtime").status, "blocked-config");
     assert.equal(findGate(report, "gas-station-runtime").approvalRequired, false);
@@ -165,10 +172,16 @@ test("operator live gates require approval for configured live endpoint smokes",
         code: "IOTA_IDENTITY_LIVE_REPORT_VALID",
         message: "IOTA Identity live smoke report proves profile DID and credential evidence.",
       },
+      {
+        id: "vc-validation-live",
+        status: "ready-live",
+        code: "VC_VALIDATION_LIVE_REPORT_VALID",
+        message: "VC live validation report proves credential evidence.",
+      },
     ]),
   });
 
-  for (const id of ["sponsor-funding", "testnet-upstream", "iota-names-live", "iota-identity-live"]) {
+  for (const id of ["sponsor-funding", "testnet-upstream", "iota-names-live", "iota-identity-live", "vc-validation-live"]) {
     const gate = findGate(report, id);
     assert.equal(gate.status, "requires-approval");
     assert.equal(gate.approvalRequired, true);

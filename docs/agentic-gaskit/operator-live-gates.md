@@ -83,6 +83,9 @@ hosts, marketplace systems, or physical devices.
 - Points IOTA Names, IOTA Identity, and VC live proof prep at
   `npm run live:write-proof-plan`, a redacted local command-order artifact
   before any live smoke command runs.
+- Treats `vc-validation-live` as an approval-required live-service gate because
+  it depends on `npm run smoke:iota-identity-live -- --report
+  <ignored-json-path>` to produce current credential evidence.
 - Includes sponsor funding prep in that proof plan: write the ignored funding
   request first, optionally attempt an approved faucet route, then run the
   read-only sponsor funding diagnostic before upstream reserve compatibility.
@@ -180,6 +183,7 @@ hosts, marketplace systems, or physical devices.
 
 - It does not run `npm run smoke:iota-names-live -- --report <ignored-json-path>`.
 - It does not run `npm run smoke:iota-identity-live -- --report <ignored-json-path>`.
+- It does not run the Identity live smoke on behalf of VC validation.
 - It does not start Docker, Redis, or Gas Station containers.
 - It does not run `npm run diagnose:gas-station`.
 - It does not run `npm publish`.

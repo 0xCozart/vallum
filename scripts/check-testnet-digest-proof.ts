@@ -144,7 +144,12 @@ export function formatTestnetDigestProofReport(report: TestnetDigestProofReport)
 
 async function isDigestDocumented(cwd: string, digest: string): Promise<boolean> {
   for (const path of REQUIRED_DOCS) {
-    const content = await readFile(resolve(cwd, path), "utf8");
+    let content: string;
+    try {
+      content = await readFile(resolve(cwd, path), "utf8");
+    } catch {
+      return false;
+    }
     if (!content.includes(digest)) return false;
   }
   return true;

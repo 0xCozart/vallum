@@ -5418,6 +5418,59 @@ Escalation triggers:
 - Any request to include `smoke:iota-identity-live` in default local
   verification.
 
+## Slice 7.63: VC Operator Live Gate Classification
+
+User-visible outcome:
+Operator live gates classify `vc-validation-live` as approval-required and
+live-service-contacting because the gate now depends on the IOTA Identity live
+smoke report for credential evidence.
+
+Likely files:
+
+- `scripts/check-operator-live-gates.ts`
+- `scripts/operator-live-gates.test.ts`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `vc-validation-live` appears in `approvalRequiredGateIds` when it is ready,
+  blocked, or otherwise present in product status.
+- `vc-validation-live` appears in `liveServiceGateIds` because its command
+  path runs `npm run smoke:iota-identity-live -- --report <ignored-json-path>`.
+- Operator gate tests cover both blocked-config and ready-live VC states.
+- Docs state that the operator report does not run the Identity live smoke for
+  VC validation; it only points to the approval-required command.
+- The change does not run live IOTA Identity, IOTA Names, IOTA RPC, Gas
+  Station, faucet, payment, A2A, npm, marketplace, custody, or device commands.
+
+Verification:
+
+- `node --import tsx --test scripts/operator-live-gates.test.ts`
+- `npm run proof:operator-gates`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `npm run typecheck`
+- `git diff --check`
+
+Dependencies:
+Slice 7.62 VC Live Report Gate.
+
+Risk:
+Low to medium. This is classification only, but a wrong live-service flag could
+make an operator believe VC validation is local-only when it actually depends on
+a live Identity smoke.
+
+Escalation triggers:
+
+- Any request to mark VC live validation as local-only while it depends on a
+  live Identity smoke report.
+- Any request to run `smoke:iota-identity-live` automatically from
+  `proof:operator-gates`.
+- Any request to print endpoint values, profile paths, DIDs, credential refs,
+  raw proof bodies, credential evidence, report contents, or local secret paths
+  in operator gate output.
+
 ## Slice 7.24: Sponsor Faucet Attempt Context
 
 User-visible outcome:

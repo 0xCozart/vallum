@@ -40,6 +40,20 @@ test("testnet digest proof fails closed when docs do not contain the digest", as
   }
 });
 
+test("testnet digest proof fails closed when required docs are missing", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-testnet-digest-missing-"));
+  try {
+    const report = await checkTestnetDigestProof({ cwd });
+    const formatted = formatTestnetDigestProofReport(report);
+
+    assert.equal(report.status, "blocked-live");
+    assert.equal(report.blocker, "TESTNET_DIGEST_DOCS_MISSING");
+    assert.match(formatted, /TESTNET_DIGEST_DOCS_MISSING/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
 test("testnet digest live proof verifies a successful transaction through injected client", async () => {
   const cwd = await writeDigestDocs(DOCUMENTED_TESTNET_DIGEST);
   try {
