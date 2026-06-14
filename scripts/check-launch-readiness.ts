@@ -188,6 +188,7 @@ const AREA_DEFINITIONS = [
       "npm run smoke:a2a-static-discovery-local",
       "npm run payment:write-provider-proof-plan",
       "npm run proof:payment-provider-readiness",
+      "npm run a2a:write-public-proof-plan",
       "npm run proof:a2a-public-readiness",
     ],
     productCheckIds: ["public-a2a-hosting", "live-payment-provider"],

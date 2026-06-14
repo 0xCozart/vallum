@@ -79,6 +79,7 @@ npm run gas-station:docker-direct -- --dry-run
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run a2a:write-static-discovery-bundle -- --agent-card <signed-card.json> --jwks <jwks.json> --public-base-url <url> --public-jwks-url <url> --out-dir <dir>
 npm run a2a:check-static-discovery-bundle -- --out-dir <dir> --expected-public-base-url <url> --expected-public-jwks-url <url>
+npm run a2a:write-public-proof-plan -- --out tmp/gaskit/a2a-public-proof-plan.json
 npm run proof:a2a-public-readiness
 npm run proof:package-publication-readiness
 npm run package:write-publication-proof-plan -- --out tmp/gaskit/package-publication-proof-plan.json

@@ -92,6 +92,10 @@ hosts, marketplace systems, or physical devices.
 - Keeps package publication, public A2A hosting, live payment/provider proof,
   production marketplace, custody, and physical-device access out of automatic
   local verification claims.
+- Lets operators prepare public A2A hosting and conformance review with
+  `npm run a2a:write-public-proof-plan`, a redacted local plan that lists
+  command order, blocker codes, operator input names, and safety boundaries
+  before any public endpoint discovery smoke runs.
 - Points package publication review at the non-networked
   `npm run proof:package-publication-readiness` command, which validates local
   package release proof plus an ignored structured npm publication report
@@ -197,6 +201,7 @@ npm run proof:product-status
 npm run proof:launch-readiness
 npm run proof:testnet-digest
 npm run proof:testnet-digest:live
+npm run a2a:write-public-proof-plan -- --out tmp/gaskit/a2a-public-proof-plan.json
 npm run proof:a2a-public-readiness
 npm run proof:package-publication-readiness
 npm run proof:payment-provider-readiness

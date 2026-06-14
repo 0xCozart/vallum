@@ -23,7 +23,14 @@ test("launch readiness maps local evidence to live and production blockers", asy
   assert.equal(report.localEvidenceOk, true);
   assert.equal(report.areas.find((area) => area.id === "phase-1-sponsored-policy-mvp")?.status, "blocked-live");
   assert.equal(report.areas.find((area) => area.id === "phase-2-identity-and-vc")?.status, "blocked-live");
-  assert.equal(report.areas.find((area) => area.id === "phase-4-standards-bridges")?.status, "blocked-production");
+  const standards = report.areas.find((area) => area.id === "phase-4-standards-bridges");
+  assert.equal(standards?.status, "blocked-production");
+  assert.ok(standards?.commands.includes("npm run a2a:write-public-proof-plan"));
+  assert.ok(standards?.commands.includes("npm run proof:a2a-public-readiness"));
+  assert.ok(
+    (standards?.commands.indexOf("npm run a2a:write-public-proof-plan") ?? -1)
+      < (standards?.commands.indexOf("npm run proof:a2a-public-readiness") ?? -1),
+  );
   assert.equal(report.areas.find((area) => area.id === "phase-6-package-release")?.status, "blocked-production");
   assert.equal(report.areas.find((area) => area.id === "phase-3-contract-workflows")?.status, "deferred-safety");
   assert.ok(

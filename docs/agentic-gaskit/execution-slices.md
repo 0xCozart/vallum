@@ -6910,3 +6910,63 @@ Escalation triggers:
   payment credentials, authorization headers, payment instruments, raw
   payloads, response bodies, settlement ids, private keys, bearer tokens,
   custody/KMS details, npm credentials, or report contents.
+
+## Slice 7.48: A2A Operator Proof Plan Guidance
+
+User-visible outcome:
+Operator live gates and launch-readiness evidence now point public A2A hosting
+review at the redacted public proof-plan writer before the non-networked
+readiness gate and approval-required public discovery smoke.
+
+Likely files:
+
+- `scripts/check-operator-live-gates.ts`
+- `scripts/operator-live-gates.test.ts`
+- `scripts/check-launch-readiness.ts`
+- `scripts/launch-readiness.test.ts`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- The operator live gate command for `public-a2a-hosting` starts with
+  `npm run a2a:write-public-proof-plan`.
+- Launch-readiness phase 4 command evidence includes
+  `npm run a2a:write-public-proof-plan` before
+  `npm run proof:a2a-public-readiness`.
+- Operator and launch runbooks list the ignored
+  `tmp/gaskit/a2a-public-proof-plan.json` command before A2A public readiness.
+- Tests assert the operator-gate and launch-readiness command order.
+- The change does not alter public A2A readiness acceptance, public endpoint
+  probing, push delivery, external conformance, production auth, key
+  management, or live/testnet behavior.
+
+Verification:
+
+- `node --import tsx --test scripts/operator-live-gates.test.ts
+  scripts/launch-readiness.test.ts`
+- `npm run proof:operator-gates`
+- `npm run proof:launch-readiness`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `git diff --check`
+- `npm run typecheck`
+
+Dependencies:
+Existing operator live-gates report, launch-readiness report, and A2A public
+proof-plan writer.
+
+Risk:
+Low. This is operator guidance and evidence command-order alignment only, but
+it must not imply that proof-plan generation proves public A2A hosting,
+production auth/key-management, public push delivery, or external conformance.
+
+Escalation triggers:
+
+- Any request to treat proof-plan generation as public A2A hosting, public
+  discovery, public push delivery, production auth/key-management, or external
+  conformance proof.
+- Any request to print or commit configured public endpoint values, report
+  paths, private keys, bearer tokens, webhook secrets, raw payloads, response
+  bodies, local secret paths, or public proof report contents.

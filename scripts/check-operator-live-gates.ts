@@ -81,7 +81,7 @@ const GATE_COMMANDS: Record<string, string | undefined> = {
   "iota-identity-live": "npm run live:write-proof-plan && npm run smoke:iota-identity-live -- --report <ignored-json-path>",
   "vc-validation-live": "npm run live:write-proof-plan && npm run smoke:iota-identity-live -- --report <ignored-json-path>",
   "npm-registry-publication": "npm run package:write-publication-proof-plan && npm run proof:package-publication-readiness && operator-approved npm publish workflow",
-  "public-a2a-hosting": "npm run proof:a2a-public-readiness && npm run smoke:a2a-public-discovery",
+  "public-a2a-hosting": "npm run a2a:write-public-proof-plan && npm run proof:a2a-public-readiness && npm run smoke:a2a-public-discovery",
   "live-payment-provider": "npm run payment:write-provider-proof-plan && npm run proof:payment-provider-readiness",
   "production-marketplace": "npm run marketplace:write-production-proof-plan && npm run proof:marketplace-readiness && dedicated production marketplace readiness slice",
   "production-custody": "npm run custody:write-production-proof-plan && npm run proof:custody-readiness && dedicated custody/security design slice",

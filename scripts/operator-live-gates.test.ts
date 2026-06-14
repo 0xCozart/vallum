@@ -66,7 +66,7 @@ test("operator live gates report current blockers without secret values", async 
     );
     assert.equal(
       findGate(report, "public-a2a-hosting").command,
-      "npm run proof:a2a-public-readiness && npm run smoke:a2a-public-discovery",
+      "npm run a2a:write-public-proof-plan && npm run proof:a2a-public-readiness && npm run smoke:a2a-public-discovery",
     );
     assert.equal(
       findGate(report, "live-payment-provider").command,
