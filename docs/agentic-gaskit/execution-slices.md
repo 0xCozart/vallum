@@ -5671,3 +5671,71 @@ Escalation triggers:
 - Any request to print or store raw Gas Station response bodies, bearer tokens,
   rendered Gas Station config, full sponsor addresses, raw transaction bytes,
   user signatures, or sponsor signer material.
+
+## Slice 7.28: Sponsor Funding Request Faucet Context
+
+User-visible outcome:
+Operators can generate the ignored sponsor funding request artifact with
+bounded context from the latest sanitized sponsor faucet report, so a failed or
+rate-limited faucet route is visible next to the full public sponsor address
+without printing that address in stdout or treating faucet context as funding
+proof.
+
+Likely files:
+
+- `scripts/write-sponsor-funding-request.ts`
+- `scripts/write-sponsor-funding-request.test.ts`
+- `docs/CODEBASE_MAP.md`
+- `docs/testnet-readiness.md`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `npm run sponsor:write-funding-request -- --faucet-report
+  <ignored-json-path> --out <ignored-json-path>` validates the supplied
+  sponsor faucet report and copies only bounded result, code, API version,
+  HTTP status, failure kind, and guidance fields into the ignored funding
+  request artifact.
+- `GASKIT_SPONSOR_FAUCET_REPORT=<ignored-json-path> npm run
+  sponsor:write-funding-request -- --out <ignored-json-path>` uses the same
+  bounded context path.
+- Invalid, stale, unreadable, or unsafe faucet reports are classified as
+  invalid/unreadable context without copying unsafe fields.
+- The funding request summary remains redacted and does not print the full
+  sponsor address, faucet URL, faucet task id, raw faucet body, signer
+  material, bearer token, rendered Gas Station config, raw transaction bytes,
+  or user signatures.
+- Faucet context remains advisory. It does not clear `sponsor-funding`,
+  `testnet-upstream`, reserve_gas compatibility, or sponsored execution
+  readiness.
+
+Verification:
+
+- Focused sponsor funding request, sponsor faucet, live-status, and
+  package-script tests.
+- `npm run sponsor:write-funding-request -- --faucet-report
+  tmp/gaskit/sponsor-faucet-request-v0-latest.json --out
+  tmp/gaskit/sponsor-funding-request.json`.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slices 7.16, 7.18, 7.22, and 7.24.
+
+Risk:
+Low to medium. The artifact already contains the full public sponsor address
+in an ignored path, but it must not become a place to copy unsafe faucet
+responses or to overclaim funding readiness.
+
+Escalation triggers:
+
+- Any request to print the full sponsor address, signer material, faucet URL,
+  faucet task id, raw faucet body, bearer token, rendered Gas Station config,
+  raw transaction bytes, or user signatures.
+- Any request to treat faucet context or a funding request artifact as
+  sponsor funding, reserve_gas compatibility, or sponsored execution proof.

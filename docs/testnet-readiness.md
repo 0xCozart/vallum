@@ -138,7 +138,11 @@ building/signing a transaction unless all of these are true:
   pass, `npm run sponsor:write-funding-request -- --out
   tmp/gaskit/sponsor-funding-request.json` can write the public sponsor address
   to an ignored local artifact for operator funding while keeping stdout
-  redacted. If an approved faucet is available, `npm run
+  redacted. If `--faucet-report <ignored-json-path>` or
+  `GASKIT_SPONSOR_FAUCET_REPORT` is set, the artifact can include only bounded
+  sanitized faucet attempt context such as result, code, API version, HTTP
+  status, and failure kind; this is advisory and does not clear funding
+  readiness. If an approved faucet is available, `npm run
   sponsor:request-faucet-funds -- --execute --out
   tmp/gaskit/sponsor-faucet-request.json` can request testnet gas from
   `IOTA_FAUCET_URL` or `--faucet-url`; it requires explicit `--execute`.
@@ -197,7 +201,10 @@ tmp/gaskit/sponsor-funding-request.json` can be used when the operator needs
 the configured public sponsor address to request or transfer IOTA testnet gas.
 The full public address is written only to the ignored artifact; the command
 does not contact live services, reserve gas, sign transactions, execute
-transactions, or print sponsor signer material.
+transactions, or print sponsor signer material. If a sanitized faucet report
+already exists, use `--faucet-report <ignored-json-path>` to copy bounded
+faucet-attempt context into the ignored funding artifact so operators can avoid
+repeating a failed route.
 
 `npm run sponsor:request-faucet-funds -- --execute --out
 tmp/gaskit/sponsor-faucet-request.json` can be used only when the operator has

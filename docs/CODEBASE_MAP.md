@@ -146,7 +146,8 @@ It also includes the first Agentic GasKit implementation slices:
 - opt-in sponsor funding request artifact writer that writes the full public
   sponsor address only to an ignored local JSON artifact for testnet funding,
   while keeping stdout redacted and avoiding live service contact, signing,
-  reserve, or execute
+  reserve, or execute; it can optionally copy only bounded sanitized faucet
+  attempt context into the ignored artifact for operator triage
 - opt-in sponsor faucet request helper that requires explicit `--execute` plus
   an operator-provided faucet URL, sends only the public sponsor address to the
   faucet, writes a sanitized ignored report, and still keeps funding separate

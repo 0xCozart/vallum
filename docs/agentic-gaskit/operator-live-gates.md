@@ -135,7 +135,10 @@ hosts, marketplace systems, or physical devices.
   `npm run sponsor:write-funding-request -- --out
   tmp/gaskit/sponsor-funding-request.json` when they need the public sponsor
   address for testnet funding. The full address stays in the ignored artifact;
-  stdout remains redacted, and the command does not contact live services.
+  stdout remains redacted, and the command does not contact live services. If
+  `--faucet-report <ignored-json-path>` or `GASKIT_SPONSOR_FAUCET_REPORT` is
+  supplied, only bounded sanitized faucet result/code/status context is copied
+  into that ignored artifact for operator triage; it does not prove funding.
 - Lets operators request IOTA testnet faucet funds with
   `npm run sponsor:request-faucet-funds -- --execute --out
   tmp/gaskit/sponsor-faucet-request.json` only after they configure
@@ -200,6 +203,7 @@ npm run payment:write-provider-proof-plan -- --out tmp/gaskit/payment-provider-p
 npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json
 npm run gas-station:docker-direct -- --status
 npm run sponsor:write-funding-request -- --out tmp/gaskit/sponsor-funding-request.json
+npm run sponsor:write-funding-request -- --faucet-report tmp/gaskit/sponsor-faucet-request.json --out tmp/gaskit/sponsor-funding-request.json
 npm run sponsor:request-faucet-funds -- --execute --out tmp/gaskit/sponsor-faucet-request.json
 GASKIT_SPONSOR_FAUCET_REPORT=tmp/gaskit/sponsor-faucet-request.json npm run proof:live-status
 npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json
