@@ -5865,3 +5865,66 @@ Escalation triggers:
 - Any request to treat a launch-readiness artifact as live/testnet,
   publication, production custody, production payment, marketplace, public A2A,
   or launch readiness proof.
+
+## Slice 7.31: Verification Profile Artifact Writer
+
+User-visible outcome:
+Operators and future agents can archive the current verification-profile audit
+as a redacted ignored JSON artifact, so the build/test/improve loop can prove
+that `verify:fast` remains bounded while `verify:local` and `grant:check`
+remain the full reviewer/release/launch evidence gates.
+
+Likely files:
+
+- `scripts/check-verification-profiles.ts`
+- `scripts/verification-profiles.test.ts`
+- `docs/CODEBASE_MAP.md`
+- `docs/agentic-gaskit/verification-profiles.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `npm run proof:verification-profiles -- --json` prints a redacted
+  machine-readable artifact with schema version, kind, timestamp, profile
+  status, fast-profile status, full-gate status, proven-local check ids,
+  blocked check ids, blocker codes, checks, and safety boundaries.
+- `npm run proof:verification-profiles -- --out <ignored-json-path>` writes
+  the same artifact with mode `600`.
+- The artifact does not contact live services, publish packages, run payment
+  providers, operate public A2A endpoints, reserve gas, sign transactions, or
+  execute transactions.
+- The artifact does not include configured endpoint values, profile paths,
+  full sponsor addresses, raw upstream bodies, signer material, bearer tokens,
+  rendered Gas Station config, raw transaction bytes, user signatures, or local
+  secret paths.
+- The artifact does not weaken `verify:local`, does not move live/release
+  commands into `verify:fast`, and does not treat `verify:fast` as launch
+  evidence.
+
+Verification:
+
+- Focused verification-profile and package-script tests.
+- `npm run proof:verification-profiles -- --out
+  tmp/gaskit/verification-profiles.json`.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run verify:fast`.
+
+Dependencies:
+Existing verification-profile audit.
+
+Risk:
+Low. This is a derived evidence artifact, but it must not imply that the fast
+profile replaces full local verification or live/operator-approved proof.
+
+Escalation triggers:
+
+- Any request to include configured endpoint values, profile paths, full
+  sponsor addresses, raw upstream bodies, signer material, bearer tokens,
+  rendered Gas Station config, raw transaction bytes, user signatures, or local
+  secret paths.
+- Any request to treat `verify:fast` or the verification-profile artifact as
+  full launch, release, live/testnet, publication, public A2A, payment,
+  marketplace, custody, or safety proof.

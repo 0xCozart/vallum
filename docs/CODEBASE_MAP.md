@@ -193,6 +193,9 @@ It also includes the first Agentic GasKit implementation slices:
 - fast verification profile plus non-networked verification-profile audit that
   keeps day-to-day iteration bounded while preserving `verify:local` as the
   full reviewer/release/launch evidence gate
+- redacted verification-profile artifact writer for archiving fast/full/grant
+  gate wiring status, blocked check ids, blocker codes, and safety boundaries
+  to an ignored mode-600 local JSON file
 - local read-only marketplace evidence package with provider labels, policy
   compatibility, receipt access control, and dispute evidence bundle smoke
 - non-networked marketplace production readiness gate for local read-model

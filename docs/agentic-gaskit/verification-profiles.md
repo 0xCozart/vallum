@@ -32,6 +32,16 @@ full deterministic local gate and includes:
 - `verify:local` still includes the complete local evidence surface;
 - `grant:check` still points to `npm run verify:local`.
 
+For a redacted machine-readable artifact, use:
+
+```bash
+npm run proof:verification-profiles -- --json
+npm run proof:verification-profiles -- --out tmp/gaskit/verification-profiles.json
+```
+
+The `--out` file is written with mode `600`. It is a local audit artifact, not
+passing evidence by itself, and it must stay outside committed files.
+
 The fast profile is not launch evidence by itself. It is a productivity profile
 for the build/test/improve loop. The full local gate remains the evidence
 surface for roadmap completion, reviewer proof, and launch-status documents.

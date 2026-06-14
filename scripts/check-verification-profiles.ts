@@ -1,5 +1,5 @@
-import { readFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
+import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 export type VerificationProfileStatus = "proven-local" | "blocked-config" | "blocked-safety";
@@ -20,10 +20,46 @@ export interface VerificationProfileReport {
   readonly checks: readonly VerificationProfileCheck[];
 }
 
+export interface VerificationProfileArtifact {
+  readonly schemaVersion: 1;
+  readonly kind: "agentic-gaskit.verification-profile-report";
+  readonly generatedAt: string;
+  readonly profilesOk: boolean;
+  readonly fastProfileOk: boolean;
+  readonly fullGatePreserved: boolean;
+  readonly provenLocalCheckIds: readonly string[];
+  readonly blockedCheckIds: readonly string[];
+  readonly blockerCodes: readonly string[];
+  readonly checks: readonly VerificationProfileCheck[];
+  readonly boundaries: readonly string[];
+}
+
 export interface VerificationProfileOptions {
   readonly cwd?: string;
   readonly scripts?: Record<string, string | undefined>;
 }
+
+export interface WriteVerificationProfileArtifactOptions extends VerificationProfileOptions {
+  readonly now?: Date;
+  readonly outFile?: string;
+}
+
+const ARTIFACT_BOUNDARIES = [
+  "This report is non-networked and does not run live proof commands.",
+  "profilesOk=false means the fast/full/grant verification profile wiring is unsafe or incomplete.",
+  "Do not commit generated reports, live proof artifacts, credentials, tokens, private keys, raw transaction bytes, user signatures, response bodies, endpoint values, profile paths, full sponsor addresses, or secret local paths.",
+  "The fast profile is iteration evidence only; verify:local remains the full reviewer, release, and launch evidence gate.",
+] as const;
+
+const usage = `usage: npm exec tsx -- scripts/check-verification-profiles.ts [--json] [--out <path>]
+
+Reports current Agentic GasKit verification profile wiring without contacting live proof services.
+
+Options:
+  --json        Print a redacted machine-readable artifact.
+  --out <path>  Write the same JSON artifact to a local file with mode 0600.
+  --help        Show this help text.
+`;
 
 const FAST_REQUIRED_PARTS = [
   "npm run build",
@@ -137,6 +173,48 @@ export function formatVerificationProfileReport(report: VerificationProfileRepor
   return lines.join("\n");
 }
 
+export function buildVerificationProfileArtifact(
+  report: VerificationProfileReport,
+  now = new Date(),
+): VerificationProfileArtifact {
+  const blockedChecks = report.checks.filter((check) => check.status !== "proven-local");
+
+  return {
+    schemaVersion: 1,
+    kind: "agentic-gaskit.verification-profile-report",
+    generatedAt: now.toISOString(),
+    profilesOk: report.profilesOk,
+    fastProfileOk: report.fastProfileOk,
+    fullGatePreserved: report.fullGatePreserved,
+    provenLocalCheckIds: report.checks
+      .filter((check) => check.status === "proven-local")
+      .map((check) => check.id),
+    blockedCheckIds: blockedChecks.map((check) => check.id),
+    blockerCodes: blockedChecks.map((check) => check.code),
+    checks: report.checks,
+    boundaries: ARTIFACT_BOUNDARIES,
+  };
+}
+
+export async function writeVerificationProfileArtifact(
+  options: WriteVerificationProfileArtifactOptions = {},
+): Promise<VerificationProfileArtifact> {
+  const cwd = options.cwd ?? process.cwd();
+  const report = await checkVerificationProfiles(options);
+  const artifact = buildVerificationProfileArtifact(report, options.now);
+  if (options.outFile) {
+    const outPath = resolveOutputPath(cwd, options.outFile);
+    await mkdir(dirname(outPath), { recursive: true });
+    await writeFile(outPath, formatVerificationProfileArtifact(artifact), { mode: 0o600 });
+    await chmod(outPath, 0o600);
+  }
+  return artifact;
+}
+
+export function formatVerificationProfileArtifact(artifact: VerificationProfileArtifact): string {
+  return `${JSON.stringify(artifact, null, 2)}\n`;
+}
+
 async function loadPackageScripts(cwd: string): Promise<Record<string, string | undefined>> {
   const packageJson = JSON.parse(await readFile(resolve(cwd, "package.json"), "utf8")) as {
     scripts?: Record<string, string>;
@@ -232,7 +310,67 @@ function checkGrantGate(scripts: Record<string, string | undefined>): Verificati
   };
 }
 
-async function main(): Promise<number> {
+interface CliOptions {
+  readonly help: boolean;
+  readonly json: boolean;
+  readonly outFile?: string;
+}
+
+function parseArgs(args: readonly string[]): CliOptions {
+  let help = false;
+  let json = false;
+  let outFile: string | undefined;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg === "--help" || arg === "-h") {
+      help = true;
+      continue;
+    }
+    if (arg === "--json") {
+      json = true;
+      continue;
+    }
+    if (arg === "--out") {
+      const value = args[index + 1];
+      if (!value || value.startsWith("--")) {
+        throw new Error("--out requires a path.");
+      }
+      outFile = value;
+      index += 1;
+      continue;
+    }
+    throw new Error(`Unsupported argument: ${arg}`);
+  }
+
+  return { help, json, outFile };
+}
+
+function resolveOutputPath(cwd: string, outFile: string): string {
+  return isAbsolute(outFile) ? outFile : resolve(cwd, outFile);
+}
+
+async function main(args = process.argv.slice(2)): Promise<number> {
+  let options: CliOptions;
+  try {
+    options = parseArgs(args);
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    console.error(usage);
+    return 1;
+  }
+
+  if (options.help) {
+    console.log(usage.trimEnd());
+    return 0;
+  }
+
+  if (options.json || options.outFile) {
+    const artifact = await writeVerificationProfileArtifact({ outFile: options.outFile });
+    console.log(formatVerificationProfileArtifact(artifact).trimEnd());
+    return 0;
+  }
+
   const report = await checkVerificationProfiles();
   console.log(formatVerificationProfileReport(report));
   return 0;
