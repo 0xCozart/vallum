@@ -54,12 +54,13 @@ export interface SponsorFaucetRequestReportValidation {
 }
 
 export type SponsorFaucetApiVersion = NonNullable<SponsorFaucetRequestReport["faucetApiVersion"]>;
+export type SponsorFaucetRequestMode = SponsorFaucetApiVersion | "auto";
 
 export interface RequestSponsorFaucetFundsOptions {
   readonly env?: Record<string, string | undefined>;
   readonly envFile?: string;
   readonly execute?: boolean;
-  readonly faucetApiVersion?: SponsorFaucetApiVersion;
+  readonly faucetApiVersion?: SponsorFaucetRequestMode;
   readonly faucetUrl?: string;
   readonly now?: Date;
   readonly outFile?: string;
@@ -74,7 +75,7 @@ export type SponsorFaucetRequester = (input: {
 interface CliOptions {
   readonly envFile: string;
   readonly execute: boolean;
-  readonly faucetApiVersion?: SponsorFaucetApiVersion;
+  readonly faucetApiVersion?: SponsorFaucetRequestMode;
   readonly faucetUrl?: string;
   readonly help: boolean;
   readonly outFile: string;
@@ -86,10 +87,11 @@ type MutableCliOptions = {
 
 const DEFAULT_OUT_FILE = "tmp/gaskit/sponsor-faucet-request.json";
 
-const usage = `usage: npm exec tsx -- scripts/request-sponsor-faucet-funds.ts [--execute] [--api-version v1-batch|v0-documented] [--faucet-url <url>] [--env-file <path>] [--out <path>]
+const usage = `usage: npm exec tsx -- scripts/request-sponsor-faucet-funds.ts [--execute] [--api-version auto|v1-batch|v0-documented] [--faucet-url <url>] [--env-file <path>] [--out <path>]
 
 Requests IOTA testnet faucet funds for the configured sponsor address only when --execute is supplied.
-Requires IOTA_FAUCET_URL or --faucet-url. Stdout stays redacted; the report is written to an ignored local path.`;
+Requires IOTA_FAUCET_URL or --faucet-url. Stdout stays redacted; the report is written to an ignored local path.
+The default auto mode tries the SDK-style v1 route, then the documented /gas route only for bounded unsupported or unknown v1 failures.`;
 
 export async function requestSponsorFaucetFunds(
   options: RequestSponsorFaucetFundsOptions = {},
@@ -165,12 +167,13 @@ export async function requestSponsorFaucetFunds(
     });
   }
 
-  const selectedApiVersion = options.faucetApiVersion ?? "v1-batch";
+  const selectedApiVersion = options.faucetApiVersion ?? "auto";
   try {
-    const requester = options.requestFunds ?? requesterForApiVersion(selectedApiVersion);
-    const amount = await requester({
+    const result = await requestWithMode({
       host: faucetUrl,
       recipient: sponsorAddress,
+      requestFunds: options.requestFunds,
+      selectedApiVersion,
     });
     return writeReport(reportPath, {
       ...base,
@@ -179,11 +182,12 @@ export async function requestSponsorFaucetFunds(
       message: "Sponsor faucet request completed; rerun the funding diagnostic to verify readable coin balance.",
       contactsLiveService: true,
       sponsorAddressRedacted,
-      faucetApiVersion: options.requestFunds === undefined ? selectedApiVersion : options.faucetApiVersion,
-      amountMist: amount === undefined ? undefined : String(amount),
+      faucetApiVersion: result.apiVersion,
+      amountMist: result.amount === undefined ? undefined : String(result.amount),
     });
   } catch (error) {
     const sanitized = sanitizedFaucetError(error);
+    const fallbackApiVersion = selectedApiVersion === "auto" ? "v1-batch" : selectedApiVersion;
     return writeReport(reportPath, {
       ...base,
       result: "failed",
@@ -193,7 +197,7 @@ export async function requestSponsorFaucetFunds(
         : "Sponsor faucet request failed without exposing raw faucet response details.",
       contactsLiveService: true,
       sponsorAddressRedacted,
-      faucetApiVersion: sanitized.apiVersion ?? selectedApiVersion,
+      faucetApiVersion: sanitized.apiVersion ?? fallbackApiVersion,
       faucetHttpStatus: sanitized.httpStatus,
       faucetFailureKind: sanitized.failureKind,
       faucetErrorCode: sanitized.errorCode,
@@ -447,6 +451,62 @@ function requesterForApiVersion(apiVersion: SponsorFaucetApiVersion): SponsorFau
     : requestIotaFromDefaultFaucet;
 }
 
+async function requestWithMode(input: {
+  readonly host: string;
+  readonly recipient: string;
+  readonly requestFunds?: SponsorFaucetRequester;
+  readonly selectedApiVersion: SponsorFaucetRequestMode;
+}): Promise<{ readonly apiVersion: SponsorFaucetApiVersion; readonly amount: number | undefined }> {
+  if (input.requestFunds) {
+    const apiVersion = input.selectedApiVersion === "auto" ? "v1-batch" : input.selectedApiVersion;
+    return {
+      apiVersion,
+      amount: await input.requestFunds({
+        host: input.host,
+        recipient: input.recipient,
+      }),
+    };
+  }
+
+  if (input.selectedApiVersion !== "auto") {
+    return {
+      apiVersion: input.selectedApiVersion,
+      amount: await requesterForApiVersion(input.selectedApiVersion)({
+        host: input.host,
+        recipient: input.recipient,
+      }),
+    };
+  }
+
+  try {
+    return {
+      apiVersion: "v1-batch",
+      amount: await requestIotaFromDefaultFaucet({
+        host: input.host,
+        recipient: input.recipient,
+      }),
+    };
+  } catch (error) {
+    if (!shouldTryDocumentedFaucetFallback(error)) throw error;
+  }
+
+  return {
+    apiVersion: "v0-documented",
+    amount: await requestIotaFromDocumentedFaucet({
+      host: input.host,
+      recipient: input.recipient,
+    }),
+  };
+}
+
+function shouldTryDocumentedFaucetFallback(error: unknown): boolean {
+  if (!(error instanceof SanitizedFaucetRequestError)) return false;
+  if (error.apiVersion !== "v1-batch" || error.rateLimited) return false;
+  if (error.errorCode === "REQUEST_UNSUPPORTED") return true;
+  if (error.failureKind === "invalid-json") return true;
+  return error.failureKind === "faucet-error" && error.errorCode === "UNKNOWN";
+}
+
 const SPONSOR_FAUCET_REPORT_KEYS = new Set([
   "schemaVersion",
   "kind",
@@ -501,9 +561,9 @@ function parseArgs(argv: readonly string[]): CliOptions {
     }
     if (arg === "--api-version") {
       const value = argv[index + 1];
-      if (!value) throw new Error("--api-version requires v1-batch or v0-documented.");
-      if (value !== "v1-batch" && value !== "v0-documented") {
-        throw new Error("--api-version must be v1-batch or v0-documented.");
+      if (!value) throw new Error("--api-version requires auto, v1-batch, or v0-documented.");
+      if (value !== "auto" && value !== "v1-batch" && value !== "v0-documented") {
+        throw new Error("--api-version must be auto, v1-batch, or v0-documented.");
       }
       options.faucetApiVersion = value;
       index += 1;

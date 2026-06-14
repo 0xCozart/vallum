@@ -213,10 +213,12 @@ command writes a blocked local report and does not contact the faucet. With
 `--execute`, it sends the public sponsor address to the configured HTTPS or
 loopback faucet, writes only a sanitized ignored report, and still does not
 sign, reserve gas, or execute transactions. It defaults to `--api-version
-v1-batch`; operators can pass `--api-version v0-documented` for faucet
-deployments that still expose the documented `/gas` endpoint. Faucet success is
-not accepted as reserve_gas compatibility; rerun the funding diagnostic and
-upstream diagnostic afterward.
+auto`, which tries the SDK-style `v1-batch` route first and falls back to
+`v0-documented` only for bounded unsupported, structurally invalid, or unknown
+v1 failures. Operators can still pass `--api-version v1-batch` or
+`--api-version v0-documented` when they need a single explicit faucet shape.
+Faucet success is not accepted as reserve_gas compatibility; rerun the funding
+diagnostic and upstream diagnostic afterward.
 If `GASKIT_SPONSOR_FAUCET_REPORT` points at the ignored faucet report,
 `npm run proof:live-status` can include the latest sanitized faucet outcome in
 the sponsor-funding next step. This is triage context only, not readiness

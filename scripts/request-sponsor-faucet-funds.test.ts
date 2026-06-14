@@ -264,6 +264,90 @@ test("default faucet requester uses the batch /v1/gas endpoint and polls status"
   }
 });
 
+test("sponsor faucet auto mode falls back from unknown v1 faucet errors to the documented endpoint", async () => {
+  const originalFetch = globalThis.fetch;
+  const recipient = sponsorAddress;
+  const seen: string[] = [];
+  try {
+    globalThis.fetch = (async (url, init) => {
+      seen.push(`${init?.method ?? "GET"} ${String(url)}`);
+      if (String(url).endsWith("/v1/gas")) {
+        return new Response(JSON.stringify({ error: { detail: "unmodeled response" } }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      assert.equal(String(url), "https://faucet.testnet.example/gas");
+      assert.equal(init?.method, "POST");
+      assert.deepEqual(JSON.parse(String(init?.body)), {
+        FixedAmountRequest: {
+          recipient,
+        },
+      });
+      return new Response(JSON.stringify({
+        transferredGasObjects: [
+          { amount: 500, id: "coin-1", transferTxDigest: "digest-1" },
+        ],
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }) as typeof fetch;
+
+    const report = await requestSponsorFaucetFunds({
+      env: {
+        GAS_STATION_KEYPAIR: sponsorKey,
+      },
+      execute: true,
+      faucetUrl: "https://faucet.testnet.example",
+    });
+    const formatted = formatSponsorFaucetRequestReport(report);
+
+    assert.equal(report.result, "passed");
+    assert.equal(report.code, "SPONSOR_FAUCET_REQUESTED");
+    assert.equal(report.faucetApiVersion, "v0-documented");
+    assert.equal(report.amountMist, "500");
+    assert.deepEqual(seen, [
+      "POST https://faucet.testnet.example/v1/gas",
+      "POST https://faucet.testnet.example/gas",
+    ]);
+    assert.doesNotMatch(formatted, new RegExp(escapeRegExp(sponsorAddress)));
+    assert.doesNotMatch(formatted, /faucet\.testnet\.example|unmodeled response/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("sponsor faucet auto mode does not fall back on concrete v1 faucet blockers", async () => {
+  const originalFetch = globalThis.fetch;
+  const seen: string[] = [];
+  try {
+    globalThis.fetch = (async (url, init) => {
+      seen.push(`${init?.method ?? "GET"} ${String(url)}`);
+      return new Response(JSON.stringify({ error: "Faucet is out of funds" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }) as typeof fetch;
+
+    const report = await requestSponsorFaucetFunds({
+      env: {
+        GAS_STATION_KEYPAIR: sponsorKey,
+      },
+      execute: true,
+      faucetUrl: "https://faucet.testnet.example",
+    });
+
+    assert.equal(report.result, "failed");
+    assert.equal(report.code, "SPONSOR_FAUCET_FAILED");
+    assert.equal(report.faucetApiVersion, "v1-batch");
+    assert.equal(report.faucetErrorCode, "FUNDS_UNAVAILABLE");
+    assert.deepEqual(seen, ["POST https://faucet.testnet.example/v1/gas"]);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("sponsor faucet request records documented v0 HTTP failure metadata", async () => {
   const originalFetch = globalThis.fetch;
   const rawResponse = "legacy faucet body that should stay hidden";

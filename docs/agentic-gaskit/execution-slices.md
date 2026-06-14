@@ -6629,3 +6629,63 @@ Escalation triggers:
 - Any request to print full sponsor addresses, endpoint values, report paths,
   profile paths, DID values, credential refs, private keys, tokens, raw
   transaction bytes, signatures, raw response bodies, or local secret paths.
+
+## Slice 7.43: Sponsor Faucet Auto Routing
+
+User-visible outcome:
+Operators can run one approved sponsor faucet request command that first tries
+the SDK-style `v1-batch` route and then falls back to the currently documented
+`/gas` request shape only when the v1 response is bounded as unsupported,
+structurally invalid, or unknown. The helper still emits only sanitized ignored
+evidence and still requires the funding diagnostic to prove balance.
+
+Likely files:
+
+- `scripts/request-sponsor-faucet-funds.ts`
+- `scripts/request-sponsor-faucet-funds.test.ts`
+- `docs/testnet-readiness.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `npm run sponsor:request-faucet-funds -- --execute` defaults to
+  `--api-version auto`.
+- Auto mode tries `v1-batch` first and falls back to `v0-documented` only for
+  bounded unsupported, invalid-json, or unknown v1 failures.
+- Auto mode does not retry a second faucet shape for rate limits, address
+  validation failures, cooldowns, out-of-funds signals, or other concrete
+  faucet blockers.
+- Operators can still force `--api-version v1-batch` or `--api-version
+  v0-documented`.
+- Success and failure reports preserve only the terminal selected
+  `faucetApiVersion`, bounded HTTP status, bounded failure kind, and bounded
+  faucet error code; they still omit raw faucet bodies, faucet task ids, full
+  sponsor addresses, signer material, rendered Gas Station config, bearer
+  tokens, raw transaction bytes, and user signatures.
+- Faucet success, failure, and auto fallback still do not prove sponsor
+  funding, reserve_gas compatibility, or sponsored execution.
+
+Verification:
+
+- `node --import tsx --test scripts/request-sponsor-faucet-funds.test.ts`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `git diff --check`
+- `npm run typecheck`
+
+Dependencies:
+Existing sponsor faucet helper, sponsor funding report gate, funding-request
+artifact writer, live-proof status, and product-status blockers.
+
+Risk:
+Medium. This changes the default live faucet request shape after explicit
+operator approval. It must not hide rate limits or concrete faucet failures,
+and it must not turn a faucet request into readiness proof.
+
+Escalation triggers:
+
+- Any request to print or commit raw faucet responses, faucet task ids, full
+  sponsor addresses, signer material, endpoint values, bearer tokens, rendered
+  Gas Station config, raw transaction bytes, signatures, or local secret paths.
+- Any change that treats faucet success, fallback success, or fallback failure
+  as sponsor funding, reserve_gas compatibility, or sponsored execution proof.
