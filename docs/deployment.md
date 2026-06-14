@@ -46,6 +46,7 @@ Use this path only with operator-owned testnet credentials and a reachable IOTA 
 | Gas Station runtime mode is ready | `npm run gas-station:runtime-preflight` | Install/enable Docker daemon for `local-docker`, or explicitly configure `managed-upstream` with an operator-managed Gas Station URL. |
 | Local Gas Station containers are started | `docker compose --env-file .env -f deploy/docker-compose/docker-compose.local.yml up` or `npm run gas-station:docker-direct -- --execute` | Docker daemon, Compose plugin, image pull, Redis, or Gas Station startup is not ready. |
 | Direct Docker stack is running | `npm run gas-station:docker-direct -- --status` | Expected direct Docker network or containers are missing or stopped; this does not prove HTTP health or reserve compatibility. |
+| Sponsor wallet funding is readable | `npm run sponsor:check-funding` | Sponsor wallet balance or sampled coin shape is not enough for the reserve budget; fund or consolidate testnet gas before retrying reserve. |
 | Testnet upstream checklist is prepared | `npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json` | Template only; it cannot clear `GASKIT_TESTNET_UPSTREAM_REPORT`. |
 | Upstream is reachable | `npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json` | Gas Station URL/auth/network/reserve compatibility is not ready. |
 | Live sponsored execute is intentional | `npm run execute:testnet-demo` | Command self-checks readiness/runtime/upstream report first; stop and inspect bounded error output before retrying. |
@@ -71,6 +72,13 @@ by default. After an intentional direct start, use
 local Docker network and container states. The status check does not start
 containers, fetch HTTP health endpoints, contact IOTA RPC, or prove
 reserve_gas compatibility.
+
+If `reserve_gas` fails after Gas Station root and IOTA RPC checks are healthy,
+run `npm run sponsor:check-funding` before retrying. That command derives the
+public sponsor address locally from the ignored Gas Station signer key and
+queries IOTA RPC for balance/coin shape. It prints only a redacted address and
+numeric funding fields; it does not sign, reserve gas, execute transactions, or
+print the sponsor key.
 
 If an operator intentionally uses a separately managed Gas Station instead of
 the local Docker path, set `GASKIT_GAS_STATION_RUNTIME_MODE=managed-upstream`

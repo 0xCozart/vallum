@@ -127,6 +127,10 @@ It also includes the first Agentic GasKit implementation slices:
 - local direct-Docker Gas Station stack status check for inspecting the
   expected Docker network, Redis container, and Gas Station container without
   starting containers or contacting live services
+- opt-in sponsor funding diagnostic that derives the public sponsor address
+  locally, queries IOTA RPC for balance and sampled coin shape, and prints only
+  redacted address/numeric readiness fields without signing, reserving, or
+  executing
 - explicit managed-upstream Gas Station runtime mode for operators who provide
   a separately managed Gas Station at `GAS_STATION_URL`; the mode skips Docker
   inspection but still requires sanitized upstream diagnostics before sponsored

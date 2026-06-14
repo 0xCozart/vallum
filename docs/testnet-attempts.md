@@ -236,3 +236,81 @@ container was not started in this session. The next operator action is to enable
 Docker daemon plus Compose integration for this WSL distro, start the local
 compose stack, then rerun `npm run diagnose:gas-station -- --report
 tmp/gaskit/testnet-upstream-diagnostic.json` without `--skip-reserve`.
+
+## 2026-06-14 local Gas Station startup and sponsor funding blocker
+
+Docker Desktop was reachable from this WSL workspace through the `default`
+Docker context. The direct Docker fallback was used to start the local Redis
+and official Gas Station containers on loopback ports:
+
+```bash
+npm run gas-station:runtime-preflight
+npm run gas-station:docker-direct -- --execute
+npm run gas-station:docker-direct -- --status
+```
+
+Sanitized status result:
+
+```text
+Agentic GasKit direct Docker Gas Station status
+ready=true
+code=DOCKER_DIRECT_STACK_READY
+startsContainers=false
+contactsLiveServices=false
+ready: docker-network: code=DOCKER_DIRECT_NETWORK_PRESENT
+ready: redis-container: code=DOCKER_DIRECT_CONTAINER_RUNNING
+ready: gas-station-container: code=DOCKER_DIRECT_CONTAINER_RUNNING
+```
+
+The first diagnostic used `--skip-reserve` and proved local Gas Station root
+plus IOTA RPC reachability without reserve_gas:
+
+```text
+gasStationUrl=http://127.0.0.1:9527
+iotaRpcUrl=https://api.testnet.iota.cafe
+bearerTokenConfigured=true
+ok: Gas Station root HTTP 200 "OK"
+fail: Gas Station /v1/health HTTP 404 {}
+ok: IOTA RPC iota_getLatestCheckpointSequenceNumber HTTP 200 {"jsonrpc":"2.0","id":1,"result":"227569957"}
+skip: reserve_gas compatibility probe
+```
+
+The next diagnostic without `--skip-reserve` initially reached reserve_gas but
+failed with HTTP 401 because the ignored local `GAS_STATION_BEARER_TOKEN` did
+not match the running local `GAS_STATION_AUTH`. The ignored `.env` token was
+aligned without printing the token value. A follow-up reserve diagnostic then
+failed after authentication:
+
+```text
+ok: Gas Station root HTTP 200 "OK"
+fail: Gas Station /v1/health HTTP 404 {}
+ok: IOTA RPC iota_getLatestCheckpointSequenceNumber HTTP 200 {"jsonrpc":"2.0","id":1,"result":"227570503"}
+fail: Gas Station reserve_gas compatibility probe HTTP 500 {"result":null,"error":"Unable to reserve gas coins for the given budget."}
+```
+
+The sponsor funding diagnostic explains the reserve failure without printing
+the sponsor key or full sponsor address:
+
+```bash
+npm run sponsor:check-funding
+```
+
+Sanitized funding result:
+
+```text
+ready=false
+code=SPONSOR_FUNDING_TOTAL_INSUFFICIENT
+contactsLiveService=true
+spendsGas=false
+signsTransactions=false
+requiredMist=50000000
+totalBalanceMist=0
+coinObjectCount=0
+sampledCoinCount=0
+maxSampledCoinBalanceMist=0
+```
+
+Outcome: local Gas Station startup, root HTTP reachability, and IOTA RPC
+reachability are proven on this machine. Fresh sponsored execution remains
+blocked because the configured sponsor wallet has no readable testnet IOTA gas
+coins. No sponsored execute was attempted.

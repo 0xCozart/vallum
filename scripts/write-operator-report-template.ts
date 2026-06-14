@@ -62,6 +62,7 @@ const TESTNET_UPSTREAM_CHECKS = [
   "managed-or-local-runtime-selection",
   "iota-rpc-json-rpc",
   "gas-station-root-or-health",
+  "sponsor-funding-readiness",
   "reserve-gas-compatibility",
   "redaction-review",
 ] as const;
@@ -167,6 +168,7 @@ export async function buildOperatorReportTemplate(
         commands: [
           "npm run gas-station:runtime-preflight",
           "npm run gas-station:docker-direct -- --status",
+          "npm run sponsor:check-funding",
           "npm run diagnose:gas-station -- --report <ignored-json-path>",
           "npm run proof:live-status",
           "npm run execute:testnet-demo",

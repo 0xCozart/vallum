@@ -174,6 +174,7 @@ npm run package:write-publication-proof-plan -- --out tmp/gaskit/package-publica
 npm run payment:write-provider-proof-plan -- --out tmp/gaskit/payment-provider-proof-plan.json
 npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json
 npm run gas-station:docker-direct -- --status
+npm run sponsor:check-funding
 npm run operator:write-report-template -- --kind package-publication --out tmp/gaskit/package-publication-report-template.json
 npm run operator:write-report-template -- --kind payment-provider-live --out tmp/gaskit/payment-provider-live-report-template.json
 npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json

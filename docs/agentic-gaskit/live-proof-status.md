@@ -117,6 +117,7 @@ npm run gas-station:docker-direct -- --dry-run
 npm run live:write-proof-plan -- --out tmp/gaskit/live-proof-plan.json
 npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json
 npm run gas-station:docker-direct -- --status
+npm run sponsor:check-funding
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run smoke:iota-names-live
 npm run smoke:iota-identity-live

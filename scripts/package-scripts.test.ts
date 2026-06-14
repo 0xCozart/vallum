@@ -76,6 +76,19 @@ test("direct Docker Gas Station fallback builds and stays opt-in", () => {
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /gas-station:docker-direct/);
 });
 
+test("sponsor funding check builds and stays opt-in", () => {
+  const sponsorFunding = packageJson.scripts?.["sponsor:check-funding"];
+
+  assert.equal(
+    sponsorFunding,
+    "npm run build && tsx scripts/check-sponsor-funding.ts",
+    "npm run sponsor:check-funding must not depend on pre-existing ignored dist artifacts",
+  );
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /sponsor:check-funding/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /sponsor:check-funding/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /sponsor:check-funding/);
+});
+
 test("local docker compose wires official Gas Station behind loopback ports", () => {
   assert.match(localDockerCompose, /image: \$\{IOTA_GAS_STATION_IMAGE:-iotaledger\/gas-station:latest\}/);
   assert.match(localDockerCompose, /"--config-path", "\/app\/config.yaml"/);

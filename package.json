@@ -61,6 +61,7 @@
     "gas-station:docker-direct": "npm run build && tsx scripts/gas-station-docker-direct.ts",
     "gas-station:runtime-preflight": "npm run build && tsx scripts/check-gas-station-runtime-preflight.ts",
     "diagnose:gas-station": "npm run build && tsx scripts/diagnose-gas-station-upstream.ts",
+    "sponsor:check-funding": "npm run build && tsx scripts/check-sponsor-funding.ts",
     "execute:testnet-demo": "npm run build && tsx scripts/execute-testnet-sponsored-demo.ts",
     "readiness:testnet:example": "npm run build && tsx scripts/check-testnet-readiness.ts --env-file .env.example --expect-placeholders",
     "secrets:scan": "tsx scripts/scan-secrets.ts",

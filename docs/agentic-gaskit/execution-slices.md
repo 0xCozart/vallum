@@ -4790,3 +4790,72 @@ Escalation triggers:
 - Any request to ignore a failed status check and proceed to reserve or execute.
 - Any request to print raw Docker errors, rendered config, `.env`, bearer
   tokens, signer material, raw transaction bytes, or user signatures.
+
+## Slice 7.15: Sponsor Funding Diagnostic
+
+User-visible outcome:
+Operators can diagnose reserve_gas failures caused by sponsor wallet funding or
+coin shape without printing sponsor signer material or attempting another
+sponsored transaction.
+
+Likely files:
+
+- `scripts/check-sponsor-funding.ts`
+- `scripts/check-sponsor-funding.test.ts`
+- `scripts/package-scripts.test.ts`
+- `scripts/write-operator-report-template.ts`
+- `scripts/write-operator-report-template.test.ts`
+- `package.json`
+- `docs/testnet-readiness.md`
+- `docs/deployment.md`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/agentic-gaskit/execution-slices.md`
+- `docs/CODEBASE_MAP.md`
+
+Acceptance criteria:
+
+- `npm run sponsor:check-funding` derives the public sponsor address from the
+  ignored Gas Station signer key without printing the key or full address.
+- The command queries IOTA RPC for total IOTA balance, coin object count, and a
+  bounded sampled max coin balance.
+- The command reports whether the configured sponsor can satisfy the requested
+  reserve budget without signing, reserving gas, executing transactions, or
+  printing raw RPC responses.
+- The command is opt-in and excluded from `verify:fast`, `verify:local`, and
+  `grant:check`.
+- Public docs and the testnet upstream operator template route reserve failures
+  through the funding diagnostic before retrying reserve_gas.
+
+Verification:
+
+- Focused sponsor-funding, operator-template, and package-script tests.
+- `npm run sponsor:check-funding`, recording only redacted address and numeric
+  funding fields.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run proof:live-status`.
+- `npm run proof:product-status`.
+- `npm run proof:launch-readiness`.
+- `npm run proof:operator-gates`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slices 7.7-7.14 and local `.env` testnet signer configuration.
+
+Risk:
+Medium. A read-only funding diagnostic still touches a live RPC endpoint and
+derives a public address from private signer material. Keep output redacted and
+do not treat funding readiness as reserve_gas compatibility or sponsored
+execution proof.
+
+Escalation triggers:
+
+- Any request to print the sponsor private key, full sponsor address, rendered
+  Gas Station config, raw RPC response, bearer token, or transaction material.
+- Any request to treat sponsor funding readiness as successful reserve_gas,
+  transaction execution, or production readiness.
+- Any request to run `execute:testnet-demo` without explicit operator approval.
