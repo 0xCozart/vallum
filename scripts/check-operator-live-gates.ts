@@ -221,7 +221,7 @@ function commandForGate(check: ProductEvidenceCheck): string | undefined {
   if (check.id === "testnet-sponsored-execute") {
     return check.status === "blocked-live"
       ? "npm run execute:testnet-demo"
-      : "npm run proof:testnet-digest:live";
+      : "npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json";
   }
   return GATE_COMMANDS[check.id];
 }

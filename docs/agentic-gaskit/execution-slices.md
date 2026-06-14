@@ -5418,6 +5418,59 @@ Escalation triggers:
 - Any request to include `smoke:iota-identity-live` in default local
   verification.
 
+## Slice 7.67: Operator Gate Digest Report Command Alignment
+
+User-visible outcome:
+Operator live gates point operators at the report-writing digest lookup command
+so `testnet-sponsored-execute` can produce reusable product-status evidence
+without rerunning sponsored execute.
+
+Likely files:
+
+- `scripts/check-operator-live-gates.ts`
+- `scripts/operator-live-gates.test.ts`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- When documented sponsored execute evidence exists,
+  `testnet-sponsored-execute` is `requires-approval`, has
+  `contactsLiveService=true`, and points at `npm run proof:testnet-digest:live
+  -- --report tmp/gaskit/testnet-digest-proof.json`.
+- When sponsored execute evidence is missing, the gate remains blocked and
+  points at `npm run execute:testnet-demo`, preserving the explicit operator
+  intent boundary for gas-spending proof refreshes.
+- Operator live gate docs state that the report-writing digest lookup is not
+  run by the non-networked gate report.
+- No live IOTA lookup, reserve_gas probe, signing, sponsor gas spend,
+  sponsored execute, npm publish, public A2A probe, payment-provider action,
+  production marketplace action, custody/KMS action, external signer action,
+  or physical-device action is run by this slice.
+
+Verification:
+
+- `node --import tsx --test scripts/operator-live-gates.test.ts`
+- `npm run proof:operator-gates`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `npm run typecheck`
+- `git diff --check`
+
+Dependencies:
+Slice 7.65.
+
+Risk:
+Low. This is command guidance and test coverage, but stale operator guidance
+can make operators run a live lookup that does not produce reusable
+product-status evidence.
+
+Escalation triggers:
+
+- Any request for operator-gates to run the digest lookup automatically.
+- Any request to classify `execute:testnet-demo` as the next command when
+  report-backed digest proof is already available.
+
 ## Slice 7.66: Launch Digest Report Command Alignment
 
 User-visible outcome:

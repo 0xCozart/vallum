@@ -165,7 +165,7 @@ test("operator live gates route documented sponsored execute proof to read-only 
   assert.equal(gate.status, "requires-approval");
   assert.equal(gate.approvalRequired, true);
   assert.equal(gate.contactsLiveService, true);
-  assert.equal(gate.command, "npm run proof:testnet-digest:live");
+  assert.equal(gate.command, "npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json");
 });
 
 test("operator live gates require approval for configured live endpoint smokes", async () => {
