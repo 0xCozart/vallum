@@ -9,6 +9,12 @@ Documented digest:
 FLdnYRUACAKQn8CwugEv1u6gYTh9jBr8rGMk2JZ2adsd
 ```
 
+Fresh sponsored execute report digest from 2026-06-14:
+
+```text
+6Fz2r2ARRo6fiQMUL4FkWuwU16ekEmKHvHbhLpF5DU6n
+```
+
 It verifies that the known public digest appears in:
 
 - `docs/testnet-attempts.md`
@@ -72,3 +78,16 @@ availability first.
 Use `npm run execute:testnet-demo` only when operator-owned local credentials,
 Gas Station, explicit operator intent, local runtime preflight, and a passing
 sanitized upstream diagnostic report are available.
+
+For fresh sponsored execute runs, capture an ignored sanitized execution report
+with:
+
+```bash
+npm run execute:testnet-demo -- --report tmp/gaskit/sponsored-execute-report.json
+```
+
+That report is operational evidence only. It redacts addresses and opaque
+execution ids, and it is not accepted by readiness gates as digest proof until
+the public digest is added to tracked evidence and verified with
+`npm run proof:testnet-digest:live -- --digest <digest> --report
+tmp/gaskit/testnet-digest-proof.json`.

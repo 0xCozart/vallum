@@ -1,13 +1,15 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 
 import {
+  buildSponsoredExecuteReport,
   checkSponsoredExecutePrerequisites,
   formatSponsoredExecuteField,
   formatSponsoredExecutePrerequisiteReport,
+  writeSponsoredExecuteReportFile,
 } from "./execute-testnet-sponsored-demo.js";
 
 test("sponsored testnet execute prerequisites block missing upstream report without leaking env values", async () => {
@@ -144,6 +146,49 @@ test("sponsored testnet execute live output redacts addresses and opaque reserva
   assert.doesNotMatch(addressLine, new RegExp(escapeRegExp(fullAddress)));
   assert.doesNotMatch(reservationLine, new RegExp(escapeRegExp(reservationId)));
   assert.doesNotMatch(transactionLine, new RegExp(escapeRegExp(transactionId)));
+});
+
+test("sponsored testnet execute report writes sanitized ignored evidence", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-execute-report-"));
+  try {
+    const fullAddress = "0x1111111111111111111111111111111111111111111111111111111111111111";
+    const userAddress = "0x2222222222222222222222222222222222222222222222222222222222222222";
+    const reservationId = "reservation-id-that-should-not-print-in-full";
+    const transactionId = "transaction-id-that-should-not-print-in-full";
+    const digest = "publicDigestThatCanBeCheckedOnTestnet";
+    const report = buildSponsoredExecuteReport({
+      demoTarget: "0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0::demo_badge::mint_badge",
+      ephemeralUserAddress: userAddress,
+      reservationId,
+      gasKitTransactionId: transactionId,
+      sponsorAddress: fullAddress,
+      transactionDigest: digest,
+    }, new Date("2026-06-14T00:00:00.000Z"));
+    const outFile = join(cwd, "tmp/gaskit/sponsored-execute-report.json");
+
+    await writeSponsoredExecuteReportFile(outFile, report);
+
+    const raw = await readFile(outFile, "utf8");
+    const mode = (await stat(outFile)).mode & 0o777;
+    const parsed = JSON.parse(raw) as typeof report;
+
+    assert.equal(mode, 0o600);
+    assert.equal(parsed.kind, "agentic-gaskit.sponsored-testnet-execute-report");
+    assert.equal(parsed.result, "passed");
+    assert.equal(parsed.transactionDigest, digest);
+    assert.equal(parsed.contactsLiveService, true);
+    assert.equal(parsed.spendsGas, true);
+    assert.equal(parsed.signsTransactions, true);
+    assert.equal(parsed.sponsorAddressRedacted, "0x11111111...11111111");
+    assert.equal(parsed.ephemeralUserAddressRedacted, "0x22222222...22222222");
+    assert.doesNotMatch(raw, new RegExp(escapeRegExp(fullAddress)));
+    assert.doesNotMatch(raw, new RegExp(escapeRegExp(userAddress)));
+    assert.doesNotMatch(raw, new RegExp(escapeRegExp(reservationId)));
+    assert.doesNotMatch(raw, new RegExp(escapeRegExp(transactionId)));
+    assert.doesNotMatch(raw, /secret|private|mnemonic|iotaprivkey|bearer|signature|transactionBytes/i);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
 });
 
 function escapeRegExp(value: string): string {

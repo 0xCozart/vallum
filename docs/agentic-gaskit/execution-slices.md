@@ -7896,3 +7896,62 @@ Escalation triggers:
   refs, trust-policy values, local secret paths, report contents, credentials,
   tokens, private keys, raw transaction bytes, signatures, or raw upstream
   bodies in the live proof plan or public docs.
+
+## Slice 7.76: Sponsored Execute Report Artifact
+
+User-visible outcome:
+`npm run execute:testnet-demo` can write an ignored sanitized execution report
+for a fresh sponsored IOTA testnet transaction, so operators can preserve
+current live evidence without copying terminal output or exposing sensitive
+execution material.
+
+Likely files:
+
+- `scripts/execute-testnet-sponsored-demo.ts`
+- `scripts/execute-testnet-sponsored-demo.test.ts`
+- `docs/testnet-attempts.md`
+- `docs/agentic-gaskit/testnet-digest-proof.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- The execute command accepts `--report <ignored-json-path>` without changing
+  the default opt-in live execution path.
+- The report is written with restrictive permissions and includes only
+  sanitized execution evidence: public transaction digest, public demo target,
+  redacted sponsor/user addresses, redacted reservation/gateway ids, and
+  explicit live/gas/signing boundary booleans.
+- The report does not include sponsor keys, app keys, bearer tokens, raw
+  transaction bytes, user signatures, full addresses, full reservation ids, or
+  full gateway transaction ids.
+- Docs explain that the sponsored execute report is operational evidence only;
+  accepted digest proof still requires adding the public digest to tracked
+  evidence and running `npm run proof:testnet-digest:live -- --digest <digest>
+  --report <ignored-json-path>`.
+- The change does not put `execute:testnet-demo` into local verification,
+  default checks, package publication gates, or non-live product status.
+
+Verification:
+
+- `node --import tsx --test scripts/execute-testnet-sponsored-demo.test.ts
+  scripts/testnet-digest-proof.test.ts`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `npm run typecheck`
+- `git diff --check`
+
+Dependencies:
+Testnet readiness, runtime preflight, sponsor funding, upstream diagnostic, and
+testnet digest proof gates.
+
+Risk:
+Medium. A live execute report can be mistaken for accepted digest proof or can
+accidentally capture sensitive execution material if redaction regresses.
+
+Escalation triggers:
+
+- Any request to accept the sponsored execute report as product-status digest
+  proof without tracked public digest documentation and live read-only lookup.
+- Any request to include full addresses, full reservation ids, raw transaction
+  bytes, user signatures, sponsor keys, bearer tokens, app API keys, local
+  secret paths, or raw upstream bodies in the report or tracked docs.

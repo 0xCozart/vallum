@@ -2,7 +2,8 @@ import { IotaClient } from "@iota/iota-sdk/client";
 import { Ed25519Keypair } from "@iota/iota-sdk/keypairs/ed25519";
 import { Transaction } from "@iota/iota-sdk/transactions";
 import { toBase64 } from "@iota/bcs";
-import { resolve } from "node:path";
+import { mkdir, writeFile } from "node:fs/promises";
+import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
@@ -29,6 +30,36 @@ const GAS_BUDGET = 50_000_000;
 interface CliOptions {
   envFile: string;
   help: boolean;
+  reportFile?: string;
+}
+
+export interface SponsoredExecuteReportInput {
+  readonly demoTarget: string;
+  readonly ephemeralUserAddress: string;
+  readonly reservationId: string;
+  readonly gasKitTransactionId: string;
+  readonly sponsorAddress: string;
+  readonly transactionDigest: string;
+}
+
+export interface SponsoredExecuteReport {
+  readonly schemaVersion: 1;
+  readonly kind: "agentic-gaskit.sponsored-testnet-execute-report";
+  readonly result: "passed";
+  readonly observedAt: string;
+  readonly network: "iota-testnet";
+  readonly demoTarget: string;
+  readonly contactsLiveService: true;
+  readonly spendsGas: true;
+  readonly signsTransactions: true;
+  readonly rawTransactionPayloadCaptured: false;
+  readonly rawUserSigningMaterialCaptured: false;
+  readonly sponsorAddressRedacted: string;
+  readonly ephemeralUserAddressRedacted: string;
+  readonly reservationIdRedacted: string;
+  readonly gasKitTransactionIdRedacted: string;
+  readonly transactionDigest: string;
+  readonly next: string;
 }
 
 export interface SponsoredExecutePrerequisiteCheck {
@@ -54,11 +85,12 @@ export interface SponsoredExecutePrerequisiteOptions {
   readonly testnetUpstreamReport?: TestnetUpstreamDiagnosticReport;
 }
 
-const usage = `usage: npm exec tsx -- scripts/execute-testnet-sponsored-demo.ts [--env-file <path>]
+const usage = `usage: npm exec tsx -- scripts/execute-testnet-sponsored-demo.ts [--env-file <path>] [--report <path>]
 
 Runs one real IOTA testnet sponsored execute against the configured local policy gateway and Gas Station.
 Requires a live policy gateway, live Gas Station, local testnet readiness, local Gas Station runtime readiness, and a passing current sanitized upstream diagnostic report.
-The script generates an ephemeral user key for the sender and never prints private keys or bearer tokens.`;
+The script generates an ephemeral user key for the sender and never prints private keys or bearer tokens.
+--report writes a sanitized ignored local JSON execution report with mode 0600.`;
 
 function parseArgs(argv: string[]): CliOptions {
   const options: CliOptions = { envFile: ".env", help: false };
@@ -73,6 +105,13 @@ function parseArgs(argv: string[]): CliOptions {
     }
     if (arg === "--help" || arg === "-h") {
       options.help = true;
+      continue;
+    }
+    if (arg === "--report") {
+      const value = argv[index + 1];
+      if (!value) throw new Error("--report requires a path.");
+      options.reportFile = value;
+      index += 1;
       continue;
     }
     throw new Error(`Unknown argument: ${arg}`);
@@ -199,6 +238,40 @@ export function formatSponsoredExecuteField(name: string, value: string): string
   return `${name}=${redacted}`;
 }
 
+export function buildSponsoredExecuteReport(
+  input: SponsoredExecuteReportInput,
+  now = new Date(),
+): SponsoredExecuteReport {
+  return {
+    schemaVersion: 1,
+    kind: "agentic-gaskit.sponsored-testnet-execute-report",
+    result: "passed",
+    observedAt: now.toISOString(),
+    network: "iota-testnet",
+    demoTarget: input.demoTarget,
+    contactsLiveService: true,
+    spendsGas: true,
+    signsTransactions: true,
+    rawTransactionPayloadCaptured: false,
+    rawUserSigningMaterialCaptured: false,
+    sponsorAddressRedacted: redactAddress(input.sponsorAddress),
+    ephemeralUserAddressRedacted: redactAddress(input.ephemeralUserAddress),
+    reservationIdRedacted: redactOpaqueValue(input.reservationId),
+    gasKitTransactionIdRedacted: redactOpaqueValue(input.gasKitTransactionId),
+    transactionDigest: input.transactionDigest,
+    next: "Document this public digest in tracked testnet evidence, then run npm run proof:testnet-digest:live -- --digest <digest> --report <ignored-json-path>.",
+  };
+}
+
+export async function writeSponsoredExecuteReportFile(
+  path: string,
+  report: SponsoredExecuteReport,
+): Promise<void> {
+  const outFile = isAbsolute(path) ? path : resolve(process.cwd(), path);
+  await mkdir(dirname(outFile), { recursive: true });
+  await writeFile(outFile, `${JSON.stringify(report, null, 2)}\n`, { mode: 0o600 });
+}
+
 async function main(): Promise<number> {
   let options: CliOptions;
   try {
@@ -271,6 +344,17 @@ async function main(): Promise<number> {
     if (!executed.digest) throw new Error("Execute response did not include effects.transactionDigest or digest.");
     console.log(`executed=true`);
     console.log(`transactionDigest=${executed.digest}`);
+    if (options.reportFile) {
+      await writeSponsoredExecuteReportFile(options.reportFile, buildSponsoredExecuteReport({
+        demoTarget: `${DEMO_PACKAGE_ID}::${DEMO_MODULE}::${DEMO_FUNCTION}`,
+        ephemeralUserAddress: userAddress,
+        reservationId: reservation.reservationId,
+        gasKitTransactionId: reservation.gasKitTransactionId,
+        sponsorAddress: reservation.sponsorAddress,
+        transactionDigest: executed.digest,
+      }));
+      console.log(`report=${options.reportFile}`);
+    }
     return 0;
   } catch (error) {
     console.error(error instanceof Error ? error.message : "Sponsored testnet execute failed unexpectedly.");

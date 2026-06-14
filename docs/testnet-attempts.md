@@ -204,6 +204,41 @@ Station, and IOTA testnet RPC. The command consumed testnet gas only. No raw
 sponsor key, bearer token, raw transaction bytes, user signature, full
 reservation id, or full address was written to this tracked evidence.
 
+Follow-up hardening: `npm run execute:testnet-demo` now accepts
+`-- --report tmp/gaskit/sponsored-execute-report.json` to write an ignored
+sanitized execution report with restrictive permissions. The report records the
+public digest and redacted execution identifiers only; it is not a substitute
+for updating tracked public digest docs and running
+`npm run proof:testnet-digest:live -- --digest <digest> --report
+tmp/gaskit/testnet-digest-proof.json`.
+
+## 2026-06-14 sponsored execute report artifact refresh
+
+After adding the ignored execution report option, one fresh sponsored testnet
+transaction was executed with output redirected to ignored local files:
+
+```bash
+npm run execute:testnet-demo -- --report tmp/gaskit/sponsored-execute-report-20260614.json
+```
+
+Sanitized result:
+
+```text
+reportKind=agentic-gaskit.sponsored-testnet-execute-report
+result=passed
+contactsLiveService=true
+spendsGas=true
+signsTransactions=true
+transactionDigest=6Fz2r2ARRo6fiQMUL4FkWuwU16ekEmKHvHbhLpF5DU6n
+```
+
+Outcome: the current report artifact path preserves fresh sponsored execute
+evidence without committing the ignored report. The report contained the public
+demo package target and public digest plus redacted identifiers; it did not
+record sponsor keys, bearer tokens, app keys, raw transaction bytes, user
+signatures, full sponsor/user addresses, full reservation ids, or full gateway
+transaction ids.
+
 ## 2026-06-11 upstream diagnostic report gate
 
 Local `.env` is present and `npm run readiness:testnet` passes non-networked
