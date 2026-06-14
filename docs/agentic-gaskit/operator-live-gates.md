@@ -135,10 +135,11 @@ hosts, marketplace systems, or physical devices.
   before any approved live, publication, marketplace, custody, or public A2A
   proof run fills them in.
 - Includes a `testnet-upstream` template for self-hosted or managed Gas
-  Station proof planning, but that template is not accepted by
-  `GASKIT_TESTNET_UPSTREAM_REPORT`; only the sanitized diagnostic report
-  emitted by `npm run diagnose:gas-station -- --report <ignored-json-path>` can
-  clear the upstream gate.
+  Station proof planning. It lists the optional `--skip-reserve` reachability
+  diagnostic before the full reserve diagnostic, but that template is not
+  accepted by `GASKIT_TESTNET_UPSTREAM_REPORT`; only the sanitized diagnostic
+  report emitted by `npm run diagnose:gas-station -- --report
+  <ignored-json-path>` can clear the upstream gate.
 - Lets operators write an ignored sponsor funding request artifact with
   `npm run sponsor:write-funding-request -- --out
   tmp/gaskit/sponsor-funding-request.json` when they need the public sponsor

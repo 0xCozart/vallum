@@ -49,7 +49,7 @@ Use this path only with operator-owned testnet credentials and a reachable IOTA 
 | Sponsor funding request is prepared | `npm run sponsor:write-funding-request -- --out tmp/gaskit/sponsor-funding-request.json` | The configured signer cannot be converted into a public sponsor address for funding. |
 | Sponsor faucet request is intentional | `npm run sponsor:request-faucet-funds -- --execute --out tmp/gaskit/sponsor-faucet-request.json` | Missing `IOTA_FAUCET_URL`, unsafe faucet URL, faucet rate limit, or faucet failure; this does not prove reserve compatibility. |
 | Sponsor wallet funding report is current | `npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json` | Sponsor wallet balance or sampled coin shape is not enough for the reserve budget; fund or consolidate testnet gas before retrying reserve. |
-| Testnet upstream checklist is prepared | `npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json` | Template only; it cannot clear `GASKIT_TESTNET_UPSTREAM_REPORT`. |
+| Testnet upstream checklist is prepared | `npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json` | Template only; it lists `--skip-reserve` triage before the full diagnostic but cannot clear `GASKIT_TESTNET_UPSTREAM_REPORT`. |
 | Upstream is reachable | `npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json` | Gas Station URL/auth/network/reserve compatibility is not ready. |
 | Live sponsored execute is intentional | `npm run execute:testnet-demo` | Command self-checks readiness/runtime/upstream report first; stop and inspect bounded error output before retrying. |
 

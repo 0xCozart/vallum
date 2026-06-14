@@ -191,6 +191,12 @@ diagnostic JSON emitted by `npm run diagnose:gas-station -- --report
 upstream proof; it is a redacted snapshot of current check ids, blocker codes,
 and next steps for handoff/audit evidence.
 
+The template lists `--skip-reserve` reachability triage before the full
+diagnostic. A report generated with `--skip-reserve` stays blocked as
+`TESTNET_UPSTREAM_REPORT_RESERVE_SKIPPED`; only the full diagnostic without
+`--skip-reserve` can clear reserve_gas compatibility and testnet upstream
+readiness.
+
 For the direct Docker path, `npm run gas-station:docker-direct -- --status`
 can be used after an intentional startup to inspect whether the expected local
 network and containers are running. It does not prove Gas Station HTTP health,

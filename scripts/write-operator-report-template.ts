@@ -58,6 +58,11 @@ const COMMON_NOTES = [
   "Do not include raw request or response bodies, authorization material, signer material, payment instruments, local paths to sensitive files, or account recovery material.",
 ] as const;
 
+const TESTNET_UPSTREAM_NOTES = [
+  ...COMMON_NOTES,
+  "The --skip-reserve diagnostic is reachability triage only; it cannot clear reserve_gas compatibility, sponsored execution, or testnet-upstream readiness.",
+] as const;
+
 const TESTNET_UPSTREAM_CHECKS = [
   "managed-or-local-runtime-selection",
   "iota-rpc-json-rpc",
@@ -172,11 +177,13 @@ export async function buildOperatorReportTemplate(
           "npm run sponsor:write-funding-request -- --out tmp/gaskit/sponsor-funding-request.json",
           "npm run sponsor:request-faucet-funds -- --execute --out tmp/gaskit/sponsor-faucet-request.json",
           "npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json",
+          "npm run diagnose:gas-station -- --skip-reserve --report <ignored-json-path>",
           "npm run diagnose:gas-station -- --report <ignored-json-path>",
           "npm run proof:live-status",
           "npm run execute:testnet-demo",
         ],
         checks: TESTNET_UPSTREAM_CHECKS,
+        notes: TESTNET_UPSTREAM_NOTES,
       };
     case "a2a-public-discovery":
       return stripUndefined({
