@@ -53,8 +53,9 @@ reports:
 
 - `TESTNET_READINESS_CONFIG_PRESENT`
 - `GAS_STATION_RUNTIME_READY`
-- `SPONSOR_FUNDING_TOTAL_INSUFFICIENT`
-- `TESTNET_UPSTREAM_REPORT_RESERVE_SKIPPED`
+- `SPONSOR_FUNDING_REPORT_VALID`
+- `TESTNET_UPSTREAM_REPORT_VALID`
+- `TESTNET_SPONSORED_EXECUTE_DIGEST_VERIFIED`
 - `IOTA_NAMES_LIVE_CONFIG_MISSING`
 - `IOTA_IDENTITY_LIVE_CONFIG_MISSING`
 - `VC_TRUST_POLICY_CONFIG_MISSING`
@@ -90,19 +91,16 @@ example, an HTTP 405 from the documented `/gas` route is classified as
 of repeating that API version.
 
 The current sanitized upstream diagnostic reaches the local Gas Station root
-and IOTA testnet RPC. It classifies raw upstream reachability as
-`GAS_STATION_ROOT_READY`; `/v1/health` is treated as an informational wrapper
-health probe because the raw upstream container may not expose it. The latest
-report was generated with `--skip-reserve`, so `npm run proof:live-status`
-classifies that evidence as `TESTNET_UPSTREAM_REPORT_RESERVE_SKIPPED` and
-keeps the upstream gate blocked. This means the next testnet execution
-boundary is sponsor funding, then a fresh diagnostic without `--skip-reserve`
-to prove reserve_gas compatibility, not Docker connectivity, optional wrapper
-health, or `.env` shape.
+and IOTA testnet RPC and proves reserve_gas compatibility through the
+sanitized `GASKIT_TESTNET_UPSTREAM_REPORT`. The current sanitized digest report
+proves the documented sponsored testnet execute digest with a read-only IOTA
+RPC lookup through `GASKIT_TESTNET_DIGEST_REPORT`; it does not rerun
+`execute:testnet-demo`, reserve gas, sign, or spend sponsor gas.
 
 Blocked or ready live-proof checks include fixed evidence labels such as
 `sponsor-funding-report-loaded-redacted`,
 `testnet-upstream-report-loaded-redacted`, and
+`testnet-digest-report-valid-redacted`, and
 `iota-identity-live-report-valid-redacted`. These labels are intentionally not
 paths or endpoint values; they only tell the operator which ignored structured
 report class was loaded, missing, invalid, or accepted.
@@ -120,6 +118,9 @@ report class was loaded, missing, invalid, or accepted.
   IOTA RPC, Gas Station reachability, and reserve_gas compatibility, or the
   exact upstream report blocker plus bounded Gas Station reachability and
   reserve failure codes are listed
+- sanitized testnet sponsored execute digest report status is present and
+  proves a documented digest with a current read-only IOTA RPC lookup, or the
+  exact digest report blocker is listed
 - IOTA Names live smoke configuration and a current sanitized report are
   present, or the exact missing variables/report blocker is listed
 - IOTA Identity live smoke configuration and a current sanitized report are
@@ -136,7 +137,7 @@ report class was loaded, missing, invalid, or accepted.
 - live IOTA Names resolution
 - live IOTA Identity DID resolution
 - live VC signature or revocation validation
-- IOTA testnet sponsorship or transaction execution
+- fresh IOTA testnet sponsorship or new transaction execution
 - live Gas Station availability
 - live x402/AP2/A2A/provider interoperability
 - package publication
@@ -164,7 +165,8 @@ GASKIT_SPONSOR_FAUCET_REPORT=tmp/gaskit/sponsor-faucet-request.json npm run proo
 GASKIT_SPONSOR_FUNDING_REPORT=tmp/gaskit/sponsor-funding-report.json npm run proof:live-status
 npm run diagnose:gas-station -- --skip-reserve --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
-GASKIT_SPONSOR_FUNDING_REPORT=tmp/gaskit/sponsor-funding-report.json GASKIT_TESTNET_UPSTREAM_REPORT=tmp/gaskit/testnet-upstream-diagnostic.json npm run proof:live-status -- --out tmp/gaskit/live-proof-status.json
+npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json
+GASKIT_SPONSOR_FUNDING_REPORT=tmp/gaskit/sponsor-funding-report.json GASKIT_TESTNET_UPSTREAM_REPORT=tmp/gaskit/testnet-upstream-diagnostic.json GASKIT_TESTNET_DIGEST_REPORT=tmp/gaskit/testnet-digest-proof.json npm run proof:live-status -- --out tmp/gaskit/live-proof-status.json
 npm run smoke:iota-names-live -- --report tmp/gaskit/iota-names-live-report.json
 npm run smoke:iota-identity-live -- --report tmp/gaskit/iota-identity-live-report.json
 ```
@@ -172,6 +174,12 @@ npm run smoke:iota-identity-live -- --report tmp/gaskit/iota-identity-live-repor
 The `--skip-reserve` diagnostic is reachability triage only. It cannot clear
 `testnet-upstream`; a fresh diagnostic without `--skip-reserve` is still
 required after sponsor funding is ready.
+
+The digest lookup command is read-only and contacts IOTA RPC. It writes a
+sanitized ignored report that can clear the `testnet-sponsored-execute`
+live-status gate when `GASKIT_TESTNET_DIGEST_REPORT` points at it. It does not
+refresh the digest; use `npm run execute:testnet-demo` only with explicit
+operator intent when a fresh sponsored execute proof is required.
 
 Live IOTA Identity proof readiness uses these non-secret variable names:
 

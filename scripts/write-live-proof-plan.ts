@@ -54,6 +54,7 @@ interface CliOptions {
 const REQUIRED_OPERATOR_INPUTS = [
   "GASKIT_SPONSOR_FUNDING_REPORT",
   "GASKIT_TESTNET_UPSTREAM_REPORT",
+  "GASKIT_TESTNET_DIGEST_REPORT",
   "IOTA_NAMES_GRAPHQL_URL",
   "IOTA_NAMES_NAME",
   "IOTA_NAMES_EXPECTED_ADDRESS",
@@ -75,6 +76,7 @@ const OPTIONAL_OPERATOR_INPUTS = [
 const REQUIRED_EVIDENCE_ARTIFACTS = [
   "sanitized sponsor funding report",
   "sanitized testnet upstream diagnostic report",
+  "sanitized testnet sponsored execute digest proof report",
   "sanitized IOTA Names live smoke report",
   "sanitized IOTA Identity live smoke report with credential evidence",
   "VC trust-policy configuration review",
@@ -136,6 +138,12 @@ const PLAN_COMMANDS: readonly LiveProofPlanCommand[] = [
     requiresOperatorApproval: true,
   },
   {
+    id: "check-testnet-digest-live",
+    command: "npm run proof:testnet-digest:live -- --report <ignored-json-path>",
+    contactsLiveService: true,
+    requiresOperatorApproval: true,
+  },
+  {
     id: "smoke-iota-names-live",
     command: "npm run smoke:iota-names-live -- --report <ignored-json-path>",
     contactsLiveService: true,
@@ -159,6 +167,7 @@ const BOUNDARIES = [
   "This plan is non-networked and does not contact IOTA RPC, Gas Station HTTP, IOTA Names, or IOTA Identity.",
   "Sponsor faucet requests, sponsor funding diagnostics, testnet upstream diagnostics, and live smoke commands contact live services, and they require explicit operator approval.",
   "A sponsor faucet report is optional triage context; only a passing sponsor funding report can clear sponsor-funding readiness.",
+  "The testnet digest report is a read-only IOTA RPC lookup of a documented digest; it does not sign, reserve gas, execute transactions, or spend sponsor gas.",
   "VC live validation requires a current passing IOTA Identity live smoke report with credential evidence, not only trust-policy variable shape.",
   "The --skip-reserve upstream diagnostic is reachability triage only; it cannot clear reserve_gas compatibility, sponsored execution, or testnet-upstream readiness.",
   "Do not commit reports, endpoint values, profile paths, names, addresses, credentials, tokens, private keys, raw transaction bytes, user signatures, response bodies, credential payloads, or local secret paths.",

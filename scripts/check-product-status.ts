@@ -443,12 +443,13 @@ function withSponsoredExecuteCheck(
   liveChecks: readonly ProductEvidenceCheck[],
   sponsoredExecute: ProductEvidenceCheck,
 ): readonly ProductEvidenceCheck[] {
-  const upstreamIndex = liveChecks.findIndex((check) => check.id === "testnet-upstream");
-  if (upstreamIndex === -1) return [...liveChecks, sponsoredExecute];
+  const dedupedLiveChecks = liveChecks.filter((check) => check.id !== "testnet-sponsored-execute");
+  const upstreamIndex = dedupedLiveChecks.findIndex((check) => check.id === "testnet-upstream");
+  if (upstreamIndex === -1) return [...dedupedLiveChecks, sponsoredExecute];
   return [
-    ...liveChecks.slice(0, upstreamIndex + 1),
+    ...dedupedLiveChecks.slice(0, upstreamIndex + 1),
     sponsoredExecute,
-    ...liveChecks.slice(upstreamIndex + 1),
+    ...dedupedLiveChecks.slice(upstreamIndex + 1),
   ];
 }
 

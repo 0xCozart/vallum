@@ -220,6 +220,7 @@ test("product status marks report-backed live gates ready without contacting end
     assert.equal(report.checks.find((check) => check.id === "sponsor-funding")?.status, "ready-live");
     assert.equal(report.checks.find((check) => check.id === "testnet-upstream")?.status, "ready-live");
     assert.equal(report.checks.find((check) => check.id === "testnet-sponsored-execute")?.status, "ready-live");
+    assert.equal(report.checks.filter((check) => check.id === "testnet-sponsored-execute").length, 1);
     assert.equal(
       report.checks.find((check) => check.id === "testnet-sponsored-execute")?.code,
       "TESTNET_SPONSORED_EXECUTE_DIGEST_VERIFIED",

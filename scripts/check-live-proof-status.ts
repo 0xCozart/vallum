@@ -21,6 +21,10 @@ import {
   validateSponsorFaucetRequestReport,
 } from "./request-sponsor-faucet-funds.js";
 import {
+  loadTestnetDigestReport,
+  validateTestnetDigestReport,
+} from "./testnet-digest-report.js";
+import {
   loadIotaNamesLiveReport,
   validateIotaNamesLiveReport,
 } from "./iota-names-live-report.js";
@@ -105,6 +109,7 @@ const SPONSOR_FUNDING_REPORT_ENV = "GASKIT_SPONSOR_FUNDING_REPORT";
 const SPONSOR_FAUCET_REPORT_ENV = "GASKIT_SPONSOR_FAUCET_REPORT";
 const DEFAULT_SPONSOR_FAUCET_REPORT = "tmp/gaskit/sponsor-faucet-request.json";
 const TESTNET_UPSTREAM_REPORT_ENV = "GASKIT_TESTNET_UPSTREAM_REPORT";
+const TESTNET_DIGEST_REPORT_ENV = "GASKIT_TESTNET_DIGEST_REPORT";
 const IOTA_NAMES_LIVE_REPORT_ENV = "IOTA_NAMES_LIVE_REPORT";
 const IOTA_IDENTITY_LIVE_REPORT_ENV = "IOTA_IDENTITY_LIVE_REPORT";
 const ARTIFACT_BOUNDARIES = [
@@ -137,6 +142,7 @@ export async function checkLiveProofStatus(
     await checkGasStationRuntimeStatus(options, cwd, mergedEnv),
     await checkSponsorFundingStatus(mergedEnv, cwd),
     await checkTestnetUpstreamStatus(mergedEnv, cwd),
+    await checkTestnetDigestStatus(mergedEnv, cwd),
     await checkIotaNamesStatus(mergedEnv, cwd),
     await checkIotaIdentityStatus(mergedEnv, cwd),
     await checkVcTrustPolicyStatus(mergedEnv, cwd),
@@ -382,6 +388,56 @@ function nextForFailedTestnetUpstream(report: TestnetUpstreamDiagnosticReport): 
     return "Use --skip-reserve only for reachability triage. Ensure sponsor funding is ready, then rerun npm run diagnose:gas-station -- --report <ignored-json-path> without --skip-reserve to prove reserve_gas compatibility.";
   }
   return "Bring the configured Gas Station upstream online, prove reserve_gas compatibility, regenerate the sanitized report, then rerun this gate.";
+}
+
+async function checkTestnetDigestStatus(
+  env: Record<string, string | undefined>,
+  cwd: string,
+): Promise<LiveProofCheck> {
+  const reportPath = readEnv(env, TESTNET_DIGEST_REPORT_ENV);
+  if (!reportPath) {
+    return {
+      id: "testnet-sponsored-execute",
+      status: "blocked",
+      code: "TESTNET_DIGEST_REPORT_MISSING",
+      missing: [TESTNET_DIGEST_REPORT_ENV],
+      message: "No sanitized testnet sponsored execute digest proof report is configured.",
+      evidence: `missing=${TESTNET_DIGEST_REPORT_ENV}`,
+      next: "Run npm run proof:testnet-digest:live -- --report <ignored-json-path> with operator approval, then rerun this gate.",
+    };
+  }
+
+  try {
+    const report = await loadTestnetDigestReport(resolve(cwd, reportPath));
+    const validation = validateTestnetDigestReport(report);
+    if (validation.ok) {
+      return {
+        id: "testnet-sponsored-execute",
+        status: "ready",
+        code: validation.code,
+        message: validation.message,
+        evidence: "testnet-digest-report-valid-redacted",
+        next: "Keep the documented public digest current when rerunning npm run execute:testnet-demo.",
+      };
+    }
+    return {
+      id: "testnet-sponsored-execute",
+      status: "blocked",
+      code: validation.code,
+      message: validation.message,
+      evidence: "testnet-digest-report-loaded-redacted",
+      next: "Regenerate the digest report with npm run proof:testnet-digest:live -- --report <ignored-json-path> before accepting sponsored execute proof.",
+    };
+  } catch {
+    return {
+      id: "testnet-sponsored-execute",
+      status: "blocked",
+      code: "TESTNET_DIGEST_REPORT_INVALID",
+      message: "Configured testnet digest proof report could not be loaded or validated.",
+      evidence: "testnet-digest-report-invalid-redacted",
+      next: "Regenerate the report with npm run proof:testnet-digest:live -- --report <ignored-json-path> without committing RPC output or local paths.",
+    };
+  }
 }
 
 export function formatLiveProofStatusReport(report: LiveProofStatusReport): string {

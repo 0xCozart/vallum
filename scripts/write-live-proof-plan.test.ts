@@ -38,12 +38,15 @@ test("live proof plan reports current blockers without configured values", async
     assert.ok(plan.blockerCodes.includes("GAS_STATION_DOCKER_DAEMON_UNAVAILABLE"));
     assert.ok(plan.blockerCodes.includes("SPONSOR_FUNDING_REPORT_MISSING"));
     assert.ok(plan.blockerCodes.includes("TESTNET_UPSTREAM_REPORT_MISSING"));
+    assert.ok(plan.blockerCodes.includes("TESTNET_DIGEST_REPORT_MISSING"));
     assert.ok(plan.blockerCodes.includes("IOTA_NAMES_LIVE_REPORT_MISSING"));
     assert.ok(plan.blockerCodes.includes("IOTA_IDENTITY_LIVE_REPORT_MISSING"));
     assert.ok(plan.blockerCodes.includes("VC_VALIDATION_LIVE_REPORT_MISSING"));
     assert.ok(plan.requiredOperatorInputs.includes("GASKIT_SPONSOR_FUNDING_REPORT"));
+    assert.ok(plan.requiredOperatorInputs.includes("GASKIT_TESTNET_DIGEST_REPORT"));
     assert.ok(plan.optionalOperatorInputs.includes("GASKIT_SPONSOR_FAUCET_REPORT"));
     assert.ok(plan.requiredEvidenceArtifacts.includes("sanitized sponsor funding report"));
+    assert.ok(plan.requiredEvidenceArtifacts.includes("sanitized testnet sponsored execute digest proof report"));
     assert.ok(plan.requiredOperatorInputs.includes("IOTA_NAMES_GRAPHQL_URL"));
     assert.ok(plan.requiredOperatorInputs.includes("IOTA_NAMES_LIVE_REPORT"));
     assert.ok(plan.requiredEvidenceArtifacts.includes("sanitized IOTA Names live smoke report"));
@@ -55,9 +58,14 @@ test("live proof plan reports current blockers without configured values", async
     assert.ok(plan.commands.some((command) => command.id === "check-sponsor-funding" && command.contactsLiveService));
     assert.ok(plan.commands.some((command) => command.id === "triage-testnet-upstream-reachability" && command.command.includes("--skip-reserve")));
     assert.ok(plan.commands.some((command) => command.id === "diagnose-testnet-upstream" && command.contactsLiveService));
+    assert.ok(plan.commands.some((command) => command.id === "check-testnet-digest-live" && command.command.includes("proof:testnet-digest:live -- --report")));
     assert.ok(
       plan.commands.findIndex((command) => command.id === "triage-testnet-upstream-reachability")
       < plan.commands.findIndex((command) => command.id === "diagnose-testnet-upstream"),
+    );
+    assert.ok(
+      plan.commands.findIndex((command) => command.id === "diagnose-testnet-upstream")
+      < plan.commands.findIndex((command) => command.id === "check-testnet-digest-live"),
     );
     assert.ok(plan.commands.some((command) => command.id === "smoke-iota-names-live" && command.command.includes("--report")));
     assert.ok(plan.commands.some((command) => command.id === "smoke-iota-identity-live" && command.command.includes("--report")));
@@ -66,6 +74,7 @@ test("live proof plan reports current blockers without configured values", async
       "missing=GASKIT_SPONSOR_FUNDING_REPORT",
     );
     assert.ok(plan.boundaries.some((boundary) => boundary.includes("only a passing sponsor funding report")));
+    assert.ok(plan.boundaries.some((boundary) => boundary.includes("testnet digest report is a read-only IOTA RPC lookup")));
     assert.ok(plan.boundaries.some((boundary) => boundary.includes("--skip-reserve upstream diagnostic is reachability triage only")));
     assert.doesNotMatch(formatted, /graphql\.testnet\.example|researcher\.demo\.iota|identity\.testnet\.example|profiles\/researcher\.json/);
     assert.doesNotMatch(formatted, /0x1111111111111111111111111111111111111111111111111111111111111111/);

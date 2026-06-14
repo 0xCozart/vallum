@@ -5523,6 +5523,69 @@ Escalation triggers:
   paths, credential refs, or external report contents in committed examples.
 - Any request to treat documented example variables as accepted evidence.
 
+## Slice 7.69: Testnet Digest Live Status Alignment
+
+User-visible outcome:
+`npm run proof:live-status` and `npm run live:write-proof-plan` report the same
+testnet sponsored execute digest evidence boundary that product-status already
+uses.
+
+Likely files:
+
+- `scripts/check-live-proof-status.ts`
+- `scripts/live-proof-status.test.ts`
+- `scripts/check-product-status.ts`
+- `scripts/product-status.test.ts`
+- `scripts/write-live-proof-plan.ts`
+- `scripts/write-live-proof-plan.test.ts`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- Live proof status includes a `testnet-sponsored-execute` check after
+  `testnet-upstream`.
+- Missing `GASKIT_TESTNET_DIGEST_REPORT` is reported as
+  `TESTNET_DIGEST_REPORT_MISSING`.
+- A current passing digest report marks the check ready as
+  `TESTNET_SPONSORED_EXECUTE_DIGEST_VERIFIED` without printing the digest or
+  report path.
+- Stale, invalid, or unverified digest reports fail closed.
+- The live proof plan includes `GASKIT_TESTNET_DIGEST_REPORT`, a required
+  sanitized digest report artifact, and the read-only
+  `npm run proof:testnet-digest:live -- --report <ignored-json-path>` command
+  after upstream diagnostics.
+- Product status remains deduplicated when it consumes both live-status and its
+  own sponsored-execute digest status.
+- No live IOTA lookup, reserve_gas probe, signing, sponsor gas spend,
+  sponsored execute, npm publish, public A2A probe, payment-provider action,
+  production marketplace action, custody/KMS action, external signer action, or
+  physical-device action is run by this slice.
+
+Verification:
+
+- `node --import tsx --test scripts/live-proof-status.test.ts scripts/write-live-proof-plan.test.ts scripts/product-status.test.ts`
+- `npm run proof:live-status`
+- `npm run live:write-proof-plan -- --out tmp/gaskit/live-proof-plan.json`
+- `npm run proof:product-status`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `npm run typecheck`
+- `git diff --check`
+
+Dependencies:
+Slice 7.65.
+
+Risk:
+Medium. This changes a shared status surface; the digest report must remain
+read-only evidence and must not imply a fresh sponsored execute was run.
+
+Escalation triggers:
+
+- Any request for `proof:live-status` to contact IOTA RPC directly.
+- Any request to treat documented-only digest evidence as a passing live proof
+  without a sanitized report.
+
 ## Slice 7.66: Launch Digest Report Command Alignment
 
 User-visible outcome:

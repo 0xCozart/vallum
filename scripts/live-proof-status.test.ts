@@ -30,6 +30,7 @@ test("live proof status reports exact blockers without secret values", async () 
         ["gas-station-runtime", "blocked", "GAS_STATION_DOCKER_DAEMON_UNAVAILABLE"],
         ["sponsor-funding", "blocked", "SPONSOR_FUNDING_REPORT_MISSING"],
         ["testnet-upstream", "blocked", "TESTNET_UPSTREAM_REPORT_MISSING"],
+        ["testnet-sponsored-execute", "blocked", "TESTNET_DIGEST_REPORT_MISSING"],
         ["iota-names-live", "blocked", "IOTA_NAMES_LIVE_CONFIG_MISSING"],
         ["iota-identity-live", "blocked", "IOTA_IDENTITY_LIVE_CONFIG_MISSING"],
         ["vc-validation-live", "blocked", "VC_TRUST_POLICY_CONFIG_MISSING"],
@@ -37,6 +38,7 @@ test("live proof status reports exact blockers without secret values", async () 
     );
     assert.match(formatted, /GASKIT_SPONSOR_FUNDING_REPORT/);
     assert.match(formatted, /GASKIT_TESTNET_UPSTREAM_REPORT/);
+    assert.match(formatted, /GASKIT_TESTNET_DIGEST_REPORT/);
     assert.match(formatted, /IOTA_NAMES_GRAPHQL_URL/);
     assert.match(formatted, /IOTA_IDENTITY_PROOF_ENDPOINT/);
     assert.match(formatted, /IOTA_IDENTITY_TRUSTED_ISSUER_DIDS/);
@@ -248,6 +250,55 @@ test("live proof status blocks skipped reserve diagnostic reports", async () => 
     assert.equal(upstream?.code, "TESTNET_UPSTREAM_REPORT_RESERVE_SKIPPED");
     assert.match(upstream?.next ?? "", /without --skip-reserve/);
     assert.doesNotMatch(upstream?.next ?? "", /Bring the configured Gas Station upstream online/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("live proof status marks sponsored execute digest ready with a passing digest report", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  try {
+    await writeFile(join(cwd, "digest-report.json"), JSON.stringify(readyTestnetDigestReport()));
+    const report = await checkLiveProofStatus({
+      cwd,
+      gasStationRuntimeReport: readyGasStationRuntime(),
+      env: {
+        GASKIT_TESTNET_DIGEST_REPORT: "digest-report.json",
+      },
+    });
+    const formatted = formatLiveProofStatusReport(report);
+    const digest = report.checks.find((check) => check.id === "testnet-sponsored-execute");
+
+    assert.equal(digest?.status, "ready");
+    assert.equal(digest?.code, "TESTNET_SPONSORED_EXECUTE_DIGEST_VERIFIED");
+    assert.equal(digest?.evidence, "testnet-digest-report-valid-redacted");
+    assert.doesNotMatch(formatted, /digest-report\.json|FLdnYRUACAKQn8CwugEv1u6gYTh9jBr8rGMk2JZ2adsd/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("live proof status blocks stale or unverified sponsored execute digest reports", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  try {
+    await writeFile(join(cwd, "digest-report.json"), JSON.stringify({
+      ...readyTestnetDigestReport(),
+      observedAt: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
+    }));
+    const report = await checkLiveProofStatus({
+      cwd,
+      gasStationRuntimeReport: readyGasStationRuntime(),
+      env: {
+        GASKIT_TESTNET_DIGEST_REPORT: "digest-report.json",
+      },
+    });
+    const formatted = formatLiveProofStatusReport(report);
+    const digest = report.checks.find((check) => check.id === "testnet-sponsored-execute");
+
+    assert.equal(digest?.status, "blocked");
+    assert.equal(digest?.code, "TESTNET_DIGEST_REPORT_STALE");
+    assert.equal(digest?.evidence, "testnet-digest-report-loaded-redacted");
+    assert.doesNotMatch(formatted, /digest-report\.json|FLdnYRUACAKQn8CwugEv1u6gYTh9jBr8rGMk2JZ2adsd/);
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }
@@ -759,5 +810,23 @@ function readyIotaIdentityReport() {
     trustPolicyConfigured: true,
     identityVerified: true,
     credentialRefsChecked: 1,
+  };
+}
+
+function readyTestnetDigestReport() {
+  return {
+    schemaVersion: 1,
+    kind: "agentic-gaskit.testnet-digest-proof-report",
+    observedAt: new Date().toISOString(),
+    digest: "FLdnYRUACAKQn8CwugEv1u6gYTh9jBr8rGMk2JZ2adsd",
+    rpcUrl: "https://api.testnet.iota.cafe",
+    documented: true,
+    liveChecked: true,
+    verified: true,
+    status: "verified-testnet",
+    effectsStatus: "success",
+    checkpoint: "1",
+    timestampMs: "1760000000000",
+    next: "The documented public digest is retrievable from the configured IOTA testnet RPC.",
   };
 }
