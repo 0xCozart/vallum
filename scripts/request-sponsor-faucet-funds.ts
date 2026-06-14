@@ -15,6 +15,15 @@ export type SponsorFaucetRequestCode =
   | "SPONSOR_FAUCET_RATE_LIMITED"
   | "SPONSOR_FAUCET_FAILED";
 
+export type SponsorFaucetErrorCode =
+  | "ADDRESS_INVALID"
+  | "REQUEST_RATE_LIMITED"
+  | "REQUEST_COOLDOWN"
+  | "FUNDS_UNAVAILABLE"
+  | "REQUEST_UNSUPPORTED"
+  | "SERVICE_UNAVAILABLE"
+  | "UNKNOWN";
+
 export interface SponsorFaucetRequestReport {
   readonly schemaVersion: 1;
   readonly kind: "agentic-gaskit.sponsor-faucet-request";
@@ -32,6 +41,7 @@ export interface SponsorFaucetRequestReport {
   readonly faucetApiVersion?: "v1-batch" | "v0-documented";
   readonly faucetHttpStatus?: number;
   readonly faucetFailureKind?: "http-status" | "invalid-json" | "faucet-error" | "network-error" | "discarded" | "poll-timeout";
+  readonly faucetErrorCode?: SponsorFaucetErrorCode;
   readonly amountMist?: string;
   readonly reportPath?: string;
   readonly nextCommands: readonly string[];
@@ -186,6 +196,7 @@ export async function requestSponsorFaucetFunds(
       faucetApiVersion: sanitized.apiVersion ?? selectedApiVersion,
       faucetHttpStatus: sanitized.httpStatus,
       faucetFailureKind: sanitized.failureKind,
+      faucetErrorCode: sanitized.errorCode,
     });
   }
 }
@@ -261,6 +272,17 @@ export function validateSponsorFaucetRequestReport(
   ].includes(report.faucetFailureKind)) {
     return invalidSponsorFaucetReport("Sponsor faucet report failure kind is unsupported.");
   }
+  if (report.faucetErrorCode && ![
+    "ADDRESS_INVALID",
+    "REQUEST_RATE_LIMITED",
+    "REQUEST_COOLDOWN",
+    "FUNDS_UNAVAILABLE",
+    "REQUEST_UNSUPPORTED",
+    "SERVICE_UNAVAILABLE",
+    "UNKNOWN",
+  ].includes(report.faucetErrorCode)) {
+    return invalidSponsorFaucetReport("Sponsor faucet report error code is unsupported.");
+  }
   if (report.amountMist !== undefined && !/^\d+$/.test(report.amountMist)) {
     return invalidSponsorFaucetReport("Sponsor faucet report amount is invalid.");
   }
@@ -312,7 +334,13 @@ export async function requestIotaFromDocumentedFaucet(input: {
   }
   const body = parsed as { error?: unknown; transferredGasObjects?: unknown };
   if (body.error) {
-    throw new SanitizedFaucetRequestError("faucet-error", response.status);
+    throw new SanitizedFaucetRequestError(
+      "faucet-error",
+      response.status,
+      "v0-documented",
+      false,
+      classifyFaucetError(body.error),
+    );
   }
   if (!Array.isArray(body.transferredGasObjects)) {
     return undefined;
@@ -399,6 +427,7 @@ export function formatSponsorFaucetRequestReport(report: SponsorFaucetRequestRep
     ...(report.faucetApiVersion ? [`faucetApiVersion=${report.faucetApiVersion}`] : []),
     ...(report.faucetHttpStatus ? [`faucetHttpStatus=${report.faucetHttpStatus}`] : []),
     ...(report.faucetFailureKind ? [`faucetFailureKind=${report.faucetFailureKind}`] : []),
+    ...(report.faucetErrorCode ? [`faucetErrorCode=${report.faucetErrorCode}`] : []),
     ...(report.sponsorAddressRedacted ? [`sponsorAddress=${report.sponsorAddressRedacted}`] : []),
     ...(report.amountMist ? [`amountMist=${report.amountMist}`] : []),
     ...(report.reportPath ? [`report=${report.reportPath}`] : []),
@@ -429,6 +458,7 @@ const SPONSOR_FAUCET_REPORT_KEYS = new Set([
   "faucetApiVersion",
   "faucetHttpStatus",
   "faucetFailureKind",
+  "faucetErrorCode",
   "amountMist",
   "reportPath",
   "nextCommands",
@@ -532,6 +562,7 @@ class SanitizedFaucetRequestError extends Error {
     readonly httpStatus?: number,
     readonly apiVersion: NonNullable<SponsorFaucetRequestReport["faucetApiVersion"]> = "v0-documented",
     readonly rateLimited: boolean = false,
+    readonly errorCode?: SponsorFaucetErrorCode,
   ) {
     super("Sanitized sponsor faucet request failure.");
   }
@@ -572,7 +603,13 @@ async function faucetFetchJson(input: {
   }
   const body = parsed as Record<string, unknown>;
   if (body.error) {
-    throw new SanitizedFaucetRequestError("faucet-error", response.status, input.apiVersion);
+    throw new SanitizedFaucetRequestError(
+      "faucet-error",
+      response.status,
+      input.apiVersion,
+      false,
+      classifyFaucetError(body.error),
+    );
   }
   return body;
 }
@@ -582,9 +619,16 @@ function sanitizedFaucetError(error: unknown): {
   readonly apiVersion?: SponsorFaucetRequestReport["faucetApiVersion"];
   readonly httpStatus?: number;
   readonly failureKind?: SponsorFaucetRequestReport["faucetFailureKind"];
+  readonly errorCode?: SponsorFaucetErrorCode;
 } {
   if (error instanceof FaucetRateLimitError) {
-    return { rateLimited: true, apiVersion: "v0-documented", httpStatus: 429, failureKind: "http-status" };
+    return {
+      rateLimited: true,
+      apiVersion: "v0-documented",
+      httpStatus: 429,
+      failureKind: "http-status",
+      errorCode: "REQUEST_RATE_LIMITED",
+    };
   }
   if (error instanceof SanitizedFaucetRequestError) {
     return {
@@ -592,9 +636,61 @@ function sanitizedFaucetError(error: unknown): {
       apiVersion: error.apiVersion,
       httpStatus: error.httpStatus,
       failureKind: error.failureKind,
+      errorCode: error.errorCode,
     };
   }
   return { rateLimited: false };
+}
+
+export function classifyFaucetError(value: unknown): SponsorFaucetErrorCode {
+  const normalized = normalizeFaucetError(value);
+  if (!normalized) return "UNKNOWN";
+  if (/\b(address|recipient)\b.*\b(invalid|malformed|bad|unsupported)\b|\b(invalid|malformed|bad|unsupported)\b.*\b(address|recipient)\b/.test(normalized)) {
+    return "ADDRESS_INVALID";
+  }
+  if (/\b(rate|too many|quota|limit|limited|throttle|throttled)\b/.test(normalized)) {
+    return "REQUEST_RATE_LIMITED";
+  }
+  if (/\b(cooldown|cool down|wait|already requested|recently requested)\b/.test(normalized)) {
+    return "REQUEST_COOLDOWN";
+  }
+  if (/\b(empty|faucet empty|no coins|insufficient|out of funds|not enough|exhausted|funds unavailable)\b/.test(normalized)) {
+    return "FUNDS_UNAVAILABLE";
+  }
+  if (/\b(unsupported|not allowed|not supported|method|route|endpoint|fixedamountrequest)\b/.test(normalized)) {
+    return "REQUEST_UNSUPPORTED";
+  }
+  if (/\b(unavailable|temporarily|internal|server|maintenance|try again|failed|error)\b/.test(normalized)) {
+    return "SERVICE_UNAVAILABLE";
+  }
+  return "UNKNOWN";
+}
+
+function normalizeFaucetError(value: unknown): string {
+  if (typeof value === "string") return normalizeFaucetText(value);
+  if (typeof value === "number" || typeof value === "boolean") return normalizeFaucetText(String(value));
+  if (!value || typeof value !== "object") return "";
+  return collectFaucetErrorFragments(value, 0).map(normalizeFaucetText).join(" ");
+}
+
+function collectFaucetErrorFragments(value: unknown, depth: number): string[] {
+  if (depth > 2) return [];
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return [String(value)];
+  }
+  if (!value || typeof value !== "object") return [];
+  if (Array.isArray(value)) return value.flatMap((item) => collectFaucetErrorFragments(item, depth + 1));
+  const fragments: string[] = [];
+  for (const [key, field] of Object.entries(value as Record<string, unknown>)) {
+    if (/code|error|message|reason|status|detail|description|kind|type/i.test(key)) {
+      fragments.push(...collectFaucetErrorFragments(field, depth + 1));
+    }
+  }
+  return fragments;
+}
+
+function normalizeFaucetText(value: string): string {
+  return value.toLowerCase().replace(/[_-]+/g, " ");
 }
 
 function redactAddress(value: string): string {

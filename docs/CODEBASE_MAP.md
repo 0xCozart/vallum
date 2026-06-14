@@ -153,7 +153,8 @@ It also includes the first Agentic GasKit implementation slices:
   faucet, writes a sanitized ignored report, and still keeps funding separate
   from reserve_gas and sponsored execution proof; the helper defaults to the
   IOTA faucet batch endpoint, can explicitly select the documented legacy
-  endpoint, and records only safe endpoint/status metadata on faucet failures
+  endpoint, and records only safe endpoint/status metadata plus bounded faucet
+  error codes on faucet failures
 - explicit managed-upstream Gas Station runtime mode for operators who provide
   a separately managed Gas Station at `GAS_STATION_URL`; the mode skips Docker
   inspection but still requires sanitized upstream diagnostics before sponsored

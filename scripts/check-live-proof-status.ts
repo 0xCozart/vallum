@@ -290,7 +290,8 @@ async function sponsorFaucetAttemptContext(
       const api = report.faucetApiVersion ? ` via ${report.faucetApiVersion}` : "";
       const status = report.faucetHttpStatus ? ` with HTTP ${report.faucetHttpStatus}` : "";
       const kind = report.faucetFailureKind ? ` (${report.faucetFailureKind})` : "";
-      return `Latest sponsor faucet report failed${api}${status}${kind}; use another approved faucet or the ignored funding-request artifact.`;
+      const code = report.faucetErrorCode ? ` code=${report.faucetErrorCode}` : "";
+      return `Latest sponsor faucet report failed${api}${status}${kind}${code}; use another approved faucet or the ignored funding-request artifact.`;
     }
     return `Latest sponsor faucet report did not contact a faucet (${report.code}); configure an approved faucet URL and use --execute only with operator approval.`;
   } catch {

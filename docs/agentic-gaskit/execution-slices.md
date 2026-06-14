@@ -5928,3 +5928,71 @@ Escalation triggers:
 - Any request to treat `verify:fast` or the verification-profile artifact as
   full launch, release, live/testnet, publication, public A2A, payment,
   marketplace, custody, or safety proof.
+
+## Slice 7.32: Sponsor Faucet Failure Classification
+
+User-visible outcome:
+Operators and future agents can distinguish repeated sponsor faucet failures
+using bounded, non-secret faucet error codes without exposing raw faucet
+response bodies or raw faucet error strings.
+
+Likely files:
+
+- `scripts/request-sponsor-faucet-funds.ts`
+- `scripts/request-sponsor-faucet-funds.test.ts`
+- `docs/CODEBASE_MAP.md`
+- `docs/testnet-readiness.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- Sanitized sponsor faucet reports may include a `faucetErrorCode` from a
+  controlled enum only: `ADDRESS_INVALID`, `REQUEST_RATE_LIMITED`,
+  `REQUEST_COOLDOWN`, `FUNDS_UNAVAILABLE`, `REQUEST_UNSUPPORTED`,
+  `SERVICE_UNAVAILABLE`, or `UNKNOWN`.
+- Raw faucet response bodies, raw faucet error strings, faucet URLs, faucet
+  task ids, full sponsor addresses, signer material, bearer tokens, rendered
+  Gas Station config, raw transaction bytes, user signatures, and local secret
+  paths are not printed or written to tracked files.
+- The helper remains opt-in: no faucet contact without `--execute`, no signing,
+  no reserve, no sponsored execution, and no readiness gate is cleared by a
+  faucet request alone.
+- Current official faucet attempts can refresh ignored local artifacts with the
+  bounded error code while keeping sponsor funding and upstream diagnostics
+  blocked until balance and reserve compatibility are independently proven.
+
+Verification:
+
+- Focused sponsor faucet, funding request, live-status, and package-script
+  tests.
+- One operator-approved sanitized faucet attempt against the official IOTA
+  testnet faucet, recorded only in ignored local artifacts.
+- `npm run sponsor:check-funding -- --report
+  tmp/gaskit/sponsor-funding-report.json`.
+- `npm run diagnose:gas-station -- --report
+  tmp/gaskit/testnet-upstream-diagnostic.json`.
+- `npm run proof:live-status -- --out tmp/gaskit/live-proof-status.json`.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run verify:fast`.
+
+Dependencies:
+Existing sponsor faucet helper, sponsor funding diagnostic, Gas Station
+diagnostic, and live-proof status report.
+
+Risk:
+Medium. This touches live/testnet triage, so the implementation must improve
+operator evidence without broadening live contact, leaking faucet details, or
+turning faucet failure context into readiness proof.
+
+Escalation triggers:
+
+- Any request to print or commit raw faucet response bodies, raw faucet error
+  strings, faucet URLs, faucet task ids, full sponsor addresses, signer
+  material, bearer tokens, rendered Gas Station config, raw transaction bytes,
+  user signatures, endpoint values, or local secret paths.
+- Any request to treat `SPONSOR_FAUCET_REQUESTED` or a bounded
+  `faucetErrorCode` as funding readiness, reserve_gas compatibility, or
+  sponsored execution proof.

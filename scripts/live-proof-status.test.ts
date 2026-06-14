@@ -142,6 +142,7 @@ test("live proof status includes sanitized sponsor faucet failure context", asyn
       faucetApiVersion: "v1-batch",
       faucetHttpStatus: 200,
       faucetFailureKind: "faucet-error",
+      faucetErrorCode: "FUNDS_UNAVAILABLE",
       nextCommands: ["npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json"],
     }));
     const report = await checkLiveProofStatus({
@@ -157,7 +158,7 @@ test("live proof status includes sanitized sponsor faucet failure context", asyn
 
     assert.equal(funding?.status, "blocked");
     assert.equal(funding?.code, "SPONSOR_FUNDING_TOTAL_INSUFFICIENT");
-    assert.match(funding?.next ?? "", /Latest sponsor faucet report failed via v1-batch with HTTP 200 \(faucet-error\)/);
+    assert.match(funding?.next ?? "", /Latest sponsor faucet report failed via v1-batch with HTTP 200 \(faucet-error\) code=FUNDS_UNAVAILABLE/);
     assert.doesNotMatch(formatted, /sponsor-faucet-report\.json|0x1234567890abcdef|faucet\.testnet\.example|task-/);
   } finally {
     await rm(cwd, { recursive: true, force: true });

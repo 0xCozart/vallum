@@ -7,6 +7,7 @@ import { test } from "node:test";
 import { Ed25519Keypair } from "@iota/iota-sdk/keypairs/ed25519";
 
 import {
+  classifyFaucetError,
   formatSponsorFaucetRequestReport,
   loadSponsorFaucetRequestReport,
   requestIotaFromDocumentedFaucet,
@@ -126,6 +127,17 @@ test("sponsor faucet report validation rejects unsafe full address fields", asyn
 
   assert.equal(validateSponsorFaucetRequestReport(report).ok, true);
   assert.equal(validateSponsorFaucetRequestReport(unsafe).ok, false);
+});
+
+test("faucet error classifier maps raw faucet errors to bounded codes", () => {
+  assert.equal(classifyFaucetError("Invalid recipient address"), "ADDRESS_INVALID");
+  assert.equal(classifyFaucetError("Too many requests from this client"), "REQUEST_RATE_LIMITED");
+  assert.equal(classifyFaucetError("Please wait before requesting again"), "REQUEST_COOLDOWN");
+  assert.equal(classifyFaucetError("Faucet is out of funds"), "FUNDS_UNAVAILABLE");
+  assert.equal(classifyFaucetError("FixedAmountRequest is not supported"), "REQUEST_UNSUPPORTED");
+  assert.equal(classifyFaucetError({ code: "INTERNAL", message: "temporarily unavailable" }), "SERVICE_UNAVAILABLE");
+  assert.equal(classifyFaucetError({ error: { code: "out_of_funds" } }), "FUNDS_UNAVAILABLE");
+  assert.equal(classifyFaucetError({ detail: "unmodeled shape" }), "UNKNOWN");
 });
 
 test("documented faucet requester posts fixed amount requests to the /gas endpoint", async () => {
@@ -305,6 +317,39 @@ test("sponsor faucet request records safe HTTP failure metadata without raw resp
     assert.equal(report.faucetHttpStatus, 503);
     assert.equal(report.faucetFailureKind, "http-status");
     assert.doesNotMatch(formatted, new RegExp(escapeRegExp(rawResponse)));
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("sponsor faucet request records bounded faucet error codes without raw body text", async () => {
+  const originalFetch = globalThis.fetch;
+  const rawError = "Faucet is out of funds for this request";
+  try {
+    globalThis.fetch = (async () => new Response(JSON.stringify({ error: rawError }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    })) as typeof fetch;
+
+    const report = await requestSponsorFaucetFunds({
+      env: {
+        GAS_STATION_KEYPAIR: sponsorKey,
+      },
+      execute: true,
+      faucetUrl: "https://faucet.testnet.example",
+    });
+    const formatted = formatSponsorFaucetRequestReport(report);
+
+    assert.equal(report.result, "failed");
+    assert.equal(report.code, "SPONSOR_FAUCET_FAILED");
+    assert.equal(report.faucetApiVersion, "v1-batch");
+    assert.equal(report.faucetHttpStatus, 200);
+    assert.equal(report.faucetFailureKind, "faucet-error");
+    assert.equal(report.faucetErrorCode, "FUNDS_UNAVAILABLE");
+    assert.equal(validateSponsorFaucetRequestReport(report).ok, true);
+    assert.doesNotMatch(JSON.stringify(report), new RegExp(escapeRegExp(rawError)));
+    assert.match(formatted, /faucetErrorCode=FUNDS_UNAVAILABLE/);
+    assert.doesNotMatch(formatted, new RegExp(escapeRegExp(rawError)));
   } finally {
     globalThis.fetch = originalFetch;
   }

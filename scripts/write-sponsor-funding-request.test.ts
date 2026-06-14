@@ -82,6 +82,7 @@ test("sponsor funding request includes sanitized faucet attempt context", async 
     faucetApiVersion: "v0-documented",
     faucetHttpStatus: 405,
     faucetFailureKind: "http-status",
+    faucetErrorCode: "REQUEST_UNSUPPORTED",
     nextCommands: ["npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json"],
   }));
 
@@ -102,9 +103,11 @@ test("sponsor funding request includes sanitized faucet attempt context", async 
     faucetApiVersion: "v0-documented",
     faucetHttpStatus: 405,
     faucetFailureKind: "http-status",
+    faucetErrorCode: "REQUEST_UNSUPPORTED",
     guidance: "Latest sponsor faucet request failed; use another approved faucet, wallet faucet flow, CLI faucet flow, or manual testnet transfer.",
   });
   assert.equal(request.operatorFundingOptions[0], "Avoid repeating the same faucet route until its bounded failure condition changes.");
+  assert.match(artifact, /"faucetErrorCode": "REQUEST_UNSUPPORTED"/);
   assert.doesNotMatch(artifact, /0x1234567890abcdef|task-|faucet\.testnet\.example|raw faucet/i);
   assert.doesNotMatch(summary, new RegExp(escapeRegExp(sponsorAddress)));
   assert.match(summary, /faucetContext=SPONSOR_FAUCET_FAILED/);

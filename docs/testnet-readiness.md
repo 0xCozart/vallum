@@ -141,8 +141,8 @@ building/signing a transaction unless all of these are true:
   redacted. If `--faucet-report <ignored-json-path>` or
   `GASKIT_SPONSOR_FAUCET_REPORT` is set, the artifact can include only bounded
   sanitized faucet attempt context such as result, code, API version, HTTP
-  status, and failure kind; this is advisory and does not clear funding
-  readiness. If an approved faucet is available, `npm run
+  status, failure kind, and bounded faucet error code; this is advisory and
+  does not clear funding readiness. If an approved faucet is available, `npm run
   sponsor:request-faucet-funds -- --execute --out
   tmp/gaskit/sponsor-faucet-request.json` can request testnet gas from
   `IOTA_FAUCET_URL` or `--faucet-url`; it requires explicit `--execute`.
@@ -203,8 +203,8 @@ The full public address is written only to the ignored artifact; the command
 does not contact live services, reserve gas, sign transactions, execute
 transactions, or print sponsor signer material. If a sanitized faucet report
 already exists, use `--faucet-report <ignored-json-path>` to copy bounded
-faucet-attempt context into the ignored funding artifact so operators can avoid
-repeating a failed route.
+faucet-attempt context, including any bounded `faucetErrorCode`, into the
+ignored funding artifact so operators can avoid repeating a failed route.
 
 `npm run sponsor:request-faucet-funds -- --execute --out
 tmp/gaskit/sponsor-faucet-request.json` can be used only when the operator has
@@ -221,6 +221,11 @@ If `GASKIT_SPONSOR_FAUCET_REPORT` points at the ignored faucet report,
 `npm run proof:live-status` can include the latest sanitized faucet outcome in
 the sponsor-funding next step. This is triage context only, not readiness
 evidence.
+Faucet failure reports may include a bounded `faucetErrorCode` such as
+`REQUEST_RATE_LIMITED`, `REQUEST_COOLDOWN`, `FUNDS_UNAVAILABLE`,
+`ADDRESS_INVALID`, `REQUEST_UNSUPPORTED`, `SERVICE_UNAVAILABLE`, or `UNKNOWN`.
+The raw faucet response body and raw faucet error text must stay out of stdout,
+docs, tracked files, and committed artifacts.
 
 `npm run sponsor:check-funding -- --report
 tmp/gaskit/sponsor-funding-report.json` can be used as a read-only funding

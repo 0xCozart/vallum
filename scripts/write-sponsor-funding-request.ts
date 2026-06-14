@@ -10,6 +10,7 @@ import {
   loadSponsorFaucetRequestReport,
   validateSponsorFaucetRequestReport,
   type SponsorFaucetApiVersion,
+  type SponsorFaucetErrorCode,
   type SponsorFaucetRequestCode,
   type SponsorFaucetRequestReport,
 } from "./request-sponsor-faucet-funds.js";
@@ -22,6 +23,7 @@ export interface SponsorFundingFaucetAttemptContext {
   readonly faucetApiVersion?: SponsorFaucetApiVersion;
   readonly faucetHttpStatus?: number;
   readonly faucetFailureKind?: SponsorFaucetRequestReport["faucetFailureKind"];
+  readonly faucetErrorCode?: SponsorFaucetErrorCode;
   readonly guidance: string;
 }
 
@@ -283,6 +285,7 @@ async function buildFaucetAttemptContext(input: {
       faucetApiVersion: report.faucetApiVersion,
       faucetHttpStatus: report.faucetHttpStatus,
       faucetFailureKind: report.faucetFailureKind,
+      faucetErrorCode: report.faucetErrorCode,
       guidance: guidanceForFaucetAttempt(report),
     };
   } catch {
