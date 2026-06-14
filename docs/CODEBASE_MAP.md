@@ -103,7 +103,8 @@ It also includes the first Agentic GasKit implementation slices:
   local injected-transport worker,
   redacted static-hosting review, structured public discovery, public push
   delivery, external conformance report inputs, and external conformance
-  blockers
+  blockers, plus a redacted mode-600 local JSON artifact writer for public A2A
+  readiness audit snapshots
 - opt-in public A2A discovery smoke for operator-approved public HTTPS Agent
   Card and JWKS probing with optional structured report output, excluded from
   default local verification

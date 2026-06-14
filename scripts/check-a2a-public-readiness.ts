@@ -1,5 +1,5 @@
-import { access, readFile } from "node:fs/promises";
-import { isAbsolute, resolve } from "node:path";
+import { access, chmod, mkdir, readFile, writeFile } from "node:fs/promises";
+import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 export type A2APublicReadinessStatus =
@@ -25,11 +25,35 @@ export interface A2APublicReadinessReport {
   readonly checks: readonly A2APublicReadinessCheck[];
 }
 
+export interface A2APublicReadinessArtifact {
+  readonly schemaVersion: 1;
+  readonly kind: "agentic-gaskit.a2a-public-readiness-report";
+  readonly generatedAt: string;
+  readonly publicReady: boolean;
+  readonly localProofOk: boolean;
+  readonly provenLocalCheckIds: readonly string[];
+  readonly readyApprovalCheckIds: readonly string[];
+  readonly blockedCheckIds: readonly string[];
+  readonly blockerCodes: readonly string[];
+  readonly checks: readonly A2APublicReadinessCheck[];
+  readonly boundaries: readonly string[];
+}
+
 export interface A2APublicReadinessOptions {
   readonly cwd?: string;
   readonly env?: NodeJS.ProcessEnv | Record<string, string | undefined>;
   readonly scripts?: Record<string, string | undefined>;
   readonly now?: Date;
+}
+
+export interface WriteA2APublicReadinessArtifactOptions extends A2APublicReadinessOptions {
+  readonly outFile?: string;
+}
+
+interface CliOptions {
+  readonly help: boolean;
+  readonly json: boolean;
+  readonly outFile?: string;
 }
 
 const REQUIRED_LOCAL_COMMANDS = [
@@ -57,6 +81,23 @@ const REQUIRED_SOURCE_PATHS = [
 ] as const;
 
 const ALLOWED_TASK_AUTH_DECISIONS = new Set(["bearer", "oauth2", "mtls"]);
+
+const ARTIFACT_BOUNDARIES = [
+  "This report is non-networked and does not contact public A2A endpoints.",
+  "publicReady=false means at least one public hosting, production key/auth, public discovery, public push delivery, or external conformance gate remains blocked.",
+  "ready-approval checks require manual operator review before any public A2A, production auth, key management, webhook, or conformance claim is accepted.",
+  "Do not commit generated reports, public proof outputs, credentials, private keys, bearer tokens, webhook secrets, raw payloads, response bodies, configured endpoint values, report paths, or local secret paths.",
+] as const;
+
+const usage = `usage: npm exec tsx -- scripts/check-a2a-public-readiness.ts [--json] [--out <path>]
+
+Reports current Agentic GasKit public A2A readiness without contacting public endpoints.
+
+Options:
+  --json        Print a redacted machine-readable artifact.
+  --out <path>  Write the same JSON artifact to a local file with mode 0600.
+  --help        Show this help text.
+`;
 
 export async function checkA2APublicReadiness(
   options: A2APublicReadinessOptions = {},
@@ -147,6 +188,48 @@ export function formatA2APublicReadinessReport(report: A2APublicReadinessReport)
   }
 
   return lines.join("\n");
+}
+
+export function buildA2APublicReadinessArtifact(
+  report: A2APublicReadinessReport,
+  now = new Date(),
+): A2APublicReadinessArtifact {
+  const provenLocalChecks = report.checks.filter((check) => check.status === "proven-local");
+  const readyApprovalChecks = report.checks.filter((check) => check.status === "ready-approval");
+  const blockedChecks = report.checks.filter((check) => check.status !== "proven-local" && check.status !== "ready-approval");
+
+  return {
+    schemaVersion: 1,
+    kind: "agentic-gaskit.a2a-public-readiness-report",
+    generatedAt: now.toISOString(),
+    publicReady: report.publicReady,
+    localProofOk: report.localProofOk,
+    provenLocalCheckIds: provenLocalChecks.map((check) => check.id),
+    readyApprovalCheckIds: readyApprovalChecks.map((check) => check.id),
+    blockedCheckIds: blockedChecks.map((check) => check.id),
+    blockerCodes: blockedChecks.map((check) => check.code),
+    checks: report.checks,
+    boundaries: ARTIFACT_BOUNDARIES,
+  };
+}
+
+export async function writeA2APublicReadinessArtifact(
+  options: WriteA2APublicReadinessArtifactOptions = {},
+): Promise<A2APublicReadinessArtifact> {
+  const cwd = options.cwd ?? process.cwd();
+  const report = await checkA2APublicReadiness(options);
+  const artifact = buildA2APublicReadinessArtifact(report, options.now);
+  if (options.outFile) {
+    const outPath = isAbsolute(options.outFile) ? options.outFile : resolve(cwd, options.outFile);
+    await mkdir(dirname(outPath), { recursive: true });
+    await writeFile(outPath, formatA2APublicReadinessArtifact(artifact), { mode: 0o600 });
+    await chmod(outPath, 0o600);
+  }
+  return artifact;
+}
+
+export function formatA2APublicReadinessArtifact(artifact: A2APublicReadinessArtifact): string {
+  return `${JSON.stringify(artifact, null, 2)}\n`;
 }
 
 async function loadPackageScripts(cwd: string): Promise<Record<string, string | undefined>> {
@@ -843,7 +926,55 @@ function isLoopbackHostname(hostname: string): boolean {
     || normalized.endsWith(".localhost");
 }
 
+function parseArgs(args: readonly string[]): CliOptions {
+  let help = false;
+  let json = false;
+  let outFile: string | undefined;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg === "--help" || arg === "-h") {
+      help = true;
+      continue;
+    }
+    if (arg === "--json") {
+      json = true;
+      continue;
+    }
+    if (arg === "--out") {
+      const value = args[index + 1];
+      if (!value || value.startsWith("--")) throw new Error("--out requires a path.");
+      outFile = value;
+      index += 1;
+      continue;
+    }
+    throw new Error(`Unsupported argument: ${arg}`);
+  }
+
+  return { help, json, outFile };
+}
+
 async function main(): Promise<number> {
+  let options: CliOptions;
+  try {
+    options = parseArgs(process.argv.slice(2));
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    console.error(usage);
+    return 1;
+  }
+
+  if (options.help) {
+    console.log(usage.trimEnd());
+    return 0;
+  }
+
+  if (options.json || options.outFile) {
+    const artifact = await writeA2APublicReadinessArtifact({ outFile: options.outFile });
+    console.log(formatA2APublicReadinessArtifact(artifact).trimEnd());
+    return 0;
+  }
+
   const report = await checkA2APublicReadiness();
   console.log(formatA2APublicReadinessReport(report));
   return 0;

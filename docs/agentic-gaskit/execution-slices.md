@@ -5996,3 +5996,67 @@ Escalation triggers:
 - Any request to treat `SPONSOR_FAUCET_REQUESTED` or a bounded
   `faucetErrorCode` as funding readiness, reserve_gas compatibility, or
   sponsored execution proof.
+
+## Slice 7.33: A2A Public Readiness Artifact Writer
+
+User-visible outcome:
+Operators and future agents can archive the current non-networked public A2A
+readiness state as a redacted ignored JSON artifact, so public hosting,
+production key/auth, public discovery, public push delivery, and external
+conformance blockers can be audited without parsing stdout or contacting public
+endpoints.
+
+Likely files:
+
+- `scripts/check-a2a-public-readiness.ts`
+- `scripts/a2a-public-readiness.test.ts`
+- `docs/CODEBASE_MAP.md`
+- `docs/agentic-gaskit/a2a-public-readiness.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `npm run proof:a2a-public-readiness -- --json` prints a redacted
+  machine-readable artifact with schema version, kind, timestamp, public
+  readiness status, local proof status, proven-local check ids, ready-approval
+  check ids, blocked check ids, blocker codes, checks, and safety boundaries.
+- `npm run proof:a2a-public-readiness -- --out <ignored-json-path>` writes the
+  same artifact with mode `600`.
+- The artifact does not contact public endpoints, deliver webhooks, publish
+  JWKS material, operate public A2A infrastructure, run external conformance
+  tools, reserve gas, sign transactions, or execute transactions.
+- The artifact does not include configured public URLs, JWKS URLs, auth
+  decisions, report paths, report contents, credentials, bearer tokens, webhook
+  secrets, raw payloads, response bodies, private keys, endpoint values, or
+  local secret paths.
+- `publicReady=false` and blocker codes remain explicit while public hosting,
+  production key/auth, public discovery, public push delivery, or external
+  conformance evidence is missing.
+
+Verification:
+
+- Focused A2A public readiness and package-script tests.
+- `npm run proof:a2a-public-readiness -- --out
+  tmp/gaskit/a2a-public-readiness.json`.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run verify:fast`.
+
+Dependencies:
+Existing A2A public readiness gate and public proof-plan writer.
+
+Risk:
+Low. This is a derived evidence artifact, but it must not become public hosting
+proof or an accidental place to store configured values.
+
+Escalation triggers:
+
+- Any request to include configured public URLs, JWKS URLs, auth decisions,
+  report paths, report contents, credentials, bearer tokens, webhook secrets,
+  raw payloads, response bodies, private keys, endpoint values, or local secret
+  paths.
+- Any request to treat the A2A public readiness artifact as public hosting,
+  production key management, public push delivery, external conformance, or
+  launch proof.

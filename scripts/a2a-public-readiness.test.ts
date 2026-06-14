@@ -1,12 +1,15 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
 
 import {
+  buildA2APublicReadinessArtifact,
   checkA2APublicReadiness,
+  formatA2APublicReadinessArtifact,
   formatA2APublicReadinessReport,
+  writeA2APublicReadinessArtifact,
 } from "./check-a2a-public-readiness.js";
 
 const NOW = new Date("2026-06-11T12:00:00.000Z");
@@ -16,9 +19,21 @@ test("A2A public readiness reports local proof while public gates remain blocked
   try {
     const report = await checkA2APublicReadiness({ cwd, env: {}, scripts: completeScripts(), now: NOW });
     const formatted = formatA2APublicReadinessReport(report);
+    const artifact = buildA2APublicReadinessArtifact(report, NOW);
+    const artifactJson = formatA2APublicReadinessArtifact(artifact);
 
     assert.equal(report.localProofOk, true);
     assert.equal(report.publicReady, false);
+    assert.equal(artifact.kind, "agentic-gaskit.a2a-public-readiness-report");
+    assert.equal(artifact.localProofOk, true);
+    assert.equal(artifact.publicReady, false);
+    assert.ok(artifact.provenLocalCheckIds.includes("local-a2a-proof"));
+    assert.ok(artifact.blockedCheckIds.includes("public-agent-card-url"));
+    assert.ok(artifact.blockerCodes.includes("A2A_PUBLIC_DISCOVERY_REPORT_MISSING"));
+    assert.doesNotMatch(
+      artifactJson,
+      /agents\.example|a2a-conformance-report|query-token-secret|missing-secret-report|0x[0-9a-fA-F]{64}/,
+    );
     assert.equal(findCheck(report, "local-a2a-proof").status, "proven-local");
     assert.equal(findCheck(report, "local-public-jwks-hosting").status, "proven-local");
     assert.equal(findCheck(report, "local-public-jwks-hosting").code, "A2A_PUBLIC_JWKS_LOCAL_PROOF_CONFIGURED");
@@ -64,6 +79,30 @@ test("A2A public readiness reports local proof while public gates remain blocked
     assert.equal(findCheck(report, "external-conformance").code, "A2A_EXTERNAL_CONFORMANCE_REPORT_MISSING");
     assert.match(formatted, /Agentic GasKit A2A public readiness blocked/);
     assert.doesNotMatch(formatted, /secret|token|private/i);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("A2A public readiness artifact writer uses restrictive local file permissions", async () => {
+  const cwd = await writeA2AEvidence();
+  try {
+    const outFile = "tmp/gaskit/a2a-public-readiness.json";
+    const artifact = await writeA2APublicReadinessArtifact({
+      cwd,
+      env: {},
+      scripts: completeScripts(),
+      now: NOW,
+      outFile,
+    });
+    const written = JSON.parse(await readFile(join(cwd, outFile), "utf8")) as typeof artifact;
+    const mode = (await stat(join(cwd, outFile))).mode & 0o777;
+
+    assert.equal(artifact.kind, "agentic-gaskit.a2a-public-readiness-report");
+    assert.equal(written.kind, "agentic-gaskit.a2a-public-readiness-report");
+    assert.equal(written.publicReady, false);
+    assert.equal(written.blockerCodes.includes("A2A_PUBLIC_AGENT_CARD_URL_MISSING"), true);
+    assert.equal(mode, 0o600);
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }

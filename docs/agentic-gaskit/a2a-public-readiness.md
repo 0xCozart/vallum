@@ -49,6 +49,8 @@ Run it from the repository root:
 
 ```bash
 npm run proof:a2a-public-readiness
+npm run proof:a2a-public-readiness -- --json
+npm run proof:a2a-public-readiness -- --out tmp/gaskit/a2a-public-readiness.json
 ```
 
 Expected status in an unconfigured checkout:
@@ -58,6 +60,12 @@ Agentic GasKit A2A public readiness blocked
 localProofOk=true
 publicReady=false
 ```
+
+The `--json` and `--out` forms produce a redacted local audit artifact with
+schema version, kind, timestamp, public readiness status, local proof status,
+check ids grouped by status, blocker codes, checks, and safety boundaries. The
+`--out` file is written with mode `600` and must stay outside committed files.
+It does not prove public hosting or external conformance by itself.
 
 ## What It Checks
 
@@ -139,6 +147,9 @@ publicReady=false
 The report prints command names, blocker codes, and generic evidence strings.
 It does not print configured public URLs, JWKS URLs, auth decisions, local
 report paths, report contents, credentials, tokens, or secret-like values.
+The JSON artifact follows the same boundary and must not be used to store
+configured endpoint values, report paths, raw payloads, response bodies,
+webhook secrets, bearer tokens, or private key material.
 
 ## What It Does Not Prove
 
