@@ -138,6 +138,43 @@ test("documented faucet requester posts fixed amount requests to the /gas endpoi
   }
 });
 
+test("sponsor faucet request can select the documented v0 endpoint", async () => {
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = (async (url, init) => {
+      assert.equal(String(url), "https://faucet.testnet.example/gas");
+      assert.equal(init?.method, "POST");
+      return new Response(JSON.stringify({
+        transferredGasObjects: [
+          { amount: 100, id: "coin-1", transferTxDigest: "digest-1" },
+        ],
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }) as typeof fetch;
+
+    const report = await requestSponsorFaucetFunds({
+      env: {
+        GAS_STATION_KEYPAIR: sponsorKey,
+      },
+      execute: true,
+      faucetApiVersion: "v0-documented",
+      faucetUrl: "https://faucet.testnet.example",
+    });
+    const formatted = formatSponsorFaucetRequestReport(report);
+
+    assert.equal(report.result, "passed");
+    assert.equal(report.code, "SPONSOR_FAUCET_REQUESTED");
+    assert.equal(report.faucetApiVersion, "v0-documented");
+    assert.equal(report.amountMist, "100");
+    assert.doesNotMatch(formatted, new RegExp(escapeRegExp(sponsorAddress)));
+    assert.doesNotMatch(formatted, /faucet\.testnet\.example/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("default faucet requester uses the batch /v1/gas endpoint and polls status", async () => {
   const originalFetch = globalThis.fetch;
   const recipient = "0x1111111111111111111111111111111111111111111111111111111111111111";
@@ -186,6 +223,38 @@ test("default faucet requester uses the batch /v1/gas endpoint and polls status"
       "POST https://faucet.testnet.example/v1/gas",
       "GET https://faucet.testnet.example/v1/status/task-1",
     ]);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("sponsor faucet request records documented v0 HTTP failure metadata", async () => {
+  const originalFetch = globalThis.fetch;
+  const rawResponse = "legacy faucet body that should stay hidden";
+  try {
+    globalThis.fetch = (async (url, init) => {
+      assert.equal(String(url), "https://faucet.testnet.example/gas");
+      assert.equal(init?.method, "POST");
+      return new Response(rawResponse, { status: 405 });
+    }) as typeof fetch;
+
+    const report = await requestSponsorFaucetFunds({
+      env: {
+        GAS_STATION_KEYPAIR: sponsorKey,
+      },
+      execute: true,
+      faucetApiVersion: "v0-documented",
+      faucetUrl: "https://faucet.testnet.example",
+    });
+    const formatted = formatSponsorFaucetRequestReport(report);
+
+    assert.equal(report.result, "failed");
+    assert.equal(report.code, "SPONSOR_FAUCET_FAILED");
+    assert.equal(report.faucetApiVersion, "v0-documented");
+    assert.equal(report.faucetHttpStatus, 405);
+    assert.equal(report.faucetFailureKind, "http-status");
+    assert.doesNotMatch(formatted, new RegExp(escapeRegExp(rawResponse)));
+    assert.doesNotMatch(formatted, /faucet\.testnet\.example/);
   } finally {
     globalThis.fetch = originalFetch;
   }

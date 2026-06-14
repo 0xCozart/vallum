@@ -5283,3 +5283,63 @@ Escalation triggers:
 - Any request to print configured GraphQL endpoint values, full names, full
   addresses, raw GraphQL bodies, or local secret paths in status gates.
 - Any request to include `smoke:iota-names-live` in default local verification.
+
+## Slice 7.22: Sponsor Faucet API Selection
+
+User-visible outcome:
+Operators can explicitly choose the public IOTA faucet API shape used by the
+sponsor faucet helper instead of relying on an ad hoc script when the currently
+configured faucet supports either the batch `/v1/gas` flow or the documented
+legacy `/gas` flow.
+
+Likely files:
+
+- `scripts/request-sponsor-faucet-funds.ts`
+- `scripts/request-sponsor-faucet-funds.test.ts`
+- `docs/CODEBASE_MAP.md`
+- `docs/testnet-readiness.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `npm run sponsor:request-faucet-funds -- --execute --api-version v1-batch`
+  keeps the existing default batch request and status-poll behavior.
+- `npm run sponsor:request-faucet-funds -- --execute --api-version
+  v0-documented` uses the documented `/gas` request shape without requiring an
+  inline `tsx` helper.
+- The helper still requires `--execute`, still requires an HTTPS or loopback
+  faucet URL, and still writes only a sanitized ignored report.
+- Success and failure reports preserve the selected `faucetApiVersion`, bounded
+  HTTP status, and bounded failure kind without raw faucet bodies, faucet task
+  ids, full sponsor addresses, signer material, rendered Gas Station config,
+  bearer tokens, raw transaction bytes, or user signatures.
+- Faucet success still does not prove sponsor funding, reserve_gas
+  compatibility, or sponsored execution.
+
+Verification:
+
+- Focused sponsor faucet tests.
+- `npm run sponsor:request-faucet-funds -- --help`.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slices 7.18-7.21, local `.env` testnet signer configuration, and an
+operator-provided faucet URL for live requests.
+
+Risk:
+Low to medium. The implementation is mostly CLI routing around already-tested
+request functions, but the live command contacts a faucet service and reveals
+the public sponsor address when `--execute` is provided.
+
+Escalation triggers:
+
+- Any request to make faucet requests without `--execute`.
+- Any request to print raw faucet responses, faucet task ids, full sponsor
+  addresses, signer material, bearer tokens, rendered Gas Station config, raw
+  transaction bytes, or user signatures.
+- Any request to treat a faucet request as proof of sponsor funding or
+  reserve_gas compatibility.

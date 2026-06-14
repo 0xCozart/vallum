@@ -37,10 +37,13 @@ export interface SponsorFaucetRequestReport {
   readonly nextCommands: readonly string[];
 }
 
+export type SponsorFaucetApiVersion = NonNullable<SponsorFaucetRequestReport["faucetApiVersion"]>;
+
 export interface RequestSponsorFaucetFundsOptions {
   readonly env?: Record<string, string | undefined>;
   readonly envFile?: string;
   readonly execute?: boolean;
+  readonly faucetApiVersion?: SponsorFaucetApiVersion;
   readonly faucetUrl?: string;
   readonly now?: Date;
   readonly outFile?: string;
@@ -55,6 +58,7 @@ export type SponsorFaucetRequester = (input: {
 interface CliOptions {
   readonly envFile: string;
   readonly execute: boolean;
+  readonly faucetApiVersion?: SponsorFaucetApiVersion;
   readonly faucetUrl?: string;
   readonly help: boolean;
   readonly outFile: string;
@@ -66,7 +70,7 @@ type MutableCliOptions = {
 
 const DEFAULT_OUT_FILE = "tmp/gaskit/sponsor-faucet-request.json";
 
-const usage = `usage: npm exec tsx -- scripts/request-sponsor-faucet-funds.ts [--execute] [--faucet-url <url>] [--env-file <path>] [--out <path>]
+const usage = `usage: npm exec tsx -- scripts/request-sponsor-faucet-funds.ts [--execute] [--api-version v1-batch|v0-documented] [--faucet-url <url>] [--env-file <path>] [--out <path>]
 
 Requests IOTA testnet faucet funds for the configured sponsor address only when --execute is supplied.
 Requires IOTA_FAUCET_URL or --faucet-url. Stdout stays redacted; the report is written to an ignored local path.`;
@@ -146,8 +150,9 @@ export async function requestSponsorFaucetFunds(
   }
 
   try {
-    const defaultRequester = options.requestFunds === undefined;
-    const amount = await (options.requestFunds ?? requestIotaFromDefaultFaucet)({
+    const selectedApiVersion = options.faucetApiVersion ?? "v1-batch";
+    const requester = options.requestFunds ?? requesterForApiVersion(selectedApiVersion);
+    const amount = await requester({
       host: faucetUrl,
       recipient: sponsorAddress,
     });
@@ -158,7 +163,7 @@ export async function requestSponsorFaucetFunds(
       message: "Sponsor faucet request completed; rerun the funding diagnostic to verify readable coin balance.",
       contactsLiveService: true,
       sponsorAddressRedacted,
-      faucetApiVersion: defaultRequester ? "v1-batch" : undefined,
+      faucetApiVersion: options.requestFunds === undefined ? selectedApiVersion : options.faucetApiVersion,
       amountMist: amount === undefined ? undefined : String(amount),
     });
   } catch (error) {
@@ -172,7 +177,7 @@ export async function requestSponsorFaucetFunds(
         : "Sponsor faucet request failed without exposing raw faucet response details.",
       contactsLiveService: true,
       sponsorAddressRedacted,
-      faucetApiVersion: sanitized.apiVersion,
+      faucetApiVersion: sanitized.apiVersion ?? options.faucetApiVersion,
       faucetHttpStatus: sanitized.httpStatus,
       faucetFailureKind: sanitized.failureKind,
     });
@@ -311,6 +316,12 @@ export function formatSponsorFaucetRequestReport(report: SponsorFaucetRequestRep
   ].join("\n");
 }
 
+function requesterForApiVersion(apiVersion: SponsorFaucetApiVersion): SponsorFaucetRequester {
+  return apiVersion === "v0-documented"
+    ? requestIotaFromDocumentedFaucet
+    : requestIotaFromDefaultFaucet;
+}
+
 function parseArgs(argv: readonly string[]): CliOptions {
   const options: MutableCliOptions = {
     envFile: ".env",
@@ -326,6 +337,16 @@ function parseArgs(argv: readonly string[]): CliOptions {
     }
     if (arg === "--execute") {
       options.execute = true;
+      continue;
+    }
+    if (arg === "--api-version") {
+      const value = argv[index + 1];
+      if (!value) throw new Error("--api-version requires v1-batch or v0-documented.");
+      if (value !== "v1-batch" && value !== "v0-documented") {
+        throw new Error("--api-version must be v1-batch or v0-documented.");
+      }
+      options.faucetApiVersion = value;
+      index += 1;
       continue;
     }
     if (arg === "--env-file") {
@@ -476,6 +497,7 @@ async function main(): Promise<number> {
   const report = await requestSponsorFaucetFunds({
     envFile: resolve(process.cwd(), options.envFile),
     execute: options.execute,
+    faucetApiVersion: options.faucetApiVersion,
     faucetUrl: options.faucetUrl,
     outFile: options.outFile,
   });

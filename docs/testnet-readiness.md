@@ -195,9 +195,11 @@ configured `IOTA_FAUCET_URL` or passes `--faucet-url`. Without `--execute`, the
 command writes a blocked local report and does not contact the faucet. With
 `--execute`, it sends the public sponsor address to the configured HTTPS or
 loopback faucet, writes only a sanitized ignored report, and still does not
-sign, reserve gas, or execute transactions. Faucet success is not accepted as
-reserve_gas compatibility; rerun the funding diagnostic and upstream
-diagnostic afterward.
+sign, reserve gas, or execute transactions. It defaults to `--api-version
+v1-batch`; operators can pass `--api-version v0-documented` for faucet
+deployments that still expose the documented `/gas` endpoint. Faucet success is
+not accepted as reserve_gas compatibility; rerun the funding diagnostic and
+upstream diagnostic afterward.
 
 `npm run sponsor:check-funding -- --report
 tmp/gaskit/sponsor-funding-report.json` can be used as a read-only funding
