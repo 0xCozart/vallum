@@ -236,7 +236,7 @@ Latest local verification and prior live proof:
   `--execute` is opt-in because it may pull images and start containers.
 - `npm run publish:dry-run`: opt-in npm publish dry-run completed locally for
   public workspaces; no package was published.
-- Prior `npm run execute:testnet-demo`: real sponsored IOTA testnet execute succeeded through the local policy gateway and Gas Station; public digest `2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H`.
+- Prior `npm run execute:testnet-demo`: real sponsored IOTA testnet execute succeeded through the local policy gateway and Gas Station; public digest `FLdnYRUACAKQn8CwugEv1u6gYTh9jBr8rGMk2JZ2adsd`.
 - secret-oriented scan over tracked project files is wired into `npm run secrets:scan` and `npm run verify:local`.
 
 See `docs/testnet-attempts.md`, `docs/agentic-gaskit/product-status.md`,

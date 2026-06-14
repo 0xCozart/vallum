@@ -220,8 +220,10 @@ command writes a blocked local report and does not contact the faucet. With
 loopback faucet, writes only a sanitized ignored report, and still does not
 sign, reserve gas, or execute transactions. It defaults to `--api-version
 auto`, which tries the SDK-style `v1-batch` route first and falls back to
-`v0-documented` only for bounded unsupported, structurally invalid, or unknown
-v1 failures. Operators can still pass `--api-version v1-batch` or
+`v0-documented` only for bounded unsupported or structurally invalid v1
+failures. A v1 faucet-level error that can only be bounded as `UNKNOWN` is
+kept as the terminal faucet evidence instead of being masked by a second
+unsupported route. Operators can still pass `--api-version v1-batch` or
 `--api-version v0-documented` when they need a single explicit faucet shape.
 Faucet success is not accepted as reserve_gas compatibility; rerun the funding
 diagnostic and upstream diagnostic afterward. Failed faucet reports should be

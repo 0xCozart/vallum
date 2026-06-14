@@ -154,6 +154,56 @@ transactionDigest=2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H
 
 Outcome: the real IOTA testnet sponsored transaction path is complete end-to-end through local policy gateway, local Gas Station, and testnet RPC.
 
+## 2026-06-14 fresh funded sponsored testnet execute
+
+After locating a funded sibling testnet sponsor in local ignored env files,
+the Agentic GasKit ignored `.env` was updated locally, the Gas Station config
+was rerendered, and the direct Docker Gas Station stack was restarted. The
+fresh funding and upstream gates passed before execution:
+
+```bash
+npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json
+npm run gas-station:render-config
+npm run gas-station:docker-direct -- --execute
+npm run gas-station:runtime-preflight
+npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
+```
+
+Sanitized pre-execute status:
+
+```text
+sponsorFundingCode=SPONSOR_FUNDING_REPORT_VALID
+gasStationReachabilityCode=GAS_STATION_ROOT_READY
+reserveGasCode=RESERVE_GAS_READY
+```
+
+Then one real sponsored testnet transaction was executed:
+
+```bash
+npm run execute:testnet-demo
+```
+
+Sanitized successful run:
+
+```text
+gatewayConfigured=true
+iotaRpcConfigured=true
+demoTarget=0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0::demo_badge::mint_badge
+ephemeralUserAddress=0x8bd84516...12034ade
+reservedGas=true
+reservationId=<redacted-id>
+gasKitTransactionId=gaskit_b...f2234e
+sponsorAddress=0xd046a4fb...29b9b868
+executed=true
+transactionDigest=FLdnYRUACAKQn8CwugEv1u6gYTh9jBr8rGMk2JZ2adsd
+```
+
+Outcome: the current machine again proves the real IOTA testnet sponsored
+transaction path end-to-end through the local policy gateway, local Gas
+Station, and IOTA testnet RPC. The command consumed testnet gas only. No raw
+sponsor key, bearer token, raw transaction bytes, user signature, full
+reservation id, or full address was written to this tracked evidence.
+
 ## 2026-06-11 upstream diagnostic report gate
 
 Local `.env` is present and `npm run readiness:testnet` passes non-networked

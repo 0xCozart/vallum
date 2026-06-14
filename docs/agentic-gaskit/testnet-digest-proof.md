@@ -6,7 +6,7 @@ testnet transaction digest evidence already documented in this repo.
 Documented digest:
 
 ```text
-2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H
+FLdnYRUACAKQn8CwugEv1u6gYTh9jBr8rGMk2JZ2adsd
 ```
 
 It verifies that the known public digest appears in:
@@ -66,7 +66,7 @@ availability first.
 - Current sponsor wallet funding.
 - Current Gas Station availability.
 - Current local `.env` readiness.
-- A new sponsored transaction execution.
+- A newer sponsored transaction execution after the documented digest changes.
 - Production or mainnet readiness.
 
 Use `npm run execute:testnet-demo` only when operator-owned local credentials,

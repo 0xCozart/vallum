@@ -6636,8 +6636,10 @@ User-visible outcome:
 Operators can run one approved sponsor faucet request command that first tries
 the SDK-style `v1-batch` route and then falls back to the currently documented
 `/gas` request shape only when the v1 response is bounded as unsupported,
-structurally invalid, or unknown. The helper still emits only sanitized ignored
-evidence and still requires the funding diagnostic to prove balance.
+or structurally invalid. A v1 faucet-level error that can only be bounded as
+`UNKNOWN` remains terminal evidence instead of being masked by a second
+unsupported route. The helper still emits only sanitized ignored evidence and
+still requires the funding diagnostic to prove balance.
 
 Likely files:
 
@@ -6651,7 +6653,9 @@ Acceptance criteria:
 - `npm run sponsor:request-faucet-funds -- --execute` defaults to
   `--api-version auto`.
 - Auto mode tries `v1-batch` first and falls back to `v0-documented` only for
-  bounded unsupported, invalid-json, or unknown v1 failures.
+  bounded unsupported or invalid-json v1 failures.
+- Auto mode preserves bounded v1 faucet-level `UNKNOWN` failures as terminal
+  evidence instead of falling through to a second route.
 - Auto mode does not retry a second faucet shape for rate limits, address
   validation failures, cooldowns, out-of-funds signals, or other concrete
   faucet blockers.

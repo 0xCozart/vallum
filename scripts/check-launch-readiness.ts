@@ -118,6 +118,7 @@ const AREA_DEFINITIONS = [
     productCheckIds: ["gas-station-runtime", "sponsor-funding", "testnet-upstream"],
     fallbackStatus: "proven-local",
     next: "Use the ignored sponsor funding request plus any bounded faucet context to fund the sponsor, rerun sponsor funding, then run the full upstream diagnostic only after funding is ready.",
+    readyNext: "Fresh sponsor funding and upstream reserve compatibility are ready; with explicit operator intent, run npm run execute:testnet-demo to prove a fresh sponsored testnet transaction.",
   },
   {
     id: "phase-2-identity-and-vc",
@@ -392,7 +393,9 @@ async function buildArea(
     evidencePaths: definition.evidencePaths,
     commands: definition.commands,
     blockerCodes,
-    next: definition.next,
+    next: blockerCodes.length === 0 && "readyNext" in definition
+      ? definition.readyNext
+      : definition.next,
   };
 }
 

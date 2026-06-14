@@ -123,6 +123,10 @@ test("launch readiness can become ready only when product status is complete and
     assert.equal(report.launchReady, true);
     assert.ok(report.areas.every((area) => area.status === "proven-local"));
     assert.ok(report.areas.every((area) => area.blockerCodes.length === 0));
+    assert.match(
+      report.areas.find((area) => area.id === "phase-1-sponsored-policy-mvp")?.next ?? "",
+      /execute:testnet-demo/,
+    );
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }

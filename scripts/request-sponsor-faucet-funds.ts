@@ -95,7 +95,7 @@ const usage = `usage: npm exec tsx -- scripts/request-sponsor-faucet-funds.ts [-
 
 Requests IOTA testnet faucet funds for the configured sponsor address only when --execute is supplied.
 Requires IOTA_FAUCET_URL or --faucet-url. Stdout stays redacted; the report is written to an ignored local path.
-The default auto mode tries the SDK-style v1 route, then the documented /gas route only for bounded unsupported or unknown v1 failures.`;
+The default auto mode tries the SDK-style v1 route, then the documented /gas route only for bounded unsupported or structurally invalid v1 failures.`;
 
 export async function requestSponsorFaucetFunds(
   options: RequestSponsorFaucetFundsOptions = {},
@@ -508,8 +508,7 @@ function shouldTryDocumentedFaucetFallback(error: unknown): boolean {
   if (!(error instanceof SanitizedFaucetRequestError)) return false;
   if (error.apiVersion !== "v1-batch" || error.rateLimited) return false;
   if (error.errorCode === "REQUEST_UNSUPPORTED") return true;
-  if (error.failureKind === "invalid-json") return true;
-  return error.failureKind === "faucet-error" && error.errorCode === "UNKNOWN";
+  return error.failureKind === "invalid-json";
 }
 
 function requestedFaucetNextCommands(): readonly string[] {

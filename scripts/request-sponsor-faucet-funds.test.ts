@@ -272,7 +272,7 @@ test("default faucet requester uses the batch /v1/gas endpoint and polls status"
   }
 });
 
-test("sponsor faucet auto mode falls back from unknown v1 faucet errors to the documented endpoint", async () => {
+test("sponsor faucet auto mode falls back from structurally invalid v1 responses to the documented endpoint", async () => {
   const originalFetch = globalThis.fetch;
   const recipient = sponsorAddress;
   const seen: string[] = [];
@@ -280,7 +280,7 @@ test("sponsor faucet auto mode falls back from unknown v1 faucet errors to the d
     globalThis.fetch = (async (url, init) => {
       seen.push(`${init?.method ?? "GET"} ${String(url)}`);
       if (String(url).endsWith("/v1/gas")) {
-        return new Response(JSON.stringify({ error: { detail: "unmodeled response" } }), {
+        return new Response("not-json", {
           status: 200,
           headers: { "Content-Type": "application/json" },
         });
@@ -321,6 +321,43 @@ test("sponsor faucet auto mode falls back from unknown v1 faucet errors to the d
       "POST https://faucet.testnet.example/gas",
     ]);
     assert.doesNotMatch(formatted, new RegExp(escapeRegExp(sponsorAddress)));
+    assert.doesNotMatch(formatted, /faucet\.testnet\.example|not-json/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("sponsor faucet auto mode preserves unknown v1 faucet errors as terminal evidence", async () => {
+  const originalFetch = globalThis.fetch;
+  const rawError = { detail: "unmodeled response" };
+  const seen: string[] = [];
+  try {
+    globalThis.fetch = (async (url, init) => {
+      seen.push(`${init?.method ?? "GET"} ${String(url)}`);
+      return new Response(JSON.stringify({ error: rawError }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }) as typeof fetch;
+
+    const report = await requestSponsorFaucetFunds({
+      env: {
+        GAS_STATION_KEYPAIR: sponsorKey,
+      },
+      execute: true,
+      faucetUrl: "https://faucet.testnet.example",
+      outFile: await tempFaucetReportPath(),
+    });
+    const formatted = formatSponsorFaucetRequestReport(report);
+
+    assert.equal(report.result, "failed");
+    assert.equal(report.code, "SPONSOR_FAUCET_FAILED");
+    assert.equal(report.faucetApiVersion, "v1-batch");
+    assert.equal(report.faucetHttpStatus, 200);
+    assert.equal(report.faucetFailureKind, "faucet-error");
+    assert.equal(report.faucetErrorCode, "UNKNOWN");
+    assert.deepEqual(seen, ["POST https://faucet.testnet.example/v1/gas"]);
+    assert.doesNotMatch(JSON.stringify(report), /unmodeled response/);
     assert.doesNotMatch(formatted, /faucet\.testnet\.example|unmodeled response/);
   } finally {
     globalThis.fetch = originalFetch;

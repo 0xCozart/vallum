@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 import { IotaClient } from "@iota/iota-sdk/client";
 
-export const DOCUMENTED_TESTNET_DIGEST = "2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H";
+export const DOCUMENTED_TESTNET_DIGEST = "FLdnYRUACAKQn8CwugEv1u6gYTh9jBr8rGMk2JZ2adsd";
 export const DEFAULT_TESTNET_RPC_URL = "https://api.testnet.iota.cafe";
 
 export interface TestnetDigestProofReport {

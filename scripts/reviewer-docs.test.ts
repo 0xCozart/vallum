@@ -42,12 +42,16 @@ test("launch evidence reflects the current public local proof surface", async ()
   assert.match(proof, /Phase 6 package release/);
   assert.match(readme, /npm publish --dry-run --tag next --access public/);
   assert.match(readme, /Do not run a real `npm publish` without explicit operator approval/);
-  assert.match(readme, /2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H/);
+  assert.match(readme, /FLdnYRUACAKQn8CwugEv1u6gYTh9jBr8rGMk2JZ2adsd/);
 });
 
 test("testnet attempt log reflects current runtime-ready blocker chain", async () => {
   const attempts = await readDoc("docs/testnet-attempts.md");
 
+  assert.match(attempts, /## 2026-06-14 fresh funded sponsored testnet execute/);
+  assert.match(attempts, /SPONSOR_FUNDING_REPORT_VALID/);
+  assert.match(attempts, /RESERVE_GAS_READY/);
+  assert.match(attempts, /transactionDigest=FLdnYRUACAKQn8CwugEv1u6gYTh9jBr8rGMk2JZ2adsd/);
   assert.match(attempts, /## 2026-06-14 runtime-ready reserve-skipped refresh/);
   assert.match(attempts, /code=DOCKER_DIRECT_STACK_READY/);
   assert.match(attempts, /gasStationReachabilityCode=GAS_STATION_ROOT_READY/);
@@ -292,7 +296,7 @@ test("reviewer walkthrough points reviewers at runnable local proof paths", asyn
   assert.match(walkthrough, /does not require sponsor keys, real IOTA RPC, Docker, or private prototype files/);
   assert.match(walkthrough, /optional live proof is isolated in `npm run execute:testnet-demo`/);
   assert.match(walkthrough, /Reviewer quick verification/);
-  assert.match(walkthrough, /2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H/);
+  assert.match(walkthrough, /FLdnYRUACAKQn8CwugEv1u6gYTh9jBr8rGMk2JZ2adsd/);
   assert.match(walkthrough, /loopback-only calls without external network, live IOTA RPC, or official Gas Station calls/);
   assert.match(walkthrough, /gateway-local\/offline/);
 });

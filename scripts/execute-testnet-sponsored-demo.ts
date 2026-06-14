@@ -192,6 +192,13 @@ export function formatSponsoredExecutePrerequisiteReport(
   return lines.join("\n");
 }
 
+export function formatSponsoredExecuteField(name: string, value: string): string {
+  const redacted = name.toLowerCase().includes("address")
+    ? redactAddress(value)
+    : redactOpaqueValue(value);
+  return `${name}=${redacted}`;
+}
+
 async function main(): Promise<number> {
   let options: CliOptions;
   try {
@@ -225,7 +232,7 @@ async function main(): Promise<number> {
     console.log("gatewayConfigured=true");
     console.log("iotaRpcConfigured=true");
     console.log(`demoTarget=${DEMO_PACKAGE_ID}::${DEMO_MODULE}::${DEMO_FUNCTION}`);
-    console.log(`ephemeralUserAddress=${userAddress}`);
+    console.log(formatSponsoredExecuteField("ephemeralUserAddress", userAddress));
 
     const reservation = await gasKit.reserveGas({
       gasBudget: GAS_BUDGET,
@@ -241,9 +248,9 @@ async function main(): Promise<number> {
     }
 
     console.log(`reservedGas=true`);
-    console.log(`reservationId=${reservation.reservationId}`);
-    console.log(`gasKitTransactionId=${reservation.gasKitTransactionId}`);
-    console.log(`sponsorAddress=${reservation.sponsorAddress}`);
+    console.log(formatSponsoredExecuteField("reservationId", reservation.reservationId));
+    console.log(formatSponsoredExecuteField("gasKitTransactionId", reservation.gasKitTransactionId));
+    console.log(formatSponsoredExecuteField("sponsorAddress", reservation.sponsorAddress));
 
     const tx = new Transaction();
     tx.setSender(userAddress);
@@ -269,6 +276,14 @@ async function main(): Promise<number> {
     console.error(error instanceof Error ? error.message : "Sponsored testnet execute failed unexpectedly.");
     return 1;
   }
+}
+
+function redactAddress(value: string): string {
+  return value.length <= 18 ? "<redacted-address>" : `${value.slice(0, 10)}...${value.slice(-8)}`;
+}
+
+function redactOpaqueValue(value: string): string {
+  return value.length <= 14 ? "<redacted-id>" : `${value.slice(0, 8)}...${value.slice(-6)}`;
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

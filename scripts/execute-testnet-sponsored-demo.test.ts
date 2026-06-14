@@ -6,6 +6,7 @@ import { test } from "node:test";
 
 import {
   checkSponsoredExecutePrerequisites,
+  formatSponsoredExecuteField,
   formatSponsoredExecutePrerequisiteReport,
 } from "./execute-testnet-sponsored-demo.js";
 
@@ -127,6 +128,27 @@ test("sponsored testnet execute prerequisites accept explicit managed upstream r
     await rm(cwd, { recursive: true, force: true });
   }
 });
+
+test("sponsored testnet execute live output redacts addresses and opaque reservation ids", () => {
+  const fullAddress = "0x1111111111111111111111111111111111111111111111111111111111111111";
+  const reservationId = "reservation-id-that-should-not-print-in-full";
+  const transactionId = "transaction-id-that-should-not-print-in-full";
+
+  const addressLine = formatSponsoredExecuteField("sponsorAddress", fullAddress);
+  const reservationLine = formatSponsoredExecuteField("reservationId", reservationId);
+  const transactionLine = formatSponsoredExecuteField("gasKitTransactionId", transactionId);
+
+  assert.equal(addressLine, "sponsorAddress=0x11111111...11111111");
+  assert.match(reservationLine, /^reservationId=reservat.*n-full$/);
+  assert.match(transactionLine, /^gasKitTransactionId=transact.*n-full$/);
+  assert.doesNotMatch(addressLine, new RegExp(escapeRegExp(fullAddress)));
+  assert.doesNotMatch(reservationLine, new RegExp(escapeRegExp(reservationId)));
+  assert.doesNotMatch(transactionLine, new RegExp(escapeRegExp(transactionId)));
+});
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
 function findCheck(
   report: Awaited<ReturnType<typeof checkSponsoredExecutePrerequisites>>,
