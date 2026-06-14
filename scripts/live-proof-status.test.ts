@@ -42,6 +42,9 @@ test("live proof status reports exact blockers without secret values", async () 
     assert.match(formatted, /IOTA_NAMES_GRAPHQL_URL/);
     assert.match(formatted, /IOTA_IDENTITY_PROOF_ENDPOINT/);
     assert.match(formatted, /IOTA_IDENTITY_TRUSTED_ISSUER_DIDS/);
+    assert.match(formatted, /operator:write-report-template -- --kind iota-names-live/);
+    assert.match(formatted, /operator:write-report-template -- --kind iota-identity-live/);
+    assert.match(formatted, /operator:write-report-template -- --kind vc-validation-live/);
     assert.match(formatted, /\.env/);
     assert.doesNotMatch(formatted, /private|mnemonic|bearer|token|secret|iotaprivkey|local-secret/i);
   } finally {
@@ -416,6 +419,7 @@ test("live proof status blocks configured identity proof endpoint without a smok
     assert.equal(identity?.status, "blocked");
     assert.equal(identity?.code, "IOTA_IDENTITY_LIVE_REPORT_MISSING");
     assert.deepEqual(identity?.missing, ["IOTA_IDENTITY_LIVE_REPORT"]);
+    assert.match(identity?.next ?? "", /operator:write-report-template -- --kind iota-identity-live/);
     assert.match(identity?.next ?? "", /--report/);
     assert.doesNotMatch(formatted, /identity\.testnet\.example|researcher\.json/);
   } finally {
@@ -489,6 +493,7 @@ test("live proof status blocks VC trust policy config without an identity smoke 
     assert.equal(vc?.status, "blocked");
     assert.equal(vc?.code, "VC_VALIDATION_LIVE_REPORT_MISSING");
     assert.deepEqual(vc?.missing, ["IOTA_IDENTITY_LIVE_REPORT"]);
+    assert.match(vc?.next ?? "", /operator:write-report-template -- --kind vc-validation-live/);
     assert.doesNotMatch(formatted, /agent-registry|agent-capability-key-1/);
   } finally {
     await rm(cwd, { recursive: true, force: true });
@@ -601,6 +606,7 @@ test("live proof status blocks configured names without a smoke report", async (
     assert.equal(names?.status, "blocked");
     assert.equal(names?.code, "IOTA_NAMES_LIVE_REPORT_MISSING");
     assert.deepEqual(names?.missing, ["IOTA_NAMES_LIVE_REPORT"]);
+    assert.match(names?.next ?? "", /operator:write-report-template -- --kind iota-names-live/);
     assert.match(names?.next ?? "", /--report/);
   } finally {
     await rm(cwd, { recursive: true, force: true });

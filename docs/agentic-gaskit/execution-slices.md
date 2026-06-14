@@ -7955,3 +7955,59 @@ Escalation triggers:
 - Any request to include full addresses, full reservation ids, raw transaction
   bytes, user signatures, sponsor keys, bearer tokens, app API keys, local
   secret paths, or raw upstream bodies in the report or tracked docs.
+
+## Slice 7.77: Live Status Template Guidance
+
+User-visible outcome:
+`npm run proof:live-status` points blocked IOTA Names, IOTA Identity, and VC
+validation paths at the matching ignored `operator:write-report-template`
+command before the live smoke/report command, keeping status output aligned
+with the live proof plan, launch matrix, and operator gate runbook.
+
+Likely files:
+
+- `scripts/check-live-proof-status.ts`
+- `scripts/live-proof-status.test.ts`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- Missing IOTA Names config and missing IOTA Names live report blockers include
+  the `iota-names-live` report-template command in `next`.
+- Missing IOTA Identity config and missing IOTA Identity live report blockers
+  include the `iota-identity-live` report-template command in `next`.
+- Missing VC trust-policy config and missing VC live report blockers include
+  the `vc-validation-live` report-template command in `next`.
+- Template commands remain non-live planning guidance and are not accepted as
+  passing live proof.
+- Focused tests assert template guidance while continuing to redact configured
+  endpoint, name, address, profile, DID, credential, report path, token, and
+  secret-like values.
+
+Verification:
+
+- `node --import tsx --test scripts/live-proof-status.test.ts
+  scripts/write-live-proof-plan.test.ts`
+- `npm run proof:live-status`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `npm run typecheck`
+- `git diff --check`
+
+Dependencies:
+Slices 7.71 through 7.75.
+
+Risk:
+Low. This is guidance alignment only, but stale live-status next steps can
+cause operators to skip the structured report template and create unaccepted
+ad hoc proof artifacts.
+
+Escalation triggers:
+
+- Any request to treat generated templates as passing live Names, Identity, or
+  VC proof.
+- Any request to include endpoint values, names, addresses, DIDs, credential
+  refs, local secret paths, report contents, credentials, tokens, private keys,
+  raw transaction bytes, signatures, or raw upstream/provider bodies in status
+  output or public docs.

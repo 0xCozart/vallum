@@ -180,6 +180,11 @@ npm run smoke:iota-identity-live -- --report tmp/gaskit/iota-identity-live-repor
 npm run operator:write-report-template -- --kind vc-validation-live --out tmp/gaskit/vc-validation-live-report-template.json
 ```
 
+`npm run proof:live-status` uses the same template-first command guidance for
+blocked IOTA Names, IOTA Identity, and VC validation paths. Template files are
+only ignored planning artifacts; they do not clear live-status checks until the
+matching live smoke or accepted report gate passes.
+
 The `--skip-reserve` diagnostic is reachability triage only. It cannot clear
 `testnet-upstream`; a fresh diagnostic without `--skip-reserve` is still
 required after sponsor funding is ready.
