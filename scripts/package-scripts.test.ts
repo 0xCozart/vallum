@@ -14,6 +14,7 @@ const tsconfig = JSON.parse(await readFile(resolve(repoRoot, "tsconfig.json"), "
 };
 const secretScanScript = await readFile(resolve(repoRoot, "scripts/scan-secrets.ts"), "utf8");
 const ciWorkflow = await readFile(resolve(repoRoot, ".github/workflows/ci.yml"), "utf8");
+const codebaseMap = await readFile(resolve(repoRoot, "docs/CODEBASE_MAP.md"), "utf8");
 const apexProfile = JSON.parse(await readFile(resolve(repoRoot, "apex.workflow.json"), "utf8")) as {
   name?: string;
   authority?: { executionTruth?: string[]; doNotUseAsAuthority?: string[] };
@@ -483,6 +484,28 @@ test("Apex workflow profile is reviewed and keeps local goal docs out of authori
   assert.ok(apexProfile.authority?.doNotUseAsAuthority?.includes("docs/agentic-gaskit/full-roadmap-execution-goal.md"));
   assert.ok(apexProfile.authority?.doNotUseAsAuthority?.includes("docs/agentic-gaskit/handoff-next-product-build.md"));
   assert.ok(apexProfile.authority?.doNotUseAsAuthority?.includes("docs/agentic-gaskit/codex-active-goal.md"));
+});
+
+test("codebase map stays reviewed for Apex workflow routing", () => {
+  const requiredSections = [
+    "High-Level Layout",
+    "Architecture Anchors",
+    "Core Domains And Ownership Zones",
+    "Routes, Commands, And Entry Points",
+    "Data, State, Auth, And External Boundaries",
+    "Frequent Edit Hotspots",
+    "Risk And Coupling Areas",
+    "Verification Path By Change Type",
+    "Generated Or Ignored Paths",
+    "Keeping This Map Current",
+    "Map Evidence",
+  ];
+
+  assert.match(codebaseMap, /^Status: reviewed$/m);
+  assert.doesNotMatch(codebaseMap, /REVIEW NEEDED/);
+  for (const section of requiredSections) {
+    assert.match(codebaseMap, new RegExp(`^## ${escapeRegExp(section)}$`, "m"));
+  }
 });
 
 test("secret scan covers tracked, staged, and untracked text without broad source-test skips", () => {

@@ -6380,3 +6380,61 @@ Escalation triggers:
   and current-slice manifest/detect evidence.
 - Any new live/testnet, sponsor-wallet, app-key, bearer-token, payment,
   custody, or private prompt surface added to workflow logs or public docs.
+
+## Slice 7.39: Apex Codebase Map Review
+
+User-visible outcome:
+Future agents can use `docs/CODEBASE_MAP.md` as a reviewed Apex orientation
+map, with the required section contract for routing, ownership, verification,
+ignored artifacts, and safety boundaries. `apex-doctor` should no longer treat
+the map as legacy or missing required sections.
+
+Likely files:
+
+- `docs/CODEBASE_MAP.md`
+- `scripts/package-scripts.test.ts`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `docs/CODEBASE_MAP.md` has `Status: reviewed`.
+- The map contains the required Apex sections:
+  `High-Level Layout`, `Architecture Anchors`,
+  `Core Domains And Ownership Zones`, `Routes, Commands, And Entry Points`,
+  `Data, State, Auth, And External Boundaries`, `Frequent Edit Hotspots`,
+  `Risk And Coupling Areas`, `Verification Path By Change Type`,
+  `Generated Or Ignored Paths`, `Keeping This Map Current`, and
+  `Map Evidence`.
+- The map has no `REVIEW NEEDED` markers.
+- `apex-map-codebase --check --require-reviewed` passes.
+- `apex-doctor` no longer reports the codebase map as legacy or missing
+  required sections.
+- Package-script tests guard the reviewed map status and section set.
+
+Verification:
+
+- `node /home/sacred/code/apex-workflow/scripts/apex-map-codebase.mjs
+  --target=. --check --require-reviewed`
+- `node /home/sacred/code/apex-workflow/scripts/apex-doctor.mjs --target=.
+  --config=apex.workflow.json`
+- `node --import tsx --test scripts/package-scripts.test.ts`
+- `npm run typecheck`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `git diff --check`
+- `npm run verify:fast`
+
+Dependencies:
+Reviewed Apex profile and current public source map evidence.
+
+Risk:
+Low. This is workflow orientation, but an inaccurate map can misroute future
+agents or lead to weak verification for security-sensitive slices.
+
+Escalation triggers:
+
+- Any request to include ignored local handoffs, raw goals, raw thesis,
+  `.env` values, raw reports, or local secret paths as public authority.
+- Any new Apex map warning after validation.
+- Any conflict between this map and `AGENTS.md`, `CLAUDE.md`, or the reviewed
+  Apex profile.

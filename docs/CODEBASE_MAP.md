@@ -1,490 +1,349 @@
 # Codebase Map
 
-Last updated: 2026-06-11.
+Status: reviewed
+Reviewed at: 2026-06-14T12:45:00.000Z
+Last updated: 2026-06-14.
 
-## Current State
+Purpose: fast, reviewed orientation for engineering work in Agentic GasKit.
+Use this map before broad search. It is routing evidence, not product proof.
 
-This repository is a local Agentic GasKit fork created from
-`https://github.com/0xCozart/iota-gaskit`.
+## High-Level Layout
 
-The current implemented codebase includes the original IOTA GasKit toolkit:
+Agentic GasKit is a local fork of IOTA GasKit. It preserves the original gas
+sponsorship toolkit and extends it with agent-safe accounts, signer
+references, manifests, receipts, contract workflows, registry/identity
+adapters, standards bridges, and readiness gates.
 
-- policy gateway
-- TypeScript SDK
-- shared policy/request/response types
-- runnable local policy gateway service
-- demo dApp smoke paths
-- examples
-- deployment templates
-- docs site
-- security, readiness, observability, and hardening docs
+Top-level layout:
 
-It also includes the first Agentic GasKit implementation slices:
+- `packages/` - TypeScript workspace packages.
+- `apps/` - runnable services and demo/docs apps.
+- `contracts/` - local Move contract packages.
+- `examples/` - deterministic local examples and smoke inputs.
+- `scripts/` - verification, readiness, proof, smoke, and artifact commands.
+- `deploy/` - Docker and deployment templates.
+- `docs/` - public product, operator, security, and verification docs.
+- `skills/` - repo-local agent workflow skill.
 
-- account/wallet signer-reference contract package
-- agent transaction manifest package
-- pure agent action policy evaluator and mock sponsorship gateway
-- SDK sponsored action and `openEscrow` helpers
-- MCP sponsorship tool facade
-- receipt state package
-- local Move escrow and receipt state contracts
-- deterministic local agent-to-agent escrow demo
-- local Move pay-per-call state contract and paid MCP-style tool demo
-- local Move data-license state contract and data-license demo
-- local Move service-bounty state contract and service-bounty demo
-- local Move reputation-receipt state contract and reputation-receipt demo
-- local Move subscription state contract and subscription demo
-- agent profile schema package with local fixture resolver
-- mock-tested IOTA Names/Identity adapter interfaces
-- bounded local IOTA Identity verification cache helpers with fail-closed stale
-  refresh behavior
-- local fail-closed IOTA Identity VC trust-policy evaluator for trusted
-  issuers, verification methods, credential types, revocation status, expiry,
-  max credential age, and cache-policy binding
-- opt-in IOTA Identity live proof harness through an operator-provided proof
-  endpoint and configured Agent Profile path, with sanitized ignored report
-  output for live proof gates
-- local A2A Agent Card mapping from Agent Profiles
-- local A2A Agent Card well-known serving helper and smoke proof
-- local public JWKS response helper for Agent Card signing keys and loopback
-  Node server JWKS route support
-- local static A2A discovery bundle helper for signed Agent Card and public
-  JWKS JSON artifacts at canonical well-known paths
-- local static A2A discovery artifact writer for turning already-signed public
-  Agent Card and public JWKS JSON into canonical `.well-known` files plus a
-  sanitized header manifest for static hosting review
-- local static A2A discovery artifact validator for checking generated
-  `.well-known` files and manifest metadata before public hosting review,
-  without fetching public URLs
-- local static A2A discovery loopback host smoke for serving validated
-  `.well-known` files with manifest-declared headers before public hosting
-  review, without proving public hosting
-- local static A2A hosting review artifact writer for validating generated
-  discovery artifacts and emitting redacted canonical paths, required headers,
-  command order, operator input names, and proof boundaries before public
-  hosting review, without proving public hosting or public discovery
-- local A2A Agent Card JWS signing and trusted-key verification smoke proof
-- local A2A task/message operation helpers and smoke proof
-- local A2A HTTP-shaped handler and smoke proof for public discovery plus
-  bearer-authenticated task routes
-- local authenticated A2A extended Agent Card access through the HTTP-shaped
-  handler
-- local A2A loopback HTTP server smoke proof for signed discovery,
-  authenticated task routes, and SSE task events
-- local A2A push notification configuration CRUD with credential-storage and
-  unsafe callback URL rejection
-- local injected A2A push notification delivery envelopes without default
-  outbound webhook calls
-- local opt-in A2A push notification HTTP transport with safe URL checks,
-  manual redirect handling, timeout handling, no stored webhook credentials,
-  and status-only delivery results
-- local A2A push callback URL admission hardening that rejects credentials,
-  query strings, fragments, loopback hosts, and private network hosts before
-  config storage or delivery
-- local A2A push callback host allowlisting for exact callback-host admission
-  before config storage or injected HTTP transport delivery
-- local A2A push notification retry and in-memory attempt observability for
-  explicitly injected transports, without request bodies or credential material
-- local file-backed A2A push notification attempt evidence as sanitized JSONL
-  status records, without request bodies, response bodies, webhook credentials,
-  or raw transport errors
-- local file-backed A2A push notification delivery queueing with sanitized
-  delivery envelopes, public headers, and redacted task payloads
-- local A2A push notification delivery worker that claims one sanitized queued
-  job, uses an explicitly injected transport, records status-only attempt
-  evidence, and completes or fails the local queue entry
-- non-networked A2A public-readiness proof for local A2A evidence, public
-  hosting inputs, production JWKS/auth decisions, local public JWKS serving,
-  local static discovery bundle generation, local authenticated extended cards,
-  local loopback streaming, local push configuration, local injected push
-  delivery, local opt-in push HTTP transport, local callback URL admission
-  hardening, local callback host allowlisting, local retry/attempt
-  observability, local durable attempt evidence, local delivery queueing, a
-  local injected-transport worker,
-  redacted static-hosting review, structured public discovery, public push
-  delivery, external conformance report inputs, and external conformance
-  blockers, plus a redacted mode-600 local JSON artifact writer for public A2A
-  readiness audit snapshots
-- opt-in public A2A discovery smoke for operator-approved public HTTPS Agent
-  Card and JWKS probing with optional structured report output, excluded from
-  default local verification
-- local redacted A2A public proof plan writer for turning current non-networked
-  readiness gates into an operator checklist before any public probing
-- opt-in IOTA Names GraphQL live resolution smoke with an exact missing-config
-  blocker path and sanitized ignored report output for live proof gates
-- non-networked live proof status command for testnet, IOTA Names, IOTA
-  Identity, and VC blocker reporting
-- redacted live proof status artifact writer for current check ids, blocker
-  codes, safety boundaries, and ignored handoff/audit evidence without running
-  live proof commands
-- local redacted live-proof plan writer for testnet, Gas Station, IOTA Names,
-  IOTA Identity, and VC command order, required input names, evidence
-  artifacts, and safety boundaries before live proof commands are run
-- opt-in sanitized testnet upstream diagnostic report gate that separates
-  `.env` readiness from current IOTA RPC, Gas Station reachability, and
-  reserve_gas compatibility proof, with bounded reserve failure codes that can
-  classify funding, auth, request, skipped, ready, and generic HTTP outcomes
-  without storing raw upstream bodies, plus a bounded Gas Station reachability
-  code that treats raw upstream root health as valid while keeping wrapper
-  `/v1/health` absence informational
-- local Gas Station config renderer and compose template for turning ignored
-  `.env` values into an ignored official-style `config.local.yaml` before
-  starting the `iotaledger/gas-station` container
-- local Gas Station runtime preflight gate for checking ignored rendered config,
-  Docker client, Docker daemon, and Docker Compose or direct Docker fallback
-  availability before upstream diagnostics
-- local direct-Docker Gas Station stack status check for inspecting the
-  expected Docker network, Redis container, and Gas Station container without
-  starting containers or contacting live services
-- opt-in sponsor funding diagnostic that derives the public sponsor address
-  locally, queries IOTA RPC for balance and sampled coin shape, and prints only
-  redacted address/numeric readiness fields without signing, reserving, or
-  executing
-- sanitized sponsor funding report gate that lets the read-only funding
-  diagnostic write an ignored redacted JSON report and lets live proof,
-  product-status, launch-readiness, and operator-gate checks separate sponsor
-  funding from Gas Station runtime and reserve_gas compatibility
-- opt-in sponsor funding request artifact writer that writes the full public
-  sponsor address only to an ignored local JSON artifact for testnet funding,
-  while keeping stdout redacted and avoiding live service contact, signing,
-  reserve, or execute; it can optionally copy only bounded sanitized faucet
-  attempt context into the ignored artifact for operator triage
-- opt-in sponsor faucet request helper that requires explicit `--execute` plus
-  an operator-provided faucet URL, sends only the public sponsor address to the
-  faucet, writes a sanitized ignored report, and still keeps funding separate
-  from reserve_gas and sponsored execution proof; the helper defaults to the
-  IOTA faucet batch endpoint, can explicitly select the documented legacy
-  endpoint, and records only safe endpoint/status metadata plus bounded faucet
-  error codes on faucet failures
-- explicit managed-upstream Gas Station runtime mode for operators who provide
-  a separately managed Gas Station at `GAS_STATION_URL`; the mode skips Docker
-  inspection but still requires sanitized upstream diagnostics before sponsored
-  execute
-- non-networked testnet digest proof for documented public IOTA testnet
-  evidence, plus an opt-in read-only live lookup command
-- fail-closed sponsored testnet execute prerequisite checks that require local
-  testnet readiness, Gas Station runtime preflight, and a current passing
-  sanitized upstream diagnostic report before reserve/execute
-- non-networked product status proof command for local proof, live/testnet,
-  package publication, A2A hosting, payment, marketplace, custody, and device
-  safety claim boundaries
-- redacted product status artifact writer for archiving the current
-  non-networked product blockers, ready-live checks, local proof ids, and
-  safety boundaries to an ignored mode-600 local JSON file
-- non-networked payment-provider readiness gate for local x402/AP2 source/test
-  evidence plus an operator-supplied redacted structured live-report path before
-  manual approval of live facilitator, processor, or settlement claims, plus a
-  redacted mode-600 local JSON artifact writer for payment-provider readiness
-  audit snapshots
-- local redacted payment-provider proof plan writer for turning current
-  x402/AP2 readiness gates into operator command order, required structured
-  report fields, blocker codes, and proof boundaries before any live
-  facilitator, processor, AP2 participant, or settlement path is used
-- non-networked launch-readiness evidence matrix that maps roadmap areas to
-  source evidence, local commands, blocker codes, and next gates
-- redacted launch-readiness artifact writer for archiving the current
-  non-networked launch matrix, area status groups, blocker codes, and safety
-  boundaries to an ignored mode-600 local JSON file
-- non-networked operator live-gate runbook that classifies config blockers,
-  approval-required live commands, production blockers, and safety deferrals
-  before execution, plus an opt-in redacted local JSON artifact writer for
-  handoff/audit evidence before any live command is approved
-- non-networked operator structured report-template writer that emits ignored
-  local JSON templates for testnet upstream diagnostics, package publication,
-  payment-provider, marketplace, custody, and public A2A reports with
-  `result=pending-operator-proof`, so templates cannot clear readiness gates
-  without a later operator-approved proof run
-- fast verification profile plus non-networked verification-profile audit that
-  keeps day-to-day iteration bounded while preserving `verify:local` as the
-  full reviewer/release/launch evidence gate
-- reviewed Apex Workflow profile for Agentic GasKit with no external tracker,
-  focused-search code review, no browser adapter, ignored local manifests under
-  `tmp/apex-workflow`, confirmed authority/orientation paths, and readiness
-  verification presets; local Codex goal and handoff docs are explicitly not
-  product authority
-- redacted verification-profile artifact writer for archiving fast/full/grant
-  gate wiring status, blocked check ids, blocker codes, and safety boundaries
-  to an ignored mode-600 local JSON file
-- local read-only marketplace evidence package with provider labels, policy
-  compatibility, receipt access control, and dispute evidence bundle smoke
-- non-networked marketplace production readiness gate for local read-model
-  proof plus an operator-supplied redacted structured production marketplace
-  report path before manual approval of provider, moderation, auth, settlement,
-  dispute, or operations claims, plus a redacted mode-600 local JSON artifact
-  writer for marketplace readiness audit snapshots
-- local redacted marketplace production proof-plan writer for provider
-  onboarding, provider verification, moderation, auth, settlement, dispute,
-  operations, required structured report fields, blocker codes, and proof
-  boundaries before production marketplace review
-- package namespace and release metadata strategy for the current
-  `@iota-gaskit/*` prerelease line
-- opt-in package publish dry-run gate for public workspace packages
-- local package install smoke for packed public workspace tarballs
-- non-networked package publication readiness gate for local release proof plus
-  an operator-supplied redacted structured npm publication report path before
-  manual approval of registry publication claims, plus a redacted mode-600
-  local JSON artifact writer for package publication readiness audit snapshots
-- local redacted package publication proof-plan writer for npm publication
-  command order, current package names, required structured report fields,
-  required check ids, blocker codes, and proof boundaries before real registry
-  work
-- device access safety gate that blocks physical-device implementation and
-  limits any future proof to virtual or simulated resources until a separate
-  approved safety design exists
-- non-networked production custody readiness gate for local signer-reference
-  account proof plus an operator-supplied redacted structured custody report
-  path before manual approval of KMS, recovery, staking, bonding, slashing, or
-  signer-operation claims, plus a redacted mode-600 local JSON artifact writer
-  for custody readiness audit snapshots
-- local redacted custody production proof-plan writer for signer-reference,
-  no secret exposure, KMS/external signer, recovery/export,
-  rotation/revocation, audit logging, legal/security, incident response,
-  required structured report fields, blocker codes, and proof boundaries before
-  production custody review
-- pure profile capability policy check
-- contract template metadata registry consumed by agent policy allow-lists
+Package manager: `npm`.
 
-The remaining Agentic GasKit direction is documented under
-`docs/agentic-gaskit/`. A configured IOTA Names live smoke path exists, but
-actual live proof still requires an operator-provided endpoint/name/address and
-a passing run. IOTA Identity live proof now has an opt-in proof-endpoint smoke
-path, but actual proof still requires operator-provided endpoint/profile and
-trust-policy configuration plus a passing run. Public signed A2A discovery,
-external A2A conformance proof, device-access contract workflows, production
-custody, production subscription operations, and live deployment proof remain
-roadmap unless later slices implement and verify them.
+Primary source roots:
 
-## Start Here
+- `packages/sdk/src/`
+- `packages/policy-gateway/src/`
+- `packages/shared-types/src/`
+- `packages/accounts/src/`
+- `packages/manifest/src/`
+- `packages/registry/src/`
+- `packages/standards/src/`
+- `packages/marketplace/src/`
+- `packages/receipts/src/`
+- `packages/mcp-server/src/`
+- `packages/contracts-metadata/src/`
+- `apps/policy-gateway-service/src/`
 
-- `README.md`
-- `CLAUDE.md`
+## Architecture Anchors
+
+Read these first:
+
 - `AGENTS.md`
-- `skills/iota-gaskit/SKILL.md`
+- `CLAUDE.md`
+- `README.md`
 - `docs/overview.md`
 - `docs/architecture.md`
+- `docs/product-requirements.md`
 - `docs/agentic-gaskit/migration-plan.md`
 - `docs/agentic-gaskit/account-wallet-safety.md`
 - `docs/agentic-gaskit/execution-slices.md`
 - `docs/agentic-gaskit/verification-hardening.md`
 
-## Implemented Source Map
+Product authority:
 
-- SDK: `packages/sdk/src/`
-- Policy engine: `packages/policy-gateway/src/`
-- Shared types: `packages/shared-types/src/`
-- Agent accounts and custody readiness: `packages/accounts/src/`,
-  `scripts/check-custody-readiness.ts`,
-  `scripts/write-custody-production-proof-plan.ts`
-- Agent manifests: `packages/manifest/src/`
-- Agent registry/profile schema, local resolver, and adapters:
-  `packages/registry/src/`
-- Contract template metadata: `packages/contracts-metadata/src/`
-- Marketplace read model and readiness: `packages/marketplace/src/`,
-  `scripts/smoke-marketplace-read-model.ts`,
-  `scripts/check-marketplace-readiness.ts`,
-  `scripts/write-marketplace-production-proof-plan.ts`
-- Package release strategy: `docs/agentic-gaskit/package-release-strategy.md`,
-  `scripts/package-publish-dry-run.ts`,
-  `scripts/smoke-package-install.ts`,
-  `scripts/check-package-publication-readiness.ts`,
-  `scripts/write-package-publication-proof-plan.ts`,
-  `scripts/package-install-smoke.test.ts`,
-  `scripts/package-publish-dry-run.test.ts`,
-  `scripts/package-publish.test.ts`, `scripts/package-scripts.test.ts`
-- Device access safety gate:
-  `docs/agentic-gaskit/device-access-safety-gate.md`,
-  `scripts/roadmap-safety.test.ts`
-- Live proof status: `docs/agentic-gaskit/live-proof-status.md`,
-  `scripts/check-live-proof-status.ts`, `scripts/live-proof-status.test.ts`,
-  `scripts/write-live-proof-plan.ts`
-- IOTA Names live proof report:
-  `scripts/iota-names-live-report.ts`, `scripts/smoke-iota-names-live.ts`,
-  `scripts/iota-names-live-smoke.test.ts`
-- Testnet upstream diagnostics: `scripts/diagnose-gas-station-upstream.ts`,
-  `scripts/testnet-upstream-report.ts`, `docs/testnet-attempts.md`; the
-  diagnostic prints status-only endpoint results and writes bounded JSON
-  readiness metadata without raw upstream response bodies
-- Sponsor funding diagnostic and report gate:
-  `scripts/check-sponsor-funding.ts`, `scripts/sponsor-funding-report.ts`,
-  `scripts/check-sponsor-funding.test.ts`
-- Sponsor funding request: `scripts/write-sponsor-funding-request.ts`,
-  `scripts/write-sponsor-funding-request.test.ts`
-- Sponsor faucet request: `scripts/request-sponsor-faucet-funds.ts`,
-  `scripts/request-sponsor-faucet-funds.test.ts`
-- Local Gas Station setup: `scripts/render-gas-station-config.ts`,
-  `scripts/check-gas-station-runtime-preflight.ts`,
-  `scripts/gas-station-docker-direct.ts`,
-  `deploy/docker-compose/docker-compose.local.yml`,
-  `deploy/gas-station/config.example.yaml`, `docs/deployment.md`
-- Testnet digest proof: `docs/agentic-gaskit/testnet-digest-proof.md`,
-  `scripts/check-testnet-digest-proof.ts`,
-  `scripts/testnet-digest-proof.test.ts`
-- A2A public readiness: `docs/agentic-gaskit/a2a-public-readiness.md`,
-  `scripts/check-a2a-public-readiness.ts`,
-  `scripts/write-a2a-public-proof-plan.ts`,
-  `scripts/a2a-public-readiness.test.ts`,
-  `scripts/write-a2a-public-proof-plan.test.ts`
-- A2A static discovery artifact writer:
-  `scripts/write-a2a-static-discovery-bundle.ts`,
-  `scripts/write-a2a-static-discovery-bundle.test.ts`
-- A2A static discovery artifact validator:
-  `scripts/check-a2a-static-discovery-bundle.ts`,
-  `scripts/check-a2a-static-discovery-bundle.test.ts`
-- A2A static discovery local host smoke:
-  `scripts/smoke-a2a-static-discovery-local.ts`,
-  `scripts/smoke-a2a-static-discovery-local.test.ts`
-- A2A static hosting review:
-  `scripts/write-a2a-static-hosting-review.ts`,
-  `scripts/write-a2a-static-hosting-review.test.ts`
-- Product status proof: `docs/agentic-gaskit/product-status.md`,
-  `scripts/check-product-status.ts`, `scripts/product-status.test.ts`
-- Payment-provider readiness:
-  `scripts/check-payment-provider-readiness.ts`,
-  `scripts/payment-provider-readiness.test.ts`,
-  `scripts/write-payment-provider-proof-plan.ts`,
-  `scripts/write-payment-provider-proof-plan.test.ts`
-- Launch readiness evidence:
-  `docs/agentic-gaskit/launch-readiness-evidence.md`,
-  `scripts/check-launch-readiness.ts`, `scripts/launch-readiness.test.ts`
-- Operator live gates:
-  `docs/agentic-gaskit/operator-live-gates.md`,
-  `scripts/check-operator-live-gates.ts`,
-  `scripts/operator-live-gates.test.ts`
-- Operator report templates:
-  `scripts/write-operator-report-template.ts`,
-  `scripts/write-operator-report-template.test.ts`
-- Verification profiles:
-  `docs/agentic-gaskit/verification-profiles.md`,
-  `scripts/check-verification-profiles.ts`,
-  `scripts/verification-profiles.test.ts`
-- IOTA Identity live smoke:
-  `scripts/smoke-iota-identity-live.ts`,
-  `scripts/iota-identity-live-report.ts`,
-  `scripts/iota-identity-live-smoke.test.ts`
-- MCP sponsorship tools: `packages/mcp-server/src/`
-- Receipts: `packages/receipts/src/`
-- Move escrow contract: `contracts/escrow_v1/`
-- Move receipt contract: `contracts/receipt_v1/`
-- Move pay-per-call contract: `contracts/pay_per_call_v1/`
-- Move data-license contract: `contracts/data_license_v1/`
-- Move service-bounty contract: `contracts/service_bounty_v1/`
-- Move reputation-receipt contract: `contracts/reputation_receipt_v1/`
-- Move subscription contract: `contracts/subscription_v1/`
-- Policy gateway service: `apps/policy-gateway-service/src/`
-- Demo dApp: `apps/demo-dapp/`
-- Agent escrow demo: `examples/agent-escrow/`, `docs/demo-agent-escrow.md`,
-  `scripts/smoke-agent-escrow.ts`
-- Paid MCP-style tool demo: `examples/paid-mcp-tool/`,
-  `scripts/smoke-paid-mcp-tool.ts`
-- Data-license demo: `examples/data-license/`,
-  `scripts/smoke-data-license.ts`
-- Service-bounty demo: `examples/service-bounty/`,
-  `scripts/smoke-service-bounty.ts`
-- Reputation-receipt demo: `examples/reputation-receipt/`,
-  `scripts/smoke-reputation-receipt.ts`
-- Subscription demo: `examples/subscription/`,
-  `scripts/smoke-subscription.ts`
-- A2A well-known demo: `examples/a2a-well-known/`,
-  `scripts/smoke-a2a-well-known.ts`
-- A2A signed-card demo: `examples/a2a-signed-card/`,
-  `scripts/smoke-a2a-signed-card.ts`
-- A2A task/message demo: `examples/a2a-task-message/`,
-  `scripts/smoke-a2a-task-message.ts`
-- A2A HTTP boundary demo: `examples/a2a-http/`,
-  `scripts/smoke-a2a-http.ts`
-- A2A local server demo: `examples/a2a-local-server/`,
-  `packages/standards/src/a2aNodeServer.ts`,
-  `scripts/smoke-a2a-local-server.ts`
-- A2A Node loopback server helper:
-  `packages/standards/src/a2aNodeServer.ts`
-- Docs site: `apps/docs-site/`
-- Examples: `examples/node-backend/`, `examples/nextjs-api-route/`,
-  `examples/policies/`
-- Deployment templates: `deploy/`
-- Readiness and smoke scripts: `scripts/`
-- Security docs: `docs/security/`
+- `docs/product-requirements.md`
+- `docs/overview.md`
+- `docs/architecture.md`
+- `docs/agentic-gaskit/roadmap.md`
+- `docs/agentic-gaskit/account-wallet-safety.md`
 
-## Agentic Planning Map
+Execution evidence authority:
 
-- Migration plan: `docs/agentic-gaskit/migration-plan.md`
-- Roadmap: `docs/agentic-gaskit/roadmap.md`
-- Execution slices: `docs/agentic-gaskit/execution-slices.md`
-- Wallet safety: `docs/agentic-gaskit/account-wallet-safety.md`
-- Verification hardening: `docs/agentic-gaskit/verification-hardening.md`
-- Product status: `docs/agentic-gaskit/product-status.md`
-- Launch evidence: `docs/agentic-gaskit/launch-readiness-evidence.md`
-- Internal raw thesis, PRDs, module specs, external API notes, funding docs,
-  team notes, and local handoffs are intentionally ignored for the public
-  open-source repository.
+- `docs/agentic-gaskit/execution-slices.md`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/agentic-gaskit/testnet-digest-proof.md`
+- `docs/reviewer-walkthrough.md`
+- `docs/agentic-gaskit/verification-hardening.md`
 
-## Future Targets
+Local Codex goal, handoff, raw thesis, scratch audit, and private planning docs
+are intentionally ignored or marked non-authoritative for open-source product
+truth. Do not cite them as public product evidence.
 
-Do not create all of these at once. Add them through vertical slices:
+## Core Domains And Ownership Zones
 
-- gateway extensions for agent manifests and capabilities
-- registry live adapters
-- public signed Agent Card hosting, external A2A conformance proof, and live
-  standards-compatible discovery
-- expanded contract packages beyond pay-per-call, data-license, service-bounty,
-  reputation receipt, and subscription. Device access workflows must stay
-  virtual/simulated unless the safety gate is replaced by an approved physical
-  device design.
+- SDK and backend integration: `packages/sdk/src/`, `docs/sdk.md`,
+  `docs/examples.md`, `examples/node-backend/`,
+  `examples/nextjs-api-route/`.
+- Policy engine and app authorization: `packages/policy-gateway/src/`,
+  `docs/policy.md`, `examples/policies/demo-dapp.yaml`.
+- HTTP gateway service: `apps/policy-gateway-service/src/`.
+- Shared request/response contracts: `packages/shared-types/src/`.
+- Agent accounts and signer references: `packages/accounts/src/`,
+  `docs/agentic-gaskit/account-wallet-safety.md`.
+- Agent manifests: `packages/manifest/src/`.
+- Receipts: `packages/receipts/src/`.
+- Contract template metadata: `packages/contracts-metadata/src/`.
+- Registry, Agent Profiles, IOTA Names, IOTA Identity, and VC trust policy:
+  `packages/registry/src/`.
+- Standards bridges: `packages/standards/src/`.
+- MCP sponsorship facade: `packages/mcp-server/src/`.
+- Marketplace read model and readiness:
+  `packages/marketplace/src/`, `docs/marketplace-readiness.md`.
+- Local Move contract workflows: `contracts/*_v1/`.
+- Docs site: `apps/docs-site/`.
+- Testnet, Gas Station, live proof, and operator gates: `scripts/`,
+  `docs/testnet-readiness.md`, `docs/testnet-attempts.md`,
+  `docs/agentic-gaskit/live-proof-status.md`,
+  `docs/agentic-gaskit/operator-live-gates.md`.
+- Security and secret hygiene: `docs/security/`, `docs/threat-model.md`,
+  `scripts/scan-secrets.ts`.
 
-## Verification Guidance
+## Routes, Commands, And Entry Points
 
-Safe local checks:
+Runtime/service entry points:
 
-- `npm run docs:check`
-- `npm run docs:build`
+- `apps/policy-gateway-service/src/server.ts`
+- `apps/demo-dapp/`
+- `apps/docs-site/`
+- `examples/*/`
+
+Core local verification:
+
 - `npm test`
-- `npm run contracts:test`
 - `npm run typecheck`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `npm run verify:fast`
+- `npm run verify:local`
+- `npm run grant:check`
+
+Contract and smoke proof:
+
+- `npm run contracts:test`
 - `npm run smoke:local`
+- `npm run smoke:demo-dapp`
+- `npm run smoke:demo-browser`
 - `npm run smoke:agent-escrow`
+- `npm run smoke:paid-mcp-tool`
 - `npm run smoke:data-license`
 - `npm run smoke:service-bounty`
 - `npm run smoke:reputation-receipt`
 - `npm run smoke:subscription`
+- `npm run smoke:marketplace-read-model`
+
+A2A proof:
+
 - `npm run smoke:a2a-well-known`
 - `npm run smoke:a2a-signed-card`
 - `npm run smoke:a2a-task-message`
 - `npm run smoke:a2a-http`
 - `npm run smoke:a2a-local-server`
-- `npm run smoke:marketplace-read-model`
-- `npm run smoke:package-install`
-- `npm run proof:live-status`
-- `npm run gas-station:runtime-preflight`
-- `npm run proof:testnet-digest`
+- `npm run smoke:a2a-static-discovery-local`
 - `npm run proof:a2a-public-readiness`
+- `npm run a2a:write-public-proof-plan`
+- `npm run a2a:write-static-discovery-bundle`
+- `npm run a2a:check-static-discovery-bundle`
+- `npm run a2a:write-static-hosting-review`
+
+Live/testnet and operator gates:
+
+- `npm run readiness:testnet`
+- `npm run readiness:testnet:example`
+- `npm run gas-station:render-config`
+- `npm run gas-station:runtime-preflight`
+- `npm run gas-station:docker-direct`
+- `npm run sponsor:check-funding`
+- `npm run sponsor:write-funding-request`
+- `npm run sponsor:request-faucet-funds`
+- `npm run diagnose:gas-station`
+- `npm run execute:testnet-demo`
+- `npm run proof:live-status`
+- `npm run live:write-proof-plan`
+- `npm run smoke:iota-names-live`
+- `npm run smoke:iota-identity-live`
+- `npm run proof:testnet-digest`
+- `npm run proof:testnet-digest:live`
+
+Readiness/product gates:
+
 - `npm run proof:product-status`
 - `npm run proof:launch-readiness`
 - `npm run proof:operator-gates`
-- `npm run verify:fast`
+- `npm run operator:write-live-gate-report`
+- `npm run operator:write-report-template`
 - `npm run proof:verification-profiles`
-- `npm run secrets:scan`
+- `npm run proof:package-publication-readiness`
+- `npm run package:write-publication-proof-plan`
+- `npm run proof:payment-provider-readiness`
+- `npm run payment:write-provider-proof-plan`
+- `npm run proof:marketplace-readiness`
+- `npm run marketplace:write-production-proof-plan`
+- `npm run proof:custody-readiness`
+- `npm run custody:write-production-proof-plan`
 
-Full local proof:
+Publication checks:
 
-- `npm run verify:local`
+- `npm run pack:check`
+- `npm run smoke:package-install`
+- `npm run publish:dry-run`
 
-Opt-in configured/live checks:
+## Data, State, Auth, And External Boundaries
 
-- `npm run proof:testnet-digest:live` performs a read-only IOTA testnet lookup
-  for the documented public transaction digest; it does not spend gas or use
-  sponsor credentials
-- `npm run smoke:iota-names-live -- --report <ignored-json-path>` only when an operator provides
-  `IOTA_NAMES_GRAPHQL_URL`, `IOTA_NAMES_NAME`, and
-  `IOTA_NAMES_EXPECTED_ADDRESS`; this is not part of `npm run verify:local`
-- `npm run proof:live-status` is non-networked and reports live/testnet proof
-  blockers or ready-to-run configuration without printing configured values
+Security boundaries:
 
-`npm run contracts:test` requires the IOTA CLI. Set `IOTA_BIN` to a local
-binary path, install `iota` on `PATH`, or use the ignored local release binary
-under `tmp/tooling/iota-v1.24.0/iota`.
+- Policy gateway app credentials, quotas, allowlists, wallet denial, reserve
+  proxying, and execute proxying.
+- Sponsor wallet and Gas Station bearer token handling.
+- Agent wallet creation and signer references.
+- Manifest validation before sponsored or value-bearing actions.
+- Payment-provider evidence and standards bridge reports.
+- Registry/profile resolution and VC trust policy.
+- Marketplace receipt access and dispute evidence bundles.
+- A2A public discovery, Agent Card signing keys, bearer-authenticated task
+  routes, push callback URLs, and public conformance reports.
 
-Live commands such as `npm run execute:testnet-demo` contact live IOTA services
-and spend sponsored testnet gas. The command now fails closed before reserve or
-execute unless local testnet readiness, local Gas Station runtime preflight, and
-a current passing sanitized upstream diagnostic report are present. Run it only
-with explicit operator intent and operator-owned credentials configured outside
-the repo.
+Secret and redaction invariants:
+
+- Never expose sponsor private keys, wallet mnemonics, seeds, raw keypairs,
+  app API keys, bearer tokens, raw transaction bytes, user signatures, payment
+  credentials, private prompts, raw upstream bodies, raw webhook bodies, or
+  local secret paths.
+- Browser/demo code must call same-origin backend routes; backend routes own
+  GasKit app credentials.
+- Signer references are opaque scoped handles, not bearer credentials.
+- Live/testnet commands require explicit operator intent and operator-owned
+  config outside committed files.
+
+External proof boundaries:
+
+- IOTA RPC, IOTA Gas Station, faucet, IOTA Names, IOTA Identity, VC proof
+  endpoints, public A2A endpoints, npm, payment providers, marketplace
+  systems, KMS providers, and physical devices are not contacted by default
+  local verification.
+- Readiness reports may classify blockers without proving the external system.
+
+## Frequent Edit Hotspots
+
+- Script-driven proof gates: `scripts/check-*.ts`, `scripts/write-*.ts`,
+  `scripts/*report*.ts`, and matching `scripts/*.test.ts`.
+- Package-script wiring: `package.json`, `scripts/package-scripts.test.ts`.
+- Public product and operator docs: `docs/overview.md`,
+  `docs/agentic-gaskit/*.md`, `docs/marketplace-readiness.md`,
+  `docs/testnet-readiness.md`.
+- Standards/A2A work: `packages/standards/src/`, `examples/a2a-*`,
+  `scripts/smoke-a2a-*`, `scripts/check-a2a-public-readiness.ts`.
+- Testnet/Gas Station work: `deploy/docker-compose/`,
+  `deploy/gas-station/`, `scripts/check-testnet-readiness.ts`,
+  `scripts/diagnose-gas-station-upstream.ts`,
+  `scripts/check-sponsor-funding.ts`,
+  `scripts/execute-testnet-sponsored-demo.ts`.
+- Contract workflow additions: `contracts/*_v1/`,
+  `packages/sdk/src/contracts/`, `packages/contracts-metadata/src/`,
+  `examples/*/`, `scripts/smoke-*.ts`.
+- Docs site navigation/rendering: `apps/docs-site/docs.config.mjs`,
+  `apps/docs-site/src/`, `docs/*.md`.
+
+## Risk And Coupling Areas
+
+- SDK, policy gateway, MCP tools, and marketplace surfaces must not bypass
+  policy-gated sponsorship.
+- Account APIs must return addresses and signer references, never raw key
+  material.
+- Gas Station readiness must keep Docker/runtime, sponsor funding, upstream
+  reachability, reserve compatibility, and sponsored execute as separate
+  claims.
+- Local/mock IOTA Names, Identity, VC, A2A, payment, marketplace, and custody
+  proof must not be described as live or production proof.
+- Package publication work must not mix namespace changes with wallet/gateway
+  security changes.
+- Public A2A work must keep key management, endpoint ownership, push delivery,
+  external conformance, and public hosting separate.
+- Physical device access remains safety-deferred; only virtual or simulated
+  work is allowed until a separate safety design is approved.
+- `.env`, Gas Station rendered config, local proof reports, Apex manifests,
+  local handoffs, and generated runtime artifacts must stay ignored.
+
+## Verification Path By Change Type
+
+- Docs-only change: `npm run docs:check`, `npm run secrets:scan`,
+  `git diff --check`.
+- Package or script wiring: focused `node --import tsx --test
+  scripts/package-scripts.test.ts`, then `npm run typecheck`,
+  `npm run secrets:scan`, `git diff --check`.
+- SDK/gateway/package code: focused package tests, `npm test`,
+  `npm run typecheck`, `npm run secrets:scan`, `git diff --check`.
+- Contract workflow: focused SDK/receipt/metadata tests, `npm run
+  contracts:test`, relevant `npm run smoke:*`, then `npm run verify:local`.
+- Testnet/Gas Station readiness: focused script tests, `npm run
+  readiness:testnet` for local config, explicit operator approval before live
+  commands, sanitized ignored reports for live diagnostics.
+- A2A/public discovery: focused standards and script tests, local loopback
+  smokes, `npm run proof:a2a-public-readiness`; public probes require
+  operator-approved public config.
+- Payment/marketplace/custody/package publication: local readiness proof and
+  redacted structured report gates; production or registry claims require
+  operator-approved reports outside committed files.
+- Final/release-style evidence: `npm run verify:fast` for bounded iteration,
+  `npm run verify:local` for full local proof, plus explicit live/operator
+  reports for any live claim.
+
+## Generated Or Ignored Paths
+
+Ignored or local-only state includes:
+
+- `.env*`
+- `node_modules/`
+- `dist/`
+- `tmp/`
+- `tmp/apex-workflow/`
+- `tmp/gaskit/`
+- `deploy/gas-station/config.local.yaml`
+- local Gas Station rendered configs and logs
+- local proof reports and report templates
+- local Codex goal and handoff docs under ignored planning paths
+
+Do not commit generated docs output, runtime proof artifacts, raw upstream
+responses, faucet task ids, private config paths, or secret-adjacent logs.
+
+## Keeping This Map Current
+
+Update this file when:
+
+- a new package, app, Move contract, or example becomes part of the reviewed
+  source map;
+- a verification command is added, removed, or promoted;
+- a readiness gate changes its proof boundary;
+- a previously local/mock proof becomes live/testnet/prod proof;
+- a new ignored artifact path, local report, or workflow manifest path is
+  introduced;
+- Apex doctor reports this map as stale, draft, or legacy.
+
+After updates, run:
+
+```bash
+node /home/sacred/code/apex-workflow/scripts/apex-map-codebase.mjs --target=. --check --require-reviewed
+node /home/sacred/code/apex-workflow/scripts/apex-doctor.mjs --target=. --config=apex.workflow.json
+```
+
+## Map Evidence
+
+Current reviewed map evidence:
+
+- `apex.workflow.json` names `docs/CODEBASE_MAP.md` in workflow rules and
+  read-before-broad-search orientation.
+- `node /home/sacred/code/apex-workflow/scripts/apex-map-codebase.mjs
+  --target=. --check --require-reviewed` validates required Apex map
+  sections and reviewed status.
+- `node /home/sacred/code/apex-workflow/scripts/apex-doctor.mjs --target=.
+  --config=apex.workflow.json` checks the map as part of repository workflow
+  readiness.
+- `scripts/package-scripts.test.ts` guards the reviewed map status and section
+  set.
