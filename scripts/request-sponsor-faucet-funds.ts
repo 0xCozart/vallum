@@ -86,6 +86,10 @@ type MutableCliOptions = {
 };
 
 const DEFAULT_OUT_FILE = "tmp/gaskit/sponsor-faucet-request.json";
+const CHECK_SPONSOR_FUNDING_COMMAND = "npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json";
+const DIAGNOSE_TESTNET_UPSTREAM_COMMAND = "npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json";
+const PROOF_LIVE_STATUS_COMMAND = "npm run proof:live-status";
+const APPROVED_FAUCET_REQUEST_COMMAND = "npm run sponsor:request-faucet-funds -- --execute --out <ignored-json-path>";
 
 const usage = `usage: npm exec tsx -- scripts/request-sponsor-faucet-funds.ts [--execute] [--api-version auto|v1-batch|v0-documented] [--faucet-url <url>] [--env-file <path>] [--out <path>]
 
@@ -100,12 +104,8 @@ export async function requestSponsorFaucetFunds(
   const observedAt = (options.now ?? new Date()).toISOString();
   const faucetUrl = options.faucetUrl ?? readEnv(env, "IOTA_FAUCET_URL");
   const outFile = options.outFile ?? DEFAULT_OUT_FILE;
+  const redactedOutFile = redactPath(outFile);
   const reportPath = resolve(process.cwd(), outFile);
-  const nextCommands = [
-    "npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json",
-    "npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json",
-    "npm run proof:live-status",
-  ];
 
   const base = {
     schemaVersion: 1 as const,
@@ -116,8 +116,7 @@ export async function requestSponsorFaucetFunds(
     spendsGas: false as const,
     signsTransactions: false as const,
     faucetUrlConfigured: Boolean(faucetUrl),
-    reportPath: redactPath(outFile),
-    nextCommands,
+    reportPath: redactedOutFile,
   };
 
   let sponsorAddress: string;
@@ -130,6 +129,7 @@ export async function requestSponsorFaucetFunds(
       code: "SPONSOR_FAUCET_CONFIG_MISSING",
       message: "Sponsor faucet request requires a readable local sponsor signer configuration.",
       contactsLiveService: false,
+      nextCommands: blockedFaucetNextCommands(),
     });
   }
 
@@ -142,6 +142,7 @@ export async function requestSponsorFaucetFunds(
       message: "Sponsor faucet request requires explicit --execute before contacting a faucet service.",
       contactsLiveService: false,
       sponsorAddressRedacted,
+      nextCommands: blockedFaucetNextCommands(),
     });
   }
 
@@ -153,6 +154,7 @@ export async function requestSponsorFaucetFunds(
       message: "Sponsor faucet request requires IOTA_FAUCET_URL or --faucet-url outside tracked files.",
       contactsLiveService: false,
       sponsorAddressRedacted,
+      nextCommands: blockedFaucetNextCommands(),
     });
   }
 
@@ -164,6 +166,7 @@ export async function requestSponsorFaucetFunds(
       message: "Sponsor faucet URL must be HTTPS or loopback HTTP.",
       contactsLiveService: false,
       sponsorAddressRedacted,
+      nextCommands: failedFaucetNextCommands(redactedOutFile),
     });
   }
 
@@ -184,6 +187,7 @@ export async function requestSponsorFaucetFunds(
       sponsorAddressRedacted,
       faucetApiVersion: result.apiVersion,
       amountMist: result.amount === undefined ? undefined : String(result.amount),
+      nextCommands: requestedFaucetNextCommands(),
     });
   } catch (error) {
     const sanitized = sanitizedFaucetError(error);
@@ -201,6 +205,7 @@ export async function requestSponsorFaucetFunds(
       faucetHttpStatus: sanitized.httpStatus,
       faucetFailureKind: sanitized.failureKind,
       faucetErrorCode: sanitized.errorCode,
+      nextCommands: failedFaucetNextCommands(redactedOutFile),
     });
   }
 }
@@ -505,6 +510,30 @@ function shouldTryDocumentedFaucetFallback(error: unknown): boolean {
   if (error.errorCode === "REQUEST_UNSUPPORTED") return true;
   if (error.failureKind === "invalid-json") return true;
   return error.failureKind === "faucet-error" && error.errorCode === "UNKNOWN";
+}
+
+function requestedFaucetNextCommands(): readonly string[] {
+  return [
+    CHECK_SPONSOR_FUNDING_COMMAND,
+    DIAGNOSE_TESTNET_UPSTREAM_COMMAND,
+    PROOF_LIVE_STATUS_COMMAND,
+  ];
+}
+
+function blockedFaucetNextCommands(): readonly string[] {
+  return [
+    APPROVED_FAUCET_REQUEST_COMMAND,
+    CHECK_SPONSOR_FUNDING_COMMAND,
+    PROOF_LIVE_STATUS_COMMAND,
+  ];
+}
+
+function failedFaucetNextCommands(faucetReportPath: string): readonly string[] {
+  return [
+    `npm run sponsor:write-funding-request -- --faucet-report ${faucetReportPath} --out tmp/gaskit/sponsor-funding-request.json`,
+    CHECK_SPONSOR_FUNDING_COMMAND,
+    `GASKIT_SPONSOR_FAUCET_REPORT=${faucetReportPath} npm run proof:live-status`,
+  ];
 }
 
 const SPONSOR_FAUCET_REPORT_KEYS = new Set([

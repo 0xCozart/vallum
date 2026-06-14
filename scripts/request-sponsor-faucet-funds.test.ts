@@ -39,6 +39,8 @@ test("sponsor faucet request requires explicit execute before contacting live se
   assert.equal(report.code, "SPONSOR_FAUCET_APPROVAL_REQUIRED");
   assert.equal(report.contactsLiveService, false);
   assert.equal(calls, 0);
+  assert.ok(report.nextCommands.some((command) => command.includes("sponsor:request-faucet-funds") && command.includes("--execute")));
+  assert.equal(report.nextCommands.some((command) => command.includes("diagnose:gas-station")), false);
   assert.doesNotMatch(formatted, new RegExp(escapeRegExp(sponsorAddress)));
   assert.doesNotMatch(formatted, new RegExp(escapeRegExp(sponsorKey)));
 });
@@ -100,6 +102,8 @@ test("sponsor faucet request calls injected faucet and writes sanitized report",
   assert.equal(report.code, "SPONSOR_FAUCET_REQUESTED");
   assert.equal(report.contactsLiveService, true);
   assert.equal(report.amountMist, "1000000000");
+  assert.ok(report.nextCommands.some((command) => command.includes("sponsor:check-funding")));
+  assert.ok(report.nextCommands.some((command) => command.includes("diagnose:gas-station")));
   assert.equal(artifact.sponsorAddressRedacted, report.sponsorAddressRedacted);
   assert.equal(mode, 0o600);
   assert.doesNotMatch(JSON.stringify(artifact), new RegExp(escapeRegExp(sponsorAddress)));
@@ -374,6 +378,9 @@ test("sponsor faucet request records documented v0 HTTP failure metadata", async
     assert.equal(report.faucetHttpStatus, 405);
     assert.equal(report.faucetFailureKind, "http-status");
     assert.equal(report.faucetErrorCode, "REQUEST_UNSUPPORTED");
+    assert.ok(report.nextCommands.some((command) => command.includes("sponsor:write-funding-request") && command.includes("--faucet-report")));
+    assert.ok(report.nextCommands.some((command) => command.includes("GASKIT_SPONSOR_FAUCET_REPORT")));
+    assert.equal(report.nextCommands.some((command) => command.includes("diagnose:gas-station")), false);
     assert.doesNotMatch(formatted, new RegExp(escapeRegExp(rawResponse)));
     assert.doesNotMatch(formatted, /faucet\.testnet\.example/);
   } finally {

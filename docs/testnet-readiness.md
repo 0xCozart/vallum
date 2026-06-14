@@ -224,7 +224,9 @@ auto`, which tries the SDK-style `v1-batch` route first and falls back to
 v1 failures. Operators can still pass `--api-version v1-batch` or
 `--api-version v0-documented` when they need a single explicit faucet shape.
 Faucet success is not accepted as reserve_gas compatibility; rerun the funding
-diagnostic and upstream diagnostic afterward.
+diagnostic and upstream diagnostic afterward. Failed faucet reports should be
+copied into the funding request or live-status context, but they should not
+advance operators to the upstream diagnostic until sponsor funding is ready.
 If `GASKIT_SPONSOR_FAUCET_REPORT` points at the ignored faucet report,
 `npm run proof:live-status` can include the latest sanitized faucet outcome in
 the sponsor-funding next step. This is triage context only, not readiness
