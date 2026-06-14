@@ -4656,3 +4656,70 @@ Escalation triggers:
   proof.
 - Any request to print managed endpoint URLs, bearer tokens, response bodies,
   sponsor signer material, raw transaction bytes, or user signatures.
+
+## Slice 7.13: Testnet Upstream Operator Template
+
+User-visible outcome:
+Operators can generate an ignored, non-networked checklist template for the
+self-hosted or managed Gas Station upstream proof path, while the live
+testnet gate still only accepts the sanitized diagnostic report emitted by
+`npm run diagnose:gas-station`.
+
+Likely files:
+
+- `scripts/write-operator-report-template.ts`
+- `scripts/write-operator-report-template.test.ts`
+- `docs/testnet-readiness.md`
+- `docs/deployment.md`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/agentic-gaskit/execution-slices.md`
+- `docs/CODEBASE_MAP.md`
+
+Acceptance criteria:
+
+- `npm run operator:write-report-template -- --kind testnet-upstream --out
+  <ignored-json-path>` writes a private local JSON template with
+  `result=pending-operator-proof`.
+- The template lists local or managed runtime selection, IOTA RPC JSON-RPC,
+  Gas Station root or health, reserve_gas compatibility, and redaction review
+  checks.
+- The template names `GASKIT_TESTNET_UPSTREAM_REPORT` and the accepted
+  diagnostic report kind, but it does not have the accepted diagnostic report
+  shape and cannot clear the upstream gate.
+- Public docs route operators to the template as planning/checklist evidence
+  only, then to `npm run diagnose:gas-station -- --report <ignored-json-path>`
+  for accepted upstream proof.
+- No live IOTA RPC, Gas Station endpoint, reserve_gas call, Docker startup,
+  sponsored execute, or secret-printing path is added.
+
+Verification:
+
+- Focused operator-template and upstream-report tests.
+- `npm run operator:write-report-template -- --kind testnet-upstream --out
+  tmp/gaskit/testnet-upstream-report-template.json`.
+- `npm run typecheck`.
+- `npm run docs:check`.
+- `npm run secrets:scan`.
+- `git diff --check`.
+- `npm run proof:product-status`.
+- `npm run proof:launch-readiness`.
+- `npm run proof:operator-gates`.
+- `npm run verify:fast`.
+
+Dependencies:
+Slices 7.7-7.12.
+
+Risk:
+Low to medium. A checklist template can be mistaken for accepted live proof
+unless the accepted diagnostic report shape remains separate and tests prove
+the template cannot satisfy `GASKIT_TESTNET_UPSTREAM_REPORT`.
+
+Escalation triggers:
+
+- Any request to accept the template itself as upstream proof.
+- Any request to skip reserve_gas compatibility while claiming fresh sponsored
+  execute readiness.
+- Any request to include endpoint URLs, bearer tokens, raw responses, signer
+  material, raw transaction bytes, or user signatures in the template.

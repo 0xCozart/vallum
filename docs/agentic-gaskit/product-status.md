@@ -145,6 +145,7 @@ npm run gas-station:render-config
 npm run gas-station:runtime-preflight
 GASKIT_GAS_STATION_RUNTIME_MODE=managed-upstream npm run gas-station:runtime-preflight
 npm run gas-station:docker-direct -- --dry-run
+npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run a2a:write-static-discovery-bundle -- --agent-card <signed-card.json> --jwks <jwks.json> --public-base-url <url> --public-jwks-url <url> --out-dir <dir>
 npm run a2a:check-static-discovery-bundle -- --out-dir <dir> --expected-public-base-url <url> --expected-public-jwks-url <url>
@@ -158,6 +159,7 @@ npm run marketplace:write-production-proof-plan -- --out tmp/gaskit/marketplace-
 npm run proof:custody-readiness
 npm run custody:write-production-proof-plan -- --out tmp/gaskit/custody-production-proof-plan.json
 npm run payment:write-provider-proof-plan -- --out tmp/gaskit/payment-provider-proof-plan.json
+npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json
 npm run operator:write-report-template -- --kind package-publication --out tmp/gaskit/package-publication-report-template.json
 npm run operator:write-report-template -- --kind payment-provider-live --out tmp/gaskit/payment-provider-live-report-template.json
 npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json

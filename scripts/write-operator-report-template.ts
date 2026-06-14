@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { collectPublishablePackages } from "./package-publish-dry-run.js";
 
 export type OperatorReportTemplateKind =
+  | "testnet-upstream"
   | "a2a-public-discovery"
   | "a2a-public-push-delivery"
   | "a2a-external-conformance"
@@ -57,6 +58,14 @@ const COMMON_NOTES = [
   "Do not include raw request or response bodies, authorization material, signer material, payment instruments, local paths to sensitive files, or account recovery material.",
 ] as const;
 
+const TESTNET_UPSTREAM_CHECKS = [
+  "managed-or-local-runtime-selection",
+  "iota-rpc-json-rpc",
+  "gas-station-root-or-health",
+  "reserve-gas-compatibility",
+  "redaction-review",
+] as const;
+
 const PAYMENT_CHECKS = [
   "x402-verify",
   "x402-settle",
@@ -102,6 +111,7 @@ Writes a non-networked redacted JSON template for operator-owned structured repo
 The template remains result=pending-operator-proof until a real approved proof run fills it in.
 
 kinds:
+  testnet-upstream
   a2a-public-discovery
   a2a-public-push-delivery
   a2a-external-conformance
@@ -141,6 +151,27 @@ export async function buildOperatorReportTemplate(
   } satisfies Omit<OperatorReportTemplate, "kind">;
 
   switch (options.kind) {
+    case "testnet-upstream":
+      return {
+        ...base,
+        kind: "agentic-gaskit.testnet-upstream-proof-template",
+        diagnosticReportKind: "agentic-gaskit.testnet-upstream-diagnostic",
+        acceptedReportEnv: "GASKIT_TESTNET_UPSTREAM_REPORT",
+        runtimeModeEnv: "GASKIT_GAS_STATION_RUNTIME_MODE",
+        supportedRuntimeModes: ["local-docker", "managed-upstream"],
+        requiredEnv: [
+          "IOTA_RPC_URL",
+          "GAS_STATION_URL",
+          "GAS_STATION_BEARER_TOKEN",
+        ],
+        commands: [
+          "npm run gas-station:runtime-preflight",
+          "npm run diagnose:gas-station -- --report <ignored-json-path>",
+          "npm run proof:live-status",
+          "npm run execute:testnet-demo",
+        ],
+        checks: TESTNET_UPSTREAM_CHECKS,
+      };
     case "a2a-public-discovery":
       return stripUndefined({
         ...base,
@@ -282,6 +313,7 @@ function readArg(argv: readonly string[], index: number, name: string): string {
 
 function parseKind(value: string): OperatorReportTemplateKind {
   const allowed = new Set<OperatorReportTemplateKind>([
+    "testnet-upstream",
     "a2a-public-discovery",
     "a2a-public-push-delivery",
     "a2a-external-conformance",

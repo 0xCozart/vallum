@@ -6,10 +6,37 @@ import test from "node:test";
 
 import { checkA2APublicReadiness } from "./check-a2a-public-readiness.js";
 import { checkPackagePublicationReadiness } from "./check-package-publication-readiness.js";
+import { loadTestnetUpstreamReport } from "./testnet-upstream-report.js";
 import {
   buildOperatorReportTemplate,
   writeOperatorReportTemplate,
 } from "./write-operator-report-template.js";
+
+test("operator report template builds testnet upstream guidance without accepted diagnostic shape", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "gaskit-testnet-upstream-template-"));
+  const outFile = join(cwd, "testnet-upstream-report-template.json");
+
+  await writeOperatorReportTemplate({
+    kind: "testnet-upstream",
+    now: new Date("2026-06-14T12:00:00.000Z"),
+    outFile,
+  });
+
+  const parsed = JSON.parse(await readFile(outFile, "utf8")) as Record<string, unknown>;
+  assert.equal(parsed.kind, "agentic-gaskit.testnet-upstream-proof-template");
+  assert.equal(parsed.result, "pending-operator-proof");
+  assert.equal(parsed.diagnosticReportKind, "agentic-gaskit.testnet-upstream-diagnostic");
+  assert.equal(parsed.acceptedReportEnv, "GASKIT_TESTNET_UPSTREAM_REPORT");
+  assert.deepEqual(parsed.supportedRuntimeModes, ["local-docker", "managed-upstream"]);
+  assert.deepEqual(parsed.requiredEnv, ["IOTA_RPC_URL", "GAS_STATION_URL", "GAS_STATION_BEARER_TOKEN"]);
+  assert.ok((parsed.commands as string[]).includes("npm run diagnose:gas-station -- --report <ignored-json-path>"));
+  assert.ok((parsed.checks as string[]).includes("reserve-gas-compatibility"));
+
+  await assert.rejects(
+    () => loadTestnetUpstreamReport(outFile),
+    /invalid shape/,
+  );
+});
 
 test("operator report template builds package publication schema without marking it passed", async () => {
   const template = await buildOperatorReportTemplate({

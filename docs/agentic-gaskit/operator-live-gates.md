@@ -122,6 +122,11 @@ hosts, marketplace systems, or physical devices.
   report fields and required check ids match the existing readiness validators
   before any approved live, publication, marketplace, custody, or public A2A
   proof run fills them in.
+- Includes a `testnet-upstream` template for self-hosted or managed Gas
+  Station proof planning, but that template is not accepted by
+  `GASKIT_TESTNET_UPSTREAM_REPORT`; only the sanitized diagnostic report
+  emitted by `npm run diagnose:gas-station -- --report <ignored-json-path>` can
+  clear the upstream gate.
 - Points public A2A hosting/conformance review at the non-networked
   `npm run proof:a2a-public-readiness` command before any public endpoint is
   probed, then at `npm run smoke:a2a-public-discovery` only after
@@ -167,6 +172,7 @@ npm run custody:write-production-proof-plan -- --out tmp/gaskit/custody-producti
 npm run live:write-proof-plan -- --out tmp/gaskit/live-proof-plan.json
 npm run package:write-publication-proof-plan -- --out tmp/gaskit/package-publication-proof-plan.json
 npm run payment:write-provider-proof-plan -- --out tmp/gaskit/payment-provider-proof-plan.json
+npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json
 npm run operator:write-report-template -- --kind package-publication --out tmp/gaskit/package-publication-report-template.json
 npm run operator:write-report-template -- --kind payment-provider-live --out tmp/gaskit/payment-provider-live-report-template.json
 npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json

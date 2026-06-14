@@ -97,6 +97,7 @@ npm run readiness:testnet
 npm run gas-station:runtime-preflight
 # Optional when GAS_STATION_URL points at an operator-managed Gas Station:
 GASKIT_GAS_STATION_RUNTIME_MODE=managed-upstream npm run gas-station:runtime-preflight
+npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json
 npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
 npm run execute:testnet-demo
 ```

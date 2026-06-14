@@ -48,7 +48,7 @@ export interface CheckGasStationRuntimePreflightOptions {
 }
 
 const DEFAULT_CONFIG_PATH = "deploy/gas-station/config.local.yaml";
-const COMMAND_TIMEOUT_MS = 3_000;
+const COMMAND_TIMEOUT_MS = 20_000;
 const RUNTIME_MODE_ENV = "GASKIT_GAS_STATION_RUNTIME_MODE";
 
 type GasStationRuntimeMode = "local-docker" | "managed-upstream";

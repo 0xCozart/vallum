@@ -150,5 +150,15 @@ or compatible; `GASKIT_TESTNET_UPSTREAM_REPORT` must still point at a current
 passing diagnostic report before `npm run execute:testnet-demo` can reserve gas
 or build/sign a transaction.
 
+Operators can generate a non-networked checklist for this proof path with:
+
+```bash
+npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json
+```
+
+That template is not accepted by `GASKIT_TESTNET_UPSTREAM_REPORT`. It remains
+`pending-operator-proof`; the accepted report must be the sanitized diagnostic
+JSON emitted by `npm run diagnose:gas-station -- --report <ignored-json-path>`.
+
 Only after those preconditions pass should an operator use explicit intent to
 run the live sponsored testnet execute.
