@@ -6970,3 +6970,55 @@ Escalation triggers:
 - Any request to print or commit configured public endpoint values, report
   paths, private keys, bearer tokens, webhook secrets, raw payloads, response
   bodies, local secret paths, or public proof report contents.
+
+## Slice 7.49: Operator Gate Report Kind Namespacing
+
+User-visible outcome:
+The operator live-gate JSON artifact uses the same `agentic-gaskit.*`
+namespacing convention as the other local readiness/status report artifacts,
+making it clear that the file is an Agentic GasKit report and not generic
+operator-gate data.
+
+Likely files:
+
+- `scripts/check-operator-live-gates.ts`
+- `scripts/operator-live-gates.test.ts`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `npm run operator:write-live-gate-report` writes an artifact with
+  `kind=agentic-gaskit.operator-live-gate-report`.
+- Tests assert the namespaced kind for in-memory and written artifacts.
+- Operator docs describe the namespaced kind and keep the redaction boundary.
+- The change does not alter gate classification, approval requirements,
+  command order, live-service flags, product status, launch readiness, or any
+  live/testnet behavior.
+
+Verification:
+
+- `node --import tsx --test scripts/operator-live-gates.test.ts`
+- `npm run operator:write-live-gate-report`
+- `npm run proof:operator-gates`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `git diff --check`
+- `npm run typecheck`
+
+Dependencies:
+Existing operator live-gates report and product-status gate.
+
+Risk:
+Low. This is an artifact schema label change, but it should not be mistaken
+for clearing any live, production, publication, marketplace, custody, A2A, or
+device gate.
+
+Escalation triggers:
+
+- Any request to treat the operator live-gate artifact as passing evidence for
+  live/testnet, public A2A, npm publication, payment, marketplace, custody, or
+  physical-device claims.
+- Any request to print or commit configured endpoint values, addresses, profile
+  paths, credentials, tokens, response bodies, private keys, signer material,
+  raw transaction bytes, report contents, or secret local paths.

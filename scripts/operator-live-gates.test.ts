@@ -226,7 +226,7 @@ test("operator live gate artifact reports blockers without configured values", a
   const formatted = formatOperatorLiveGateArtifact(artifact);
 
   assert.equal(artifact.schemaVersion, 1);
-  assert.equal(artifact.kind, "operator-live-gate-report");
+  assert.equal(artifact.kind, "agentic-gaskit.operator-live-gate-report");
   assert.equal(artifact.generatedAt, "2026-06-11T12:00:00.000Z");
   assert.equal(artifact.allGatesClear, false);
   assert.equal(artifact.localOnly, false);
@@ -261,7 +261,7 @@ test("operator live gate artifact can be written as a local redacted file", asyn
     const mode = (await stat(outFile)).mode & 0o777;
 
     assert.equal(mode, 0o600);
-    assert.equal(written.kind, "operator-live-gate-report");
+    assert.equal(written.kind, "agentic-gaskit.operator-live-gate-report");
     assert.deepEqual(written.blockerCodes, artifact.blockerCodes);
     assert.ok(written.blockerCodes.includes("TESTNET_UPSTREAM_REPORT_FAILED"));
     assert.doesNotMatch(raw, /tmp\/gaskit\/operator-live-gates\.json/);

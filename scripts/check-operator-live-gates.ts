@@ -39,7 +39,7 @@ export interface OperatorLiveGateReport {
 
 export interface OperatorLiveGateArtifact {
   readonly schemaVersion: 1;
-  readonly kind: "operator-live-gate-report";
+  readonly kind: "agentic-gaskit.operator-live-gate-report";
   readonly generatedAt: string;
   readonly allGatesClear: boolean;
   readonly localOnly: boolean;
@@ -165,7 +165,7 @@ export function buildOperatorLiveGateArtifact(
 
   return {
     schemaVersion: 1,
-    kind: "operator-live-gate-report",
+    kind: "agentic-gaskit.operator-live-gate-report",
     generatedAt: now.toISOString(),
     allGatesClear: report.allGatesClear,
     localOnly: report.localOnly,

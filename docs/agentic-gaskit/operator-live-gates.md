@@ -30,11 +30,11 @@ operator handoff or live-proof prep session, run:
 npm run operator:write-live-gate-report
 ```
 
-The artifact is written under `tmp/gaskit/`, which is ignored by Git. It
-contains gate ids, blocker codes, approval flags, live-service flags, command
-names, messages, and next steps. It does not include configured endpoint
-values, names, addresses, profile paths, credentials, tokens, response bodies,
-or secret local paths.
+The artifact is written under `tmp/gaskit/`, which is ignored by Git. It uses
+kind `agentic-gaskit.operator-live-gate-report` and contains gate ids, blocker
+codes, approval flags, live-service flags, command names, messages, and next
+steps. It does not include configured endpoint values, names, addresses,
+profile paths, credentials, tokens, response bodies, or secret local paths.
 
 To prepare an ignored structured report skeleton for a later approved proof
 run, use:
