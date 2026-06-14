@@ -99,11 +99,13 @@ boundary: it means the current repo has deterministic local proof but still
 requires configured live/testnet, registry, public hosting, payment, custody,
 marketplace, or safety work before those claims can be made.
 
-For production blockers with existing proof-plan writers, the `next` guidance
-starts with the redacted local plan command before any approval-required
-publication, public A2A, payment-provider, marketplace, or custody proof run.
-Those proof plans are operator preparation artifacts; they are not passing
-production evidence by themselves.
+For production blockers with existing report-template and proof-plan writers,
+the `next` guidance starts with the matching ignored
+`operator:write-report-template` command, then points at the redacted local
+plan command before any approval-required publication, public A2A,
+payment-provider, marketplace, or custody proof run. Templates and proof plans
+are operator preparation artifacts; they are not passing production evidence by
+themselves.
 
 ## What It Proves
 
@@ -188,22 +190,24 @@ npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.
 npm run a2a:write-static-discovery-bundle -- --agent-card <signed-card.json> --jwks <jwks.json> --public-base-url <url> --public-jwks-url <url> --out-dir <dir>
 npm run a2a:check-static-discovery-bundle -- --out-dir <dir> --expected-public-base-url <url> --expected-public-jwks-url <url>
 npm run smoke:a2a-static-discovery-local -- --out-dir <dir> --expected-public-base-url <url> --expected-public-jwks-url <url>
+npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/gaskit/a2a-public-discovery-report-template.json
+npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/gaskit/a2a-public-push-delivery-report-template.json
+npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/gaskit/a2a-external-conformance-report-template.json
 npm run a2a:write-public-proof-plan -- --out tmp/gaskit/a2a-public-proof-plan.json
 npm run proof:a2a-public-readiness
+npm run operator:write-report-template -- --kind package-publication --out tmp/gaskit/package-publication-report-template.json
 npm run proof:package-publication-readiness
 npm run package:write-publication-proof-plan -- --out tmp/gaskit/package-publication-proof-plan.json
+npm run operator:write-report-template -- --kind payment-provider-live --out tmp/gaskit/payment-provider-live-report-template.json
 npm run proof:payment-provider-readiness
+npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json
 npm run proof:marketplace-readiness
 npm run marketplace:write-production-proof-plan -- --out tmp/gaskit/marketplace-production-proof-plan.json
+npm run operator:write-report-template -- --kind custody-production --out tmp/gaskit/custody-production-report-template.json
 npm run proof:custody-readiness
 npm run custody:write-production-proof-plan -- --out tmp/gaskit/custody-production-proof-plan.json
 npm run payment:write-provider-proof-plan -- --out tmp/gaskit/payment-provider-proof-plan.json
 npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json
-npm run operator:write-report-template -- --kind package-publication --out tmp/gaskit/package-publication-report-template.json
-npm run operator:write-report-template -- --kind payment-provider-live --out tmp/gaskit/payment-provider-live-report-template.json
-npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json
-npm run operator:write-report-template -- --kind custody-production --out tmp/gaskit/custody-production-report-template.json
-npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/gaskit/a2a-public-discovery-report-template.json
 npm run gas-station:docker-direct -- --status
 npm run sponsor:write-funding-request -- --out tmp/gaskit/sponsor-funding-request.json
 npm run sponsor:request-faucet-funds -- --execute --out tmp/gaskit/sponsor-faucet-request.json

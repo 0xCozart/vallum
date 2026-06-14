@@ -8011,3 +8011,58 @@ Escalation triggers:
   refs, local secret paths, report contents, credentials, tokens, private keys,
   raw transaction bytes, signatures, or raw upstream/provider bodies in status
   output or public docs.
+
+## Slice 7.78: Product Status Template Guidance
+
+User-visible outcome:
+`npm run proof:product-status` points blocked production/public paths at the
+matching ignored `operator:write-report-template` command before the proof-plan
+or approval-required command, keeping the top-level product gate aligned with
+operator live gates, launch readiness, and the product-status runbook.
+
+Likely files:
+
+- `scripts/check-product-status.ts`
+- `scripts/product-status.test.ts`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- The npm publication blocker includes the `package-publication` template
+  command before package proof-plan guidance.
+- The public A2A blocker includes the public discovery, public push delivery,
+  and external conformance template commands before public proof-plan guidance.
+- The payment-provider, marketplace-production, and custody-production blockers
+  include their matching template commands before proof-plan guidance.
+- Template commands remain non-live preparation artifacts and are not accepted
+  as passing production evidence.
+- Focused tests assert the template guidance while continuing to redact
+  structured report values, local paths, credentials, tokens, keys, and
+  secret-like values.
+
+Verification:
+
+- `node --import tsx --test scripts/product-status.test.ts`
+- `npm run proof:product-status`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `npm run typecheck`
+- `git diff --check`
+
+Dependencies:
+Slices 7.72 through 7.77.
+
+Risk:
+Low. This is top-level status guidance only, but stale product-status next steps
+can cause operators to skip structured report templates and create unaccepted
+ad hoc production proof artifacts.
+
+Escalation triggers:
+
+- Any request to treat generated templates as passing npm publication, public
+  A2A, payment-provider, marketplace, or custody proof.
+- Any request to include report contents, endpoint values, local secret paths,
+  credentials, tokens, private keys, payment-provider payloads, webhook bodies,
+  registry auth, raw transaction bytes, signatures, or raw provider bodies in
+  product-status output or public docs.

@@ -127,6 +127,13 @@ const ARTIFACT_BOUNDARIES = [
 ] as const;
 const LIVE_TESTNET_ENV_FILE = ".env";
 const TESTNET_DIGEST_REPORT_ENV = "GASKIT_TESTNET_DIGEST_REPORT";
+const PACKAGE_PUBLICATION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind package-publication --out tmp/gaskit/package-publication-report-template.json";
+const PAYMENT_PROVIDER_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind payment-provider-live --out tmp/gaskit/payment-provider-live-report-template.json";
+const MARKETPLACE_PRODUCTION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json";
+const CUSTODY_PRODUCTION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind custody-production --out tmp/gaskit/custody-production-report-template.json";
+const A2A_PUBLIC_DISCOVERY_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/gaskit/a2a-public-discovery-report-template.json";
+const A2A_PUBLIC_PUSH_DELIVERY_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/gaskit/a2a-public-push-delivery-report-template.json";
+const A2A_EXTERNAL_CONFORMANCE_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/gaskit/a2a-external-conformance-report-template.json";
 
 const usage = `usage: npm exec tsx -- scripts/check-product-status.ts [--json] [--out <path>]
 
@@ -505,7 +512,7 @@ function productionBlockers(
       code: "PUBLIC_A2A_HOSTING_UNPROVEN",
       message: "A2A discovery, local public JWKS serving, local static discovery bundle generation, local static discovery artifact writing, local static discovery artifact validation, local static discovery loopback host smoke, local static hosting review, task routes, authenticated extended Agent Card access, SSE streaming, push notification configuration, injected push delivery, opt-in push HTTP transport, callback URL admission hardening, callback host allowlisting, local retry/attempt observability, local durable attempt evidence, local delivery queueing, and a local injected-transport worker are proven locally and over loopback/local handler or mocked paths only; public readiness is reported locally and opt-in artifact/local-host/public-discovery commands can prepare, validate, loopback-smoke, and write a redacted hosting-review packet for static files plus produce structured discovery evidence, but no public hosting run, production key distribution acceptance, valid operator-supplied structured public discovery report, valid structured public push delivery report, or valid structured external conformance proof is complete.",
       evidence: "npm run proof:a2a-public-readiness",
-      next: "Run npm run a2a:write-public-proof-plan -- --out <ignored-json-path> to prepare redacted operator steps, use npm run proof:a2a-public-readiness to inspect blockers, then run npm run smoke:a2a-public-discovery only with operator-approved public A2A config.",
+      next: `${A2A_PUBLIC_DISCOVERY_TEMPLATE_COMMAND}; ${A2A_PUBLIC_PUSH_DELIVERY_TEMPLATE_COMMAND}; ${A2A_EXTERNAL_CONFORMANCE_TEMPLATE_COMMAND}; run npm run a2a:write-public-proof-plan -- --out <ignored-json-path> to prepare redacted operator steps, use npm run proof:a2a-public-readiness to inspect blockers, then run npm run smoke:a2a-public-discovery only with operator-approved public A2A config.`,
     },
     paymentProviderCheck(paymentProviderReadiness),
     marketplaceCheck(marketplaceReadiness),
@@ -551,7 +558,7 @@ function custodyCheck(readiness: CustodyReadinessReport): ProductEvidenceCheck {
     code: "PRODUCTION_CUSTODY_OUT_OF_SCOPE",
     message: `Agent wallets use signer references locally; production custody, KMS, recovery export, staking, bonding, and slashing remain blocked by ${live?.code ?? "CUSTODY_PRODUCTION_REPORT_MISSING"}.`,
     evidence: "npm run proof:custody-readiness",
-    next: "Run npm run custody:write-production-proof-plan, complete a dedicated operator-approved custody, KMS, recovery, legal, and incident-response review, save a redacted structured report outside tracked files, set CUSTODY_PRODUCTION_REPORT, and rerun readiness/status gates.",
+    next: `${CUSTODY_PRODUCTION_TEMPLATE_COMMAND}; run npm run custody:write-production-proof-plan, complete a dedicated operator-approved custody, KMS, recovery, legal, and incident-response review, save a redacted structured report outside tracked files, set CUSTODY_PRODUCTION_REPORT, and rerun readiness/status gates.`,
   };
 }
 
@@ -586,7 +593,7 @@ function marketplaceCheck(readiness: MarketplaceReadinessReport): ProductEvidenc
     code: "PRODUCTION_MARKETPLACE_BLOCKED",
     message: `Marketplace work is limited to local read-model evidence; production provider onboarding, moderation, public scoring, custody, and settlement remain blocked by ${live?.code ?? "MARKETPLACE_PRODUCTION_REPORT_MISSING"}.`,
     evidence: "npm run proof:marketplace-readiness",
-    next: "Run npm run marketplace:write-production-proof-plan, complete a dedicated operator-approved production marketplace review, save a redacted structured report outside tracked files, set MARKETPLACE_PRODUCTION_REPORT, and rerun readiness/status gates.",
+    next: `${MARKETPLACE_PRODUCTION_TEMPLATE_COMMAND}; run npm run marketplace:write-production-proof-plan, complete a dedicated operator-approved production marketplace review, save a redacted structured report outside tracked files, set MARKETPLACE_PRODUCTION_REPORT, and rerun readiness/status gates.`,
   };
 }
 
@@ -621,7 +628,7 @@ function packagePublicationCheck(readiness: PackagePublicationReadinessReport): 
     code: "NPM_PUBLICATION_UNRUN",
     message: `Packages are locally packable, installable from tarballs, and dry-run publishable; npm registry publication proof remains blocked by ${live?.code ?? "PACKAGE_PUBLICATION_REPORT_MISSING"}.`,
     evidence: "npm run proof:package-publication-readiness",
-    next: "Run npm run package:write-publication-proof-plan, complete a dedicated operator-approved npm publication proof, save a redacted structured report outside tracked files, set PACKAGE_PUBLICATION_REPORT, and rerun readiness/status gates.",
+    next: `${PACKAGE_PUBLICATION_TEMPLATE_COMMAND}; run npm run package:write-publication-proof-plan, complete a dedicated operator-approved npm publication proof, save a redacted structured report outside tracked files, set PACKAGE_PUBLICATION_REPORT, and rerun readiness/status gates.`,
   };
 }
 
@@ -656,7 +663,7 @@ function paymentProviderCheck(readiness: PaymentProviderReadinessReport): Produc
     code: "LIVE_PAYMENT_PROVIDER_UNPROVEN",
     message: `x402 and AP2 flows are locally proven only; live facilitator, processor, or settlement proof remains blocked by ${live?.code ?? "PAYMENT_PROVIDER_LIVE_REPORT_MISSING"}.`,
     evidence: "npm run proof:payment-provider-readiness",
-    next: "Run npm run payment:write-provider-proof-plan, complete a dedicated operator-approved payment-provider proof, save a redacted structured report outside tracked files, set PAYMENT_PROVIDER_LIVE_REPORT, and rerun readiness/status gates.",
+    next: `${PAYMENT_PROVIDER_TEMPLATE_COMMAND}; run npm run payment:write-provider-proof-plan, complete a dedicated operator-approved payment-provider proof, save a redacted structured report outside tracked files, set PAYMENT_PROVIDER_LIVE_REPORT, and rerun readiness/status gates.`,
   };
 }
 
