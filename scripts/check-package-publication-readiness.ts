@@ -76,6 +76,7 @@ const REQUIRED_SOURCE_PATHS = [
   "docs/agentic-gaskit/package-release-strategy.md",
   "scripts/package-publish-dry-run.ts",
   "scripts/smoke-package-install.ts",
+  "scripts/smoke-package-paid-mcp-consumer.ts",
   "scripts/package-publish.test.ts",
   "scripts/package-publish-dry-run.test.ts",
   "scripts/package-install-smoke.test.ts",
@@ -229,6 +230,7 @@ async function checkLocalPackageProof(
   if (packages.length === 0) missing.push("publishable packages");
   const packCheck = scripts["pack:check"] ?? "";
   const installSmoke = scripts["smoke:package-install"] ?? "";
+  const paidMcpConsumerSmoke = scripts["smoke:package-paid-mcp-consumer"] ?? "";
   const publishDryRun = scripts["publish:dry-run"] ?? "";
   const verifyFast = scripts["verify:fast"] ?? "";
   const verifyLocal = scripts["verify:local"] ?? "";
@@ -236,6 +238,9 @@ async function checkLocalPackageProof(
 
   if (!packCheck.includes("npm pack --dry-run")) missing.push("pack:check npm pack --dry-run");
   if (!installSmoke.includes("scripts/smoke-package-install.ts")) missing.push("smoke:package-install");
+  if (!paidMcpConsumerSmoke.includes("scripts/smoke-package-paid-mcp-consumer.ts")) {
+    missing.push("smoke:package-paid-mcp-consumer");
+  }
   if (!publishDryRun.includes("scripts/package-publish-dry-run.ts")) missing.push("publish:dry-run");
   for (const packageInfo of packages) {
     if (!packCheck.includes(`-w ${packageInfo.name}`)) missing.push(`pack:check ${packageInfo.name}`);
@@ -250,6 +255,13 @@ async function checkLocalPackageProof(
   ) {
     missing.push("package publication readiness must stay opt-in");
   }
+  if (
+    verifyFast.includes("smoke:package-paid-mcp-consumer")
+    || verifyLocal.includes("smoke:package-paid-mcp-consumer")
+    || grantCheck.includes("smoke:package-paid-mcp-consumer")
+  ) {
+    missing.push("package paid MCP consumer smoke must stay opt-in");
+  }
 
   if (missing.length > 0) {
     return {
@@ -258,7 +270,7 @@ async function checkLocalPackageProof(
       code: "PACKAGE_PUBLICATION_LOCAL_PROOF_INCOMPLETE",
       message: "Local package publication source, script, or package coverage is incomplete.",
       evidence: `missing=${missing.join(",")}`,
-      next: "Restore package release docs, pack dry-run, local tarball install smoke, opt-in publish dry-run, and package coverage before registry readiness review.",
+      next: "Restore package release docs, pack dry-run, local tarball install smoke, paid MCP consumer tarball smoke, opt-in publish dry-run, and package coverage before registry readiness review.",
     };
   }
 
@@ -266,8 +278,8 @@ async function checkLocalPackageProof(
     id: "local-package-publication-proof",
     status: "proven-local",
     code: "PACKAGE_PUBLICATION_LOCAL_PROOF_CONFIGURED",
-    message: "Local package metadata, pack dry-run, local tarball install smoke, and opt-in publish dry-run gates are configured.",
-    evidence: "npm run pack:check; npm run smoke:package-install; npm run publish:dry-run",
+    message: "Local package metadata, pack dry-run, local tarball install smoke, paid MCP consumer tarball smoke, and opt-in publish dry-run gates are configured.",
+    evidence: "npm run pack:check; npm run smoke:package-install; npm run smoke:package-paid-mcp-consumer; npm run publish:dry-run",
     next: "Keep this as local release proof only until an operator-approved npm registry publication report exists.",
   };
 }

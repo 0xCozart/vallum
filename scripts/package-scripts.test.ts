@@ -439,6 +439,17 @@ test("package install smoke is wired after package dry-runs in local verificatio
   assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run pack:check && npm run smoke:package-install/);
 });
 
+test("package paid MCP consumer smoke is opt-in local tarball proof", () => {
+  assert.equal(
+    packageJson.scripts?.["smoke:package-paid-mcp-consumer"],
+    "npm run build && tsx scripts/smoke-package-paid-mcp-consumer.ts",
+  );
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /package-paid-mcp-consumer/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /package-paid-mcp-consumer/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /package-paid-mcp-consumer/);
+  assert.doesNotMatch(packageJson.scripts?.["smoke:package-paid-mcp-consumer"] ?? "", /\bnpm publish\b/);
+});
+
 test("local smoke scripts are built and wired into local verification", () => {
   const localSmokes: ReadonlyArray<readonly [scriptName: string, entrypoint: string]> = [
     ["smoke:agent-escrow", "scripts/smoke-agent-escrow.ts"],

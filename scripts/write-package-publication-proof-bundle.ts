@@ -247,11 +247,18 @@ function buildSteps(input: {
       dependsOn: ["run-local-pack-check"],
     },
     {
+      id: "run-local-paid-mcp-consumer-smoke",
+      command: "npm run smoke:package-paid-mcp-consumer",
+      contactsNpmRegistry: false,
+      requiresOperatorApproval: false,
+      dependsOn: ["run-local-install-smoke"],
+    },
+    {
       id: "run-publish-dry-run",
       command: "npm run publish:dry-run",
       contactsNpmRegistry: false,
       requiresOperatorApproval: false,
-      dependsOn: ["run-local-install-smoke"],
+      dependsOn: ["run-local-paid-mcp-consumer-smoke"],
     },
     {
       id: "run-approved-npm-publication-proof",

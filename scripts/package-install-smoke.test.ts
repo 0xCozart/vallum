@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  buildPaidMcpConsumerSmokeSource,
+} from "./smoke-package-paid-mcp-consumer.js";
+import {
   buildConsumerPackageJson,
   buildConsumerSmokeSource,
   buildNpmInstallArgs,
@@ -50,4 +53,28 @@ test("package install smoke imports package root entrypoints without secret mate
   assert.match(source, /await import\(packageName\)/);
   assert.match(source, /Package install smoke passed/);
   assert.doesNotMatch(source, /token|secret|privateKey|mnemonic|otp/i);
+});
+
+test("paid MCP consumer smoke uses package root entrypoints only", () => {
+  const source = buildPaidMcpConsumerSmokeSource();
+
+  assert.match(source, /from "@iota-gaskit\/manifest"/);
+  assert.match(source, /from "@iota-gaskit\/policy-gateway"/);
+  assert.match(source, /from "@iota-gaskit\/sdk"/);
+  assert.doesNotMatch(source, /@iota-gaskit\/[^"]+\/(src|dist|contracts|server|schema|routes)/);
+  assert.doesNotMatch(source, /\.\.\/|\.\/packages\/|\/src\//);
+});
+
+test("paid MCP consumer smoke proves approval denial failed payment and redaction boundaries", () => {
+  const source = buildPaidMcpConsumerSmokeSource();
+
+  assert.match(source, /mode=package-consumer/);
+  assert.match(source, /install=local-tarballs/);
+  assert.match(source, /boundary\.route=SDK->mock-policy-gateway/);
+  assert.match(source, /approval\.status=completed/);
+  assert.match(source, /denial\.reason=GAS_BUDGET_TOO_HIGH/);
+  assert.match(source, /failedPayment\.reason=mock-payment-failed/);
+  assert.match(source, /redaction\.apiKey=redacted/);
+  assert.match(source, /redaction\.signerReference=redacted/);
+  assert.match(source, /assert\.doesNotMatch\(output,/);
 });

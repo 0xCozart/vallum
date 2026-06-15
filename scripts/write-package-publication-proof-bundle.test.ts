@@ -106,6 +106,7 @@ async function writePackageEvidence(): Promise<string> {
     "docs/agentic-gaskit/package-release-strategy.md",
     "scripts/package-publish-dry-run.ts",
     "scripts/smoke-package-install.ts",
+    "scripts/smoke-package-paid-mcp-consumer.ts",
     "scripts/package-publish.test.ts",
     "scripts/package-publish-dry-run.test.ts",
     "scripts/package-install-smoke.test.ts",
@@ -126,6 +127,7 @@ function completeScripts(): Record<string, string | undefined> {
   return {
     "pack:check": "npm run build && npm pack --dry-run -w @iota-gaskit/sdk",
     "smoke:package-install": "npm run build && tsx scripts/smoke-package-install.ts",
+    "smoke:package-paid-mcp-consumer": "npm run build && tsx scripts/smoke-package-paid-mcp-consumer.ts",
     "publish:dry-run": "npm run build && tsx scripts/package-publish-dry-run.ts",
     "verify:fast": "npm test",
     "verify:local": "npm test",

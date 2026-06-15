@@ -1,6 +1,6 @@
 # Package Release Strategy
 
-Last updated: 2026-06-10.
+Last updated: 2026-06-15.
 
 ## Decision
 
@@ -85,11 +85,35 @@ together. It does not prove npm registry installability, package-name
 availability, account ownership, provenance, install behavior for partial
 package sets, or downstream application compatibility.
 
+`npm run smoke:package-paid-mcp-consumer` adds an opt-in local adoption proof:
+
+- builds every workspace first;
+- packs every non-private package under `packages/*` into a temporary
+  directory;
+- installs those local tarballs together into a fresh temporary consumer
+  project with lifecycle scripts, audit, funding prompts, and package-lock
+  writes disabled;
+- runs a generated consumer program that imports only package root entrypoints
+  from `@iota-gaskit/sdk`, `@iota-gaskit/manifest`, and
+  `@iota-gaskit/policy-gateway`;
+- starts an in-process mock policy gateway and exercises the canonical paid
+  MCP-style flow through SDK-to-gateway calls;
+- proves approval, policy denial, failed-payment withholding, receipt event
+  evidence, and redaction markers without live network calls.
+
+This proves a fresh local consumer project can run the first Agentic GasKit
+adoption wedge from packed package APIs. It does not prove npm registry
+installability, package-name availability, live payments, custody,
+marketplace, public A2A hosting, or live IOTA/testnet execution. The command is
+opt-in and intentionally stays out of `verify:fast`, `verify:local`, and
+`grant:check` until its runtime cost and stability are deliberately accepted.
+
 `npm run proof:package-publication-readiness` adds a non-networked registry
 publication readiness gate:
 
 - checks the local package release docs, dry-run helper, install smoke helper,
-  package metadata tests, and script wiring;
+  paid MCP consumer tarball smoke helper, package metadata tests, and script
+  wiring;
 - verifies every current public workspace is included in `pack:check`;
 - keeps `publish:dry-run` and package publication readiness out of
   `verify:fast`, `verify:local`, and `grant:check`;
@@ -155,6 +179,11 @@ structured publication report.
 ## Explicit Non-Claims
 
 No package is claimed as published to npm today.
+
+Do not present `npm install @iota-gaskit/*` as a current user instruction until
+operator-approved npm publication evidence exists. Before publication, package
+adoption proof means local tarball installation through
+`npm run smoke:package-install` and `npm run smoke:package-paid-mcp-consumer`.
 
 No real `npm publish` may run without explicit operator approval, npm registry
 credentials outside the repo, and a fresh release checklist. `npm pack
