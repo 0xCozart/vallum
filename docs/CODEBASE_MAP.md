@@ -185,6 +185,7 @@ Readiness/product gates:
 - `npm run proof:verification-profiles`
 - `npm run proof:package-publication-readiness`
 - `npm run package:write-publication-proof-plan`
+- `npm run package:write-publication-proof-bundle`
 - `npm run proof:payment-provider-readiness`
 - `npm run payment:write-provider-proof-plan`
 - `npm run proof:marketplace-readiness`

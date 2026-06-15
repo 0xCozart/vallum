@@ -231,9 +231,16 @@ test("package publication proof plan is non-networked and opt-in", () => {
     packageJson.scripts?.["package:write-publication-proof-plan"],
     "npm run build && tsx scripts/write-package-publication-proof-plan.ts",
   );
+  assert.equal(
+    packageJson.scripts?.["package:write-publication-proof-bundle"],
+    "npm run build && tsx scripts/write-package-publication-proof-bundle.ts",
+  );
   assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /write-publication-proof-plan/);
   assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /write-publication-proof-plan/);
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /write-publication-proof-plan/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /write-publication-proof-bundle/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /write-publication-proof-bundle/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /write-publication-proof-bundle/);
 });
 
 test("marketplace readiness proof is non-networked and opt-in", () => {

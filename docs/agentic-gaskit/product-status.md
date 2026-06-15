@@ -117,13 +117,11 @@ boundary: it means the current repo has deterministic local proof but still
 requires configured live/testnet, registry, public hosting, payment, custody,
 marketplace, or safety work before those claims can be made.
 
-For production blockers with existing report-template and proof-plan writers,
-the `next` guidance starts with the matching ignored
-`operator:write-report-template` command, then points at the redacted local
-plan command before any approval-required publication, public A2A,
-payment-provider, marketplace, or custody proof run. Templates and proof plans
-are operator preparation artifacts; they are not passing production evidence by
-themselves.
+For production blockers with existing report-template, proof-plan, or bundle
+writers, the `next` guidance starts with the highest-level ignored preparation
+command available, then points at the approval-required proof run. Templates,
+proof plans, and bundles are operator preparation artifacts; they are not
+passing production evidence by themselves.
 
 ## What It Proves
 
@@ -219,6 +217,7 @@ npm run a2a:write-public-proof-plan -- --out tmp/gaskit/a2a-public-proof-plan.js
 npm run a2a:write-public-proof-bundle -- --out tmp/gaskit/a2a-public-proof-bundle.json
 npm run proof:a2a-public-readiness
 npm run operator:write-report-template -- --kind package-publication --out tmp/gaskit/package-publication-report-template.json
+npm run package:write-publication-proof-bundle -- --out tmp/gaskit/package-publication-proof-bundle.json
 npm run proof:package-publication-readiness
 npm run package:write-publication-proof-plan -- --out tmp/gaskit/package-publication-proof-plan.json
 npm run operator:write-report-template -- --kind payment-provider-live --out tmp/gaskit/payment-provider-live-report-template.json

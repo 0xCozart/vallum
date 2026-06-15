@@ -66,7 +66,8 @@ test("product status reports local proof gates and explicit live blockers withou
     assert.match(formatted, /NPM_PUBLICATION_UNRUN/);
     assert.match(formatted, /operator:write-report-template -- --kind package-publication/);
     assert.match(formatted, /npm run proof:package-publication-readiness/);
-    assert.match(formatted, /npm run package:write-publication-proof-plan/);
+    assert.match(formatted, /npm run package:write-publication-proof-bundle -- --out <ignored-json-path>/);
+    assert.match(formatted, /redacted publication proof plan, readiness artifact, and report template/);
     assert.match(formatted, /PUBLIC_A2A_HOSTING_UNPROVEN/);
     assert.match(formatted, /operator:write-report-template -- --kind a2a-public-discovery/);
     assert.match(formatted, /operator:write-report-template -- --kind a2a-public-push-delivery/);

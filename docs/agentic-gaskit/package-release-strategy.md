@@ -142,6 +142,16 @@ publication proof-plan writer for operators:
   headers, raw registry responses, signatures, package-owner account details,
   and local secret paths out of output and Git.
 
+`npm run package:write-publication-proof-bundle -- --out
+tmp/gaskit/package-publication-proof-bundle.json` writes the proof plan, the
+publication readiness artifact, and the package-publication report template
+together as ignored local artifacts. It also writes a summary with package
+names, blocker codes, required report fields, required check ids, command
+order, and boundaries. The bundle is preparation only: it contacts no npm
+registry, runs no real publish, does not prove npm account ownership, and does
+not clear registry publication readiness without an operator-approved
+structured publication report.
+
 ## Explicit Non-Claims
 
 No package is claimed as published to npm today.

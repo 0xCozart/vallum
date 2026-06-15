@@ -134,6 +134,9 @@ hosts, marketplace systems, or physical devices.
   `npm run package:write-publication-proof-plan`, a redacted local plan that
   lists package names, command order, required report fields, required check
   ids, approval boundaries, and blocker codes without running real publication.
+  The adjacent `npm run package:write-publication-proof-bundle` command writes
+  that plan, the publication readiness artifact, and the package-publication
+  report template together as ignored local artifacts.
 - Points production marketplace review at the non-networked
   `npm run proof:marketplace-readiness` command, which validates local
   marketplace read-model proof plus an ignored structured production
@@ -253,6 +256,7 @@ npm run proof:product-status
 npm run proof:launch-readiness
 npm run proof:testnet-digest
 npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json
+npm run package:write-publication-proof-bundle -- --out tmp/gaskit/package-publication-proof-bundle.json
 npm run a2a:write-public-proof-plan -- --out tmp/gaskit/a2a-public-proof-plan.json
 npm run a2a:write-public-proof-bundle -- --out tmp/gaskit/a2a-public-proof-bundle.json
 npm run proof:a2a-public-readiness

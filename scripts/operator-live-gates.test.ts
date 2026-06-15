@@ -79,7 +79,7 @@ test("operator live gates report current blockers without secret values", async 
     assert.equal(findGate(report, "npm-registry-publication").status, "requires-approval");
     assert.equal(
       findGate(report, "npm-registry-publication").command,
-      "npm run operator:write-report-template -- --kind package-publication --out tmp/gaskit/package-publication-report-template.json && npm run package:write-publication-proof-plan && npm run proof:package-publication-readiness && operator-approved npm publish workflow",
+      "npm run package:write-publication-proof-bundle -- --out tmp/gaskit/package-publication-proof-bundle.json && npm run proof:package-publication-readiness && operator-approved npm publish workflow",
     );
     assert.equal(
       findGate(report, "public-a2a-hosting").command,

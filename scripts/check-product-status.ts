@@ -133,6 +133,7 @@ const ARTIFACT_BOUNDARIES = [
 const LIVE_TESTNET_ENV_FILE = ".env";
 const TESTNET_DIGEST_REPORT_ENV = "GASKIT_TESTNET_DIGEST_REPORT";
 const PACKAGE_PUBLICATION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind package-publication --out tmp/gaskit/package-publication-report-template.json";
+const PACKAGE_PUBLICATION_PROOF_BUNDLE_COMMAND = "npm run package:write-publication-proof-bundle -- --out <ignored-json-path>";
 const PAYMENT_PROVIDER_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind payment-provider-live --out tmp/gaskit/payment-provider-live-report-template.json";
 const MARKETPLACE_PRODUCTION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json";
 const CUSTODY_PRODUCTION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind custody-production --out tmp/gaskit/custody-production-report-template.json";
@@ -668,7 +669,7 @@ function packagePublicationCheck(readiness: PackagePublicationReadinessReport): 
     code: "NPM_PUBLICATION_UNRUN",
     message: `Packages are locally packable, installable from tarballs, and dry-run publishable; npm registry publication proof remains blocked by ${live?.code ?? "PACKAGE_PUBLICATION_REPORT_MISSING"}.`,
     evidence: "npm run proof:package-publication-readiness",
-    next: `${PACKAGE_PUBLICATION_TEMPLATE_COMMAND}; run npm run package:write-publication-proof-plan, complete a dedicated operator-approved npm publication proof, save a redacted structured report outside tracked files, set PACKAGE_PUBLICATION_REPORT, and rerun readiness/status gates.`,
+    next: `${PACKAGE_PUBLICATION_PROOF_BUNDLE_COMMAND} to prepare the redacted publication proof plan, readiness artifact, and report template; complete a dedicated operator-approved npm publication proof, save a redacted structured report outside tracked files, set PACKAGE_PUBLICATION_REPORT, and rerun readiness/status gates. The bundle includes ${PACKAGE_PUBLICATION_TEMPLATE_COMMAND}.`,
   };
 }
 

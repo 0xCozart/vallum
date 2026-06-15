@@ -94,7 +94,12 @@ test("launch readiness maps local evidence to live and production blockers", asy
   const packageRelease = report.areas.find((area) => area.id === "phase-6-package-release");
   assert.equal(packageRelease?.status, "blocked-production");
   assert.ok(packageRelease?.commands.includes("npm run operator:write-report-template -- --kind package-publication --out tmp/gaskit/package-publication-report-template.json"));
+  assert.ok(packageRelease?.commands.includes("npm run package:write-publication-proof-bundle -- --out tmp/gaskit/package-publication-proof-bundle.json"));
   assert.equal(report.areas.find((area) => area.id === "phase-3-contract-workflows")?.status, "deferred-safety");
+  assert.ok(
+    (packageRelease?.commands.indexOf("npm run package:write-publication-proof-bundle -- --out tmp/gaskit/package-publication-proof-bundle.json") ?? -1)
+      < (packageRelease?.commands.indexOf("npm run proof:package-publication-readiness") ?? -1),
+  );
   assert.ok(
     report.areas
       .find((area) => area.id === "packet-h-final-product-status")
@@ -252,6 +257,7 @@ async function writeEvidenceTree(cwd: string): Promise<void> {
     "scripts/smoke-package-install.ts",
     "scripts/check-package-publication-readiness.ts",
     "scripts/write-package-publication-proof-plan.ts",
+    "scripts/write-package-publication-proof-bundle.ts",
     "scripts/package-publish.test.ts",
     "scripts/package-install-smoke.test.ts",
     "docs/agentic-gaskit/product-status.md",
