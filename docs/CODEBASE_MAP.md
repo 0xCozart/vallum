@@ -180,6 +180,7 @@ Readiness/product gates:
 - `npm run proof:launch-readiness`
 - `npm run proof:operator-gates`
 - `npm run proof:roadmap-completion`
+- `npm run roadmap:write-execution-proof-bundle`
 - `npm run operator:write-live-gate-report`
 - `npm run operator:write-report-template`
 - `npm run proof:verification-profiles`
@@ -194,6 +195,7 @@ Readiness/product gates:
 - `npm run marketplace:write-production-proof-bundle`
 - `npm run proof:custody-readiness`
 - `npm run custody:write-production-proof-plan`
+- `npm run custody:write-production-proof-bundle`
 
 Publication checks:
 

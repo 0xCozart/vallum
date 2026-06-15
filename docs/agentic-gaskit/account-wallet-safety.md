@@ -160,3 +160,12 @@ production proof-plan writer for operators:
 - keeps seeds, mnemonics, private keys, raw keypairs, signer material,
   credentials, authorization headers, payloads, signatures, exported keys, and
   local secret paths out of output and Git.
+
+`npm run custody:write-production-proof-bundle -- --out
+tmp/gaskit/custody-production-proof-bundle.json` writes the custody production
+report template, proof plan, readiness artifact, and redacted summary together
+as ignored local artifacts. The bundle is still a preparation artifact: it does
+not contact KMS providers, external signers, custody providers, IOTA services,
+Gas Station endpoints, or live wallet infrastructure, and it does not clear
+production custody blockers without a valid operator-supplied structured
+report.

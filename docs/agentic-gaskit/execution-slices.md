@@ -8584,3 +8584,341 @@ Escalation triggers:
 - Any request to treat this aggregate audit as a substitute for the underlying
   live/testnet, publication, public A2A, payment, marketplace, custody, or
   physical-safety proof gates.
+
+## Slice 7.88: Custody Production Proof Bundle
+
+User-visible outcome:
+Operators can prepare production custody review with one non-networked command
+that writes the custody production report template, custody proof plan,
+custody readiness artifact, and redacted bundle summary together as ignored
+local artifacts, matching the package, A2A, payment, and marketplace proof
+bundle pattern.
+
+Likely files:
+
+- `scripts/write-custody-production-proof-bundle.ts`
+- `scripts/write-custody-production-proof-bundle.test.ts`
+- `scripts/check-product-status.ts`
+- `scripts/check-launch-readiness.ts`
+- `scripts/check-operator-live-gates.ts`
+- `scripts/package-scripts.test.ts`
+- `package.json`
+- `docs/overview.md`
+- `docs/CODEBASE_MAP.md`
+- `docs/agentic-gaskit/account-wallet-safety.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `npm run custody:write-production-proof-bundle -- --out
+  <ignored-json-path>` builds first and writes the bundle summary with mode
+  `600`.
+- The bundle writes the custody-production report template, custody production
+  proof plan, and custody readiness artifact as ignored local artifacts.
+- The bundle reports blocker codes while `CUSTODY_PRODUCTION_REPORT` is
+  missing, invalid, stale, unsafe, or not found, and reports
+  `ready-for-approval` only when the existing custody readiness validator
+  accepts a recent structured report.
+- The bundle does not contact KMS providers, external signers, custody
+  providers, IOTA services, Gas Station endpoints, or live wallet
+  infrastructure.
+- The bundle and related status surfaces do not include seeds, mnemonics,
+  private keys, raw keypairs, signer material, credentials, authorization
+  headers, payloads, signatures, exported keys, full addresses, report paths,
+  or local secret paths.
+- Product status, launch readiness, and operator live gates point production
+  custody at the bundle before custody readiness or any dedicated custody
+  security design slice.
+
+Verification:
+
+- `node --import tsx --test scripts/write-custody-production-proof-bundle.test.ts
+  scripts/write-custody-production-proof-plan.test.ts
+  scripts/custody-readiness.test.ts scripts/package-scripts.test.ts
+  scripts/product-status.test.ts scripts/launch-readiness.test.ts
+  scripts/operator-live-gates.test.ts`
+- `npm run custody:write-production-proof-bundle -- --out
+  tmp/gaskit/custody-production-proof-bundle.json`
+- `npm run typecheck`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `git diff --check`
+
+Dependencies:
+Existing custody readiness artifact writer, custody production proof-plan
+writer, and custody-production operator report template.
+
+Risk:
+Medium. A custody bundle can be mistaken for production custody, KMS, external
+signer, recovery, staking, bonding, slashing, or signer-operation approval
+unless blocker codes and boundaries stay explicit.
+
+Escalation triggers:
+
+- Any request to include seeds, mnemonics, private keys, raw keypairs, signer
+  material, credentials, authorization headers, payloads, signatures, exported
+  keys, full addresses, report paths, or local secret paths.
+- Any request to treat generated custody templates, readiness artifacts, proof
+  plans, or bundles as production custody, KMS, external signer, recovery,
+  staking, bonding, slashing, signer-operation, or launch proof.
+
+## Slice 7.89: Identity Proof Bundle Status Artifact
+
+User-visible outcome:
+The linked IOTA Names, IOTA Identity, and VC proof bundle now writes the
+live-proof-status artifact in the same ignored bundle preparation flow as its
+report templates and live proof plan, so operators can archive the exact
+non-networked status snapshot before any approved live smoke command runs.
+
+Likely files:
+
+- `scripts/write-identity-proof-bundle.ts`
+- `scripts/write-identity-proof-bundle.test.ts`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/overview.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `npm run live:write-identity-proof-bundle -- --out
+  <ignored-json-path>` still builds first and remains opt-in.
+- The bundle writes the IOTA Names, IOTA Identity, and VC report templates,
+  the live proof plan, the live-proof-status artifact, and the bundle summary
+  as ignored local artifacts with mode `600`.
+- The live-proof-status artifact remains non-networked and does not run IOTA
+  Names, IOTA Identity, VC, IOTA RPC, Gas Station, faucet, or sponsored execute
+  commands.
+- The bundle does not include endpoint values, profile paths, names, full
+  addresses, DIDs, credential refs, proof responses, credentials, tokens,
+  private keys, raw transaction bytes, user signatures, report paths, or local
+  secret paths.
+- The bundle still reports identity gates as blocked until the accepted
+  operator-owned live reports and trust-policy configuration are present.
+
+Verification:
+
+- `node --import tsx --test scripts/write-identity-proof-bundle.test.ts
+  scripts/live-proof-status.test.ts scripts/package-scripts.test.ts
+  scripts/operator-live-gates.test.ts scripts/launch-readiness.test.ts
+  scripts/product-status.test.ts scripts/roadmap-completion.test.ts`
+- `npm run live:write-identity-proof-bundle -- --out
+  tmp/gaskit/identity-proof-bundle.json`
+- `npm run typecheck`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `git diff --check`
+
+Dependencies:
+Existing live proof status artifact writer, live proof plan writer, identity
+proof bundle writer, and operator report templates.
+
+Risk:
+Low to medium. This is a derived evidence artifact, but identity and VC
+readiness can be mistaken for live identity proof unless generated templates,
+plans, and status artifacts remain clearly non-acceptance artifacts.
+
+Escalation triggers:
+
+- Any request to include endpoint values, profile paths, names, full
+  addresses, DIDs, credential refs, proof responses, credentials, tokens,
+  private keys, raw transaction bytes, user signatures, report paths, or local
+  secret paths.
+- Any request to treat generated identity templates, live proof plans, live
+  proof status artifacts, or bundles as accepted IOTA Names, IOTA Identity, VC,
+  sponsored execute, or launch proof.
+
+## Slice 7.90: Identity Live Status Bundle Guidance
+
+User-visible outcome:
+The live proof status gate now points blocked IOTA Names, IOTA Identity, and VC
+validation paths at the linked identity proof bundle before the lower-level
+report templates and live smoke commands, matching the operator gate bundle
+workflow.
+
+Likely files:
+
+- `scripts/check-live-proof-status.ts`
+- `scripts/live-proof-status.test.ts`
+- `docs/agentic-gaskit/live-proof-status.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- Missing IOTA Names config and report blockers start their `next` guidance
+  with `npm run live:write-identity-proof-bundle -- --out
+  tmp/gaskit/identity-proof-bundle.json`.
+- Missing IOTA Identity config and report blockers start their `next` guidance
+  with the same identity proof bundle command.
+- Missing VC trust-policy config and missing Identity report blockers start
+  their `next` guidance with the same identity proof bundle command.
+- The bundle guidance remains a non-networked preparation artifact and does not
+  mark IOTA Names, IOTA Identity, or VC validation ready.
+- The live proof status output still omits endpoint values, names, profile
+  paths, DIDs, credential refs, response bodies, credentials, tokens, private
+  keys, raw transaction bytes, user signatures, report paths, and local secret
+  paths.
+
+Verification:
+
+- `node --import tsx --test scripts/live-proof-status.test.ts
+  scripts/product-status.test.ts scripts/operator-live-gates.test.ts`
+- `npm run proof:live-status`
+- `npm run proof:product-status`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `git diff --check`
+
+Dependencies:
+Existing identity proof bundle writer, live proof status artifact writer,
+IOTA Names report template, IOTA Identity report template, and VC validation
+report template.
+
+Risk:
+Low. This changes operator guidance only, but unclear wording could make the
+identity proof bundle sound like accepted live proof.
+
+Escalation triggers:
+
+- Any request to treat the identity proof bundle, templates, live proof plan,
+  or live-proof-status artifact as accepted IOTA Names, IOTA Identity, VC, or
+  launch proof.
+- Any request to include endpoint values, names, profile paths, DIDs,
+  credential refs, response bodies, credentials, tokens, private keys, raw
+  transaction bytes, user signatures, report paths, or local secret paths in
+  status output or docs.
+
+## Slice 7.91: Roadmap Execution Proof Bundle
+
+User-visible outcome:
+Operators can run one non-networked command to write the current roadmap
+completion audit, product status, launch readiness, operator-gate report, and
+all existing proof-preparation bundles for the remaining identity, package
+publication, public A2A, payment-provider, marketplace, and custody gates into
+one ignored artifact directory.
+
+Likely files:
+
+- `scripts/write-roadmap-execution-proof-bundle.ts`
+- `scripts/write-roadmap-execution-proof-bundle.test.ts`
+- `scripts/package-scripts.test.ts`
+- `package.json`
+- `docs/CODEBASE_MAP.md`
+- `docs/agentic-gaskit/product-status.md`
+- `docs/agentic-gaskit/operator-live-gates.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- `npm run roadmap:write-execution-proof-bundle -- --out
+  <ignored-json-path>` builds first and writes the aggregate bundle with mode
+  `600`.
+- The aggregate bundle writes child status artifacts and proof-preparation
+  bundles under the configured ignored artifact directory.
+- The aggregate bundle reports current roadmap completion state, blocker codes,
+  ready-approval gates, approval-required gates, live-service gates, and
+  deduped next commands without accepting any blocker as complete.
+- The aggregate bundle is non-networked and does not run live IOTA, IOTA Names,
+  IOTA Identity, VC, Gas Station execute, npm publication, public A2A, payment,
+  marketplace, custody, KMS, or physical-device proof commands.
+- The aggregate bundle and docs do not include credentials, tokens, private
+  keys, raw transaction bytes, user signatures, response bodies, endpoint
+  values, profile paths, full addresses, report contents, or local secret
+  paths.
+
+Verification:
+
+- `node --import tsx --test scripts/write-roadmap-execution-proof-bundle.test.ts
+  scripts/package-scripts.test.ts scripts/roadmap-completion.test.ts`
+- `npm run roadmap:write-execution-proof-bundle -- --out
+  tmp/gaskit/roadmap-execution-proof-bundle.json`
+- `npm run typecheck`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `git diff --check`
+
+Dependencies:
+Existing identity, package-publication, public-A2A, payment-provider,
+marketplace-production, and custody-production proof bundle writers; product
+status, launch readiness, operator live-gate, and roadmap-completion artifact
+writers.
+
+Risk:
+Low to medium. This improves operator handoff ergonomics, but an aggregate
+bundle can be mistaken for accepted launch proof unless the blocker and boundary
+language stays explicit.
+
+Escalation triggers:
+
+- Any request to treat the aggregate bundle or its child templates, plans,
+  readiness artifacts, or status artifacts as accepted IOTA Names, IOTA
+  Identity, VC, npm, public A2A, payment, marketplace, custody, physical-device,
+  launch, or roadmap-complete proof.
+- Any request to include credentials, tokens, private keys, raw transaction
+  bytes, user signatures, response bodies, endpoint values, profile paths, full
+  addresses, report contents, or local secret paths in the aggregate bundle,
+  status output, docs, or committed evidence.
+
+## Slice 7.92: Launch Readiness Bundle Guidance
+
+User-visible outcome:
+Launch-readiness evidence points operators at the same non-networked
+proof-bundle-first preparation commands as product status, operator gates, and
+roadmap completion before any live, publication, payment, A2A, marketplace, or
+custody proof is attempted.
+
+Likely files:
+
+- `scripts/check-launch-readiness.ts`
+- `scripts/launch-readiness.test.ts`
+- `docs/agentic-gaskit/launch-readiness-evidence.md`
+- `docs/agentic-gaskit/execution-slices.md`
+
+Acceptance criteria:
+
+- Phase 2 launch-readiness `next` guidance starts with
+  `npm run live:write-identity-proof-bundle` before live IOTA Names, IOTA
+  Identity, or VC smoke commands.
+- Phase 4 launch-readiness `next` guidance points at public A2A and payment
+  provider proof bundles before live/provider proof.
+- Phase 5 and Phase 6 launch-readiness `next` guidance point at marketplace
+  and package publication proof bundles before production review or registry
+  publication.
+- Packet H launch-readiness commands include both `npm run
+  proof:roadmap-completion` and `npm run
+  roadmap:write-execution-proof-bundle`.
+- The guidance remains non-networked and does not accept any bundle, template,
+  proof plan, or readiness artifact as live or production proof.
+
+Verification:
+
+- `node --import tsx --test scripts/launch-readiness.test.ts
+  scripts/roadmap-completion.test.ts`
+- `npm run proof:launch-readiness`
+- `npm run proof:roadmap-completion`
+- `npm run docs:check`
+- `npm run secrets:scan`
+- `npm run typecheck`
+- `git diff --check`
+
+Dependencies:
+Slice 7.91 roadmap execution proof bundle and the existing identity, package
+publication, public A2A, payment-provider, marketplace, and custody proof
+bundle writers.
+
+Risk:
+Low. This is guidance-only, but unclear language could make a non-networked
+bundle sound like accepted proof.
+
+Escalation triggers:
+
+- Any request to treat a proof bundle, template, proof plan, readiness
+  artifact, launch-readiness artifact, or roadmap-completion artifact as
+  accepted live, publication, public A2A, payment, marketplace, custody, safety,
+  launch, or roadmap-complete proof.
+- Any request to include credentials, tokens, private keys, raw transaction
+  bytes, user signatures, response bodies, endpoint values, profile paths, full
+  addresses, report contents, or local secret paths in launch-readiness output,
+  docs, or committed evidence.

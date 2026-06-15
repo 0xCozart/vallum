@@ -69,8 +69,11 @@ Use the matrix with:
 npm run proof:product-status
 npm run proof:product-status -- --out tmp/gaskit/product-status.json
 npm run proof:launch-readiness -- --out tmp/gaskit/launch-readiness.json
+npm run proof:roadmap-completion -- --out tmp/gaskit/roadmap-completion-audit.json
+npm run roadmap:write-execution-proof-bundle -- --out tmp/gaskit/roadmap-execution-proof-bundle.json
 npm run proof:live-status
 npm run live:write-proof-plan -- --out tmp/gaskit/live-proof-plan.json
+npm run live:write-identity-proof-bundle -- --out tmp/gaskit/identity-proof-bundle.json
 npm run proof:testnet-digest
 npm run operator:write-report-template -- --kind testnet-digest --out tmp/gaskit/testnet-digest-report-template.json
 npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json

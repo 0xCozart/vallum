@@ -103,12 +103,20 @@ into a single redacted completion audit, use:
 ```bash
 npm run proof:roadmap-completion
 npm run proof:roadmap-completion -- --out tmp/gaskit/roadmap-completion-audit.json
+npm run roadmap:write-execution-proof-bundle -- --out tmp/gaskit/roadmap-execution-proof-bundle.json
 ```
 
 The roadmap completion audit is also non-networked. It keeps
 `roadmapComplete=false` until product status, launch readiness, and operator
 live gates are all clear; it does not replace any live/testnet, publication,
 public A2A, payment, marketplace, custody, or safety proof.
+
+For an operator handoff packet that writes the roadmap audit plus all existing
+identity, package publication, public A2A, payment-provider, marketplace, and
+custody proof-preparation bundles into one ignored artifact directory, use
+`npm run roadmap:write-execution-proof-bundle -- --out
+tmp/gaskit/roadmap-execution-proof-bundle.json`. The aggregate bundle is still
+only preparation evidence; it does not clear live or production blockers.
 
 Expected status in an unconfigured checkout:
 
@@ -204,6 +212,7 @@ Use the audit output to choose the next gate:
 npm run verify:local
 npm run verify:fast
 npm run proof:product-status -- --out tmp/gaskit/product-status.json
+npm run roadmap:write-execution-proof-bundle -- --out tmp/gaskit/roadmap-execution-proof-bundle.json
 npm run proof:roadmap-completion -- --out tmp/gaskit/roadmap-completion-audit.json
 npm run proof:testnet-digest
 npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json
@@ -235,6 +244,7 @@ npm run marketplace:write-production-proof-bundle -- --out tmp/gaskit/marketplac
 npm run proof:marketplace-readiness
 npm run marketplace:write-production-proof-plan -- --out tmp/gaskit/marketplace-production-proof-plan.json
 npm run operator:write-report-template -- --kind custody-production --out tmp/gaskit/custody-production-report-template.json
+npm run custody:write-production-proof-bundle -- --out tmp/gaskit/custody-production-proof-bundle.json
 npm run proof:custody-readiness
 npm run custody:write-production-proof-plan -- --out tmp/gaskit/custody-production-proof-plan.json
 npm run payment:write-provider-proof-plan -- --out tmp/gaskit/payment-provider-proof-plan.json

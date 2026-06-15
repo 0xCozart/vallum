@@ -51,8 +51,9 @@ sanitized diagnostic, digest lookup, or live smoke reports.
 For the linked IOTA Names, IOTA Identity, and VC trust-policy gates, use
 `npm run live:write-identity-proof-bundle -- --out tmp/gaskit/identity-proof-bundle.json`.
 It is also non-networked: it writes the related report templates, refreshes the
-live proof plan, and summarizes the current identity blockers. The bundle does
-not run the live smoke commands or clear the gates by itself.
+live proof plan, writes the live-proof-status artifact, and summarizes the
+current identity blockers. The bundle does not run the live smoke commands or
+clear the gates by itself.
 
 The direct `npm run proof:live-status` output uses the same template-first
 guidance for missing testnet upstream and testnet digest reports. When
@@ -204,10 +205,13 @@ npm run smoke:iota-identity-live -- --report tmp/gaskit/iota-identity-live-repor
 npm run operator:write-report-template -- --kind vc-validation-live --out tmp/gaskit/vc-validation-live-report-template.json
 ```
 
-`npm run proof:live-status` uses the same template-first command guidance for
-blocked IOTA Names, IOTA Identity, and VC validation paths. Template files are
-only ignored planning artifacts; they do not clear live-status checks until the
-matching live smoke or accepted report gate passes.
+`npm run proof:live-status` now uses bundle-first command guidance for blocked
+IOTA Names, IOTA Identity, and VC validation paths:
+`npm run live:write-identity-proof-bundle -- --out
+tmp/gaskit/identity-proof-bundle.json` writes the linked templates, live proof
+plan, live-proof-status artifact, and redacted summary together. Template files
+and bundles are only ignored planning artifacts; they do not clear live-status
+checks until the matching live smoke or accepted report gate passes.
 
 The `--skip-reserve` diagnostic is reachability triage only. It cannot clear
 `testnet-upstream`; a fresh diagnostic without `--skip-reserve` is still

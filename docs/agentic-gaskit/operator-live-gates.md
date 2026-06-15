@@ -103,7 +103,8 @@ hosts, marketplace systems, or physical devices.
 - Points IOTA Names, IOTA Identity, and VC live proof prep at
   `npm run live:write-proof-plan`, a redacted local command-order artifact,
   and `npm run live:write-identity-proof-bundle`, a linked template and
-  readiness summary for the identity gates before any live smoke command runs.
+  readiness-artifact summary for the identity gates before any live smoke
+  command runs.
 - Treats `vc-validation-live` as an approval-required live-service gate because
   it depends on `npm run smoke:iota-identity-live -- --report
   <ignored-json-path>` to produce current credential evidence.
@@ -158,6 +159,9 @@ hosts, marketplace systems, or physical devices.
   lists custody review command order, required report fields, required check
   ids, approval boundaries, and blocker codes without contacting KMS, external
   signers, custody providers, or live wallet infrastructure.
+- The adjacent `npm run custody:write-production-proof-bundle` command writes
+  that plan, the custody readiness artifact, and the custody-production report
+  template together as ignored local artifacts.
 - Points live payment/provider review at the non-networked
   `npm run proof:payment-provider-readiness` command, which validates local
   x402/AP2 proof plus an ignored structured report before manual acceptance.
@@ -193,9 +197,10 @@ hosts, marketplace systems, or physical devices.
   IOTA Names and IOTA Identity report kinds, while keeping VC validation tied
   to the accepted IOTA Identity live smoke report plus trust-policy
   configuration. `npm run live:write-identity-proof-bundle` writes the linked
-  Names, Identity, and VC templates plus the live proof plan as ignored local
-  artifacts; it remains non-networked and does not prove live identity behavior
-  without the operator-owned smoke reports.
+  Names, Identity, and VC templates plus the live proof plan and live proof
+  status artifact as ignored local artifacts; it remains non-networked and
+  does not prove live identity behavior without the operator-owned smoke
+  reports.
 - Lets operators write an ignored sponsor funding request artifact with
   `npm run sponsor:write-funding-request -- --out
   tmp/gaskit/sponsor-funding-request.json` when they need the public sponsor
@@ -259,6 +264,7 @@ hosts, marketplace systems, or physical devices.
 Use this report with the other proof gates:
 
 ```bash
+npm run roadmap:write-execution-proof-bundle -- --out tmp/gaskit/roadmap-execution-proof-bundle.json
 npm run proof:product-status
 npm run proof:launch-readiness
 npm run proof:testnet-digest
@@ -273,6 +279,7 @@ npm run proof:payment-provider-readiness
 npm run proof:marketplace-readiness
 npm run marketplace:write-production-proof-bundle -- --out tmp/gaskit/marketplace-production-proof-bundle.json
 npm run marketplace:write-production-proof-plan -- --out tmp/gaskit/marketplace-production-proof-plan.json
+npm run custody:write-production-proof-bundle -- --out tmp/gaskit/custody-production-proof-bundle.json
 npm run proof:custody-readiness
 npm run custody:write-production-proof-plan -- --out tmp/gaskit/custody-production-proof-plan.json
 npm run live:write-proof-plan -- --out tmp/gaskit/live-proof-plan.json
@@ -313,6 +320,14 @@ npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.
 npm run smoke:iota-names-live -- --report tmp/gaskit/iota-names-live-report.json
 npm run smoke:iota-identity-live -- --report tmp/gaskit/iota-identity-live-report.json
 ```
+
+The aggregate roadmap execution proof bundle is a non-networked handoff packet:
+it writes the current product, launch, operator-gate, and roadmap-completion
+artifacts plus the existing identity, package publication, public A2A,
+payment-provider, marketplace, and custody proof-preparation bundles. It does
+not run the approval-required live or production commands and does not make a
+live IOTA Names, IOTA Identity, VC, npm, public A2A, payment, marketplace,
+custody, or physical-device claim.
 
 The `--skip-reserve` diagnostic is reachability triage only. It cannot clear
 `testnet-upstream`; the full diagnostic without `--skip-reserve` must pass
