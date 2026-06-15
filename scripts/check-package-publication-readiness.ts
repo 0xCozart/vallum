@@ -3,6 +3,7 @@ import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { collectPublishablePackages, type PublishablePackage } from "./package-publish-dry-run.js";
+import { containsUnsafeReportContent } from "./structured-report-safety.js";
 
 export type PackagePublicationReadinessStatus =
   | "proven-local"
@@ -91,6 +92,7 @@ const REQUIRED_REGISTRY_CHECKS = [
 ] as const;
 
 const SECRET_FIELD_RE = /secret|token|private|credential|authorization|otp|password|session|cookie|npmrc|signature|payload|header/i;
+const SECRET_VALUE_RE = /\b(npm[_\s-]?token|otp|password|credential|secret|authorization|npmrc|_authToken)\b|bearer\s+\S+/i;
 
 const ARTIFACT_BOUNDARIES = [
   "This report is non-networked and does not contact the npm registry or run real npm publish.",
@@ -342,9 +344,6 @@ function validateStructuredReport(
   if (!report || typeof report !== "object" || Array.isArray(report)) {
     return invalidReport("PACKAGE_PUBLICATION_REPORT_INVALID_SHAPE", "Package publication proof report must be a JSON object.", "configured-report-invalid-shape", "Provide a JSON object structured evidence report.");
   }
-  if (containsSecretLikeField(report)) {
-    return invalidReport("PACKAGE_PUBLICATION_REPORT_UNSAFE_FIELDS", "Package publication proof report contains unsafe secret-like fields.", "configured-report-unsafe-fields", "Provide status-only evidence without npm tokens, OTPs, npmrc contents, credentials, headers, raw responses, or signatures.");
-  }
   if (report.schemaVersion !== 1) {
     return invalidReport("PACKAGE_PUBLICATION_REPORT_UNSUPPORTED_SCHEMA", "Package publication proof report schema is unsupported.", "configured-report-unsupported-schema", "Provide a structured evidence report with schemaVersion=1.");
   }
@@ -353,6 +352,9 @@ function validateStructuredReport(
   }
   if (report.result !== "passed") {
     return invalidReport("PACKAGE_PUBLICATION_REPORT_NOT_PASSED", "Package publication proof report did not pass.", "configured-report-not-passed", "Rerun the approved publication proof after resolving registry failures.");
+  }
+  if (containsUnsafeReportContent(report, { unsafeFieldNameRe: SECRET_FIELD_RE, unsafeStringValueRe: SECRET_VALUE_RE })) {
+    return invalidReport("PACKAGE_PUBLICATION_REPORT_UNSAFE_FIELDS", "Package publication proof report contains unsafe secret-like fields.", "configured-report-unsafe-fields", "Provide status-only evidence without npm tokens, OTPs, npmrc contents, credentials, headers, raw responses, or signatures.");
   }
   if (report.registry !== "npm") {
     return invalidReport("PACKAGE_PUBLICATION_REPORT_REGISTRY_MISMATCH", "Package publication proof report must target npm.", "configured-report-registry-mismatch", "Provide npm registry publication evidence.");
@@ -393,16 +395,6 @@ function invalidReport(
     evidence,
     next,
   };
-}
-
-function containsSecretLikeField(value: unknown): boolean {
-  if (!value || typeof value !== "object") return false;
-  if (Array.isArray(value)) return value.some(containsSecretLikeField);
-  for (const [key, nested] of Object.entries(value)) {
-    if (SECRET_FIELD_RE.test(key)) return true;
-    if (containsSecretLikeField(nested)) return true;
-  }
-  return false;
 }
 
 function parseArgs(args: readonly string[]): CliOptions {

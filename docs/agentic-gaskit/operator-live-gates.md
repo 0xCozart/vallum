@@ -56,6 +56,12 @@ The template writer is also non-networked. It can write templates for
 until a real operator-approved proof run replaces that status with passing
 evidence.
 
+Production approval report gates validate both unsafe field names and
+secret-like string values before a report can become `ready-approval`. Keep
+notes, evidence summaries, and operator comments status-only; do not paste
+tokens, authorization headers, payment instruments, npm auth material, private
+prompts, signer material, raw payloads, or local secret paths into any report.
+
 Expected status in an unconfigured checkout:
 
 ```text

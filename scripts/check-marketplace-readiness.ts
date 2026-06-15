@@ -2,6 +2,8 @@ import { access, chmod, mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { containsUnsafeReportContent } from "./structured-report-safety.js";
+
 export type MarketplaceReadinessStatus =
   | "proven-local"
   | "blocked-local"
@@ -86,6 +88,7 @@ const REQUIRED_PRODUCTION_CHECKS = [
 ] as const;
 
 const SECRET_FIELD_RE = /secret|token|private|credential|authorization|signature|mnemonic|seed|payload|header|instrument|session|cookie|password|prompt/i;
+const SECRET_VALUE_RE = /\b(secret|token|credential|authorization|password|private prompt|payment secret|session[-_ ]?id)\b|bearer\s+\S+/i;
 
 const ARTIFACT_BOUNDARIES = [
   "This report is non-networked and does not contact production marketplace systems, provider systems, payment systems, IOTA services, public A2A endpoints, or Gas Station endpoints.",
@@ -313,9 +316,6 @@ function validateStructuredReport(
   if (!report || typeof report !== "object" || Array.isArray(report)) {
     return invalidReport("MARKETPLACE_PRODUCTION_REPORT_INVALID_SHAPE", "Production marketplace proof report must be a JSON object.", "configured-report-invalid-shape", "Provide a JSON object structured evidence report.");
   }
-  if (containsSecretLikeField(report)) {
-    return invalidReport("MARKETPLACE_PRODUCTION_REPORT_UNSAFE_FIELDS", "Production marketplace proof report contains unsafe secret-like fields.", "configured-report-unsafe-fields", "Provide status-only evidence without provider secrets, credentials, sessions, prompts, payment instruments, raw payloads, headers, or signatures.");
-  }
   if (report.schemaVersion !== 1) {
     return invalidReport("MARKETPLACE_PRODUCTION_REPORT_UNSUPPORTED_SCHEMA", "Production marketplace proof report schema is unsupported.", "configured-report-unsupported-schema", "Provide a structured evidence report with schemaVersion=1.");
   }
@@ -324,6 +324,9 @@ function validateStructuredReport(
   }
   if (report.result !== "passed") {
     return invalidReport("MARKETPLACE_PRODUCTION_REPORT_NOT_PASSED", "Production marketplace proof report did not pass.", "configured-report-not-passed", "Rerun the approved marketplace review after resolving production blockers.");
+  }
+  if (containsUnsafeReportContent(report, { unsafeFieldNameRe: SECRET_FIELD_RE, unsafeStringValueRe: SECRET_VALUE_RE })) {
+    return invalidReport("MARKETPLACE_PRODUCTION_REPORT_UNSAFE_FIELDS", "Production marketplace proof report contains unsafe secret-like fields.", "configured-report-unsafe-fields", "Provide status-only evidence without provider secrets, credentials, sessions, prompts, payment instruments, raw payloads, headers, or signatures.");
   }
   const environment = report.environment;
   if (environment !== "testnet" && environment !== "production") {
@@ -361,16 +364,6 @@ function invalidReport(
     evidence,
     next,
   };
-}
-
-function containsSecretLikeField(value: unknown): boolean {
-  if (!value || typeof value !== "object") return false;
-  if (Array.isArray(value)) return value.some(containsSecretLikeField);
-  for (const [key, nested] of Object.entries(value)) {
-    if (SECRET_FIELD_RE.test(key)) return true;
-    if (containsSecretLikeField(nested)) return true;
-  }
-  return false;
 }
 
 function parseArgs(args: readonly string[]): CliOptions {

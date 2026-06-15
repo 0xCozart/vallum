@@ -156,6 +156,24 @@ test("package publication readiness rejects unsafe report fields and stale repor
         "rollback-review",
       ],
     }));
+    const unsafeValuePath = join(cwd, "unsafe-value.json");
+    await writeFile(unsafeValuePath, JSON.stringify({
+      schemaVersion: 1,
+      kind: "agentic-gaskit.package-publication-proof",
+      result: "passed",
+      observedAt: "2026-06-11T11:00:00.000Z",
+      registry: "npm",
+      packageNames: baseline.packageNames,
+      checks: [
+        "npm-pack-dry-run",
+        "local-tarball-install",
+        "npm-publish-dry-run",
+        "registry-install",
+        "provenance-review",
+        "rollback-review",
+      ],
+      notes: ["operator pasted npm token fixture-redacted-but-still-forbidden"],
+    }));
 
     const unsafe = await checkPackagePublicationReadiness({
       cwd: repoRoot,
@@ -167,9 +185,18 @@ test("package publication readiness rejects unsafe report fields and stale repor
       env: { PACKAGE_PUBLICATION_REPORT: stalePath },
       now: new Date("2026-06-11T12:00:00.000Z"),
     });
+    const unsafeValue = await checkPackagePublicationReadiness({
+      cwd: repoRoot,
+      env: { PACKAGE_PUBLICATION_REPORT: unsafeValuePath },
+      now: new Date("2026-06-11T12:00:00.000Z"),
+    });
 
     assert.equal(
       unsafe.checks.find((check) => check.id === "npm-registry-publication-report")?.code,
+      "PACKAGE_PUBLICATION_REPORT_UNSAFE_FIELDS",
+    );
+    assert.equal(
+      unsafeValue.checks.find((check) => check.id === "npm-registry-publication-report")?.code,
       "PACKAGE_PUBLICATION_REPORT_UNSAFE_FIELDS",
     );
     assert.equal(

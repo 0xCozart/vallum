@@ -101,6 +101,10 @@ test("payment provider readiness rejects unsafe, malformed, and stale reports wi
       ...validLiveReport(),
       authorizationHeader: "Bearer secret-value",
     });
+    await writeJsonReport(join(cwd, "unsafe-value-report.json"), {
+      ...validLiveReport(),
+      notes: ["facilitator response included Bearer secret-value"],
+    });
     await writeFile(join(cwd, "malformed-secret-report.json"), "passed but not json\n");
     await writeJsonReport(join(cwd, "stale-secret-report.json"), {
       ...validLiveReport(),
@@ -117,6 +121,11 @@ test("payment provider readiness rejects unsafe, malformed, and stale reports wi
       env: { PAYMENT_PROVIDER_LIVE_REPORT: "malformed-secret-report.json" },
       now: NOW,
     });
+    const unsafeValue = await checkPaymentProviderReadiness({
+      cwd,
+      env: { PAYMENT_PROVIDER_LIVE_REPORT: "unsafe-value-report.json" },
+      now: NOW,
+    });
     const stale = await checkPaymentProviderReadiness({
       cwd,
       env: { PAYMENT_PROVIDER_LIVE_REPORT: "stale-secret-report.json" },
@@ -129,6 +138,7 @@ test("payment provider readiness rejects unsafe, malformed, and stale reports wi
     ].join("\n");
 
     assert.equal(findCheck(unsafe, "live-payment-provider-report").code, "PAYMENT_PROVIDER_LIVE_REPORT_UNSAFE_FIELDS");
+    assert.equal(findCheck(unsafeValue, "live-payment-provider-report").code, "PAYMENT_PROVIDER_LIVE_REPORT_UNSAFE_FIELDS");
     assert.equal(findCheck(malformed, "live-payment-provider-report").code, "PAYMENT_PROVIDER_LIVE_REPORT_INVALID_JSON");
     assert.equal(findCheck(stale, "live-payment-provider-report").code, "PAYMENT_PROVIDER_LIVE_REPORT_STALE");
     assert.doesNotMatch(formatted, /unsafe-secret-report|malformed-secret-report|stale-secret-report|Bearer secret-value/);

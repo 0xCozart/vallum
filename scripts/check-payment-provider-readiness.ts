@@ -2,6 +2,8 @@ import { access, chmod, mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { containsUnsafeReportContent } from "./structured-report-safety.js";
+
 export type PaymentProviderReadinessStatus =
   | "proven-local"
   | "blocked-local"
@@ -89,6 +91,7 @@ const REQUIRED_LIVE_CHECKS = [
 ] as const;
 
 const SECRET_FIELD_RE = /secret|token|private|credential|authorization|signature|mnemonic|seed|payload|header|instrument/i;
+const SECRET_VALUE_RE = /\b(secret|token|credential|authorization|signature|mnemonic|seed phrase|payment instrument|raw payload)\b|bearer\s+\S+/i;
 
 const ARTIFACT_BOUNDARIES = [
   "This report is non-networked and does not contact payment providers, facilitators, processors, AP2 participants, settlement systems, public endpoints, IOTA services, or Gas Station endpoints.",
@@ -283,9 +286,6 @@ function validateStructuredReport(
   if (!report || typeof report !== "object" || Array.isArray(report)) {
     return invalidReport("PAYMENT_PROVIDER_LIVE_REPORT_INVALID_SHAPE", "Live payment-provider proof report must be a JSON object.", "configured-report-invalid-shape", "Provide a JSON object structured evidence report.");
   }
-  if (containsSecretLikeField(report)) {
-    return invalidReport("PAYMENT_PROVIDER_LIVE_REPORT_UNSAFE_FIELDS", "Live payment-provider proof report contains unsafe secret-like fields.", "configured-report-unsafe-fields", "Provide status-only evidence without raw payloads, headers, credentials, signatures, or payment instruments.");
-  }
   if (report.schemaVersion !== 1) {
     return invalidReport("PAYMENT_PROVIDER_LIVE_REPORT_UNSUPPORTED_SCHEMA", "Live payment-provider proof report schema is unsupported.", "configured-report-unsupported-schema", "Provide a structured evidence report with schemaVersion=1.");
   }
@@ -294,6 +294,9 @@ function validateStructuredReport(
   }
   if (report.result !== "passed") {
     return invalidReport("PAYMENT_PROVIDER_LIVE_REPORT_NOT_PASSED", "Live payment-provider proof report did not pass.", "configured-report-not-passed", "Rerun the approved proof after resolving payment-provider failures.");
+  }
+  if (containsUnsafeReportContent(report, { unsafeFieldNameRe: SECRET_FIELD_RE, unsafeStringValueRe: SECRET_VALUE_RE })) {
+    return invalidReport("PAYMENT_PROVIDER_LIVE_REPORT_UNSAFE_FIELDS", "Live payment-provider proof report contains unsafe secret-like fields.", "configured-report-unsafe-fields", "Provide status-only evidence without raw payloads, headers, credentials, signatures, or payment instruments.");
   }
   const providerKinds = report.providerKinds;
   if (!Array.isArray(providerKinds) || !providerKinds.includes("x402") || !providerKinds.includes("ap2")) {
@@ -331,16 +334,6 @@ function invalidReport(
     evidence,
     next,
   };
-}
-
-function containsSecretLikeField(value: unknown): boolean {
-  if (!value || typeof value !== "object") return false;
-  if (Array.isArray(value)) return value.some(containsSecretLikeField);
-  for (const [key, nested] of Object.entries(value)) {
-    if (SECRET_FIELD_RE.test(key)) return true;
-    if (containsSecretLikeField(nested)) return true;
-  }
-  return false;
 }
 
 function parseArgs(args: readonly string[]): CliOptions {

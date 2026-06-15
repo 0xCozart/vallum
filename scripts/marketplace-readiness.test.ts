@@ -137,6 +137,16 @@ test("marketplace readiness rejects unsafe report fields and stale reports", asy
       environment: "testnet",
       checks: requiredChecks,
     }));
+    const unsafeValuePath = join(cwd, "unsafe-value.json");
+    await writeFile(unsafeValuePath, JSON.stringify({
+      schemaVersion: 1,
+      kind: "agentic-gaskit.marketplace-production-proof",
+      result: "passed",
+      observedAt: "2026-06-11T11:00:00.000Z",
+      environment: "testnet",
+      checks: requiredChecks,
+      notes: ["provider review included private prompt fixture value"],
+    }));
 
     const unsafe = await checkMarketplaceReadiness({
       cwd: repoRoot,
@@ -148,9 +158,18 @@ test("marketplace readiness rejects unsafe report fields and stale reports", asy
       env: { MARKETPLACE_PRODUCTION_REPORT: stalePath },
       now: new Date("2026-06-11T12:00:00.000Z"),
     });
+    const unsafeValue = await checkMarketplaceReadiness({
+      cwd: repoRoot,
+      env: { MARKETPLACE_PRODUCTION_REPORT: unsafeValuePath },
+      now: new Date("2026-06-11T12:00:00.000Z"),
+    });
 
     assert.equal(
       unsafe.checks.find((check) => check.id === "production-marketplace-report")?.code,
+      "MARKETPLACE_PRODUCTION_REPORT_UNSAFE_FIELDS",
+    );
+    assert.equal(
+      unsafeValue.checks.find((check) => check.id === "production-marketplace-report")?.code,
       "MARKETPLACE_PRODUCTION_REPORT_UNSAFE_FIELDS",
     );
     assert.equal(

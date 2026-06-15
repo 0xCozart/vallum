@@ -137,6 +137,16 @@ test("custody readiness rejects unsafe report fields and stale reports", async (
       custodyMode: "kms",
       checks: requiredChecks,
     }));
+    const unsafeValuePath = join(cwd, "unsafe-value.json");
+    await writeFile(unsafeValuePath, JSON.stringify({
+      schemaVersion: 1,
+      kind: "agentic-gaskit.custody-production-proof",
+      result: "passed",
+      observedAt: "2026-06-11T11:00:00.000Z",
+      custodyMode: "kms",
+      checks: requiredChecks,
+      notes: ["operator review pasted raw keypair value"],
+    }));
 
     const unsafe = await checkCustodyReadiness({
       cwd: repoRoot,
@@ -148,9 +158,18 @@ test("custody readiness rejects unsafe report fields and stale reports", async (
       env: { CUSTODY_PRODUCTION_REPORT: stalePath },
       now: new Date("2026-06-11T12:00:00.000Z"),
     });
+    const unsafeValue = await checkCustodyReadiness({
+      cwd: repoRoot,
+      env: { CUSTODY_PRODUCTION_REPORT: unsafeValuePath },
+      now: new Date("2026-06-11T12:00:00.000Z"),
+    });
 
     assert.equal(
       unsafe.checks.find((check) => check.id === "production-custody-report")?.code,
+      "CUSTODY_PRODUCTION_REPORT_UNSAFE_FIELDS",
+    );
+    assert.equal(
+      unsafeValue.checks.find((check) => check.id === "production-custody-report")?.code,
       "CUSTODY_PRODUCTION_REPORT_UNSAFE_FIELDS",
     );
     assert.equal(

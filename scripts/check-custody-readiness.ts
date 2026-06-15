@@ -2,6 +2,8 @@ import { access, chmod, mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { containsUnsafeReportContent } from "./structured-report-safety.js";
+
 export type CustodyReadinessStatus =
   | "proven-local"
   | "blocked-local"
@@ -86,6 +88,7 @@ const REQUIRED_PRODUCTION_CHECKS = [
 ] as const;
 
 const SECRET_FIELD_RE = /seed|mnemonic|private|rawKeypair|raw_keypair|secret|token|credential|authorization|signature|payload|header|password|session|cookie|keyMaterial|exportedKey/i;
+const SECRET_VALUE_RE = /\b(seed phrase|mnemonic|private key|raw keypair|key material|exported key|token|credential|authorization|signature)\b|bearer\s+\S+/i;
 
 const ARTIFACT_BOUNDARIES = [
   "This report is non-networked and does not contact KMS providers, external signers, custody providers, IOTA services, Gas Station endpoints, or live wallet infrastructure.",
@@ -311,9 +314,6 @@ function validateStructuredReport(
   if (!report || typeof report !== "object" || Array.isArray(report)) {
     return invalidReport("CUSTODY_PRODUCTION_REPORT_INVALID_SHAPE", "Production custody proof report must be a JSON object.", "configured-report-invalid-shape", "Provide a JSON object structured evidence report.");
   }
-  if (containsSecretLikeField(report)) {
-    return invalidReport("CUSTODY_PRODUCTION_REPORT_UNSAFE_FIELDS", "Production custody proof report contains unsafe secret-like fields.", "configured-report-unsafe-fields", "Provide status-only evidence without seeds, mnemonics, private keys, raw keypairs, signer material, credentials, payloads, headers, or signatures.");
-  }
   if (report.schemaVersion !== 1) {
     return invalidReport("CUSTODY_PRODUCTION_REPORT_UNSUPPORTED_SCHEMA", "Production custody proof report schema is unsupported.", "configured-report-unsupported-schema", "Provide a structured evidence report with schemaVersion=1.");
   }
@@ -322,6 +322,9 @@ function validateStructuredReport(
   }
   if (report.result !== "passed") {
     return invalidReport("CUSTODY_PRODUCTION_REPORT_NOT_PASSED", "Production custody proof report did not pass.", "configured-report-not-passed", "Rerun the approved custody review after resolving production blockers.");
+  }
+  if (containsUnsafeReportContent(report, { unsafeFieldNameRe: SECRET_FIELD_RE, unsafeStringValueRe: SECRET_VALUE_RE })) {
+    return invalidReport("CUSTODY_PRODUCTION_REPORT_UNSAFE_FIELDS", "Production custody proof report contains unsafe secret-like fields.", "configured-report-unsafe-fields", "Provide status-only evidence without seeds, mnemonics, private keys, raw keypairs, signer material, credentials, payloads, headers, or signatures.");
   }
   if (report.custodyMode !== "external-signer" && report.custodyMode !== "kms") {
     return invalidReport("CUSTODY_PRODUCTION_REPORT_MODE_MISSING", "Production custody proof report must identify external-signer or kms custody mode.", "configured-report-mode-missing", "Provide custody review evidence for an external signer or KMS custody mode.");
@@ -358,16 +361,6 @@ function invalidReport(
     evidence,
     next,
   };
-}
-
-function containsSecretLikeField(value: unknown): boolean {
-  if (!value || typeof value !== "object") return false;
-  if (Array.isArray(value)) return value.some(containsSecretLikeField);
-  for (const [key, nested] of Object.entries(value)) {
-    if (SECRET_FIELD_RE.test(key)) return true;
-    if (containsSecretLikeField(nested)) return true;
-  }
-  return false;
 }
 
 function parseArgs(args: readonly string[]): CliOptions {
