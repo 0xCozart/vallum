@@ -292,9 +292,16 @@ test("custody production proof plan is non-networked and opt-in", () => {
     packageJson.scripts?.["custody:write-production-proof-plan"],
     "npm run build && tsx scripts/write-custody-production-proof-plan.ts",
   );
+  assert.equal(
+    packageJson.scripts?.["custody:write-production-proof-bundle"],
+    "npm run build && tsx scripts/write-custody-production-proof-bundle.ts",
+  );
   assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /write-custody-production-proof-plan/);
   assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /write-custody-production-proof-plan/);
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /write-custody-production-proof-plan/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /write-custody-production-proof-bundle/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /write-custody-production-proof-bundle/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /write-custody-production-proof-bundle/);
 });
 
 test("A2A public proof plan is non-networked and opt-in", () => {
@@ -489,9 +496,16 @@ test("roadmap completion audit is non-networked and opt-in", () => {
     packageJson.scripts?.["proof:roadmap-completion"],
     "npm run build && tsx scripts/check-roadmap-completion.ts",
   );
+  assert.equal(
+    packageJson.scripts?.["roadmap:write-execution-proof-bundle"],
+    "npm run build && tsx scripts/write-roadmap-execution-proof-bundle.ts",
+  );
   assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /roadmap-completion/);
   assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /roadmap-completion/);
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /roadmap-completion/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /write-execution-proof-bundle/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /write-execution-proof-bundle/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /write-execution-proof-bundle/);
 });
 
 test("Move contract tests are wired into local verification", () => {

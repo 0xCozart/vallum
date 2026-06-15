@@ -75,11 +75,12 @@ Options:
 const AREA_DEFINITIONS = [
   {
     id: "phase-1-sponsored-policy-mvp",
-    claim: "Agents can use local/mock signer-reference wallets, manifests, policy-gated sponsorship, MCP tools, escrow, and receipts without secret exposure, with a non-networked custody readiness gate and redacted custody production proof-plan writer for production signer/custody review.",
+    claim: "Agents can use local/mock signer-reference wallets, manifests, policy-gated sponsorship, MCP tools, escrow, and receipts without secret exposure, with a non-networked custody readiness gate, redacted custody production proof-plan writer, and redacted custody production proof-bundle writer for production signer/custody review.",
     evidencePaths: [
       "packages/accounts/src/index.ts",
       "scripts/check-custody-readiness.ts",
       "scripts/write-custody-production-proof-plan.ts",
+      "scripts/write-custody-production-proof-bundle.ts",
       "packages/manifest/src/validate.ts",
       "packages/policy-gateway/src/evaluatePolicy.ts",
       "packages/sdk/src/requestSponsoredAction.ts",
@@ -99,6 +100,7 @@ const AREA_DEFINITIONS = [
     commands: [
       "npm test",
       "npm run operator:write-report-template -- --kind custody-production --out tmp/gaskit/custody-production-report-template.json",
+      "npm run custody:write-production-proof-bundle -- --out tmp/gaskit/custody-production-proof-bundle.json",
       "npm run custody:write-production-proof-plan",
       "npm run proof:custody-readiness",
       "npm run contracts:test",
@@ -154,7 +156,7 @@ const AREA_DEFINITIONS = [
       "vc-validation-live",
     ],
     fallbackStatus: "proven-local",
-    next: "Provide remaining operator-owned Names, Identity, and VC trust-policy configuration, then run the opt-in live proof commands.",
+    next: "Run npm run live:write-identity-proof-bundle -- --out tmp/gaskit/identity-proof-bundle.json, provide remaining operator-owned Names, Identity, and VC trust-policy configuration outside committed files, then run the opt-in live proof commands.",
   },
   {
     id: "phase-3-contract-workflows",
@@ -218,7 +220,7 @@ const AREA_DEFINITIONS = [
     ],
     productCheckIds: ["public-a2a-hosting", "live-payment-provider"],
     fallbackStatus: "proven-local",
-    next: "Run dedicated public A2A hosting/conformance and live payment/provider proof slices, then configure ignored structured reports before external interoperability claims.",
+    next: "Run npm run a2a:write-public-proof-bundle -- --out <ignored-json-path> and npm run payment:write-provider-proof-bundle -- --out <ignored-json-path>, then complete dedicated public A2A hosting/conformance and live payment/provider proof slices before external interoperability claims.",
   },
   {
     id: "phase-5-marketplace-operator",
@@ -241,7 +243,7 @@ const AREA_DEFINITIONS = [
     ],
     productCheckIds: ["production-marketplace"],
     fallbackStatus: "proven-local",
-    next: "Run marketplace readiness, then resolve provider verification, moderation, session/API auth, live settlement, dispute workflow, and operational gates before production marketplace work.",
+    next: "Run npm run marketplace:write-production-proof-bundle -- --out <ignored-json-path>, then resolve provider verification, moderation, session/API auth, live settlement, dispute workflow, and operational gates before production marketplace work.",
   },
   {
     id: "phase-6-package-release",
@@ -267,7 +269,7 @@ const AREA_DEFINITIONS = [
     ],
     productCheckIds: ["npm-registry-publication"],
     fallbackStatus: "proven-local",
-    next: "Run package publication readiness, then run a dedicated release slice with registry credentials, provenance decisions, 2FA handling, registry install proof, and rollback notes before publication claims.",
+    next: "Run npm run package:write-publication-proof-bundle -- --out <ignored-json-path>, then run a dedicated release slice with registry credentials, provenance decisions, 2FA handling, registry install proof, and rollback notes before publication claims.",
   },
   {
     id: "packet-h-final-product-status",
@@ -280,6 +282,8 @@ const AREA_DEFINITIONS = [
       "scripts/write-operator-report-template.ts",
       "docs/agentic-gaskit/verification-profiles.md",
       "scripts/check-verification-profiles.ts",
+      "scripts/check-roadmap-completion.ts",
+      "scripts/write-roadmap-execution-proof-bundle.ts",
       "docs/agentic-gaskit/execution-slices.md",
       "docs/CODEBASE_MAP.md",
     ],
@@ -289,6 +293,8 @@ const AREA_DEFINITIONS = [
       "npm run proof:product-status",
       "npm run proof:launch-readiness",
       "npm run proof:operator-gates",
+      "npm run proof:roadmap-completion",
+      "npm run roadmap:write-execution-proof-bundle -- --out tmp/gaskit/roadmap-execution-proof-bundle.json",
       "npm run operator:write-report-template -- --kind <kind> --out <ignored-report-template.json>",
       "npm run verify:local",
     ],

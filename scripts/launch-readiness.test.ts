@@ -26,6 +26,11 @@ test("launch readiness maps local evidence to live and production blockers", asy
   assert.ok(phase1?.evidencePaths.includes("scripts/write-sponsor-funding-request.ts"));
   assert.ok(phase1?.evidencePaths.includes("scripts/request-sponsor-faucet-funds.ts"));
   assert.ok(phase1?.commands.includes("npm run operator:write-report-template -- --kind custody-production --out tmp/gaskit/custody-production-report-template.json"));
+  assert.ok(phase1?.commands.includes("npm run custody:write-production-proof-bundle -- --out tmp/gaskit/custody-production-proof-bundle.json"));
+  assert.ok(
+    (phase1?.commands.indexOf("npm run custody:write-production-proof-bundle -- --out tmp/gaskit/custody-production-proof-bundle.json") ?? -1)
+      < (phase1?.commands.indexOf("npm run custody:write-production-proof-plan") ?? -1),
+  );
   assert.ok(phase1?.commands.includes("npm run sponsor:write-funding-request -- --out tmp/gaskit/sponsor-funding-request.json"));
   assert.ok(phase1?.commands.includes("npm run sponsor:request-faucet-funds -- --execute --out tmp/gaskit/sponsor-faucet-request.json"));
   assert.ok(phase1?.commands.includes("npm run sponsor:write-funding-request -- --faucet-report tmp/gaskit/sponsor-faucet-request.json --out tmp/gaskit/sponsor-funding-request.json"));
@@ -60,6 +65,7 @@ test("launch readiness maps local evidence to live and production blockers", asy
   const phase2 = report.areas.find((area) => area.id === "phase-2-identity-and-vc");
   assert.equal(phase2?.status, "blocked-live");
   assert.ok(phase2?.commands.includes("npm run live:write-identity-proof-bundle -- --out tmp/gaskit/identity-proof-bundle.json"));
+  assert.match(phase2?.next ?? "", /live:write-identity-proof-bundle/);
   assert.ok(phase2?.commands.includes("npm run operator:write-report-template -- --kind iota-names-live --out tmp/gaskit/iota-names-live-report-template.json"));
   assert.ok(phase2?.commands.includes("npm run operator:write-report-template -- --kind iota-identity-live --out tmp/gaskit/iota-identity-live-report-template.json"));
   assert.ok(phase2?.commands.includes("npm run operator:write-report-template -- --kind vc-validation-live --out tmp/gaskit/vc-validation-live-report-template.json"));
@@ -79,6 +85,8 @@ test("launch readiness maps local evidence to live and production blockers", asy
   assert.ok(standards?.commands.includes("npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/gaskit/a2a-public-push-delivery-report-template.json"));
   assert.ok(standards?.commands.includes("npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/gaskit/a2a-external-conformance-report-template.json"));
   assert.ok(standards?.commands.includes("npm run a2a:write-public-proof-bundle -- --out tmp/gaskit/a2a-public-proof-bundle.json"));
+  assert.match(standards?.next ?? "", /a2a:write-public-proof-bundle/);
+  assert.match(standards?.next ?? "", /payment:write-provider-proof-bundle/);
   assert.ok(standards?.commands.includes("npm run a2a:write-public-proof-plan"));
   assert.ok(standards?.commands.includes("npm run proof:a2a-public-readiness"));
   assert.ok(
@@ -93,6 +101,7 @@ test("launch readiness maps local evidence to live and production blockers", asy
   assert.equal(marketplace?.status, "blocked-production");
   assert.ok(marketplace?.commands.includes("npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json"));
   assert.ok(marketplace?.commands.includes("npm run marketplace:write-production-proof-bundle -- --out tmp/gaskit/marketplace-production-proof-bundle.json"));
+  assert.match(marketplace?.next ?? "", /marketplace:write-production-proof-bundle/);
   assert.ok(
     (marketplace?.commands.indexOf("npm run marketplace:write-production-proof-bundle -- --out tmp/gaskit/marketplace-production-proof-bundle.json") ?? -1)
       < (marketplace?.commands.indexOf("npm run marketplace:write-production-proof-plan") ?? -1),
@@ -101,6 +110,7 @@ test("launch readiness maps local evidence to live and production blockers", asy
   assert.equal(packageRelease?.status, "blocked-production");
   assert.ok(packageRelease?.commands.includes("npm run operator:write-report-template -- --kind package-publication --out tmp/gaskit/package-publication-report-template.json"));
   assert.ok(packageRelease?.commands.includes("npm run package:write-publication-proof-bundle -- --out tmp/gaskit/package-publication-proof-bundle.json"));
+  assert.match(packageRelease?.next ?? "", /package:write-publication-proof-bundle/);
   assert.equal(report.areas.find((area) => area.id === "phase-3-contract-workflows")?.status, "deferred-safety");
   assert.ok(
     (packageRelease?.commands.indexOf("npm run package:write-publication-proof-bundle -- --out tmp/gaskit/package-publication-proof-bundle.json") ?? -1)
@@ -115,6 +125,16 @@ test("launch readiness maps local evidence to live and production blockers", asy
     report.areas
       .find((area) => area.id === "packet-h-final-product-status")
       ?.commands.includes("npm run operator:write-report-template -- --kind <kind> --out <ignored-report-template.json>"),
+  );
+  assert.ok(
+    report.areas
+      .find((area) => area.id === "packet-h-final-product-status")
+      ?.commands.includes("npm run proof:roadmap-completion"),
+  );
+  assert.ok(
+    report.areas
+      .find((area) => area.id === "packet-h-final-product-status")
+      ?.commands.includes("npm run roadmap:write-execution-proof-bundle -- --out tmp/gaskit/roadmap-execution-proof-bundle.json"),
   );
   assert.match(formatted, /TESTNET_ENV_FILE_MISSING/);
   assert.match(formatted, /GAS_STATION_DOCKER_DAEMON_UNAVAILABLE/);
@@ -212,6 +232,7 @@ async function writeEvidenceTree(cwd: string): Promise<void> {
     "packages/accounts/src/index.ts",
     "scripts/check-custody-readiness.ts",
     "scripts/write-custody-production-proof-plan.ts",
+    "scripts/write-custody-production-proof-bundle.ts",
     "packages/manifest/src/validate.ts",
     "packages/policy-gateway/src/evaluatePolicy.ts",
     "packages/sdk/src/requestSponsoredAction.ts",
@@ -275,6 +296,8 @@ async function writeEvidenceTree(cwd: string): Promise<void> {
     "scripts/write-operator-report-template.ts",
     "docs/agentic-gaskit/verification-profiles.md",
     "scripts/check-verification-profiles.ts",
+    "scripts/check-roadmap-completion.ts",
+    "scripts/write-roadmap-execution-proof-bundle.ts",
     "docs/agentic-gaskit/execution-slices.md",
     "docs/CODEBASE_MAP.md",
   ];
