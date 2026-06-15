@@ -114,6 +114,7 @@ const IOTA_NAMES_LIVE_REPORT_ENV = "IOTA_NAMES_LIVE_REPORT";
 const IOTA_IDENTITY_LIVE_REPORT_ENV = "IOTA_IDENTITY_LIVE_REPORT";
 const TESTNET_UPSTREAM_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json";
 const TESTNET_DIGEST_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind testnet-digest --out tmp/gaskit/testnet-digest-report-template.json";
+const IDENTITY_PROOF_BUNDLE_COMMAND = "npm run live:write-identity-proof-bundle -- --out tmp/gaskit/identity-proof-bundle.json";
 const IOTA_NAMES_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind iota-names-live --out tmp/gaskit/iota-names-live-report-template.json";
 const IOTA_IDENTITY_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind iota-identity-live --out tmp/gaskit/iota-identity-live-report-template.json";
 const VC_VALIDATION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind vc-validation-live --out tmp/gaskit/vc-validation-live-report-template.json";
@@ -522,7 +523,7 @@ async function checkIotaNamesStatus(
       code: "IOTA_NAMES_LIVE_CONFIG_MISSING",
       missing,
       message: "IOTA Names live proof requires operator-provided endpoint, name, and expected address.",
-      next: `${IOTA_NAMES_TEMPLATE_COMMAND}; set the missing variables outside committed files, then run npm run smoke:iota-names-live -- --report <ignored-json-path>.`,
+      next: `${IDENTITY_PROOF_BUNDLE_COMMAND}; ${IOTA_NAMES_TEMPLATE_COMMAND}; set the missing variables outside committed files, then run npm run smoke:iota-names-live -- --report <ignored-json-path>.`,
     };
   }
 
@@ -546,7 +547,7 @@ async function checkIotaNamesStatus(
       missing: [IOTA_NAMES_LIVE_REPORT_ENV],
       message: "No sanitized IOTA Names live smoke report is configured.",
       evidence: `missing=${IOTA_NAMES_LIVE_REPORT_ENV}`,
-      next: `${IOTA_NAMES_TEMPLATE_COMMAND}; run npm run smoke:iota-names-live -- --report <ignored-json-path> with operator approval, then rerun this gate.`,
+      next: `${IDENTITY_PROOF_BUNDLE_COMMAND}; ${IOTA_NAMES_TEMPLATE_COMMAND}; run npm run smoke:iota-names-live -- --report <ignored-json-path> with operator approval, then rerun this gate.`,
     };
   }
 
@@ -596,7 +597,7 @@ async function checkIotaIdentityStatus(
       code: "IOTA_IDENTITY_LIVE_CONFIG_MISSING",
       missing,
       message: "IOTA Identity live proof requires an operator-provided proof endpoint and Agent Profile path.",
-      next: `${IOTA_IDENTITY_TEMPLATE_COMMAND}; set the missing variables outside committed files, then run npm run smoke:iota-identity-live -- --report <ignored-json-path>.`,
+      next: `${IDENTITY_PROOF_BUNDLE_COMMAND}; ${IOTA_IDENTITY_TEMPLATE_COMMAND}; set the missing variables outside committed files, then run npm run smoke:iota-identity-live -- --report <ignored-json-path>.`,
     };
   }
 
@@ -620,7 +621,7 @@ async function checkIotaIdentityStatus(
       missing: [IOTA_IDENTITY_LIVE_REPORT_ENV],
       message: "No sanitized IOTA Identity live smoke report is configured.",
       evidence: `missing=${IOTA_IDENTITY_LIVE_REPORT_ENV}`,
-      next: `${IOTA_IDENTITY_TEMPLATE_COMMAND}; run npm run smoke:iota-identity-live -- --report <ignored-json-path> with operator approval, then rerun this gate.`,
+      next: `${IDENTITY_PROOF_BUNDLE_COMMAND}; ${IOTA_IDENTITY_TEMPLATE_COMMAND}; run npm run smoke:iota-identity-live -- --report <ignored-json-path> with operator approval, then rerun this gate.`,
     };
   }
 
@@ -669,7 +670,7 @@ async function checkVcTrustPolicyStatus(
       code: "VC_TRUST_POLICY_CONFIG_MISSING",
       missing,
       message: "Local VC trust-policy evaluation exists, but live proof requires operator-provided trusted issuer, verification method, credential type, revocation status, and cache TTL configuration.",
-      next: `${VC_VALIDATION_TEMPLATE_COMMAND}; set the missing IOTA Identity trust-policy variables outside committed files before accepting live VC proof for policy-gated actions.`,
+      next: `${IDENTITY_PROOF_BUNDLE_COMMAND}; ${VC_VALIDATION_TEMPLATE_COMMAND}; set the missing IOTA Identity trust-policy variables outside committed files before accepting live VC proof for policy-gated actions.`,
     };
   }
 
@@ -703,7 +704,7 @@ async function checkVcTrustPolicyStatus(
       missing: [IOTA_IDENTITY_LIVE_REPORT_ENV],
       message: "Live VC validation requires a current passing IOTA Identity live smoke report with credential evidence.",
       evidence: `missing=${IOTA_IDENTITY_LIVE_REPORT_ENV}`,
-      next: `${VC_VALIDATION_TEMPLATE_COMMAND}; run npm run smoke:iota-identity-live -- --report <ignored-json-path> with operator approval, then rerun this gate.`,
+      next: `${IDENTITY_PROOF_BUNDLE_COMMAND}; ${VC_VALIDATION_TEMPLATE_COMMAND}; run npm run smoke:iota-identity-live -- --report <ignored-json-path> with operator approval, then rerun this gate.`,
     };
   }
 
