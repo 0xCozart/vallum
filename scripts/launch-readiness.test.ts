@@ -74,6 +74,7 @@ test("launch readiness maps local evidence to live and production blockers", asy
   const standards = report.areas.find((area) => area.id === "phase-4-standards-bridges");
   assert.equal(standards?.status, "blocked-production");
   assert.ok(standards?.commands.includes("npm run operator:write-report-template -- --kind payment-provider-live --out tmp/gaskit/payment-provider-live-report-template.json"));
+  assert.ok(standards?.commands.includes("npm run payment:write-provider-proof-bundle -- --out tmp/gaskit/payment-provider-proof-bundle.json"));
   assert.ok(standards?.commands.includes("npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/gaskit/a2a-public-discovery-report-template.json"));
   assert.ok(standards?.commands.includes("npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/gaskit/a2a-public-push-delivery-report-template.json"));
   assert.ok(standards?.commands.includes("npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/gaskit/a2a-external-conformance-report-template.json"));
@@ -81,7 +82,7 @@ test("launch readiness maps local evidence to live and production blockers", asy
   assert.ok(standards?.commands.includes("npm run a2a:write-public-proof-plan"));
   assert.ok(standards?.commands.includes("npm run proof:a2a-public-readiness"));
   assert.ok(
-    (standards?.commands.indexOf("npm run operator:write-report-template -- --kind payment-provider-live --out tmp/gaskit/payment-provider-live-report-template.json") ?? -1)
+    (standards?.commands.indexOf("npm run payment:write-provider-proof-bundle -- --out tmp/gaskit/payment-provider-proof-bundle.json") ?? -1)
       < (standards?.commands.indexOf("npm run payment:write-provider-proof-plan") ?? -1),
   );
   assert.ok(
@@ -242,6 +243,7 @@ async function writeEvidenceTree(cwd: string): Promise<void> {
     "packages/standards/src/a2aNodeServer.ts",
     "packages/standards/src/a2aPush.ts",
     "scripts/check-payment-provider-readiness.ts",
+    "scripts/write-payment-provider-proof-bundle.ts",
     "scripts/check-a2a-public-readiness.ts",
     "scripts/write-a2a-public-proof-bundle.ts",
     "scripts/smoke-a2a-static-discovery-local.ts",

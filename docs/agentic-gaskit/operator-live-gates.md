@@ -162,15 +162,19 @@ hosts, marketplace systems, or physical devices.
   `npm run payment:write-provider-proof-plan`, a redacted local plan that lists
   command order, required report fields, approval boundaries, and blocker
   codes without running provider calls.
+- The adjacent `npm run payment:write-provider-proof-bundle` command writes
+  that plan, the payment-provider readiness artifact, and the live payment
+  provider report template together as ignored local artifacts.
 - Lets operators generate ignored structured report templates with
   `npm run operator:write-report-template -- --kind <kind> --out <path>` so the
   report fields and required check ids match the existing readiness validators
   before any approved live, publication, marketplace, custody, or public A2A
   proof run fills them in.
-- Includes those report-template commands directly in the relevant
-  `proof:operator-gates` command field, so the operator path starts with an
-  ignored template before the proof-plan, readiness, live-smoke, diagnostic, or
-  publication command that can produce or validate accepted evidence.
+- Includes those report-template commands either directly in the relevant
+  `proof:operator-gates` command field or inside a higher-level proof-bundle
+  command, so the operator path starts with ignored preparation artifacts before
+  any readiness, live-smoke, diagnostic, publication, or provider command that
+  can produce or validate accepted evidence.
 - Includes a `testnet-upstream` template for self-hosted or managed Gas
   Station proof planning. It lists the optional `--skip-reserve` reachability
   diagnostic before the full reserve diagnostic, but that template is not
@@ -257,6 +261,7 @@ npm run proof:launch-readiness
 npm run proof:testnet-digest
 npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json
 npm run package:write-publication-proof-bundle -- --out tmp/gaskit/package-publication-proof-bundle.json
+npm run payment:write-provider-proof-bundle -- --out tmp/gaskit/payment-provider-proof-bundle.json
 npm run a2a:write-public-proof-plan -- --out tmp/gaskit/a2a-public-proof-plan.json
 npm run a2a:write-public-proof-bundle -- --out tmp/gaskit/a2a-public-proof-bundle.json
 npm run proof:a2a-public-readiness

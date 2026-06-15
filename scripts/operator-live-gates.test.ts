@@ -87,7 +87,7 @@ test("operator live gates report current blockers without secret values", async 
     );
     assert.equal(
       findGate(report, "live-payment-provider").command,
-      "npm run operator:write-report-template -- --kind payment-provider-live --out tmp/gaskit/payment-provider-live-report-template.json && npm run payment:write-provider-proof-plan && npm run proof:payment-provider-readiness",
+      "npm run payment:write-provider-proof-bundle -- --out tmp/gaskit/payment-provider-proof-bundle.json && npm run proof:payment-provider-readiness",
     );
     assert.equal(
       findGate(report, "production-marketplace").command,

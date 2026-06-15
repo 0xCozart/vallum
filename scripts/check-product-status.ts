@@ -135,6 +135,7 @@ const TESTNET_DIGEST_REPORT_ENV = "GASKIT_TESTNET_DIGEST_REPORT";
 const PACKAGE_PUBLICATION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind package-publication --out tmp/gaskit/package-publication-report-template.json";
 const PACKAGE_PUBLICATION_PROOF_BUNDLE_COMMAND = "npm run package:write-publication-proof-bundle -- --out <ignored-json-path>";
 const PAYMENT_PROVIDER_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind payment-provider-live --out tmp/gaskit/payment-provider-live-report-template.json";
+const PAYMENT_PROVIDER_PROOF_BUNDLE_COMMAND = "npm run payment:write-provider-proof-bundle -- --out <ignored-json-path>";
 const MARKETPLACE_PRODUCTION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json";
 const CUSTODY_PRODUCTION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind custody-production --out tmp/gaskit/custody-production-report-template.json";
 const A2A_PUBLIC_DISCOVERY_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/gaskit/a2a-public-discovery-report-template.json";
@@ -704,7 +705,7 @@ function paymentProviderCheck(readiness: PaymentProviderReadinessReport): Produc
     code: "LIVE_PAYMENT_PROVIDER_UNPROVEN",
     message: `x402 and AP2 flows are locally proven only; live facilitator, processor, or settlement proof remains blocked by ${live?.code ?? "PAYMENT_PROVIDER_LIVE_REPORT_MISSING"}.`,
     evidence: "npm run proof:payment-provider-readiness",
-    next: `${PAYMENT_PROVIDER_TEMPLATE_COMMAND}; run npm run payment:write-provider-proof-plan, complete a dedicated operator-approved payment-provider proof, save a redacted structured report outside tracked files, set PAYMENT_PROVIDER_LIVE_REPORT, and rerun readiness/status gates.`,
+    next: `${PAYMENT_PROVIDER_PROOF_BUNDLE_COMMAND} to prepare the redacted payment-provider proof plan, readiness artifact, and report template; complete a dedicated operator-approved payment-provider proof, save a redacted structured report outside tracked files, set PAYMENT_PROVIDER_LIVE_REPORT, and rerun readiness/status gates. The bundle includes ${PAYMENT_PROVIDER_TEMPLATE_COMMAND}.`,
   };
 }
 

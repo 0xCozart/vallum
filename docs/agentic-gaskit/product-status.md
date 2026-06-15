@@ -38,6 +38,9 @@ surface in one machine-checkable place:
   command/report checklist with kind
   `agentic-gaskit.payment-provider-proof-plan` before any operator-approved
   x402/AP2 provider proof is attempted;
+- payment-provider proof-bundle wiring that writes the report template, proof
+  plan, readiness artifact, and redacted summary together as ignored local
+  artifacts before any operator-approved x402/AP2 provider proof is attempted;
 - package-publication readiness wiring that checks local package release docs,
   pack dry-runs, tarball install smoke, opt-in publish dry-run, and accepts only
   an operator-supplied redacted structured npm publication report path before
@@ -221,6 +224,7 @@ npm run package:write-publication-proof-bundle -- --out tmp/gaskit/package-publi
 npm run proof:package-publication-readiness
 npm run package:write-publication-proof-plan -- --out tmp/gaskit/package-publication-proof-plan.json
 npm run operator:write-report-template -- --kind payment-provider-live --out tmp/gaskit/payment-provider-live-report-template.json
+npm run payment:write-provider-proof-bundle -- --out tmp/gaskit/payment-provider-proof-bundle.json
 npm run proof:payment-provider-readiness
 npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json
 npm run proof:marketplace-readiness

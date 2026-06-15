@@ -84,7 +84,7 @@ const GATE_COMMANDS: Record<string, string | undefined> = {
   "vc-validation-live": "npm run live:write-identity-proof-bundle -- --out tmp/gaskit/identity-proof-bundle.json && npm run smoke:iota-identity-live -- --report <ignored-json-path>",
   "npm-registry-publication": "npm run package:write-publication-proof-bundle -- --out tmp/gaskit/package-publication-proof-bundle.json && npm run proof:package-publication-readiness && operator-approved npm publish workflow",
   "public-a2a-hosting": "npm run a2a:write-public-proof-bundle -- --out tmp/gaskit/a2a-public-proof-bundle.json && npm run proof:a2a-public-readiness && npm run smoke:a2a-public-discovery",
-  "live-payment-provider": "npm run operator:write-report-template -- --kind payment-provider-live --out tmp/gaskit/payment-provider-live-report-template.json && npm run payment:write-provider-proof-plan && npm run proof:payment-provider-readiness",
+  "live-payment-provider": "npm run payment:write-provider-proof-bundle -- --out tmp/gaskit/payment-provider-proof-bundle.json && npm run proof:payment-provider-readiness",
   "production-marketplace": "npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json && npm run marketplace:write-production-proof-plan && npm run proof:marketplace-readiness && dedicated production marketplace readiness slice",
   "production-custody": "npm run operator:write-report-template -- --kind custody-production --out tmp/gaskit/custody-production-report-template.json && npm run custody:write-production-proof-plan && npm run proof:custody-readiness && dedicated custody/security design slice",
   "physical-device-access": "dedicated physical device safety design slice",
