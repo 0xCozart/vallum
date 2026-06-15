@@ -6,6 +6,7 @@ import {
   checkLiveProofStatus,
   type CheckLiveProofStatusOptions,
   type LiveProofCheck,
+  writeLiveProofStatusArtifact,
 } from "./check-live-proof-status.js";
 import { writeLiveProofPlan } from "./write-live-proof-plan.js";
 import { writeOperatorReportTemplate } from "./write-operator-report-template.js";
@@ -32,6 +33,7 @@ export interface IdentityProofBundle {
   readonly ready: boolean;
   readonly templateArtifacts: readonly IdentityProofBundleTemplate[];
   readonly planArtifact: string;
+  readonly liveStatusArtifact: string;
   readonly blockerCodes: readonly string[];
   readonly readyCodes: readonly string[];
   readonly checks: readonly IdentityProofBundleCheck[];
@@ -54,6 +56,7 @@ export interface WriteIdentityProofBundleOptions extends CheckLiveProofStatusOpt
   readonly now?: Date;
   readonly outFile?: string;
   readonly planOutFile?: string;
+  readonly liveStatusOutFile?: string;
   readonly namesTemplateOutFile?: string;
   readonly identityTemplateOutFile?: string;
   readonly vcTemplateOutFile?: string;
@@ -63,6 +66,7 @@ interface CliOptions {
   readonly help: boolean;
   readonly outFile: string;
   readonly planOutFile: string;
+  readonly liveStatusOutFile: string;
   readonly namesTemplateOutFile: string;
   readonly identityTemplateOutFile: string;
   readonly vcTemplateOutFile: string;
@@ -74,6 +78,7 @@ type MutableCliOptions = {
 
 const DEFAULT_OUT_FILE = "tmp/gaskit/identity-proof-bundle.json";
 const DEFAULT_PLAN_OUT_FILE = "tmp/gaskit/live-proof-plan.json";
+const DEFAULT_LIVE_STATUS_OUT_FILE = "tmp/gaskit/live-proof-status.json";
 const DEFAULT_NAMES_TEMPLATE_OUT_FILE = "tmp/gaskit/iota-names-live-report-template.json";
 const DEFAULT_IDENTITY_TEMPLATE_OUT_FILE = "tmp/gaskit/iota-identity-live-report-template.json";
 const DEFAULT_VC_TEMPLATE_OUT_FILE = "tmp/gaskit/vc-validation-live-report-template.json";
@@ -102,7 +107,7 @@ const REQUIRED_EVIDENCE_ARTIFACTS = [
 ] as const;
 
 const BOUNDARIES = [
-  "This bundle writer is non-networked and only writes ignored local templates, a live proof plan, and a bundle summary.",
+  "This bundle writer is non-networked and only writes ignored local templates, a live proof plan, a live proof status artifact, and a bundle summary.",
   "The generated templates are pending-operator-proof artifacts; they do not clear readiness by themselves.",
   "IOTA Names and IOTA Identity smoke commands contact live operator-configured services and require explicit operator approval.",
   "VC validation depends on a current passing IOTA Identity live smoke report with credential evidence and configured trust policy.",
@@ -112,7 +117,7 @@ const BOUNDARIES = [
 const usage = `usage: npm exec tsx -- scripts/write-identity-proof-bundle.ts [--out <path>]
 
 Writes a non-networked ignored local bundle for the linked IOTA Names, IOTA Identity, and VC trust-policy live proof gates.
-The command writes report templates plus a live-proof plan and summarizes only blocker codes, missing variable names, command order, and safety boundaries.`;
+The command writes report templates plus a live-proof plan and live-proof status artifact, then summarizes only blocker codes, missing variable names, command order, and safety boundaries.`;
 
 export async function writeIdentityProofBundle(
   options: WriteIdentityProofBundleOptions = {},
@@ -121,6 +126,7 @@ export async function writeIdentityProofBundle(
   const now = options.now ?? new Date();
   const outFile = options.outFile ?? DEFAULT_OUT_FILE;
   const planOutFile = options.planOutFile ?? DEFAULT_PLAN_OUT_FILE;
+  const liveStatusOutFile = options.liveStatusOutFile ?? DEFAULT_LIVE_STATUS_OUT_FILE;
   const namesTemplateOutFile = options.namesTemplateOutFile ?? DEFAULT_NAMES_TEMPLATE_OUT_FILE;
   const identityTemplateOutFile = options.identityTemplateOutFile ?? DEFAULT_IDENTITY_TEMPLATE_OUT_FILE;
   const vcTemplateOutFile = options.vcTemplateOutFile ?? DEFAULT_VC_TEMPLATE_OUT_FILE;
@@ -148,6 +154,12 @@ export async function writeIdentityProofBundle(
     cwd,
     now,
     outFile: planOutFile,
+  });
+  await writeLiveProofStatusArtifact({
+    ...options,
+    cwd,
+    now,
+    outFile: liveStatusOutFile,
   });
 
   const status = await checkLiveProofStatus({ ...options, cwd });
@@ -179,6 +191,7 @@ export async function writeIdentityProofBundle(
       },
     ],
     planArtifact: planOutFile,
+    liveStatusArtifact: liveStatusOutFile,
     blockerCodes: checks.filter((check) => check.status === "blocked").map((check) => check.code),
     readyCodes: checks.filter((check) => check.status === "ready").map((check) => check.code),
     checks,
@@ -276,6 +289,7 @@ function parseArgs(argv: readonly string[]): CliOptions {
     help: false,
     outFile: DEFAULT_OUT_FILE,
     planOutFile: DEFAULT_PLAN_OUT_FILE,
+    liveStatusOutFile: DEFAULT_LIVE_STATUS_OUT_FILE,
     namesTemplateOutFile: DEFAULT_NAMES_TEMPLATE_OUT_FILE,
     identityTemplateOutFile: DEFAULT_IDENTITY_TEMPLATE_OUT_FILE,
     vcTemplateOutFile: DEFAULT_VC_TEMPLATE_OUT_FILE,
@@ -293,6 +307,11 @@ function parseArgs(argv: readonly string[]): CliOptions {
     }
     if (arg === "--plan-out") {
       options.planOutFile = readArg(argv, index, arg);
+      index += 1;
+      continue;
+    }
+    if (arg === "--live-status-out") {
+      options.liveStatusOutFile = readArg(argv, index, arg);
       index += 1;
       continue;
     }
@@ -338,6 +357,7 @@ async function main(): Promise<number> {
   const bundle = await writeIdentityProofBundle({
     outFile: options.outFile,
     planOutFile: options.planOutFile,
+    liveStatusOutFile: options.liveStatusOutFile,
     namesTemplateOutFile: options.namesTemplateOutFile,
     identityTemplateOutFile: options.identityTemplateOutFile,
     vcTemplateOutFile: options.vcTemplateOutFile,

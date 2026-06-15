@@ -17,6 +17,7 @@ test("identity proof bundle writes templates, plan, and blocked summary without 
     });
     const bundleRaw = await readFile(join(cwd, "tmp/gaskit/identity-proof-bundle.json"), "utf8");
     const planRaw = await readFile(join(cwd, "tmp/gaskit/live-proof-plan.json"), "utf8");
+    const liveStatusRaw = await readFile(join(cwd, "tmp/gaskit/live-proof-status.json"), "utf8");
 
     assert.equal(bundle.kind, "agentic-gaskit.identity-proof-bundle");
     assert.equal(bundle.status, "blocked");
@@ -27,6 +28,7 @@ test("identity proof bundle writes templates, plan, and blocked summary without 
       "vc-validation-live",
     ]);
     assert.equal(bundle.planArtifact, "tmp/gaskit/live-proof-plan.json");
+    assert.equal(bundle.liveStatusArtifact, "tmp/gaskit/live-proof-status.json");
     assert.deepEqual(bundle.checks.map((check) => [check.id, check.status, check.code]), [
       ["iota-names-live", "blocked", "IOTA_NAMES_LIVE_REPORT_MISSING"],
       ["iota-identity-live", "blocked", "IOTA_IDENTITY_LIVE_REPORT_MISSING"],
@@ -46,11 +48,12 @@ test("identity proof bundle writes templates, plan, and blocked summary without 
 
     await assertMode(join(cwd, "tmp/gaskit/identity-proof-bundle.json"), 0o600);
     await assertMode(join(cwd, "tmp/gaskit/live-proof-plan.json"), 0o600);
+    await assertMode(join(cwd, "tmp/gaskit/live-proof-status.json"), 0o600);
     await assertMode(join(cwd, "tmp/gaskit/iota-names-live-report-template.json"), 0o600);
     await assertMode(join(cwd, "tmp/gaskit/iota-identity-live-report-template.json"), 0o600);
     await assertMode(join(cwd, "tmp/gaskit/vc-validation-live-report-template.json"), 0o600);
 
-    const allOutput = `${JSON.stringify(bundle)}\n${bundleRaw}\n${planRaw}`;
+    const allOutput = `${JSON.stringify(bundle)}\n${bundleRaw}\n${planRaw}\n${liveStatusRaw}`;
     assert.doesNotMatch(allOutput, /graphql\.testnet\.example/);
     assert.doesNotMatch(allOutput, /researcher\.demo\.iota/);
     assert.doesNotMatch(allOutput, /1111111111111111111111111111111111111111111111111111111111111111/);
@@ -81,6 +84,7 @@ test("identity proof bundle is ready when names, identity, and VC gates are read
       gasStationRuntimeReport: readyGasStationRuntime(),
     });
     const bundleRaw = await readFile(join(cwd, "tmp/gaskit/identity-proof-bundle.json"), "utf8");
+    const liveStatusRaw = await readFile(join(cwd, "tmp/gaskit/live-proof-status.json"), "utf8");
 
     assert.equal(bundle.status, "ready");
     assert.equal(bundle.ready, true);
@@ -90,12 +94,14 @@ test("identity proof bundle is ready when names, identity, and VC gates are read
       "IOTA_IDENTITY_LIVE_REPORT_VALID",
       "VC_VALIDATION_LIVE_REPORT_VALID",
     ]);
+    assert.equal(JSON.parse(liveStatusRaw).kind, "agentic-gaskit.live-proof-status-report");
+    assert.equal(JSON.parse(liveStatusRaw).ok, false);
     assert.deepEqual(bundle.checks.map((check) => [check.id, check.status, check.code]), [
       ["iota-names-live", "ready", "IOTA_NAMES_LIVE_REPORT_VALID"],
       ["iota-identity-live", "ready", "IOTA_IDENTITY_LIVE_REPORT_VALID"],
       ["vc-validation-live", "ready", "VC_VALIDATION_LIVE_REPORT_VALID"],
     ]);
-    assert.doesNotMatch(bundleRaw, /iota-names-report\.json|iota-identity-report\.json/);
+    assert.doesNotMatch(`${bundleRaw}\n${liveStatusRaw}`, /iota-names-report\.json|iota-identity-report\.json/);
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }
