@@ -269,11 +269,17 @@ test("hosted public docs avoid internal milestone framing in operator paths", as
   assert.match(overview, /What Exists Today/);
   assert.match(overview, /Why This Exists/);
   assert.match(overview, /Relationship to IOTA Gas Station/);
+  assert.match(overview, /Canonical adoption wedge/);
+  assert.match(overview, /Package consumer proof/);
+  assert.match(overview, /agent-safe sponsored execution through policy, manifests, signer references,\s+and receipts/);
   assert.match(overview, /\| Area \| Current status \| Start here \|/);
   assert.match(overview, /What Is Still Roadmap/);
   assert.doesNotMatch(quickstart, /Milestone 1|M1 target/);
   assert.doesNotMatch(deployment, /Milestone 1|M4 work|grant demo/);
   assert.match(quickstart, /deterministic local proof paths/);
+  assert.match(quickstart, /Canonical agent-safe sponsored execution path/);
+  assert.match(quickstart, /npm run smoke:paid-mcp-tool/);
+  assert.match(quickstart, /npm run smoke:package-paid-mcp-consumer/);
   assert.match(deployment, /Local proof path/);
   assert.match(deployment, /\| Checkpoint \| Command or action \| Failure means \|/);
   assert.match(deployment, /The current repo already exposes sanitized decision events/);
@@ -299,10 +305,13 @@ test("reviewer walkthrough points reviewers at runnable local proof paths", asyn
     "npm run smoke:local",
     "npm run smoke:demo-dapp",
     "npm run smoke:demo-browser",
+    "npm run smoke:paid-mcp-tool",
+    "npm run smoke:package-paid-mcp-consumer",
     "npm run readiness:testnet:example",
     "npm run verify:fast",
     "npm run proof:a2a-public-readiness",
     "npm run proof:verification-profiles",
+    "npm run proof:package-publication-readiness",
     "npm run secrets:scan",
   ]) {
     assert.match(walkthrough, literalPattern(command));
@@ -316,6 +325,7 @@ test("reviewer walkthrough points reviewers at runnable local proof paths", asyn
     "examples/nextjs-api-route/README.md",
     "docs/observability.md",
     "docs/testnet-readiness.md",
+    "docs/agentic-gaskit/package-release-strategy.md",
   ]) {
     assert.match(walkthrough, literalPattern(path));
   }
@@ -326,6 +336,8 @@ test("reviewer walkthrough points reviewers at runnable local proof paths", asyn
   assert.match(walkthrough, /FLdnYRUACAKQn8CwugEv1u6gYTh9jBr8rGMk2JZ2adsd/);
   assert.match(walkthrough, /loopback-only calls without external network, live IOTA RPC, or official Gas Station calls/);
   assert.match(walkthrough, /gateway-local\/offline/);
+  assert.match(walkthrough, /local tarball proof only/);
+  assert.match(walkthrough, /package publication readiness reports local package proof as configured/);
 });
 
 test("public docs and examples expose gasKitTransactionId instead of legacy aliases", async () => {

@@ -45,6 +45,29 @@ Agentic GasKit gives AI agents a safe IOTA execution stack: sponsored gas,
 policy controls, signer references, manifests, receipts, contracts, and
 operator visibility.
 
+## Start Here: One Adoption Path
+
+The public center of gravity is agent-safe sponsored execution for IOTA.
+The first developer path is intentionally narrow:
+
+```bash
+npm install
+npm run smoke:paid-mcp-tool
+npm run smoke:package-paid-mcp-consumer
+```
+
+That path proves a local paid MCP-style tool call through the SDK and mock
+policy gateway, using a manifest, scoped signer reference, sponsorship policy,
+payment gating, receipts, denial handling, failed-payment withholding, and
+redacted output. The package consumer smoke also packs the public workspace
+packages into local tarballs, installs them into a fresh temporary consumer
+project, and imports package root entrypoints only.
+
+This is local adoption proof, not a production claim. It does not prove npm
+registry publication, live IOTA/testnet execution, live payment settlement,
+custody, marketplace operation, or public A2A hosting. Those remain separate
+operator gates.
+
 ## Why GasKit Exists
 
 The official IOTA Gas Station component solves the core sponsored-transaction primitive: an application can sponsor gas fees for its users.
@@ -151,6 +174,9 @@ Latest local verification and prior live proof:
 - `npm run smoke:demo-browser`: deterministic local browser-wrapper smoke passed locally.
 - `npm run smoke:agent-escrow`: deterministic local agent-to-agent escrow smoke passed locally.
 - `npm run smoke:paid-mcp-tool`: deterministic local paid MCP-style tool smoke passed locally.
+- `npm run smoke:package-paid-mcp-consumer`: opt-in local tarball consumer
+  proof passed locally for the canonical paid MCP-style tool flow using public
+  package root entrypoints only.
 - `npm run smoke:data-license`: deterministic local data-license smoke passed locally.
 - `npm run smoke:service-bounty`: deterministic local service-bounty smoke passed locally.
 - `npm run smoke:reputation-receipt`: deterministic local reputation-receipt smoke passed locally.
@@ -341,21 +367,23 @@ The monorepo root is marked `private` to prevent accidental publication of the w
 Package release remains roadmap work; today the repo provides package READMEs,
 public prerelease publish metadata (`access=public`, `tag=next`), map-free
 packed artifacts, local `npm pack --dry-run` verification, a local tarball
-install/import smoke, and an opt-in `npm publish --dry-run` gate for
-publishable packages.
+install/import smoke, a local tarball paid MCP consumer smoke, an opt-in
+package-publication readiness gate, and an opt-in `npm publish --dry-run` gate
+for publishable packages.
 
 Package Publication remains a roadmap gate. Do not treat the Agentic GasKit fork
 or any future namespace rename as package-publication-ready until dry-run pack
-and publish checks, import examples, README package names, lockfiles, npm
-account ownership, provenance decisions, and registry credentials are reviewed
-in a dedicated release slice.
+and publish checks, local tarball consumer proof, README package names,
+lockfiles, npm account ownership, provenance decisions, and registry
+credentials are reviewed in a dedicated release slice.
 
 Dry-run package checks:
 
 ```bash
 npm run pack:check
 npm run smoke:package-install
-npm run proof:a2a-public-readiness
+npm run smoke:package-paid-mcp-consumer
+npm run proof:package-publication-readiness
 npm run publish:dry-run
 ```
 

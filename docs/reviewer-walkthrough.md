@@ -1,6 +1,6 @@
 # Reviewer Walkthrough
 
-Date: 2026-06-14
+Date: 2026-06-15
 
 Purpose: give grant reviewers a short, reproducible path through the IOTA GasKit repo while clearly separating deterministic local proof and documented live testnet evidence from remaining production milestone work.
 
@@ -61,6 +61,22 @@ Station, testnet, mainnet, paid APIs, payment providers, custody providers,
 marketplace services, or public A2A endpoints. Optional live sponsored
 testnet proof remains separate and does not make the paid MCP-style demo a
 live payment or production custody proof.
+
+The package adoption proof for the same wedge is:
+
+```bash
+npm run smoke:package-paid-mcp-consumer
+```
+
+Expected result: the command builds and packs public workspace packages,
+installs local tarballs into a fresh temporary consumer project, imports only
+`@iota-gaskit/sdk`, `@iota-gaskit/manifest`, and
+`@iota-gaskit/policy-gateway` package root entrypoints, and runs approval,
+policy-denial, and failed-payment paths without live network calls.
+
+This is local tarball proof only. It does not prove npm registry publication,
+package-name ownership, live payment settlement, custody, marketplace
+operation, public A2A hosting, or live IOTA execution.
 
 ## 1. Start with the thesis
 
@@ -139,10 +155,12 @@ npm run smoke:local
 npm run smoke:demo-dapp
 npm run smoke:demo-browser
 npm run smoke:paid-mcp-tool
+npm run smoke:package-paid-mcp-consumer
 npm run readiness:testnet:example
 npm run proof:testnet-digest
 npm run proof:a2a-public-readiness
 npm run proof:verification-profiles
+npm run proof:package-publication-readiness
 npm run pack:check
 npm run proof:product-status
 npm run proof:launch-readiness
@@ -161,10 +179,16 @@ Expected current result:
   manifest/action intent, signer-reference redaction, approved receipt events,
   policy denial, failed payment withholding, and local-only boundaries without
   live network calls or paid provider access;
+- local package paid MCP consumer smoke proves the same adoption wedge from a
+  fresh temporary consumer project using local tarballs and public package root
+  entrypoints only;
 - example testnet-readiness preflight validates placeholders without reading real secrets;
 - testnet digest proof confirms the documented public digest evidence is present
   without contacting IOTA RPC;
 - package dry-runs complete for publishable workspace packages;
+- package publication readiness reports local package proof as configured but
+  remains blocked until an operator-approved npm registry publication report is
+  supplied;
 - A2A public-readiness proof reports local A2A evidence, local loopback
   streaming proof, local authenticated extended-card access, local public JWKS
   serving, local static discovery bundle generation, local static discovery
@@ -224,6 +248,7 @@ What to verify:
 Read:
 
 - `docs/quickstart.md`
+- `docs/agentic-gaskit/package-release-strategy.md`
 - `docs/deployment.md`
 - `deploy/docker-compose/docker-compose.local.yml`
 - `deploy/gas-station/config.example.yaml`

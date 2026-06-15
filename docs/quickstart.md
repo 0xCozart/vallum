@@ -4,6 +4,38 @@ This quickstart starts with deterministic local proof paths that do not need Doc
 
 Goal: a developer can clone the repo, verify the policy gateway and demo dApp locally, understand the secret boundary, and know exactly what is still required for a live sponsored testnet transaction.
 
+## Canonical agent-safe sponsored execution path
+
+Start here when evaluating Agentic GasKit as a developer integration:
+
+```bash
+npm install
+npm run smoke:paid-mcp-tool
+```
+
+Expected result: the command prints a structured local proof packet for a paid
+MCP-style tool call. It proves the SDK-to-mock-policy-gateway route, manifest
+action intent, signer-reference redaction, approval, policy denial,
+failed-payment withholding, receipt event chains, and secret redaction markers.
+
+To prove the same adoption wedge from packed package APIs, run the opt-in local
+tarball consumer smoke:
+
+```bash
+npm run smoke:package-paid-mcp-consumer
+```
+
+Expected result: the command builds the workspace, packs every public workspace
+package into local tarballs, installs those tarballs into a fresh temporary
+consumer project, imports only public package root entrypoints, and runs the
+paid MCP-style flow without live IOTA RPC, IOTA Gas Station, payment providers,
+custody providers, marketplace services, npm registry publication, or public
+A2A hosting.
+
+`npm run smoke:package-paid-mcp-consumer` is intentionally not part of
+`verify:fast`, `verify:local`, or `grant:check`; use it when adoption
+installability matters more than iteration speed.
+
 ## Current scaffold checks
 
 ```bash

@@ -8,6 +8,12 @@ The short version: users and agents can request useful IOTA actions without
 managing gas up front, while the operator keeps sponsor secrets server-side,
 checks policy before spending gas, and records sanitized usage events.
 
+The current adoption spine is deliberately smaller than the full roadmap:
+agent-safe sponsored execution through policy, manifests, signer references,
+and receipts. The first runnable path is the paid MCP-style tool flow, followed
+by the package consumer tarball proof that installs public packages into a
+fresh temporary consumer project and imports package root entrypoints only.
+
 The implemented foundation is GasKit plus the first Agentic GasKit slices: SDK,
 policy gateway, local service, examples, deployment docs, observability
 foundations, account/signer-reference primitives, manifests, mock agent
@@ -120,6 +126,8 @@ The official Gas Station is the sponsorship engine. GasKit is the app integratio
 
 | Area | Current status | Start here |
 | --- | --- | --- |
+| Canonical adoption wedge | `npm run smoke:paid-mcp-tool` proves a local paid MCP-style tool call through SDK to mock policy gateway, with manifest/action intent, signer-reference redaction, policy approval, policy denial, failed-payment withholding, receipt events, and local-only boundaries. | [Quickstart](quickstart.md) |
+| Package consumer proof | `npm run smoke:package-paid-mcp-consumer` packs public workspace packages, installs local tarballs into a fresh temporary consumer project, imports package root entrypoints only, and runs the same canonical paid MCP-style flow without live network calls. | [Package Release Strategy](agentic-gaskit/package-release-strategy.md) |
 | Agentic migration | The fork direction, migrated planning docs, code-slice gates, and remote/package decisions are documented. | [Agentic Migration Plan](agentic-gaskit/migration-plan.md) |
 | Agent workflow harness | The reviewed `apex.workflow.json` profile uses local-only manifests, no external tracker, focused-search code review, no browser adapter, and repo-local verification presets; local Codex goal and handoff docs stay outside product authority. | [Agentic Migration Plan](agentic-gaskit/migration-plan.md) |
 | Agent wallets | Signer-reference-first account/wallet safety model and local package implementation exist; production custody remains blocked behind `npm run proof:custody-readiness` and an operator-approved report; `npm run proof:custody-readiness -- --out tmp/gaskit/custody-readiness.json` writes a redacted mode-600 audit artifact, and `npm run custody:write-production-proof-bundle` writes the custody report template, proof plan, readiness artifact, and redacted summary together as ignored local artifacts. | [Account And Wallet Safety](agentic-gaskit/account-wallet-safety.md) |
@@ -139,7 +147,7 @@ The official Gas Station is the sponsorship engine. GasKit is the app integratio
 | Operator live gates | `npm run proof:operator-gates` classifies remaining live/testnet, publication, public A2A, payment, marketplace, custody, and safety gates before execution; `npm run operator:write-live-gate-report` writes the redacted local JSON handoff artifact. | [Operator Live Gates](agentic-gaskit/operator-live-gates.md) |
 | A2A bridge | Local Agent Card mapping, signed-card verification helpers, `/.well-known/agent-card.json` and `/.well-known/jwks.json` response helpers, local static discovery bundle generation plus local artifact writing, validation, loopback host smoke, and static hosting review for signed Agent Card plus JWKS artifacts, local/mock task/message operation helpers, authenticated extended-card access, local push notification config CRUD, injected push delivery, opt-in push HTTP transport, callback URL admission hardening, callback host allowlisting, local retry/attempt observability, local durable attempt evidence, local delivery queueing, a local injected-transport worker, a local HTTP-shaped handler, and a loopback HTTP server smoke expose sanitized profile and task metadata with bearer-authenticated task routes and local SSE task events. Public-readiness proof now reports the remaining public hosting, production key/auth, structured public discovery report, structured public push delivery report, and structured conformance blockers; the opt-in public discovery smoke can later verify public Agent Card/JWKS reachability only. | [A2A Public Readiness](agentic-gaskit/a2a-public-readiness.md) |
 | Marketplace evidence | Local `@iota-gaskit/marketplace` read model consumes registry profiles, policy compatibility, contract template metadata, receipts, manifests, and standards evidence to prove access-controlled receipt views and redacted dispute bundles without production marketplace operation; a non-networked readiness gate keeps production marketplace claims blocked until an operator report exists, `npm run proof:marketplace-readiness -- --out tmp/gaskit/marketplace-readiness.json` writes a redacted mode-600 audit artifact, and `npm run marketplace:write-production-proof-bundle` writes the report template, proof plan, readiness artifact, and redacted summary together as ignored local artifacts. | [Marketplace Readiness](marketplace-readiness.md) |
-| Package release strategy | The prerelease package strategy keeps `@iota-gaskit/*` package names, keeps the monorepo root private, checks public package metadata mechanically, proves local tarball install/import, provides opt-in pack and publish dry-run gates, adds a non-networked npm publication readiness report gate, and defers any `@agentic-gaskit/*` rename to a dedicated compatibility slice. | [Package Release Strategy](agentic-gaskit/package-release-strategy.md) |
+| Package release strategy | The prerelease package strategy keeps `@iota-gaskit/*` package names, keeps the monorepo root private, checks public package metadata mechanically, proves local tarball install/import plus the paid MCP consumer flow, provides opt-in pack and publish dry-run gates, adds a non-networked npm publication readiness report gate, and defers any `@agentic-gaskit/*` rename to a dedicated compatibility slice. | [Package Release Strategy](agentic-gaskit/package-release-strategy.md) |
 | Device access safety | Physical device operation is blocked; any future proof must start with virtual or simulated devices only. | [Device Access Safety Gate](agentic-gaskit/device-access-safety-gate.md) |
 | Agent roadmap | PRDs, execution slices, module specs, and hardening gates have been migrated into this fork. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
 | Beginner concepts | Plain-English explanations of IOTA, sponsored gas, GasKit roles, and common terms. | [IOTA and GasKit Basics](concepts.md) |
@@ -179,17 +187,20 @@ These are not complete production claims yet:
 ## Recommended First Path
 
 1. Read [IOTA and GasKit Basics](concepts.md) if sponsored gas or IOTA terms are unfamiliar.
-2. Read [Agentic Migration Plan](agentic-gaskit/migration-plan.md) before
+2. Run [Quickstart](quickstart.md), starting with
+   `npm run smoke:paid-mcp-tool`.
+3. Run `npm run smoke:package-paid-mcp-consumer` when you need proof that a
+   fresh local consumer project can use the public package root entrypoints.
+4. Read [Agentic Migration Plan](agentic-gaskit/migration-plan.md) before
    changing repo branding, package names, wallet behavior, or agent surfaces.
-3. Read [Account And Wallet Safety](agentic-gaskit/account-wallet-safety.md)
+5. Read [Account And Wallet Safety](agentic-gaskit/account-wallet-safety.md)
    before adding any wallet/account API.
-4. Read [Architecture](architecture.md) to understand why the gateway, SDK, and policy layers are separate.
-5. Copy the safe backend and route patterns from [Code Examples](examples.md).
-6. Use [Agent Guide](agent-guide.md) when handing work to an AI coding agent.
-7. Run the deterministic local checks in [Quickstart](quickstart.md).
-8. Read [Best Practices](best-practices.md) before adding live credentials.
-9. Review [Testnet Readiness](testnet-readiness.md) before a live sponsored transaction attempt.
-10. Use [Deployment](deployment.md) and [Production Hardening](production-hardening.md) when moving beyond local proof.
+6. Read [Architecture](architecture.md) to understand why the gateway, SDK, and policy layers are separate.
+7. Copy the safe backend and route patterns from [Code Examples](examples.md).
+8. Use [Agent Guide](agent-guide.md) when handing work to an AI coding agent.
+9. Read [Best Practices](best-practices.md) before adding live credentials.
+10. Review [Testnet Readiness](testnet-readiness.md) before a live sponsored transaction attempt.
+11. Use [Deployment](deployment.md) and [Production Hardening](production-hardening.md) when moving beyond local proof.
 
 ## Safety Boundary
 

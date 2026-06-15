@@ -22,13 +22,13 @@ export default {
           title: "Quickstart",
           source: "docs/quickstart.md",
           slug: "quickstart",
-          description: "Run local verification, gateway smoke paths, and demo dApp flows."
+          description: "Run the canonical paid MCP-style local proof, package consumer tarball proof, and core local verification paths."
         },
         {
           title: "Reviewer Walkthrough",
           source: "docs/reviewer-walkthrough.md",
           slug: "reviewer-walkthrough",
-          description: "A reproducible path for reviewers to inspect deterministic proof."
+          description: "A reproducible path for reviewers to inspect deterministic local proof, package adoption proof, and remaining operator gates."
         }
       ]
     },
@@ -81,7 +81,7 @@ export default {
           title: "Package Release Strategy",
           source: "docs/agentic-gaskit/package-release-strategy.md",
           slug: "agentic-package-release-strategy",
-          description: "Current package namespace decision, prerelease metadata gates, and future rename boundaries."
+          description: "Current package namespace decision, local tarball consumer proof, prerelease metadata gates, and registry-publication boundaries."
         },
         {
           title: "Device Access Safety Gate",
