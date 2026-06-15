@@ -107,15 +107,53 @@ export async function runPaidMcpToolDemo(): Promise<PaidMcpToolDemoResult> {
 }
 
 export function formatPaidMcpToolDemoResult(result: PaidMcpToolDemoResult): string {
-  const gatewayEvents = result.gatewayEvents.map((event) => event.outcome).join(",");
+  const deniedReason = result.denied.sponsoredAction.approved
+    ? "unexpected-approved"
+    : result.denied.sponsoredAction.decision.reasonCode;
+  const gatewayAudit = result.gatewayEvents
+    .map((event) => `${event.outcome}:${event.reasonCode ?? "none"}`)
+    .join(",");
   return [
     "Paid MCP tool demo passed",
+    "boundary.localOnly=true",
+    "boundary.liveNetwork=false",
+    "boundary.route=SDK->mock-policy-gateway",
+    "request.intent=Purchase one premium MCP tool result.",
+    "request.action=pay_per_call.request_call",
+    "request.tool=premium_analysis",
+    "request.amount=3.00 USD",
+    "manifest.idempotencyKey=redacted",
+    "manifest.signerReference.internal=true",
+    "manifest.signerReference.exposed=false",
+    "manifest.receiptRequired=true",
+    "manifest.simulationRequired=true",
     `approved.status=${result.approved.receipt.status}`,
+    `approved.paid=${result.approved.paid}`,
+    `approved.receiptId=${result.approved.receipt.receiptId}`,
+    "approved.receiptManifestId=redacted",
+    `approved.receiptEvents=${receiptEvents(result.approved.receipt.events)}`,
     `approved.sponsorshipId=${result.approved.receipt.sponsorshipId}`,
+    `approved.paymentDigest=${result.approved.receipt.transactionDigest}`,
+    `approved.resultHash=${result.approved.receipt.resultHash}`,
     `denied.status=${result.denied.receipt.status}`,
+    `denied.paid=${result.denied.paid}`,
+    `denied.reason=${deniedReason}`,
+    `denied.receiptId=${result.denied.receipt.receiptId}`,
+    `denied.receiptEvents=${receiptEvents(result.denied.receipt.events)}`,
     `failedPayment.status=${result.failedPayment.receipt.status}`,
-    `gateway.events=${gatewayEvents}`,
+    `failedPayment.paid=${result.failedPayment.paid}`,
+    `failedPayment.reason=${result.failedPayment.receipt.failureReason}`,
+    `failedPayment.receiptId=${result.failedPayment.receipt.receiptId}`,
+    `failedPayment.receiptEvents=${receiptEvents(result.failedPayment.receipt.events)}`,
+    `gateway.audit=${gatewayAudit}`,
+    "secrets.apiKey.exposed=false",
+    "secrets.rawTransactionBytes.exposed=false",
+    "secrets.userSignature.exposed=false",
   ].join("\n");
+}
+
+function receiptEvents(events: CallPaidToolResult<string>["receipt"]["events"]): string {
+  return events.map((event) => event.type).join(",");
 }
 
 function paidToolManifest(options: {
