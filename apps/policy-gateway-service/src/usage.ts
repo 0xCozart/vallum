@@ -131,7 +131,7 @@ export function copyAllowedEventFields(event: GatewayEvent): GatewayUsageEvent {
     ...(event.packageId === undefined ? {} : { packageId: event.packageId }),
     ...(event.functionName === undefined ? {} : { functionName: event.functionName }),
     ...(event.gasBudget === undefined ? {} : { gasBudget: event.gasBudget }),
-    ...(event.gasKitTransactionId === undefined ? {} : { gasKitTransactionId: event.gasKitTransactionId }),
+    ...(event.agentRailTransactionId === undefined ? {} : { agentRailTransactionId: event.agentRailTransactionId }),
     ...(event.upstreamReservationId === undefined ? {} : { upstreamReservationId: event.upstreamReservationId }),
     ...(event.reasonCode === undefined ? {} : { reasonCode: event.reasonCode }),
     ...(event.upstreamStatus === undefined ? {} : { upstreamStatus: event.upstreamStatus }),

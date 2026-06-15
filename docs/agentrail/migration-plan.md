@@ -1,54 +1,57 @@
-# Agentic GasKit Migration Plan
+# AgentRail Migration Plan
 
 Last updated: 2026-06-14.
 
 ## Intent Read
 
-The goal is to stop splitting the product across two confusing repos. GasKit is
-the existing sponsorship toolkit. Agentic GasKit is the future direction of
-that toolkit: sponsored gas plus agent accounts, signer references, manifests,
-identity, contracts, receipts, MCP/A2A surfaces, and standards-compatible
-payments.
+The goal is to stop splitting the product across confusing names and repos.
+IOTA GasKit is the original sponsorship toolkit. AgentRail is the new public
+identity for the focused agent-safe execution product: sponsored gas plus agent
+accounts, signer references, manifests, identity, contracts, receipts, MCP/A2A
+surfaces, and standards-compatible payments.
 
 Success means future agents can start in this fork and understand that it is
 the canonical implementation path for the new direction. Failure means future
 agents keep treating `/home/sacred/code/agents` as the product repo, rebuild
-GasKit primitives from scratch, or expose wallet material while adding agent
-features.
+the sponsorship primitives from scratch, or expose wallet material while adding
+agent features.
 
 ## Canonical Repo Decision
 
-Implementation should move into the GasKit codebase, not remain in
+Implementation should stay in this sponsorship toolkit fork, not remain in
 `/home/sacred/code/agents`.
 
 Local fork created for the new direction:
 
-- fork path: `/home/sacred/code/agentic-gaskit`
+- current local checkout path: `/home/sacred/code/agentic-gaskit`
+- target repo/package slug: `agentrail`
 - branch: `main`
-- canonical GitHub repo: `https://github.com/0xCozart/agentic-gaskit`
+- target canonical GitHub repo: `https://github.com/0xCozart/agentrail`
+- current `origin` before remote rename: `https://github.com/0xCozart/agentic-gaskit.git`
 - upstream source remote: `https://github.com/0xCozart/iota-gaskit`
 - local Git remote state: `upstream` fetches from the source repo and has push
-  disabled; `origin` pushes to the canonical Agentic GasKit repo
+  disabled; `origin` currently pushes to the pre-rename fork until the GitHub
+  repository is renamed
 
 Existing local source checkouts:
 
 - `/home/sacred/code/iota-gaskit` remains the old/current GasKit checkout.
 - `/home/sacred/code/agents` remains a staging/planning source only.
 
-Remote publishing is complete for the initial fork: `origin` points at
-`https://github.com/0xCozart/agentic-gaskit`. Do not re-enable push to the
-source GasKit remote as a shortcut.
+Remote publishing is complete for the initial fork, but the remote repository
+rename is a separate operator action. Do not re-enable push to the source
+IOTA GasKit remote as a shortcut.
 
 ## Product Framing
 
 Use this framing in public docs:
 
-Agentic GasKit is the IOTA-native toolkit for agent-safe sponsored execution:
+AgentRail is the IOTA-native toolkit for agent-safe sponsored execution:
 Gas Station sponsorship, policy controls, agent-created wallets, signer
 references, transaction manifests, receipts, contract workflows, and
 standards-compatible agent integrations.
 
-Do not frame Agentic GasKit as:
+Do not frame AgentRail as:
 
 - a replacement for the official IOTA Gas Station
 - a generic wallet or custody service
@@ -67,8 +70,8 @@ Status: started in this fork.
 
 Required work:
 
-- Rename top-level docs from "IOTA GasKit only" to "Agentic GasKit" while
-  preserving the existing GasKit sponsorship foundation.
+- Rename top-level docs from "GasKit/Agentic GasKit" to "AgentRail" while
+  preserving the existing IOTA GasKit sponsorship foundation.
 - Update README, overview, docs site title, and agent guide so the new direction
   is obvious in the first viewport/read.
 - Add this migration plan to the docs site.
@@ -77,14 +80,14 @@ Required work:
 
 ### Layer 2: Planning Docs Migration
 
-Status: migrated into `docs/agentic-gaskit/`.
+Status: migrated into `docs/agentrail/`.
 
 Public product planning surfaces:
 
-- `docs/agentic-gaskit/roadmap.md`
-- `docs/agentic-gaskit/account-wallet-safety.md`
-- `docs/agentic-gaskit/execution-slices.md`
-- `docs/agentic-gaskit/verification-hardening.md`
+- `docs/agentrail/roadmap.md`
+- `docs/agentrail/account-wallet-safety.md`
+- `docs/agentrail/execution-slices.md`
+- `docs/agentrail/verification-hardening.md`
 
 Private Codex execution prompts, active goals, handoffs, scratch audits, raw
 thesis notes, phase PRDs, module specs, external API notes, grant-era funding
@@ -95,13 +98,14 @@ machine-local or business planning state.
 Required normalization:
 
 - Replace old staging paths with this fork's paths.
-- Separate "current implemented GasKit" from "Agentic future roadmap."
+- Separate "current implemented AgentRail" from "Agentic future roadmap."
 - Mark unimplemented agent packages as roadmap, not current capability.
 - Keep external API notes refreshable before implementation.
 
 ### Layer 3: Code Migration And Package Evolution
 
-Status: not started.
+Status: package namespace rename completed; feature evolution remains
+vertical-slice only.
 
 Do not create broad empty packages in one rewrite. Add code through vertical
 slices.
@@ -129,12 +133,11 @@ First code slices:
 
 Package namespace decision:
 
-- Current prerelease path: keep the conservative `@iota-gaskit/*` workspace
-  package namespace while the product extends the existing IOTA GasKit
-  sponsorship toolkit.
-- Full rebrand path: defer any migration to `@agentic-gaskit/*` to a dedicated
-  compatibility slice with lockfile, examples, docs, import tests, package
-  dry-runs, and downstream migration notes.
+- Current prerelease path: use the `@agentrail/*` workspace package namespace
+  for the renamed public package set.
+- Compatibility path: preserve intentional IOTA protocol names and legacy
+  response aliases where they are contract or ecosystem terms, but do not keep
+  `@iota-gaskit/*` as a public prerelease package scope.
 
 Do not mix a package namespace rename with security-sensitive wallet/gateway
 changes.
@@ -149,12 +152,12 @@ These docs are first-read surfaces and must stay current:
 - `docs/architecture.md`
 - `docs/product-requirements.md`
 - `docs/agent-guide.md`
-- `docs/agentic-gaskit/migration-plan.md`
-- `docs/agentic-gaskit/roadmap.md`
-- `docs/agentic-gaskit/account-wallet-safety.md`
-- `docs/agentic-gaskit/execution-slices.md`
+- `docs/agentrail/migration-plan.md`
+- `docs/agentrail/roadmap.md`
+- `docs/agentrail/account-wallet-safety.md`
+- `docs/agentrail/execution-slices.md`
 - `apps/docs-site/docs.config.mjs`
-- `skills/iota-gaskit/SKILL.md`
+- `skills/agentrail/SKILL.md`
 - `AGENTS.md`
 
 Do not edit generated docs output directly. Update Markdown sources and docs
@@ -164,14 +167,14 @@ site config.
 
 - Execution entry doc exists and points first implementation work at
   `packages/accounts`.
-- Docs site title and description use Agentic GasKit direction.
+- Docs site title and description use AgentRail direction.
 - Docs site includes migration, roadmap, wallet safety, execution slices, and
   hardening pages.
 - `package.json` top-level name/description reflect the fork direction.
-- Package namespace rename is deferred or executed in one isolated slice.
+- Package namespace rename has been executed in one isolated slice.
 - Current package release strategy is documented in
-  `docs/agentic-gaskit/package-release-strategy.md`.
-- `apex.workflow.json` is expanded into a reviewed Agentic GasKit profile with
+  `docs/agentrail/package-release-strategy.md`.
+- `apex.workflow.json` is expanded into a reviewed AgentRail profile with
   no unresolved setup review items, confirmed authority/orientation paths,
   `tracker.provider=none`, `codeIntelligence.provider=focused-search`, no
   browser adapter, ignored local manifests under `tmp/apex-workflow`, and
@@ -180,7 +183,8 @@ site config.
 - `AGENTS.md` and `CLAUDE.md` treat the Apex profile as present but require
   profile validation plus current-slice manifest/detect evidence before any
   Apex verification claim.
-- Skill docs describe both legacy GasKit work and Agentic GasKit work.
+- Skill docs describe both the legacy IOTA GasKit foundation and AgentRail
+  work.
 - Verification commands are listed in README and agent guide.
 - Remote URL and branch policy are explicit before publishing.
 
@@ -225,11 +229,11 @@ compatibility.
 
 ## Acceptance Criteria
 
-- A future agent starting from this fork can identify it as the Agentic GasKit
+- A future agent starting from this fork can identify it as the AgentRail
   implementation path.
-- The migrated planning docs are present under `docs/agentic-gaskit/`.
+- The migrated planning docs are present under `docs/agentrail/`.
 - The docs site links to the migration and wallet safety docs.
-- Existing GasKit sponsorship capabilities are preserved as foundation, not
+- Existing AgentRail sponsorship capabilities are preserved as foundation, not
   overwritten by unimplemented claims.
 - The migration plan names package namespace, remote publishing, Apex/profile,
   and wallet custody decisions as explicit gates.
@@ -237,7 +241,7 @@ compatibility.
 
 ## Remaining Decisions Before Push
 
-- Public package namespace: `@iota-gaskit/agent-*` first or full
-  `@agentic-gaskit/*` migration.
+- Public package namespace: `@agentrail/agent-*` first or full
+  `@agentrail/*` migration.
 - Whether `/home/sacred/code/agents` should be archived, left as staging, or
   updated with a hard pointer to this fork.

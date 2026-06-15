@@ -1,5 +1,5 @@
 {
-  "name": "@iota-gaskit/policy-gateway-service",
+  "name": "@agentrail/policy-gateway-service",
   "version": "0.0.0-prerelease",
   "type": "module",
   "private": true,
@@ -11,9 +11,9 @@
     "test": "node --import tsx --test src/*.test.ts"
   },
   "dependencies": {
-    "@iota-gaskit/policy-gateway": "0.0.0-prerelease",
-    "@iota-gaskit/sdk": "0.0.0-prerelease",
-    "@iota-gaskit/shared-types": "0.0.0-prerelease"
+    "@agentrail/policy-gateway": "0.0.0-prerelease",
+    "@agentrail/sdk": "0.0.0-prerelease",
+    "@agentrail/shared-types": "0.0.0-prerelease"
   },
   "devDependencies": {
     "tsx": "4.20.0",

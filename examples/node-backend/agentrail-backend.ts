@@ -1,7 +1,7 @@
 import {
-  GasKitAuthError,
-  GasKitError,
-  GasKitPolicyError,
+  AgentRailAuthError,
+  AgentRailError,
+  AgentRailPolicyError,
   type ExecuteSponsoredTransactionRequest,
   type ExecuteSponsoredTransactionResponse,
   type ReserveGasRequest,
@@ -9,28 +9,28 @@ import {
 } from "../../packages/sdk/src/index.js";
 import { POLICY_REASON_CODES } from "../../packages/shared-types/src/policy.js";
 
-export interface GasKitBackendClient {
+export interface AgentRailBackendClient {
   reserveGas(request: ReserveGasRequest): Promise<ReserveGasResponse>;
   executeSponsoredTransaction(
     request: ExecuteSponsoredTransactionRequest,
   ): Promise<ExecuteSponsoredTransactionResponse>;
 }
 
-export interface GasKitExampleResponse<TBody extends object> {
+export interface AgentRailExampleResponse<TBody extends object> {
   status: number;
   body: TBody;
 }
 
-export interface GasKitExampleErrorBody {
-  error: "AUTH_FAILED" | "POLICY_REJECTED" | "GASKIT_REQUEST_FAILED" | "INTERNAL_ERROR";
+export interface AgentRailExampleErrorBody {
+  error: "AUTH_FAILED" | "POLICY_REJECTED" | "AGENTRAIL_REQUEST_FAILED" | "INTERNAL_ERROR";
   message: string;
   reasonCode?: string;
 }
 
-export type GasKitExampleResult<TBody extends object> = GasKitExampleResponse<TBody | GasKitExampleErrorBody>;
+export type AgentRailExampleResult<TBody extends object> = AgentRailExampleResponse<TBody | AgentRailExampleErrorBody>;
 
-export interface CreateGasKitBackendHandlersOptions {
-  client: GasKitBackendClient;
+export interface CreateAgentRailBackendHandlersOptions {
+  client: AgentRailBackendClient;
 }
 
 export interface ReserveHandlerInput {
@@ -43,7 +43,7 @@ export interface ReserveHandlerInput {
 
 export interface ReserveHandlerBody {
   reservationId: string;
-  gasKitTransactionId: string;
+  agentRailTransactionId: string;
   sponsorAddress?: string;
 }
 
@@ -63,36 +63,36 @@ function knownPolicyReasonCode(reasonCode: string | undefined): string | undefin
     : undefined;
 }
 
-function safeErrorResponse(error: unknown): GasKitExampleResponse<GasKitExampleErrorBody> {
-  if (error instanceof GasKitAuthError) {
+function safeErrorResponse(error: unknown): AgentRailExampleResponse<AgentRailExampleErrorBody> {
+  if (error instanceof AgentRailAuthError) {
     return {
       status: statusOrFallback(error.status, 401),
       body: {
         error: "AUTH_FAILED",
-        message: "GasKit authentication failed.",
+        message: "AgentRail authentication failed.",
       },
     };
   }
 
-  if (error instanceof GasKitPolicyError) {
+  if (error instanceof AgentRailPolicyError) {
     const reasonCode = knownPolicyReasonCode(error.reasonCode);
 
     return {
       status: statusOrFallback(error.status, 400),
       body: {
         error: "POLICY_REJECTED",
-        message: "Request rejected by GasKit policy.",
+        message: "Request rejected by AgentRail policy.",
         ...(reasonCode === undefined ? {} : { reasonCode }),
       },
     };
   }
 
-  if (error instanceof GasKitError) {
+  if (error instanceof AgentRailError) {
     return {
       status: statusOrFallback(error.status, 502),
       body: {
-        error: "GASKIT_REQUEST_FAILED",
-        message: "GasKit request failed.",
+        error: "AGENTRAIL_REQUEST_FAILED",
+        message: "AgentRail request failed.",
       },
     };
   }
@@ -106,9 +106,9 @@ function safeErrorResponse(error: unknown): GasKitExampleResponse<GasKitExampleE
   };
 }
 
-export function createGasKitBackendHandlers(options: CreateGasKitBackendHandlersOptions) {
+export function createAgentRailBackendHandlers(options: CreateAgentRailBackendHandlersOptions) {
   return {
-    async reserve(input: ReserveHandlerInput): Promise<GasKitExampleResult<ReserveHandlerBody>> {
+    async reserve(input: ReserveHandlerInput): Promise<AgentRailExampleResult<ReserveHandlerBody>> {
       try {
         const reservation = await options.client.reserveGas({
           gasBudget: input.gasBudget,
@@ -122,7 +122,7 @@ export function createGasKitBackendHandlers(options: CreateGasKitBackendHandlers
           status: 200,
           body: {
             reservationId: reservation.reservationId,
-            gasKitTransactionId: reservation.gasKitTransactionId,
+            agentRailTransactionId: reservation.agentRailTransactionId,
             ...(reservation.sponsorAddress === undefined ? {} : { sponsorAddress: reservation.sponsorAddress }),
           },
         };
@@ -131,11 +131,11 @@ export function createGasKitBackendHandlers(options: CreateGasKitBackendHandlers
       }
     },
 
-    async execute(input: ExecuteHandlerInput): Promise<GasKitExampleResult<ExecuteHandlerBody>> {
+    async execute(input: ExecuteHandlerInput): Promise<AgentRailExampleResult<ExecuteHandlerBody>> {
       try {
         const executed = await options.client.executeSponsoredTransaction({
           reservationId: input.reservationId,
-          gasKitTransactionId: input.gasKitTransactionId,
+          agentRailTransactionId: input.agentRailTransactionId,
           transactionBytes: input.transactionBytes,
           userSignature: input.userSignature,
         });

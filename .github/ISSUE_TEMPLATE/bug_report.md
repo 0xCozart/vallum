@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Report a reproducible problem in IOTA GasKit
+about: Report a reproducible problem in AgentRail
 title: "bug: "
 labels: bug
 assignees: ""
@@ -25,7 +25,7 @@ What did you expect?
 - OS:
 - Node version:
 - IOTA network:
-- GasKit version/commit:
+- AgentRail version/commit:
 
 ## Logs or screenshots
 

@@ -37,7 +37,7 @@ test("usage read model aggregates gateway events by operation, outcome, app, wal
       outcome: "allowed",
       appId: "demo-dapp",
       walletAddress: "0xUSER",
-      gasKitTransactionId: "gaskit-1",
+      agentRailTransactionId: "agentrail-1",
       upstreamReservationId: "reservation-1",
     }),
   );
@@ -107,7 +107,7 @@ test("usage read model stores only allowlisted event fields", () => {
       outcome: "allowed",
       appId: "demo-dapp",
       walletAddress: "0xUSER",
-      gasKitTransactionId: "gaskit-1",
+      agentRailTransactionId: "agentrail-1",
       upstreamReservationId: "reservation-1",
     }),
     apiKey: "local-dev-demo-key",
@@ -121,7 +121,7 @@ test("usage read model stores only allowlisted event fields", () => {
 
   const snapshotOutput = JSON.stringify(usage.snapshot());
   assert.equal(snapshotOutput.includes("secret-bearing-event"), true);
-  assert.equal(snapshotOutput.includes("gaskit-1"), true);
+  assert.equal(snapshotOutput.includes("agentrail-1"), true);
   assert.equal(snapshotOutput.includes("local-dev-demo-key"), false);
   assert.equal(snapshotOutput.includes("local-smoke-token"), false);
   assert.equal(snapshotOutput.includes("AAE="), false);

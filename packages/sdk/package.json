@@ -1,5 +1,5 @@
 {
-  "name": "@iota-gaskit/sdk",
+  "name": "@agentrail/sdk",
   "version": "0.0.0-prerelease",
   "type": "module",
   "main": "dist/index.js",
@@ -12,15 +12,15 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@iota-gaskit/manifest": "0.0.0-prerelease",
-    "@iota-gaskit/registry": "0.0.0-prerelease",
-    "@iota-gaskit/receipts": "0.0.0-prerelease",
-    "@iota-gaskit/shared-types": "0.0.0-prerelease"
+    "@agentrail/manifest": "0.0.0-prerelease",
+    "@agentrail/registry": "0.0.0-prerelease",
+    "@agentrail/receipts": "0.0.0-prerelease",
+    "@agentrail/shared-types": "0.0.0-prerelease"
   },
   "devDependencies": {
-    "@iota-gaskit/policy-gateway": "0.0.0-prerelease"
+    "@agentrail/policy-gateway": "0.0.0-prerelease"
   },
-  "description": "TypeScript SDK scaffold for IOTA GasKit sponsorship gateways.",
+  "description": "TypeScript SDK scaffold for AgentRail sponsorship gateways.",
   "files": [
     "dist/**/*.js",
     "dist/**/*.d.ts",

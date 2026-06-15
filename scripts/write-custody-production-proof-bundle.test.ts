@@ -19,24 +19,24 @@ test("custody production proof bundle writes template, plan, and blocked summary
         CUSTODY_PRODUCTION_REPORT: "missing-custody-report.json",
       },
     });
-    const bundleRaw = await readFile(join(cwd, "tmp/gaskit/custody-production-proof-bundle.json"), "utf8");
-    const planRaw = await readFile(join(cwd, "tmp/gaskit/custody-production-proof-plan.json"), "utf8");
-    const readinessRaw = await readFile(join(cwd, "tmp/gaskit/custody-readiness.json"), "utf8");
-    const templateRaw = await readFile(join(cwd, "tmp/gaskit/custody-production-report-template.json"), "utf8");
+    const bundleRaw = await readFile(join(cwd, "tmp/agentrail/custody-production-proof-bundle.json"), "utf8");
+    const planRaw = await readFile(join(cwd, "tmp/agentrail/custody-production-proof-plan.json"), "utf8");
+    const readinessRaw = await readFile(join(cwd, "tmp/agentrail/custody-readiness.json"), "utf8");
+    const templateRaw = await readFile(join(cwd, "tmp/agentrail/custody-production-report-template.json"), "utf8");
 
-    assert.equal(bundle.kind, "agentic-gaskit.custody-production-proof-bundle");
+    assert.equal(bundle.kind, "agentrail.custody-production-proof-bundle");
     assert.equal(bundle.status, "blocked");
     assert.equal(bundle.localProofOk, true);
     assert.equal(bundle.productionReady, false);
     assert.deepEqual(bundle.templateArtifacts, [
       {
         id: "custody-production",
-        path: "tmp/gaskit/custody-production-report-template.json",
+        path: "tmp/agentrail/custody-production-report-template.json",
         acceptedReportEnv: "CUSTODY_PRODUCTION_REPORT",
       },
     ]);
-    assert.equal(bundle.planArtifact, "tmp/gaskit/custody-production-proof-plan.json");
-    assert.equal(bundle.readinessArtifact, "tmp/gaskit/custody-readiness.json");
+    assert.equal(bundle.planArtifact, "tmp/agentrail/custody-production-proof-plan.json");
+    assert.equal(bundle.readinessArtifact, "tmp/agentrail/custody-readiness.json");
     assert.ok(bundle.blockerCodes.includes("CUSTODY_PRODUCTION_REPORT_NOT_FOUND"));
     assert.equal(bundle.readyApprovalCodes.length, 0);
     assert.ok(bundle.requiredOperatorInputs.includes("CUSTODY_PRODUCTION_REPORT"));
@@ -46,10 +46,10 @@ test("custody production proof bundle writes template, plan, and blocked summary
     assert.equal(bundle.steps.find((step) => step.id === "run-approved-production-custody-review")?.contactsCustodySystem, true);
     assert.equal(bundle.steps.find((step) => step.id === "write-custody-template")?.contactsCustodySystem, false);
 
-    await assertMode(join(cwd, "tmp/gaskit/custody-production-proof-bundle.json"), 0o600);
-    await assertMode(join(cwd, "tmp/gaskit/custody-production-proof-plan.json"), 0o600);
-    await assertMode(join(cwd, "tmp/gaskit/custody-readiness.json"), 0o600);
-    await assertMode(join(cwd, "tmp/gaskit/custody-production-report-template.json"), 0o600);
+    await assertMode(join(cwd, "tmp/agentrail/custody-production-proof-bundle.json"), 0o600);
+    await assertMode(join(cwd, "tmp/agentrail/custody-production-proof-plan.json"), 0o600);
+    await assertMode(join(cwd, "tmp/agentrail/custody-readiness.json"), 0o600);
+    await assertMode(join(cwd, "tmp/agentrail/custody-production-report-template.json"), 0o600);
 
     const allOutput = `${JSON.stringify(bundle)}\n${bundleRaw}\n${planRaw}\n${readinessRaw}\n${templateRaw}`;
     assert.doesNotMatch(
@@ -74,7 +74,7 @@ test("custody production proof bundle is ready for approval when structured repo
         CUSTODY_PRODUCTION_REPORT: "custody-production-report.json",
       },
     });
-    const bundleRaw = await readFile(join(cwd, "tmp/gaskit/custody-production-proof-bundle.json"), "utf8");
+    const bundleRaw = await readFile(join(cwd, "tmp/agentrail/custody-production-proof-bundle.json"), "utf8");
 
     assert.equal(bundle.status, "ready-for-approval");
     assert.equal(bundle.productionReady, true);
@@ -91,13 +91,13 @@ test("custody production proof bundle is ready for approval when structured repo
 });
 
 async function writeCustodyEvidence(): Promise<string> {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-custody-proof-bundle-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-custody-proof-bundle-"));
   for (const path of [
     "packages/accounts/src/index.ts",
     "packages/accounts/src/accounts.test.ts",
     "packages/accounts/README.md",
-    "docs/agentic-gaskit/account-wallet-safety.md",
-    "docs/agentic-gaskit/verification-hardening.md",
+    "docs/agentrail/account-wallet-safety.md",
+    "docs/agentrail/verification-hardening.md",
   ]) {
     await writeFileWithParents(join(cwd, path), "export {};\n");
   }
@@ -106,7 +106,7 @@ async function writeCustodyEvidence(): Promise<string> {
 
 function completeScripts(): Record<string, string | undefined> {
   return {
-    build: "npm run build -w @iota-gaskit/accounts",
+    build: "npm run build -w @agentrail/accounts",
     "verify:local": "npm test",
     "verify:fast": "npm test",
     "grant:check": "npm test",
@@ -130,7 +130,7 @@ async function assertMode(path: string, expected: number): Promise<void> {
 function validProductionReport() {
   return {
     schemaVersion: 1,
-    kind: "agentic-gaskit.custody-production-proof",
+    kind: "agentrail.custody-production-proof",
     result: "passed",
     observedAt: NOW.toISOString(),
     custodyMode: "kms",

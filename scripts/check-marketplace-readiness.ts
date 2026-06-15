@@ -27,7 +27,7 @@ export interface MarketplaceReadinessReport {
 
 export interface MarketplaceReadinessArtifact {
   readonly schemaVersion: 1;
-  readonly kind: "agentic-gaskit.marketplace-readiness-report";
+  readonly kind: "agentrail.marketplace-readiness-report";
   readonly generatedAt: string;
   readonly localProofOk: boolean;
   readonly productionReady: boolean;
@@ -67,7 +67,7 @@ interface StructuredMarketplaceReport {
 
 const MAX_REPORT_BYTES = 64 * 1024;
 const MAX_REPORT_AGE_MS = 30 * 24 * 60 * 60 * 1000;
-const MARKETPLACE_PRODUCTION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json";
+const MARKETPLACE_PRODUCTION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind marketplace-production --out tmp/agentrail/marketplace-production-report-template.json";
 const REQUIRED_SOURCE_PATHS = [
   "packages/marketplace/src/index.ts",
   "packages/marketplace/src/marketplace.test.ts",
@@ -99,7 +99,7 @@ const ARTIFACT_BOUNDARIES = [
 
 const usage = `usage: npm exec tsx -- scripts/check-marketplace-readiness.ts [--json] [--out <path>]
 
-Reports current Agentic GasKit marketplace readiness without contacting production marketplace systems.
+Reports current AgentRail marketplace readiness without contacting production marketplace systems.
 
 Options:
   --json        Print a redacted machine-readable artifact.
@@ -128,7 +128,7 @@ export async function checkMarketplaceReadiness(
 
 export function formatMarketplaceReadinessReport(report: MarketplaceReadinessReport): string {
   const lines = [
-    `Agentic GasKit marketplace readiness ${report.productionReady ? "ready-for-approval" : "blocked"}`,
+    `AgentRail marketplace readiness ${report.productionReady ? "ready-for-approval" : "blocked"}`,
     `localProofOk=${report.localProofOk}`,
     `productionReady=${report.productionReady}`,
   ];
@@ -151,7 +151,7 @@ export function buildMarketplaceReadinessArtifact(
 
   return {
     schemaVersion: 1,
-    kind: "agentic-gaskit.marketplace-readiness-report",
+    kind: "agentrail.marketplace-readiness-report",
     generatedAt: now.toISOString(),
     localProofOk: report.localProofOk,
     productionReady: report.productionReady,
@@ -214,7 +214,7 @@ async function checkLocalMarketplaceProof(
   const verifyFast = scripts["verify:fast"] ?? "";
   const grantCheck = scripts["grant:check"] ?? "";
 
-  if (!build.includes("npm run build -w @iota-gaskit/marketplace")) missing.push("build @iota-gaskit/marketplace");
+  if (!build.includes("npm run build -w @agentrail/marketplace")) missing.push("build @agentrail/marketplace");
   if (!smoke.includes("scripts/smoke-marketplace-read-model.ts")) missing.push("smoke:marketplace-read-model");
   if (!verifyLocal.includes("npm run smoke:marketplace-read-model")) missing.push("verify:local marketplace smoke");
   if (
@@ -319,8 +319,8 @@ function validateStructuredReport(
   if (report.schemaVersion !== 1) {
     return invalidReport("MARKETPLACE_PRODUCTION_REPORT_UNSUPPORTED_SCHEMA", "Production marketplace proof report schema is unsupported.", "configured-report-unsupported-schema", "Provide a structured evidence report with schemaVersion=1.");
   }
-  if (report.kind !== "agentic-gaskit.marketplace-production-proof") {
-    return invalidReport("MARKETPLACE_PRODUCTION_REPORT_KIND_MISMATCH", "Production marketplace proof report has the wrong kind.", "configured-report-kind-mismatch", "Provide an agentic-gaskit.marketplace-production-proof structured report.");
+  if (report.kind !== "agentrail.marketplace-production-proof") {
+    return invalidReport("MARKETPLACE_PRODUCTION_REPORT_KIND_MISMATCH", "Production marketplace proof report has the wrong kind.", "configured-report-kind-mismatch", "Provide an agentrail.marketplace-production-proof structured report.");
   }
   if (report.result !== "passed") {
     return invalidReport("MARKETPLACE_PRODUCTION_REPORT_NOT_PASSED", "Production marketplace proof report did not pass.", "configured-report-not-passed", "Rerun the approved marketplace review after resolving production blockers.");

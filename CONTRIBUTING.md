@@ -1,6 +1,6 @@
-# Contributing to IOTA GasKit
+# Contributing to AgentRail
 
-Thanks for helping improve IOTA GasKit. This project exists to make sponsored IOTA transactions easier and safer for the ecosystem.
+Thanks for helping improve AgentRail. This project exists to make sponsored IOTA transactions easier and safer for the ecosystem.
 
 ## Development principles
 

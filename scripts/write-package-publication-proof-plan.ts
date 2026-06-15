@@ -24,7 +24,7 @@ export interface PackagePublicationProofPlanCheck {
 
 export interface PackagePublicationProofPlan {
   readonly schemaVersion: 1;
-  readonly kind: "agentic-gaskit.package-publication-proof-plan";
+  readonly kind: "agentrail.package-publication-proof-plan";
   readonly generatedAt: string;
   readonly localProofOk: boolean;
   readonly liveReady: boolean;
@@ -159,7 +159,7 @@ export function buildPackagePublicationProofPlan(
 
   return {
     schemaVersion: 1,
-    kind: "agentic-gaskit.package-publication-proof-plan",
+    kind: "agentrail.package-publication-proof-plan",
     generatedAt: now.toISOString(),
     localProofOk: report.localProofOk,
     liveReady: report.liveReady,

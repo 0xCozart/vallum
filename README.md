@@ -1,47 +1,48 @@
-# Agentic GasKit
+# AgentRail
 
 **IOTA-native infrastructure for agent-safe sponsored execution.**
 
-[![Toolkit](https://img.shields.io/badge/IOTA-Agentic%20GasKit-5eead4?style=for-the-badge)](#agentic-gaskit)
+[![Toolkit](https://img.shields.io/badge/IOTA-AgentRail-5eead4?style=for-the-badge)](#agentrail)
 [![External showcase](https://img.shields.io/badge/showcase-ProofDrop-6366f1?style=for-the-badge)](https://proofdrop.xyz)
 [![License](https://img.shields.io/badge/license-Apache--2.0-f8fafc?style=for-the-badge)](LICENSE)
 
-Agentic GasKit is the next direction for IOTA GasKit: the existing
-self-hostable Gas Station toolkit plus agent wallets, signer references,
-transaction manifests, policy controls, receipts, contract workflows, MCP/A2A
-surfaces, and standards-compatible payments.
+AgentRail is the new identity for the agent-safe IOTA execution stack built on
+the original IOTA GasKit sponsorship toolkit: self-hostable Gas Station
+integration plus agent wallets, signer references, transaction manifests,
+policy controls, receipts, contract workflows, MCP/A2A surfaces, and
+standards-compatible payments.
 
 It is designed for teams building IOTA dApps, agent workflows, enterprise
 automation, identity products, notarization systems, RWA/product-passport apps,
 supply-chain tools, games, wallets, and demos where users or agents should not
 need to acquire IOTA tokens before experiencing product value.
 
-> **Open-source scope:** this repository is the self-hostable toolkit. A future managed service may offer hosting, support, SLAs, and enterprise onboarding, but the core project remains independently deployable, inspectable, forkable, licensed open source, and useful without hosted GasKit.
+> **Open-source scope:** this repository is the self-hostable toolkit. A future managed service may offer hosting, support, SLAs, and enterprise onboarding, but the core project remains independently deployable, inspectable, forkable, licensed open source, and useful without hosted AgentRail.
 
 ## Migration status
 
 This fork was created from `https://github.com/0xCozart/iota-gaskit` to move
-the Agentic GasKit direction into the actual GasKit codebase instead of keeping
-the implementation plan in `/home/sacred/code/agents`.
+the AgentRail direction into the actual sponsorship toolkit codebase instead of
+keeping the implementation plan in `/home/sacred/code/agents`.
 
-Canonical GitHub repo: `https://github.com/0xCozart/agentic-gaskit`
+Canonical GitHub repo: `https://github.com/0xCozart/agentrail`
 
-Start with [`docs/agentic-gaskit/execution-entry.md`](docs/agentic-gaskit/execution-entry.md)
+Start with [`docs/agentrail/execution-entry.md`](docs/agentrail/execution-entry.md)
 to begin actual product implementation. Read
-[`docs/agentic-gaskit/migration-plan.md`](docs/agentic-gaskit/migration-plan.md)
+[`docs/agentrail/migration-plan.md`](docs/agentrail/migration-plan.md)
 before changing package names, wallet behavior, MCP tools, gateway policy, or
-remote publishing. Existing GasKit sponsorship behavior remains the foundation;
+remote publishing. Existing sponsorship behavior remains the foundation;
 agent-specific behavior should be added in vertical slices.
 
 Current public execution entry:
-[`docs/agentic-gaskit/execution-entry.md`](docs/agentic-gaskit/execution-entry.md)
-and [`docs/agentic-gaskit/execution-slices.md`](docs/agentic-gaskit/execution-slices.md).
+[`docs/agentrail/execution-entry.md`](docs/agentrail/execution-entry.md)
+and [`docs/agentrail/execution-slices.md`](docs/agentrail/execution-slices.md).
 Private Codex goals, local handoffs, and scratch planning notes are kept out of
 the open-source surface.
 
 ## One-line pitch
 
-Agentic GasKit gives AI agents a safe IOTA execution stack: sponsored gas,
+AgentRail gives AI agents a safe IOTA execution stack: sponsored gas,
 policy controls, signer references, manifests, receipts, contracts, and
 operator visibility.
 
@@ -68,7 +69,7 @@ registry publication, live IOTA/testnet execution, live payment settlement,
 custody, marketplace operation, or public A2A hosting. Those remain separate
 operator gates.
 
-## Why GasKit Exists
+## Why AgentRail Exists
 
 The official IOTA Gas Station component solves the core sponsored-transaction primitive: an application can sponsor gas fees for its users.
 
@@ -90,18 +91,18 @@ operator, and safety layer:
 - manifest, receipt, identity, and contract rails for agent actions;
 - a real IOTA testnet sponsored execute script with documented public transaction digest evidence.
 
-GasKit packages those pieces into a reusable open-source toolkit so every IOTA
+AgentRail packages those pieces into a reusable open-source toolkit so every IOTA
 builder or agent developer does not have to recreate the same safety and
 operations layer.
 
 ## What Is In This Repo Now
 
-This repository currently contains the open-source GasKit toolkit: a tested
+This repository currently contains the open-source AgentRail toolkit: a tested
 policy gateway, TypeScript SDK, local demo flows, integration examples,
 deployment templates, security docs, observability foundations, and documented
 IOTA testnet sponsored-execution evidence.
 
-It also contains the first Agentic GasKit implementation slices:
+It also contains the first AgentRail implementation slices:
 signer-reference-first account primitives, transaction manifests, pure agent
 policy evaluation, a local mock sponsorship gateway, SDK sponsored actions,
 MCP-shaped sponsorship tools, receipt state, local Move escrow/receipt state
@@ -259,7 +260,7 @@ Latest local verification and prior live proof:
   non-networked operator-gate classification to an ignored local JSON artifact.
 - `npm run gas-station:runtime-preflight`: non-networked runtime preflight for
   either the default local Docker Gas Station path or explicit
-  `GASKIT_GAS_STATION_RUNTIME_MODE=managed-upstream`; it does not start
+  `AGENTRAIL_GAS_STATION_RUNTIME_MODE=managed-upstream`; it does not start
   containers, contact IOTA services, or reserve gas.
 - `npm run gas-station:docker-direct -- --dry-run`: local-only sanitized direct
   Docker plan for starting Redis and Gas Station when Compose is unavailable;
@@ -269,21 +270,21 @@ Latest local verification and prior live proof:
 - Latest `npm run execute:testnet-demo`: real sponsored IOTA testnet execute succeeded through the local policy gateway and Gas Station; public digest `5qSeMePKyUWVf6e5AiQCZD4MNLe6dwTrcXzo7cXtN5Zg`. Earlier 2026-06-14 public digest evidence includes `Fc32GFCU95wUGs5iGjewJuMxxXwtRrjzLh3LUGrf85uf`, `FLdnYRUACAKQn8CwugEv1u6gYTh9jBr8rGMk2JZ2adsd`, and `6Fz2r2ARRo6fiQMUL4FkWuwU16ekEmKHvHbhLpF5DU6n`.
 - secret-oriented scan over tracked project files is wired into `npm run secrets:scan` and `npm run verify:local`.
 
-See `docs/testnet-attempts.md`, `docs/agentic-gaskit/product-status.md`,
-`docs/agentic-gaskit/launch-readiness-evidence.md`,
-`docs/agentic-gaskit/testnet-digest-proof.md`,
-`docs/agentic-gaskit/a2a-public-readiness.md`,
-`docs/agentic-gaskit/operator-live-gates.md`,
-`docs/agentic-gaskit/verification-profiles.md`, and
+See `docs/testnet-attempts.md`, `docs/agentrail/product-status.md`,
+`docs/agentrail/launch-readiness-evidence.md`,
+`docs/agentrail/testnet-digest-proof.md`,
+`docs/agentrail/a2a-public-readiness.md`,
+`docs/agentrail/operator-live-gates.md`,
+`docs/agentrail/verification-profiles.md`, and
 `docs/reviewer-walkthrough.md` for exact evidence.
 
 ## External showcase dApps
 
 ### Gasless ProofDrop
 
-[Gasless ProofDrop](https://proofdrop.xyz) is the standalone public M1 showcase dApp for GasKit. It demonstrates a backend-owned sponsorship flow where a visitor claims a "GasKit Launch Proof" badge without holding IOTA tokens. ProofDrop is kept in a [separate repository](https://github.com/0xCozart/ProofDrop) so the GasKit core remains focused on the self-hostable toolkit.
+[Gasless ProofDrop](https://proofdrop.xyz) is the standalone public M1 showcase dApp for AgentRail. It demonstrates a backend-owned sponsorship flow where a visitor claims a "AgentRail Launch Proof" badge without holding IOTA tokens. ProofDrop is kept in a [separate repository](https://github.com/0xCozart/ProofDrop) so the AgentRail core remains focused on the self-hostable toolkit.
 
-Current role: external M1 showcase app for the GasKit integration pattern. The hosted app runs at [proofdrop.xyz](https://proofdrop.xyz), safe mock verification remains available from a clean clone, and live execution has been proven through a configured GasKit gateway plus self-hosted IOTA Gas Station.
+Current role: external M1 showcase app for the AgentRail integration pattern. The hosted app runs at [proofdrop.xyz](https://proofdrop.xyz), safe mock verification remains available from a clean clone, and live execution has been proven through a configured AgentRail gateway plus self-hosted IOTA Gas Station.
 
 ProofDrop live evidence:
 
@@ -294,13 +295,13 @@ ProofDrop live evidence:
 
 ## Target architecture
 
-![IOTA GasKit architecture](docs/assets/iota-gaskit-architecture.svg)
+![AgentRail architecture](docs/assets/agentrail-architecture.svg)
 
 ```mermaid
 flowchart LR
   User[Demo dApp user] --> Demo[Demo dApp]
-  Demo --> SDK[GasKit TypeScript SDK]
-  SDK --> Gateway[GasKit Policy Gateway]
+  Demo --> SDK[AgentRail TypeScript SDK]
+  SDK --> Gateway[AgentRail Policy Gateway]
   Gateway --> Policy[(Policy Config + Usage Store)]
   Gateway --> GasStation[IOTA Gas Station]
   GasStation --> IOTA[IOTA Testnet/Mainnet RPC]
@@ -334,7 +335,7 @@ deploy/
   docker-compose/         # Local deployment templates
   gas-station/            # Safe Gas Station config templates
 docs/
-  agentic-gaskit/          # Public agentic migration plan, roadmap, safety, status, and slices
+  agentrail/          # Public agentic migration plan, roadmap, safety, status, and slices
   architecture.md
   demo-script.md
   deployment.md
@@ -362,7 +363,7 @@ examples/
 
 ## Packages
 
-The monorepo root is marked `private` to prevent accidental publication of the workspace root. The workspace packages are not claimed as published yet. The current package namespace decision keeps the conservative `@iota-gaskit/*` package names for the prerelease line; any `@agentic-gaskit/*` rename is deferred to a separate compatibility slice. See [`docs/agentic-gaskit/package-release-strategy.md`](docs/agentic-gaskit/package-release-strategy.md).
+The monorepo root is marked `private` to prevent accidental publication of the workspace root. The workspace packages are not claimed as published yet. The current package namespace decision keeps the conservative `@agentrail/*` package names for the prerelease line; any `@agentrail/*` rename is deferred to a separate compatibility slice. See [`docs/agentrail/package-release-strategy.md`](docs/agentrail/package-release-strategy.md).
 
 Package release remains roadmap work; today the repo provides package READMEs,
 public prerelease publish metadata (`access=public`, `tag=next`), map-free
@@ -371,7 +372,7 @@ install/import smoke, a local tarball paid MCP consumer smoke, an opt-in
 package-publication readiness gate, and an opt-in `npm publish --dry-run` gate
 for publishable packages.
 
-Package Publication remains a roadmap gate. Do not treat the Agentic GasKit fork
+Package Publication remains a roadmap gate. Do not treat the AgentRail fork
 or any future namespace rename as package-publication-ready until dry-run pack
 and publish checks, local tarball consumer proof, README package names,
 lockfiles, npm account ownership, provenance decisions, and registry
@@ -394,11 +395,11 @@ workspace package.
 Do not run a real `npm publish` without explicit operator approval and registry credentials handled outside the repo.
 
 
-### `@iota-gaskit/shared-types`
+### `@agentrail/shared-types`
 
 Shared TypeScript types for policy decisions, policy reason codes, sponsorship policy, and request context.
 
-### `@iota-gaskit/policy-gateway`
+### `@agentrail/policy-gateway`
 
 Policy decision scaffold for validating app status, credentials, daily limits,
 gas budget, wallet denylist, package allowlist, function allowlist, and
@@ -420,16 +421,16 @@ Current tests cover:
 - mismatched template versions denied
 - legacy raw package/function agent allowlists remaining compatible
 
-### `@iota-gaskit/contracts-metadata`
+### `@agentrail/contracts-metadata`
 
-Versioned contract template metadata registry for Agentic GasKit policy
+Versioned contract template metadata registry for AgentRail policy
 allowlists. The local registry currently covers escrow, receipt, pay-per-call,
 data-license, service-bounty, reputation-receipt, and subscription template
 metadata and pure checks for approved template/version, unknown package, and
 mismatched version decisions. It does not deploy contracts, operate reputation
 scoring, operate recurring billing, or prove live package addresses.
 
-### `@iota-gaskit/sdk`
+### `@agentrail/sdk`
 
 TypeScript client scaffold for dApp backends.
 
@@ -448,7 +449,7 @@ It also includes typed error classes for auth, policy, and malformed-response fa
 
 ## Documentation site
 
-GasKit includes a static docs site generated from the canonical Markdown files in this repo. The generated HTML is a hosting artifact; update the Markdown sources instead of editing `apps/docs-site/dist` directly.
+AgentRail includes a static docs site generated from the canonical Markdown files in this repo. The generated HTML is a hosting artifact; update the Markdown sources instead of editing `apps/docs-site/dist` directly.
 
 Build the site:
 
@@ -470,27 +471,27 @@ Recommended static-host settings:
 
 ## Agent access: start here
 
-AI coding agents should start with the migration plan and repo-local GasKit
+AI coding agents should start with the migration plan and repo-local AgentRail
 skill:
 
 ```txt
-docs/agentic-gaskit/migration-plan.md
+docs/agentrail/migration-plan.md
 ```
 
 ```txt
-skills/iota-gaskit/SKILL.md
+skills/agentrail/SKILL.md
 ```
 
 The skill is the fastest way to find the source map, safe verification ladder,
 and sponsor-gas boundaries for this repo. The migration plan tells agents how
-the Agentic GasKit fork should evolve without duplicating or weakening existing
-GasKit sponsorship safety.
+the AgentRail fork should evolve without duplicating or weakening existing
+AgentRail sponsorship safety.
 
 Recommended agent startup:
 
 1. Read `AGENTS.md`.
-2. Read `docs/agentic-gaskit/migration-plan.md`.
-3. Read `skills/iota-gaskit/SKILL.md`.
+2. Read `docs/agentrail/migration-plan.md`.
+3. Read `skills/agentrail/SKILL.md`.
 4. If `apex.workflow.json` exists, read it. If it does not, do not pretend Apex
    is configured.
 5. For architecture/product context, read `docs/architecture.md`, `docs/overview.md`, and `README.md`.
@@ -546,9 +547,9 @@ rendering the local Gas Station config, running
 `npm run gas-station:runtime-preflight`, and starting Gas Station through
 Compose or the direct Docker fallback. If an operator intentionally uses a
 separately managed Gas Station at `GAS_STATION_URL`, set
-`GASKIT_GAS_STATION_RUNTIME_MODE=managed-upstream` outside committed files and
+`AGENTRAIL_GAS_STATION_RUNTIME_MODE=managed-upstream` outside committed files and
 run the same preflight. In both modes, run `npm run diagnose:gas-station --
---report tmp/gaskit/testnet-upstream-diagnostic.json`, then run
+--report tmp/agentrail/testnet-upstream-diagnostic.json`, then run
 `npm run execute:testnet-demo` only with explicit operator intent. The execute
 command is intentionally opt-in, self-checks those preconditions before
 reserve/execute, and is excluded from CI because it contacts live services and
@@ -556,7 +557,7 @@ consumes sponsored testnet gas.
 
 ## Security posture
 
-GasKit is designed to fail closed and prioritize sponsor-wallet safety.
+AgentRail is designed to fail closed and prioritize sponsor-wallet safety.
 
 Never commit:
 
@@ -584,7 +585,7 @@ The open-source toolkit is designed to remain useful to any IOTA builder who wan
 
 A future managed service may later provide:
 
-- hosted GasKit deployments;
+- hosted AgentRail deployments;
 - managed sponsor-wallet operations;
 - paid support;
 - enterprise onboarding;

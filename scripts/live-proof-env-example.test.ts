@@ -8,10 +8,10 @@ const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const envExample = await readFile(resolve(repoRoot, ".env.example"), "utf8");
 
 const requiredExampleKeys = [
-  "GASKIT_SPONSOR_FUNDING_REPORT",
-  "GASKIT_SPONSOR_FAUCET_REPORT",
-  "GASKIT_TESTNET_UPSTREAM_REPORT",
-  "GASKIT_TESTNET_DIGEST_REPORT",
+  "AGENTRAIL_SPONSOR_FUNDING_REPORT",
+  "AGENTRAIL_SPONSOR_FAUCET_REPORT",
+  "AGENTRAIL_TESTNET_UPSTREAM_REPORT",
+  "AGENTRAIL_TESTNET_DIGEST_REPORT",
   "IOTA_NAMES_GRAPHQL_URL",
   "IOTA_NAMES_NAME",
   "IOTA_NAMES_EXPECTED_ADDRESS",
@@ -47,6 +47,6 @@ test(".env.example keeps live proof report pointers in ignored local artifact pa
 
   assert.ok(reportLines.length >= 10, "expected report pointers for live and production gates");
   for (const line of reportLines) {
-    assert.match(line, /^# [A-Z0-9_]+_REPORT=tmp\/gaskit\/[a-z0-9-]+\.json$/);
+    assert.match(line, /^# [A-Z0-9_]+_REPORT=tmp\/agentrail\/[a-z0-9-]+\.json$/);
   }
 });

@@ -8,7 +8,7 @@ import { writeRoadmapExecutionProofBundle } from "./write-roadmap-execution-proo
 const NOW = new Date("2026-06-15T12:00:00.000Z");
 
 test("roadmap execution proof bundle writes all remaining proof artifacts without running live proofs", async () => {
-  const artifactDir = `tmp/gaskit/roadmap-execution-test-${process.pid}-${Date.now()}`;
+  const artifactDir = `tmp/agentrail/roadmap-execution-test-${process.pid}-${Date.now()}`;
   const outFile = `${artifactDir}/roadmap-execution-proof-bundle.json`;
   try {
     const bundle = await writeRoadmapExecutionProofBundle({
@@ -19,7 +19,7 @@ test("roadmap execution proof bundle writes all remaining proof artifacts withou
     });
     const raw = await readFile(outFile, "utf8");
 
-    assert.equal(bundle.kind, "agentic-gaskit.roadmap-execution-proof-bundle");
+    assert.equal(bundle.kind, "agentrail.roadmap-execution-proof-bundle");
     assert.equal(bundle.status, "blocked");
     assert.equal(bundle.roadmapComplete, false);
     assert.equal(bundle.localProofOk, true);

@@ -1,28 +1,28 @@
-# Product Requirements Document: IOTA GasKit
+# Product Requirements Document: AgentRail
 
 Date captured: 2026-04-26
-Working name: IOTA GasKit
-Short name: IOTA GasKit
+Working name: AgentRail
+Short name: AgentRail
 Grant category: Open-Source Development
 License target: Apache-2.0 for application code; documentation may use permissive documentation terms where appropriate
-Primary repo: `iota-gaskit`
+Primary repo: `agentrail`
 
 Agentic direction note, 2026-06-10:
-This PRD captures the original GasKit sponsorship toolkit. The current fork is
-being redirected toward Agentic GasKit: the existing Gas Station sponsorship
+This PRD captures the original AgentRail sponsorship toolkit. The current fork is
+being redirected toward AgentRail: the existing Gas Station sponsorship
 foundation plus agent accounts, signer references, transaction manifests,
 identity/profile checks, contracts, receipts, MCP/A2A surfaces, and
 standards-compatible payment bridges. Use
-`docs/agentic-gaskit/migration-plan.md` and
-`docs/agentic-gaskit/roadmap.md` for the new implementation direction. Do not
+`docs/agentrail/migration-plan.md` and
+`docs/agentrail/roadmap.md` for the new implementation direction. Do not
 interpret this historical PRD as a claim that agent-specific packages are
 already implemented.
 
 ## 1. Executive Summary
 
-IOTA GasKit is an open-source infrastructure toolkit that helps IOTA dApp builders deploy, configure, monitor, and operate sponsored-transaction gas stations without rebuilding production tooling from scratch.
+AgentRail is an open-source infrastructure toolkit that helps IOTA dApp builders deploy, configure, monitor, and operate sponsored-transaction gas stations without rebuilding production tooling from scratch.
 
-The official IOTA Gas Station component solves the core sponsored-transaction primitive: an application provider can sponsor gas fees for users. GasKit provides the missing developer and operator layer around that primitive:
+The official IOTA Gas Station component solves the core sponsored-transaction primitive: an application provider can sponsor gas fees for users. AgentRail provides the missing developer and operator layer around that primitive:
 
 - repeatable local and cloud-ready deployment templates;
 - sponsorship policy controls and spending limits;
@@ -60,7 +60,7 @@ Reusable open-source Gas Station tooling can reduce integration time, increase p
 
 ## 3. Opportunity and Grant Alignment
 
-IOTA already has the core primitive. GasKit packages the repeatable deployment, policy, usage, SDK, dashboard, monitoring, and documentation layers required for real applications.
+IOTA already has the core primitive. AgentRail packages the repeatable deployment, policy, usage, SDK, dashboard, monitoring, and documentation layers required for real applications.
 
 This produces reusable developer infrastructure for the IOTA ecosystem. It is useful for dApp teams, enterprise teams, hackathon builders, infrastructure operators, wallet/app developers, and identity/notarization/RWA/supply-chain/trade applications.
 
@@ -199,7 +199,7 @@ Developer SDK and examples that show how to integrate sponsored transactions int
 
 Features:
 
-- `createGasKitClient()` helper;
+- `createAgentRailClient()` helper;
 - `reserveGas()` wrapper;
 - `executeSponsoredTransaction()` wrapper;
 - typed request/response models;
@@ -373,20 +373,20 @@ Acceptance criteria:
 Components:
 
 1. IOTA Gas Station component: official underlying gas sponsorship component.
-2. GasKit Policy Gateway: validates app credentials, applies quotas/allowlists, logs decisions, and proxies approved requests.
-3. GasKit Usage Store: stores app config, quotas, request records, and usage counters. MVP may use Postgres or SQLite for app metadata and usage logs. Redis remains where required by Gas Station.
-4. GasKit SDK: TypeScript client for backend and dApp integration.
+2. AgentRail Policy Gateway: validates app credentials, applies quotas/allowlists, logs decisions, and proxies approved requests.
+3. AgentRail Usage Store: stores app config, quotas, request records, and usage counters. MVP may use Postgres or SQLite for app metadata and usage logs. Redis remains where required by Gas Station.
+4. AgentRail SDK: TypeScript client for backend and dApp integration.
 5. Operator Dashboard: web UI for health, usage, app keys, quotas, and logs.
 6. Demo dApp: shows a user-triggered sponsored transaction.
 
 Example request flow:
 
 1. User opens demo dApp.
-2. dApp backend calls GasKit SDK with app credentials.
+2. dApp backend calls AgentRail SDK with app credentials.
 3. Policy Gateway validates app key and policy.
 4. Gateway calls Gas Station reservation endpoint.
 5. User signs transaction using reserved gas objects.
-6. Backend submits signed transaction through GasKit.
+6. Backend submits signed transaction through AgentRail.
 7. Gateway validates execution policy again if needed.
 8. Gateway calls Gas Station execution endpoint.
 9. Gas Station sponsors and executes transaction.
@@ -647,7 +647,7 @@ Mitigation: show future managed hosting/support model while keeping the open-sou
 Target repo structure:
 
 ```txt
-iota-gaskit/
+agentrail/
   apps/
     dashboard/
     demo-dapp/
@@ -695,7 +695,7 @@ Contribution model:
 
 One-line pitch:
 
-IOTA GasKit is an open-source toolkit that helps IOTA dApp builders deploy, secure, monitor, and integrate gas-sponsored transactions using the IOTA Gas Station component.
+AgentRail is an open-source toolkit that helps IOTA dApp builders deploy, secure, monitor, and integrate gas-sponsored transactions using the IOTA Gas Station component.
 
 Short description:
 
@@ -722,14 +722,14 @@ The project creates ecosystem-wide public goods. The grant does not fund a close
 
 Final demo flow:
 
-1. Operator clones `iota-gaskit`.
+1. Operator clones `agentrail`.
 2. Operator runs `docker compose up`.
 3. Operator opens dashboard and sees Gas Station health.
 4. Operator creates or configures a demo app key.
 5. Operator sets policy: allow one demo package/function and a daily quota.
 6. User opens demo dApp.
 7. User triggers a sponsored transaction.
-8. GasKit policy gateway approves the request.
+8. AgentRail policy gateway approves the request.
 9. Gas Station executes the sponsored transaction.
 10. Dashboard updates with transaction status, app usage, wallet usage, and gas/quota information.
 11. Operator changes policy to block the function.
@@ -815,7 +815,7 @@ Avoid this framing:
 
 ## 23. Final Product Thesis
 
-IOTA Gas Station solves the core sponsored-transaction primitive. IOTA GasKit solves the builder adoption layer around it.
+IOTA Gas Station solves the core sponsored-transaction primitive. AgentRail solves the builder adoption layer around it.
 
 If IOTA wants more real-world applications, users should not have to understand or acquire gas before interacting with useful products. A reusable open-source gas sponsorship toolkit can help make that experience normal across the ecosystem.
 

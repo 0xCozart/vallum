@@ -65,7 +65,7 @@ export interface CheckLiveProofStatusOptions {
 
 export interface LiveProofStatusArtifact {
   readonly schemaVersion: 1;
-  readonly kind: "agentic-gaskit.live-proof-status-report";
+  readonly kind: "agentrail.live-proof-status-report";
   readonly generatedAt: string;
   readonly ok: boolean;
   readonly readyCheckIds: readonly string[];
@@ -105,19 +105,19 @@ const VC_TRUST_POLICY_STATUS_TYPES = new Set([
   "StatusList2021Entry",
 ]);
 const LIVE_TESTNET_ENV_FILE = ".env";
-const SPONSOR_FUNDING_REPORT_ENV = "GASKIT_SPONSOR_FUNDING_REPORT";
-const SPONSOR_FAUCET_REPORT_ENV = "GASKIT_SPONSOR_FAUCET_REPORT";
-const DEFAULT_SPONSOR_FAUCET_REPORT = "tmp/gaskit/sponsor-faucet-request.json";
-const TESTNET_UPSTREAM_REPORT_ENV = "GASKIT_TESTNET_UPSTREAM_REPORT";
-const TESTNET_DIGEST_REPORT_ENV = "GASKIT_TESTNET_DIGEST_REPORT";
+const SPONSOR_FUNDING_REPORT_ENV = "AGENTRAIL_SPONSOR_FUNDING_REPORT";
+const SPONSOR_FAUCET_REPORT_ENV = "AGENTRAIL_SPONSOR_FAUCET_REPORT";
+const DEFAULT_SPONSOR_FAUCET_REPORT = "tmp/agentrail/sponsor-faucet-request.json";
+const TESTNET_UPSTREAM_REPORT_ENV = "AGENTRAIL_TESTNET_UPSTREAM_REPORT";
+const TESTNET_DIGEST_REPORT_ENV = "AGENTRAIL_TESTNET_DIGEST_REPORT";
 const IOTA_NAMES_LIVE_REPORT_ENV = "IOTA_NAMES_LIVE_REPORT";
 const IOTA_IDENTITY_LIVE_REPORT_ENV = "IOTA_IDENTITY_LIVE_REPORT";
-const TESTNET_UPSTREAM_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json";
-const TESTNET_DIGEST_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind testnet-digest --out tmp/gaskit/testnet-digest-report-template.json";
-const IDENTITY_PROOF_BUNDLE_COMMAND = "npm run live:write-identity-proof-bundle -- --out tmp/gaskit/identity-proof-bundle.json";
-const IOTA_NAMES_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind iota-names-live --out tmp/gaskit/iota-names-live-report-template.json";
-const IOTA_IDENTITY_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind iota-identity-live --out tmp/gaskit/iota-identity-live-report-template.json";
-const VC_VALIDATION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind vc-validation-live --out tmp/gaskit/vc-validation-live-report-template.json";
+const TESTNET_UPSTREAM_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind testnet-upstream --out tmp/agentrail/testnet-upstream-report-template.json";
+const TESTNET_DIGEST_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind testnet-digest --out tmp/agentrail/testnet-digest-report-template.json";
+const IDENTITY_PROOF_BUNDLE_COMMAND = "npm run live:write-identity-proof-bundle -- --out tmp/agentrail/identity-proof-bundle.json";
+const IOTA_NAMES_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind iota-names-live --out tmp/agentrail/iota-names-live-report-template.json";
+const IOTA_IDENTITY_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind iota-identity-live --out tmp/agentrail/iota-identity-live-report-template.json";
+const VC_VALIDATION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind vc-validation-live --out tmp/agentrail/vc-validation-live-report-template.json";
 const ARTIFACT_BOUNDARIES = [
   "This report is non-networked and does not run live proof commands.",
   "Ready live-proof checks are configuration/report readiness only unless the check message says a live command has already passed.",
@@ -166,7 +166,7 @@ export function buildLiveProofStatusArtifact(
 ): LiveProofStatusArtifact {
   return {
     schemaVersion: 1,
-    kind: "agentic-gaskit.live-proof-status-report",
+    kind: "agentrail.live-proof-status-report",
     generatedAt: now.toISOString(),
     ok: report.ok,
     readyCheckIds: report.checks
@@ -232,7 +232,7 @@ async function checkGasStationRuntimeStatus(
     message: report.message,
     evidence: `blocked=${report.code}`,
     next: report.code === "GAS_STATION_MANAGED_UPSTREAM_CONFIG_MISSING"
-      ? "Set GAS_STATION_URL outside committed files or switch GASKIT_GAS_STATION_RUNTIME_MODE back to local-docker, then rerun npm run gas-station:runtime-preflight."
+      ? "Set GAS_STATION_URL outside committed files or switch AGENTRAIL_GAS_STATION_RUNTIME_MODE back to local-docker, then rerun npm run gas-station:runtime-preflight."
       : "Run npm run gas-station:render-config, enable the Docker daemon and either Compose or direct Docker fallback for this workspace, or explicitly choose managed-upstream mode with a configured Gas Station URL, then rerun npm run gas-station:runtime-preflight.",
   };
 }
@@ -447,7 +447,7 @@ async function checkTestnetDigestStatus(
 }
 
 export function formatLiveProofStatusReport(report: LiveProofStatusReport): string {
-  const lines = [`Agentic GasKit live proof status ${report.ok ? "ready" : "blocked"}`];
+  const lines = [`AgentRail live proof status ${report.ok ? "ready" : "blocked"}`];
   for (const check of report.checks) {
     lines.push(`${check.status}: ${check.id}: code=${check.code}`);
     lines.push(`message=${check.message}`);

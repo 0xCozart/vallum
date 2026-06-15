@@ -26,7 +26,7 @@ test("current package scripts expose fast verification without weakening the ful
   assert.equal(report.profilesOk, true);
   assert.equal(report.fastProfileOk, true);
   assert.equal(report.fullGatePreserved, true);
-  assert.equal(artifact.kind, "agentic-gaskit.verification-profile-report");
+  assert.equal(artifact.kind, "agentrail.verification-profile-report");
   assert.equal(artifact.blockerCodes.length, 0);
   assert.deepEqual(artifact.provenLocalCheckIds, [
     "verify-fast-profile",
@@ -56,9 +56,9 @@ test("fast verification remains bounded and excludes heavy or live proof command
 });
 
 test("verification profile artifact writer uses restrictive local file permissions", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-verification-profiles-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-verification-profiles-"));
   try {
-    const outFile = "tmp/gaskit/verification-profiles.json";
+    const outFile = "tmp/agentrail/verification-profiles.json";
     const artifact = await writeVerificationProfileArtifact({
       cwd,
       scripts: packageJson.scripts,
@@ -68,8 +68,8 @@ test("verification profile artifact writer uses restrictive local file permissio
     const written = await readFile(join(cwd, outFile), "utf8");
     const mode = (await stat(join(cwd, outFile))).mode & 0o777;
 
-    assert.equal(artifact.kind, "agentic-gaskit.verification-profile-report");
-    assert.equal(JSON.parse(written).kind, "agentic-gaskit.verification-profile-report");
+    assert.equal(artifact.kind, "agentrail.verification-profile-report");
+    assert.equal(JSON.parse(written).kind, "agentrail.verification-profile-report");
     assert.equal(mode, 0o600);
   } finally {
     await rm(cwd, { recursive: true, force: true });

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { validAgentProfileFixture } from "@iota-gaskit/registry";
+import { validAgentProfileFixture } from "@agentrail/registry";
 
 import { evaluateProfileCapabilityPolicy, evaluateResolvedProfileCapabilityPolicy } from "./index.js";
 

@@ -47,7 +47,7 @@ test("testnet digest proof fails closed when docs do not contain the digest", as
 });
 
 test("testnet digest proof fails closed when required docs are missing", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-testnet-digest-missing-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-testnet-digest-missing-"));
   try {
     const report = await checkTestnetDigestProof({ cwd });
     const formatted = formatTestnetDigestProofReport(report);
@@ -136,7 +136,7 @@ test("testnet digest live proof can be persisted as a validated local report", a
     });
     const evidence = buildTestnetDigestEvidenceReport(report, new Date("2026-06-14T00:00:00.000Z"));
     const raw = formatTestnetDigestEvidenceReport(evidence);
-    const outFile = join(cwd, "tmp/gaskit/testnet-digest-proof.json");
+    const outFile = join(cwd, "tmp/agentrail/testnet-digest-proof.json");
 
     await mkdir(dirname(outFile), { recursive: true });
     await writeFile(outFile, `${raw}\n`, { mode: 0o600 });
@@ -146,7 +146,7 @@ test("testnet digest live proof can be persisted as a validated local report", a
     const mode = (await stat(outFile)).mode & 0o777;
 
     assert.equal(mode, 0o600);
-    assert.equal(loaded.kind, "agentic-gaskit.testnet-digest-proof-report");
+    assert.equal(loaded.kind, "agentrail.testnet-digest-proof-report");
     assert.equal(validation.ok, true);
     assert.equal(validation.code, "TESTNET_SPONSORED_EXECUTE_DIGEST_VERIFIED");
     assert.doesNotMatch(await readFile(outFile, "utf8"), /secret|private|mnemonic|iotaprivkey/i);
@@ -245,14 +245,14 @@ test("tracked testnet evidence redaction audit catches unsafe execute fields", (
   const unsafe = [
     "ephemeralUserAddress=0x80b3fadd46ab8aac6563a1e733deda1c63ca5e54c667662ab63cc8f4e3253b5b",
     "reservationId=13",
-    "gasKitTransactionId=gaskit_5dc3c921-8b51-4f2c-ad54-795e0503b726",
+    "agentRailTransactionId=agentrail_5dc3c921-8b51-4f2c-ad54-795e0503b726",
     "sponsorAddress=0xd046a4fb78f6ad84a08232db7f4f23164f6e406063ac021f8c86d0cf29b9b868",
   ].join("\n");
 
   assert.deepEqual(unsafeTrackedTestnetEvidenceLines(unsafe), [
     "1:ephemeralUserAddress=0x80b3fadd46ab8aac6563a1e733deda1c63ca5e54c667662ab63cc8f4e3253b5b",
     "2:reservationId=13",
-    "3:gasKitTransactionId=gaskit_5dc3c921-8b51-4f2c-ad54-795e0503b726",
+    "3:agentRailTransactionId=agentrail_5dc3c921-8b51-4f2c-ad54-795e0503b726",
     "4:sponsorAddress=0xd046a4fb78f6ad84a08232db7f4f23164f6e406063ac021f8c86d0cf29b9b868",
   ]);
 });
@@ -264,10 +264,10 @@ test("tracked testnet attempts evidence keeps addresses and execution ids redact
 });
 
 async function writeDigestDocs(digest: string): Promise<string> {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-testnet-digest-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-testnet-digest-"));
   for (const path of [
     "docs/testnet-attempts.md",
-    "docs/agentic-gaskit/testnet-digest-proof.md",
+    "docs/agentrail/testnet-digest-proof.md",
     "docs/reviewer-walkthrough.md",
   ]) {
     const file = join(cwd, path);
@@ -283,7 +283,7 @@ function unsafeTrackedTestnetEvidenceLines(content: string): string[] {
     /^ephemeralUserAddress=0x[0-9a-fA-F]{64}$/,
     /^sponsorAddress=0x[0-9a-fA-F]{64}$/,
     /^reservationId=(?!<redacted-id>$)[^\s.][^\s]*$/,
-    /^gasKitTransactionId=gaskit_[A-Za-z0-9_-]+$/,
+    /^agentRailTransactionId=agentrail_[A-Za-z0-9_-]+$/,
   ];
 
   for (const [index, line] of content.split(/\r?\n/).entries()) {

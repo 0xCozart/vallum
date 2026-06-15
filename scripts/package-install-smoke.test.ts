@@ -13,8 +13,8 @@ import {
 
 test("package install smoke packs explicit public workspaces", () => {
   assert.deepEqual(
-    buildNpmPackArgs({ dir: "packages/sdk", name: "@iota-gaskit/sdk" }, "/tmp/packs"),
-    ["pack", "--json", "--pack-destination", "/tmp/packs", "-w", "@iota-gaskit/sdk"],
+    buildNpmPackArgs({ dir: "packages/sdk", name: "@agentrail/sdk" }, "/tmp/packs"),
+    ["pack", "--json", "--pack-destination", "/tmp/packs", "-w", "@agentrail/sdk"],
   );
 });
 
@@ -30,8 +30,8 @@ test("package install smoke installs local tarballs without lifecycle scripts or
 
 test("package install smoke consumer package pins dependencies to local tarballs", () => {
   const tarballs: PackageTarball[] = [
-    { name: "@iota-gaskit/accounts", tarballPath: "/tmp/packs/iota-gaskit-accounts.tgz" },
-    { name: "@iota-gaskit/sdk", tarballPath: "/tmp/packs/iota-gaskit-sdk.tgz" },
+    { name: "@agentrail/accounts", tarballPath: "/tmp/packs/agentrail-accounts.tgz" },
+    { name: "@agentrail/sdk", tarballPath: "/tmp/packs/agentrail-sdk.tgz" },
   ];
 
   const packageJson = JSON.parse(buildConsumerPackageJson(tarballs)) as {
@@ -40,14 +40,14 @@ test("package install smoke consumer package pins dependencies to local tarballs
   };
 
   assert.equal(packageJson.private, true);
-  assert.equal(packageJson.dependencies?.["@iota-gaskit/accounts"], "file:/tmp/packs/iota-gaskit-accounts.tgz");
-  assert.equal(packageJson.dependencies?.["@iota-gaskit/sdk"], "file:/tmp/packs/iota-gaskit-sdk.tgz");
+  assert.equal(packageJson.dependencies?.["@agentrail/accounts"], "file:/tmp/packs/agentrail-accounts.tgz");
+  assert.equal(packageJson.dependencies?.["@agentrail/sdk"], "file:/tmp/packs/agentrail-sdk.tgz");
 });
 
 test("package install smoke imports package root entrypoints without secret material", () => {
   const source = buildConsumerSmokeSource([
-    { dir: "packages/accounts", name: "@iota-gaskit/accounts" },
-    { dir: "packages/sdk", name: "@iota-gaskit/sdk" },
+    { dir: "packages/accounts", name: "@agentrail/accounts" },
+    { dir: "packages/sdk", name: "@agentrail/sdk" },
   ]);
 
   assert.match(source, /await import\(packageName\)/);
@@ -58,10 +58,10 @@ test("package install smoke imports package root entrypoints without secret mate
 test("paid MCP consumer smoke uses package root entrypoints only", () => {
   const source = buildPaidMcpConsumerSmokeSource();
 
-  assert.match(source, /from "@iota-gaskit\/manifest"/);
-  assert.match(source, /from "@iota-gaskit\/policy-gateway"/);
-  assert.match(source, /from "@iota-gaskit\/sdk"/);
-  assert.doesNotMatch(source, /@iota-gaskit\/[^"]+\/(src|dist|contracts|server|schema|routes)/);
+  assert.match(source, /from "@agentrail\/manifest"/);
+  assert.match(source, /from "@agentrail\/policy-gateway"/);
+  assert.match(source, /from "@agentrail\/sdk"/);
+  assert.doesNotMatch(source, /@agentrail\/[^"]+\/(src|dist|contracts|server|schema|routes)/);
   assert.doesNotMatch(source, /\.\.\/|\.\/packages\/|\/src\//);
 });
 

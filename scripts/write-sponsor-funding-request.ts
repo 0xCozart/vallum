@@ -29,7 +29,7 @@ export interface SponsorFundingFaucetAttemptContext {
 
 export interface SponsorFundingRequest {
   readonly schemaVersion: 1;
-  readonly kind: "agentic-gaskit.sponsor-funding-request";
+  readonly kind: "agentrail.sponsor-funding-request";
   readonly result: "pending-funding";
   readonly generatedAt: string;
   readonly network: "iota-testnet";
@@ -69,15 +69,15 @@ type MutableCliOptions = {
 };
 
 const DEFAULT_MIN_BALANCE_MIST = "50000000";
-const DEFAULT_OUT_FILE = "tmp/gaskit/sponsor-funding-request.json";
+const DEFAULT_OUT_FILE = "tmp/agentrail/sponsor-funding-request.json";
 
-const FAUCET_REPORT_ENV = "GASKIT_SPONSOR_FAUCET_REPORT";
+const FAUCET_REPORT_ENV = "AGENTRAIL_SPONSOR_FAUCET_REPORT";
 
 const usage = `usage: npm exec tsx -- scripts/write-sponsor-funding-request.ts [--out <path>] [--env-file <path>] [--faucet-report <path>] [--min-balance-mist <mist>]
 
 Writes an ignored local JSON funding request containing the public sponsor address.
 The command does not print the full address, contact live services, reserve gas, sign transactions, or execute transactions.
-If --faucet-report or GASKIT_SPONSOR_FAUCET_REPORT is set, only bounded sanitized faucet attempt metadata is copied into the ignored artifact.`;
+If --faucet-report or AGENTRAIL_SPONSOR_FAUCET_REPORT is set, only bounded sanitized faucet attempt metadata is copied into the ignored artifact.`;
 
 export async function writeSponsorFundingRequest(
   options: WriteSponsorFundingRequestOptions = {},
@@ -109,7 +109,7 @@ export async function buildSponsorFundingRequest(
 
   return {
     schemaVersion: 1,
-    kind: "agentic-gaskit.sponsor-funding-request",
+    kind: "agentrail.sponsor-funding-request",
     result: "pending-funding",
     generatedAt,
     network: "iota-testnet",
@@ -129,8 +129,8 @@ export async function buildSponsorFundingRequest(
       "After funding, rerun the read-only funding diagnostic before retrying the upstream diagnostic.",
     ],
     nextCommands: [
-      "npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json",
-      "npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json",
+      "npm run sponsor:check-funding -- --report tmp/agentrail/sponsor-funding-report.json",
+      "npm run diagnose:gas-station -- --report tmp/agentrail/testnet-upstream-diagnostic.json",
       "npm run proof:live-status",
     ],
   };
@@ -142,7 +142,7 @@ export function formatSponsorFundingRequest(request: SponsorFundingRequest): str
 
 export function formatSponsorFundingRequestSummary(request: SponsorFundingRequest): string {
   return [
-    "Agentic GasKit sponsor funding request",
+    "AgentRail sponsor funding request",
     `written=true`,
     `kind=${request.kind}`,
     `result=${request.result}`,
@@ -154,7 +154,7 @@ export function formatSponsorFundingRequestSummary(request: SponsorFundingReques
     `signsTransactions=${request.signsTransactions}`,
     `minimumBalanceMist=${request.minimumBalanceMist}`,
     `faucetContext=${request.faucetAttemptContext.code ?? "none"}`,
-    "next=Fund the public sponsor address from the ignored artifact, then run npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json.",
+    "next=Fund the public sponsor address from the ignored artifact, then run npm run sponsor:check-funding -- --report tmp/agentrail/sponsor-funding-report.json.",
   ].join("\n");
 }
 

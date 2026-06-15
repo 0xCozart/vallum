@@ -2,9 +2,9 @@ import { once } from "node:events";
 import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
 
-import { AGENT_TRANSACTION_MANIFEST_VERSION, type AgentTransactionManifest } from "@iota-gaskit/manifest";
-import { createAgentMockGatewayServer, type AgentActionPolicy, type AgentGatewayEvent } from "@iota-gaskit/policy-gateway";
-import { fulfillServiceBounty, type FulfillServiceBountyResult } from "@iota-gaskit/sdk";
+import { AGENT_TRANSACTION_MANIFEST_VERSION, type AgentTransactionManifest } from "@agentrail/manifest";
+import { createAgentMockGatewayServer, type AgentActionPolicy, type AgentGatewayEvent } from "@agentrail/policy-gateway";
+import { fulfillServiceBounty, type FulfillServiceBountyResult } from "@agentrail/sdk";
 
 const now = new Date("2026-06-10T12:00:00.000Z");
 const requesterAgentId = "agent:bounty-requester";

@@ -1,4 +1,4 @@
-/// Minimal Agentic GasKit escrow state contract.
+/// Minimal AgentRail escrow state contract.
 ///
 /// This MVP records verifier-gated escrow status. It does not custody funds.
 module escrow_v1::escrow {

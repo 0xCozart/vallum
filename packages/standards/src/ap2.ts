@@ -4,18 +4,18 @@ import {
   type AP2ManifestMappingContext,
   type AP2MandateBundle,
   type AgentTransactionManifest,
-} from "@iota-gaskit/manifest";
+} from "@agentrail/manifest";
 import {
   evaluateAgentActionPolicy,
   type AgentActionPolicy,
   type AgentPolicyDecision,
-} from "@iota-gaskit/policy-gateway";
+} from "@agentrail/policy-gateway";
 import {
   createAP2MandateReceiptState,
   redactAP2MandateMetadata,
   type AP2MandateReceiptState,
   type AP2ReceiptBundle,
-} from "@iota-gaskit/receipts";
+} from "@agentrail/receipts";
 
 export type { AP2ManifestMappingContext, AP2MandateBundle, AP2ReceiptBundle };
 

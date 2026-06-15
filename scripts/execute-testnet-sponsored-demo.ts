@@ -10,7 +10,7 @@ import {
   checkTestnetReadiness,
   loadEnvFile,
 } from "../apps/policy-gateway-service/src/readiness.js";
-import { createGasKitClient } from "../packages/sdk/src/index.js";
+import { createAgentRailClient } from "../packages/sdk/src/index.js";
 import {
   checkGasStationRuntimePreflight,
   type GasStationRuntimeCommandRunner,
@@ -37,14 +37,14 @@ export interface SponsoredExecuteReportInput {
   readonly demoTarget: string;
   readonly ephemeralUserAddress: string;
   readonly reservationId: string;
-  readonly gasKitTransactionId: string;
+  readonly agentRailTransactionId: string;
   readonly sponsorAddress: string;
   readonly transactionDigest: string;
 }
 
 export interface SponsoredExecuteReport {
   readonly schemaVersion: 1;
-  readonly kind: "agentic-gaskit.sponsored-testnet-execute-report";
+  readonly kind: "agentrail.sponsored-testnet-execute-report";
   readonly result: "passed";
   readonly observedAt: string;
   readonly network: "iota-testnet";
@@ -57,7 +57,7 @@ export interface SponsoredExecuteReport {
   readonly sponsorAddressRedacted: string;
   readonly ephemeralUserAddressRedacted: string;
   readonly reservationIdRedacted: string;
-  readonly gasKitTransactionIdRedacted: string;
+  readonly agentRailTransactionIdRedacted: string;
   readonly transactionDigest: string;
   readonly next: string;
 }
@@ -140,8 +140,8 @@ function readEnv(env: Record<string, string | undefined>, key: string): string |
 }
 
 function gatewayBaseUrl(env: Record<string, string>): string {
-  const host = env.GASKIT_GATEWAY_HOST || "127.0.0.1";
-  const port = env.GASKIT_GATEWAY_PORT || "8787";
+  const host = env.AGENTRAIL_GATEWAY_HOST || "127.0.0.1";
+  const port = env.AGENTRAIL_GATEWAY_PORT || "8787";
   return `http://${host}:${port}`;
 }
 
@@ -233,7 +233,7 @@ export async function checkSponsoredExecutePrerequisites(
       : "Start the local policy gateway with the operator-owned env, then rerun npm run execute:testnet-demo.",
   });
 
-  const reportPath = readEnv(env, "GASKIT_TESTNET_UPSTREAM_REPORT");
+  const reportPath = readEnv(env, "AGENTRAIL_TESTNET_UPSTREAM_REPORT");
   if (!reportPath) {
     checks.push({
       id: "testnet-upstream",
@@ -275,7 +275,7 @@ export async function checkSponsoredExecutePrerequisites(
 export function formatSponsoredExecutePrerequisiteReport(
   report: SponsoredExecutePrerequisiteReport,
 ): string {
-  const lines = [`Agentic GasKit sponsored testnet execute prerequisites ${report.ready ? "ready" : "blocked"}`];
+  const lines = [`AgentRail sponsored testnet execute prerequisites ${report.ready ? "ready" : "blocked"}`];
   for (const check of report.checks) {
     lines.push(`${check.ok ? "ok" : "blocked"}: ${check.id}: code=${check.code}`);
     lines.push(`message=${check.message}`);
@@ -297,7 +297,7 @@ export function buildSponsoredExecuteReport(
 ): SponsoredExecuteReport {
   return {
     schemaVersion: 1,
-    kind: "agentic-gaskit.sponsored-testnet-execute-report",
+    kind: "agentrail.sponsored-testnet-execute-report",
     result: "passed",
     observedAt: now.toISOString(),
     network: "iota-testnet",
@@ -310,7 +310,7 @@ export function buildSponsoredExecuteReport(
     sponsorAddressRedacted: redactAddress(input.sponsorAddress),
     ephemeralUserAddressRedacted: redactAddress(input.ephemeralUserAddress),
     reservationIdRedacted: redactOpaqueValue(input.reservationId),
-    gasKitTransactionIdRedacted: redactOpaqueValue(input.gasKitTransactionId),
+    agentRailTransactionIdRedacted: redactOpaqueValue(input.agentRailTransactionId),
     transactionDigest: input.transactionDigest,
     next: "Document this public digest in tracked testnet evidence, then run npm run proof:testnet-digest:live -- --digest <digest> --report <ignored-json-path>.",
   };
@@ -348,19 +348,19 @@ async function main(): Promise<number> {
     }
 
     const rpcUrl = requireEnv(env, "IOTA_RPC_URL");
-    const appKey = requireEnv(env, "GASKIT_DEMO_APP_KEY");
+    const appKey = requireEnv(env, "AGENTRAIL_DEMO_APP_KEY");
     const baseUrl = gatewayBaseUrl(env);
     const iota = new IotaClient({ url: rpcUrl });
     const user = Ed25519Keypair.generate();
     const userAddress = user.toIotaAddress();
-    const gasKit = createGasKitClient({ baseUrl, apiKey: appKey });
+    const agentRail = createAgentRailClient({ baseUrl, apiKey: appKey });
 
     console.log("gatewayConfigured=true");
     console.log("iotaRpcConfigured=true");
     console.log(`demoTarget=${DEMO_PACKAGE_ID}::${DEMO_MODULE}::${DEMO_FUNCTION}`);
     console.log(formatSponsoredExecuteField("ephemeralUserAddress", userAddress));
 
-    const reservation = await gasKit.reserveGas({
+    const reservation = await agentRail.reserveGas({
       gasBudget: GAS_BUDGET,
       reserveDurationSecs: 120,
       walletAddress: userAddress,
@@ -375,7 +375,7 @@ async function main(): Promise<number> {
 
     console.log(`reservedGas=true`);
     console.log(formatSponsoredExecuteField("reservationId", reservation.reservationId));
-    console.log(formatSponsoredExecuteField("gasKitTransactionId", reservation.gasKitTransactionId));
+    console.log(formatSponsoredExecuteField("agentRailTransactionId", reservation.agentRailTransactionId));
     console.log(formatSponsoredExecuteField("sponsorAddress", reservation.sponsorAddress));
 
     const tx = new Transaction();
@@ -387,9 +387,9 @@ async function main(): Promise<number> {
 
     const transactionBytes = await tx.build({ client: iota });
     const { signature } = await user.signTransaction(transactionBytes);
-    const executed = await gasKit.executeSponsoredTransaction({
+    const executed = await agentRail.executeSponsoredTransaction({
       reservationId: reservation.reservationId,
-      gasKitTransactionId: reservation.gasKitTransactionId,
+      agentRailTransactionId: reservation.agentRailTransactionId,
       transactionBytes: toBase64(transactionBytes),
       userSignature: signature,
     });
@@ -402,7 +402,7 @@ async function main(): Promise<number> {
         demoTarget: `${DEMO_PACKAGE_ID}::${DEMO_MODULE}::${DEMO_FUNCTION}`,
         ephemeralUserAddress: userAddress,
         reservationId: reservation.reservationId,
-        gasKitTransactionId: reservation.gasKitTransactionId,
+        agentRailTransactionId: reservation.agentRailTransactionId,
         sponsorAddress: reservation.sponsorAddress,
         transactionDigest: executed.digest,
       }));

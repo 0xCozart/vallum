@@ -140,7 +140,7 @@ export function sponsorAddressFromGasStationKeypair(value: string): string {
 
 export function formatSponsorFundingReport(report: SponsorFundingReport): string {
   const lines = [
-    "Agentic GasKit sponsor funding status",
+    "AgentRail sponsor funding status",
     `ready=${report.ready}`,
     `code=${report.code}`,
     `message=${report.message}`,
@@ -157,8 +157,8 @@ export function formatSponsorFundingReport(report: SponsorFundingReport): string
   if (report.maxSampledCoinBalanceMist !== undefined) lines.push(`maxSampledCoinBalanceMist=${report.maxSampledCoinBalanceMist}`);
   if (report.hasNextCoinPage !== undefined) lines.push(`hasNextCoinPage=${report.hasNextCoinPage}`);
   lines.push(report.ready
-    ? "next=npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json"
-    : "next=Fund or consolidate the configured sponsor wallet on testnet, then rerun npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json.");
+    ? "next=npm run diagnose:gas-station -- --report tmp/agentrail/testnet-upstream-diagnostic.json"
+    : "next=Fund or consolidate the configured sponsor wallet on testnet, then rerun npm run sponsor:check-funding -- --report tmp/agentrail/sponsor-funding-report.json.");
   return lines.join("\n");
 }
 

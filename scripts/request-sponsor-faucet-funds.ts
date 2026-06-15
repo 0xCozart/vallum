@@ -26,7 +26,7 @@ export type SponsorFaucetErrorCode =
 
 export interface SponsorFaucetRequestReport {
   readonly schemaVersion: 1;
-  readonly kind: "agentic-gaskit.sponsor-faucet-request";
+  readonly kind: "agentrail.sponsor-faucet-request";
   readonly result: "blocked" | "passed" | "failed";
   readonly code: SponsorFaucetRequestCode;
   readonly observedAt: string;
@@ -85,9 +85,9 @@ type MutableCliOptions = {
   -readonly [Key in keyof CliOptions]: CliOptions[Key];
 };
 
-const DEFAULT_OUT_FILE = "tmp/gaskit/sponsor-faucet-request.json";
-const CHECK_SPONSOR_FUNDING_COMMAND = "npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json";
-const DIAGNOSE_TESTNET_UPSTREAM_COMMAND = "npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json";
+const DEFAULT_OUT_FILE = "tmp/agentrail/sponsor-faucet-request.json";
+const CHECK_SPONSOR_FUNDING_COMMAND = "npm run sponsor:check-funding -- --report tmp/agentrail/sponsor-funding-report.json";
+const DIAGNOSE_TESTNET_UPSTREAM_COMMAND = "npm run diagnose:gas-station -- --report tmp/agentrail/testnet-upstream-diagnostic.json";
 const PROOF_LIVE_STATUS_COMMAND = "npm run proof:live-status";
 const APPROVED_FAUCET_REQUEST_COMMAND = "npm run sponsor:request-faucet-funds -- --execute --out <ignored-json-path>";
 
@@ -109,7 +109,7 @@ export async function requestSponsorFaucetFunds(
 
   const base = {
     schemaVersion: 1 as const,
-    kind: "agentic-gaskit.sponsor-faucet-request" as const,
+    kind: "agentrail.sponsor-faucet-request" as const,
     observedAt,
     network: "iota-testnet" as const,
     approvalRequired: true,
@@ -221,7 +221,7 @@ export function validateSponsorFaucetRequestReport(
   if (!isRecord(report)) return invalidSponsorFaucetReport("Sponsor faucet report must be a JSON object.");
   const unknown = Object.keys(report).filter((key) => !SPONSOR_FAUCET_REPORT_KEYS.has(key));
   if (unknown.length > 0) return invalidSponsorFaucetReport("Sponsor faucet report contains unsupported fields.");
-  if (report.schemaVersion !== 1 || report.kind !== "agentic-gaskit.sponsor-faucet-request") {
+  if (report.schemaVersion !== 1 || report.kind !== "agentrail.sponsor-faucet-request") {
     return invalidSponsorFaucetReport("Sponsor faucet report schema or kind is unsupported.");
   }
   const observedAt = Date.parse(report.observedAt);
@@ -429,7 +429,7 @@ export async function requestIotaFromDefaultFaucet(input: {
 
 export function formatSponsorFaucetRequestReport(report: SponsorFaucetRequestReport): string {
   return [
-    "Agentic GasKit sponsor faucet request",
+    "AgentRail sponsor faucet request",
     `result=${report.result}`,
     `code=${report.code}`,
     `message=${report.message}`,
@@ -529,9 +529,9 @@ function blockedFaucetNextCommands(): readonly string[] {
 
 function failedFaucetNextCommands(faucetReportPath: string): readonly string[] {
   return [
-    `npm run sponsor:write-funding-request -- --faucet-report ${faucetReportPath} --out tmp/gaskit/sponsor-funding-request.json`,
+    `npm run sponsor:write-funding-request -- --faucet-report ${faucetReportPath} --out tmp/agentrail/sponsor-funding-request.json`,
     CHECK_SPONSOR_FUNDING_COMMAND,
-    `GASKIT_SPONSOR_FAUCET_REPORT=${faucetReportPath} npm run proof:live-status`,
+    `AGENTRAIL_SPONSOR_FAUCET_REPORT=${faucetReportPath} npm run proof:live-status`,
   ];
 }
 

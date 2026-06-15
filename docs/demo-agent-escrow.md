@@ -12,7 +12,7 @@ npm run smoke:agent-escrow
 Expected output includes:
 
 ```text
-Agentic GasKit agent escrow demo passed
+AgentRail agent escrow demo passed
 approved.status=released
 denied.reason=GAS_BUDGET_TOO_HIGH
 gateway.events=approved,denied

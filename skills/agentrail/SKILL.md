@@ -1,25 +1,26 @@
 ---
-name: iota-gaskit
-description: Use when working in the iota-gaskit repo or integrating GasKit in another app, and when extending the Agentic GasKit fork, including repo navigation, SDK/gateway/demo/docs changes, local verification, agent migration docs, wallet safety, testnet readiness, sponsor-gas safety, or IOTA sponsored transaction flows.
+name: agentrail
+description: Use when working in the agentrail repo or integrating AgentRail in another app, and when extending the AgentRail fork, including repo navigation, SDK/gateway/demo/docs changes, local verification, agent migration docs, wallet safety, testnet readiness, sponsor-gas safety, or IOTA sponsored transaction flows.
 ---
 
-# IOTA GasKit / Agentic GasKit
+# AgentRail
 
 ## Purpose
 
-Use this skill to work on GasKit without losing the repo's safety boundaries.
-GasKit is a self-hostable toolkit around the official IOTA Gas Station: app
-backends call the SDK or policy gateway, GasKit applies app auth and
-sponsorship policy, and only allowed requests reach IOTA Gas Station.
+Use this skill to work on AgentRail without losing the repo's safety boundaries.
+AgentRail is built on the original IOTA GasKit sponsorship foundation around
+the official IOTA Gas Station: app backends call the SDK or policy gateway,
+AgentRail applies app auth and sponsorship policy, and only allowed requests
+reach IOTA Gas Station.
 
-Agentic GasKit extends that foundation with agent accounts, signer references,
+AgentRail extends that foundation with agent accounts, signer references,
 transaction manifests, receipts, contract workflows, MCP/A2A surfaces, and
 standards-compatible payment bridges.
 
 ## Required Startup
 
 1. Read `AGENTS.md`.
-2. Read `docs/agentic-gaskit/migration-plan.md` if it exists.
+2. Read `docs/agentrail/migration-plan.md` if it exists.
 3. If present, read `apex.workflow.json`; use `$apex-workflow` for meaningful
    execution only when that profile exists.
 4. If present, read `CLAUDE.md` and `docs/CODEBASE_MAP.md`. If absent, use `docs/architecture.md` and `README.md` before broad search.
@@ -39,9 +40,9 @@ artifacts unless the repo explicitly moves them into reviewed evidence docs.
 ## Source Map
 
 - Product truth: `docs/product-requirements.md`, `docs/overview.md`.
-- Agentic migration: `docs/agentic-gaskit/migration-plan.md`,
-  `docs/agentic-gaskit/roadmap.md`, `docs/agentic-gaskit/execution-slices.md`,
-  `docs/agentic-gaskit/account-wallet-safety.md`.
+- Agentic migration: `docs/agentrail/migration-plan.md`,
+  `docs/agentrail/roadmap.md`, `docs/agentrail/execution-slices.md`,
+  `docs/agentrail/account-wallet-safety.md`.
 - Architecture and concepts: `docs/architecture.md`, `docs/concepts.md`.
 - Code examples: `docs/examples.md`, `examples/node-backend/`, `examples/nextjs-api-route/`, `apps/demo-dapp/`.
 - SDK: `packages/sdk/src/client.ts`, `packages/sdk/src/types.ts`, `docs/sdk.md`.
@@ -54,7 +55,7 @@ artifacts unless the repo explicitly moves them into reviewed evidence docs.
 
 ## Safety Boundaries
 
-- Keep browser flows thin. Browser code calls same-origin backend routes; backend routes own GasKit app credentials.
+- Keep browser flows thin. Browser code calls same-origin backend routes; backend routes own AgentRail app credentials.
 - Never expose or log sponsor private keys, wallet mnemonics, Gas Station bearer tokens, app API keys, raw transaction bytes, user signatures, raw upstream error bodies, or local secret paths.
 - Agent wallet APIs must return signer references and addresses, not seeds,
   mnemonics, private keys, or raw keypairs.
@@ -68,11 +69,11 @@ artifacts unless the repo explicitly moves them into reviewed evidence docs.
 ## Task Routing
 
 - Agentic migration, branding, or roadmap: start with
-  `docs/agentic-gaskit/migration-plan.md`,
-  `docs/agentic-gaskit/roadmap.md`, and
-  `docs/agentic-gaskit/execution-slices.md`.
+  `docs/agentrail/migration-plan.md`,
+  `docs/agentrail/roadmap.md`, and
+  `docs/agentrail/execution-slices.md`.
 - Account/wallet behavior: start with
-  `docs/agentic-gaskit/account-wallet-safety.md`.
+  `docs/agentrail/account-wallet-safety.md`.
 - Docs or public positioning: start with `docs/overview.md`, `docs/concepts.md`, `docs/examples.md`, `docs/architecture.md`, and `apps/docs-site/docs.config.mjs`.
 - SDK integration: start with `packages/sdk/src/client.ts`, `packages/sdk/src/types.ts`, `docs/examples.md`, and the example app route docs.
 - Policy behavior: start with `packages/policy-gateway/src/`, `examples/policies/demo-dapp.yaml`, and tests under `packages/policy-gateway/src/*.test.ts`.

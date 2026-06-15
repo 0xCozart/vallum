@@ -324,7 +324,7 @@ test("A2A public proof plan is non-networked and opt-in", () => {
 test("operator live gate report writer is non-networked and opt-in", () => {
   assert.equal(
     packageJson.scripts?.["operator:write-live-gate-report"],
-    "npm run build && tsx scripts/check-operator-live-gates.ts --json --out tmp/gaskit/operator-live-gates.json",
+    "npm run build && tsx scripts/check-operator-live-gates.ts --json --out tmp/agentrail/operator-live-gates.json",
   );
   assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /write-live-gate-report/);
   assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /write-live-gate-report/);
@@ -401,22 +401,22 @@ test("root local verification includes deterministic secret scan after package c
 });
 
 test("docs site check is wired into local verification", () => {
-  assert.equal(packageJson.scripts?.["docs:check"], "npm run check -w @iota-gaskit/docs-site");
+  assert.equal(packageJson.scripts?.["docs:check"], "npm run check -w @agentrail/docs-site");
   assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run docs:check/);
 });
 
 test("registry, contract metadata, and standards packages are built and included in package dry-runs", () => {
-  assert.match(packageJson.scripts?.["build"] ?? "", /npm run build -w @iota-gaskit\/registry/);
-  assert.match(packageJson.scripts?.["pack:check"] ?? "", /-w @iota-gaskit\/registry/);
-  assert.match(packageJson.scripts?.["build"] ?? "", /npm run build -w @iota-gaskit\/contracts-metadata/);
-  assert.match(packageJson.scripts?.["pack:check"] ?? "", /-w @iota-gaskit\/contracts-metadata/);
-  assert.match(packageJson.scripts?.["build"] ?? "", /npm run build -w @iota-gaskit\/standards/);
-  assert.match(packageJson.scripts?.["pack:check"] ?? "", /-w @iota-gaskit\/standards/);
+  assert.match(packageJson.scripts?.["build"] ?? "", /npm run build -w @agentrail\/registry/);
+  assert.match(packageJson.scripts?.["pack:check"] ?? "", /-w @agentrail\/registry/);
+  assert.match(packageJson.scripts?.["build"] ?? "", /npm run build -w @agentrail\/contracts-metadata/);
+  assert.match(packageJson.scripts?.["pack:check"] ?? "", /-w @agentrail\/contracts-metadata/);
+  assert.match(packageJson.scripts?.["build"] ?? "", /npm run build -w @agentrail\/standards/);
+  assert.match(packageJson.scripts?.["pack:check"] ?? "", /-w @agentrail\/standards/);
 });
 
 test("marketplace package is built and included in package dry-runs", () => {
-  assert.match(packageJson.scripts?.["build"] ?? "", /npm run build -w @iota-gaskit\/marketplace/);
-  assert.match(packageJson.scripts?.["pack:check"] ?? "", /-w @iota-gaskit\/marketplace/);
+  assert.match(packageJson.scripts?.["build"] ?? "", /npm run build -w @agentrail\/marketplace/);
+  assert.match(packageJson.scripts?.["pack:check"] ?? "", /-w @agentrail\/marketplace/);
 });
 
 test("root build and package dry-run cover every public package workspace", () => {
@@ -525,14 +525,14 @@ test("Move contract tests are wired into local verification", () => {
 });
 
 test("root docs scripts build the static hosted documentation site", () => {
-  assert.equal(packageJson.scripts?.["docs:build"], "npm run build -w @iota-gaskit/docs-site");
-  assert.equal(packageJson.scripts?.["docs:check"], "npm run check -w @iota-gaskit/docs-site");
-  assert.equal(packageJson.scripts?.["docs:serve"], "npm run serve -w @iota-gaskit/docs-site --");
+  assert.equal(packageJson.scripts?.["docs:build"], "npm run build -w @agentrail/docs-site");
+  assert.equal(packageJson.scripts?.["docs:check"], "npm run check -w @agentrail/docs-site");
+  assert.equal(packageJson.scripts?.["docs:serve"], "npm run serve -w @agentrail/docs-site --");
 });
 
 test("workflow execution truth does not reference deleted milestone docs", () => {
-  assert.ok(apexProfile.authority?.executionTruth?.includes("docs/agentic-gaskit/launch-readiness-evidence.md"));
-  assert.ok(apexProfile.authority?.executionTruth?.includes("docs/agentic-gaskit/testnet-digest-proof.md"));
+  assert.ok(apexProfile.authority?.executionTruth?.includes("docs/agentrail/launch-readiness-evidence.md"));
+  assert.ok(apexProfile.authority?.executionTruth?.includes("docs/agentrail/testnet-digest-proof.md"));
   assert.ok(apexProfile.authority?.executionTruth?.includes("docs/reviewer-walkthrough.md"));
   assert.ok(!apexProfile.authority?.executionTruth?.includes("docs/milestone-0-proof.md"));
   assert.ok(!apexProfile.authority?.executionTruth?.includes("docs/grant-milestones.md"));
@@ -541,7 +541,7 @@ test("workflow execution truth does not reference deleted milestone docs", () =>
 test("Apex workflow profile is reviewed and keeps local goal docs out of authority", () => {
   const modeIds = new Set(apexProfile.modes?.map((mode) => mode.id));
 
-  assert.equal(apexProfile.name, "agentic-gaskit");
+  assert.equal(apexProfile.name, "agentrail");
   assert.deepEqual(apexProfile.setup?.reviewNeeded, []);
   assert.equal(apexProfile.setup?.reviewRequiredBeforeFirstSlice, false);
   assert.ok(modeIds.has("route-local"));
@@ -550,10 +550,10 @@ test("Apex workflow profile is reviewed and keeps local goal docs out of authori
   assert.equal(apexProfile.codeIntelligence?.provider, "focused-search");
   assert.equal(apexProfile.manifest?.defaultDir, "tmp/apex-workflow");
   assert.ok(apexProfile.verification?.presets?.readiness_slice?.commands?.includes("npm run verify:fast"));
-  assert.ok(!apexProfile.authority?.executionTruth?.includes("docs/agentic-gaskit/full-roadmap-execution-goal.md"));
-  assert.ok(apexProfile.authority?.doNotUseAsAuthority?.includes("docs/agentic-gaskit/full-roadmap-execution-goal.md"));
-  assert.ok(apexProfile.authority?.doNotUseAsAuthority?.includes("docs/agentic-gaskit/handoff-next-product-build.md"));
-  assert.ok(apexProfile.authority?.doNotUseAsAuthority?.includes("docs/agentic-gaskit/codex-active-goal.md"));
+  assert.ok(!apexProfile.authority?.executionTruth?.includes("docs/agentrail/full-roadmap-execution-goal.md"));
+  assert.ok(apexProfile.authority?.doNotUseAsAuthority?.includes("docs/agentrail/full-roadmap-execution-goal.md"));
+  assert.ok(apexProfile.authority?.doNotUseAsAuthority?.includes("docs/agentrail/handoff-next-product-build.md"));
+  assert.ok(apexProfile.authority?.doNotUseAsAuthority?.includes("docs/agentrail/codex-active-goal.md"));
 });
 
 test("codebase map stays reviewed for Apex workflow routing", () => {

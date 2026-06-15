@@ -2,7 +2,7 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { once } from "node:events";
 import { pathToFileURL } from "node:url";
 
-import { createGasKitClient } from "@iota-gaskit/sdk";
+import { createAgentRailClient } from "@agentrail/sdk";
 
 import { runDemoGrantFlow, type DemoGrantFlowResult } from "./local-flow.js";
 
@@ -13,19 +13,19 @@ export interface DemoBrowserServerOptions {
 }
 
 export interface DemoBrowserEnv {
-  GASKIT_GATEWAY_URL?: string;
-  GASKIT_DEMO_APP_KEY?: string;
-  GASKIT_DEMO_DAPP_HOST?: string;
-  GASKIT_DEMO_DAPP_PORT?: string;
+  AGENTRAIL_GATEWAY_URL?: string;
+  AGENTRAIL_DEMO_APP_KEY?: string;
+  AGENTRAIL_DEMO_DAPP_HOST?: string;
+  AGENTRAIL_DEMO_DAPP_PORT?: string;
   PORT?: string;
 }
 
 function readDemoBrowserEnv(): DemoBrowserEnv {
   return {
-    GASKIT_GATEWAY_URL: process.env.GASKIT_GATEWAY_URL,
-    GASKIT_DEMO_APP_KEY: process.env.GASKIT_DEMO_APP_KEY,
-    GASKIT_DEMO_DAPP_HOST: process.env.GASKIT_DEMO_DAPP_HOST,
-    GASKIT_DEMO_DAPP_PORT: process.env.GASKIT_DEMO_DAPP_PORT,
+    AGENTRAIL_GATEWAY_URL: process.env.AGENTRAIL_GATEWAY_URL,
+    AGENTRAIL_DEMO_APP_KEY: process.env.AGENTRAIL_DEMO_APP_KEY,
+    AGENTRAIL_DEMO_DAPP_HOST: process.env.AGENTRAIL_DEMO_DAPP_HOST,
+    AGENTRAIL_DEMO_DAPP_PORT: process.env.AGENTRAIL_DEMO_DAPP_PORT,
     PORT: process.env.PORT,
   };
 }
@@ -80,7 +80,7 @@ function sanitizeError(error: unknown): Record<string, unknown> {
 function serializePublicResult(result: DemoGrantFlowResult): DemoGrantFlowResult {
   if (
     typeof result.reservationId !== "string" ||
-    typeof result.gasKitTransactionId !== "string" ||
+    typeof result.agentRailTransactionId !== "string" ||
     typeof result.digest !== "string" ||
     (result.sponsorAddress !== undefined && typeof result.sponsorAddress !== "string")
   ) {
@@ -89,7 +89,7 @@ function serializePublicResult(result: DemoGrantFlowResult): DemoGrantFlowResult
 
   return {
     reservationId: result.reservationId,
-    gasKitTransactionId: result.gasKitTransactionId,
+    agentRailTransactionId: result.agentRailTransactionId,
     ...(result.sponsorAddress ? { sponsorAddress: result.sponsorAddress } : {}),
     digest: result.digest,
   };
@@ -118,7 +118,7 @@ function isLoopbackHost(host: string): boolean {
 function parsePort(value: string): number {
   const port = Number(value);
   if (!Number.isInteger(port) || port < 0 || port > 65_535) {
-    throw new Error("GASKIT_DEMO_DAPP_PORT must be a valid port in the range 0..65535.");
+    throw new Error("AGENTRAIL_DEMO_DAPP_PORT must be a valid port in the range 0..65535.");
   }
   return port;
 }
@@ -139,7 +139,7 @@ function isAllowedOrigin(request: IncomingMessage): boolean {
 
 function defaultRunFlow(options: DemoBrowserServerOptions): () => Promise<DemoGrantFlowResult> {
   return async () => {
-    const client = createGasKitClient({
+    const client = createAgentRailClient({
       baseUrl: options.gatewayUrl ?? "http://127.0.0.1:8787",
       apiKey: options.apiKey ?? "local-dev-demo-key",
     });
@@ -153,7 +153,7 @@ export function renderDemoBrowserPage(): string {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>IOTA GasKit Local Demo</title>
+  <title>AgentRail Local Demo</title>
   <style>
     :root {
       color-scheme: dark;
@@ -215,7 +215,7 @@ export function renderDemoBrowserPage(): string {
 <body>
   <main>
     <p class="status">Local-only Milestone 1 wrapper</p>
-    <h1>IOTA GasKit Local Demo</h1>
+    <h1>AgentRail Local Demo</h1>
     <p>This browser page calls a same-origin local backend endpoint. The app key stays on the local server; the browser only receives sanitized flow results.</p>
     <button type="button" data-testid="run-demo" id="run-demo">Run local sponsored flow</button>
     <pre data-testid="result" id="result">Ready.</pre>
@@ -226,7 +226,7 @@ export function renderDemoBrowserPage(): string {
     button.addEventListener("click", async () => {
       button.disabled = true;
       result.className = "";
-      result.textContent = "Running local GasKit flow...";
+      result.textContent = "Running local AgentRail flow...";
       try {
         const response = await fetch("/api/run-demo", { method: "POST" });
         const body = await response.json();
@@ -261,7 +261,7 @@ export function createDemoBrowserServer(options: DemoBrowserServerOptions = {}):
     }
 
     if (request.method === "GET" && url.pathname === "/health") {
-      writeJson(response, 200, { status: "ok", service: "iota-gaskit-demo-dapp" });
+      writeJson(response, 200, { status: "ok", service: "agentrail-demo-dapp" });
       return;
     }
 
@@ -299,15 +299,15 @@ export function createDemoBrowserServer(options: DemoBrowserServerOptions = {}):
 }
 
 export async function startDemoBrowserServerFromEnv(env: DemoBrowserEnv = readDemoBrowserEnv()): Promise<Server> {
-  const host = env.GASKIT_DEMO_DAPP_HOST ?? "127.0.0.1";
+  const host = env.AGENTRAIL_DEMO_DAPP_HOST ?? "127.0.0.1";
   if (!isLoopbackHost(host)) {
-    throw new Error("GASKIT_DEMO_DAPP_HOST must be loopback-only for the local demo browser wrapper.");
+    throw new Error("AGENTRAIL_DEMO_DAPP_HOST must be loopback-only for the local demo browser wrapper.");
   }
 
-  const port = parsePort(env.GASKIT_DEMO_DAPP_PORT ?? env.PORT ?? "8788");
+  const port = parsePort(env.AGENTRAIL_DEMO_DAPP_PORT ?? env.PORT ?? "8788");
   const server = createDemoBrowserServer({
-    gatewayUrl: env.GASKIT_GATEWAY_URL,
-    apiKey: env.GASKIT_DEMO_APP_KEY,
+    gatewayUrl: env.AGENTRAIL_GATEWAY_URL,
+    apiKey: env.AGENTRAIL_DEMO_APP_KEY,
   });
 
   const errorPromise = once(server, "error").then(([error]) => {
@@ -319,7 +319,7 @@ export async function startDemoBrowserServerFromEnv(env: DemoBrowserEnv = readDe
 
   const address = server.address();
   if (address && typeof address === "object") {
-    console.log(`IOTA GasKit demo dApp browser wrapper listening on http://${host}:${address.port}`);
+    console.log(`AgentRail demo dApp browser wrapper listening on http://${host}:${address.port}`);
   }
   return server;
 }

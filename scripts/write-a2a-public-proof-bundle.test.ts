@@ -21,11 +21,11 @@ test("A2A public proof bundle writes templates, plan, and blocked summary withou
         A2A_EXTERNAL_CONFORMANCE_REPORT: "missing-conformance-report.json",
       }),
     });
-    const bundleRaw = await readFile(join(cwd, "tmp/gaskit/a2a-public-proof-bundle.json"), "utf8");
-    const planRaw = await readFile(join(cwd, "tmp/gaskit/a2a-public-proof-plan.json"), "utf8");
-    const readinessRaw = await readFile(join(cwd, "tmp/gaskit/a2a-public-readiness.json"), "utf8");
+    const bundleRaw = await readFile(join(cwd, "tmp/agentrail/a2a-public-proof-bundle.json"), "utf8");
+    const planRaw = await readFile(join(cwd, "tmp/agentrail/a2a-public-proof-plan.json"), "utf8");
+    const readinessRaw = await readFile(join(cwd, "tmp/agentrail/a2a-public-readiness.json"), "utf8");
 
-    assert.equal(bundle.kind, "agentic-gaskit.a2a-public-proof-bundle");
+    assert.equal(bundle.kind, "agentrail.a2a-public-proof-bundle");
     assert.equal(bundle.status, "blocked");
     assert.equal(bundle.localProofOk, true);
     assert.equal(bundle.publicReady, false);
@@ -34,8 +34,8 @@ test("A2A public proof bundle writes templates, plan, and blocked summary withou
       "a2a-public-push-delivery",
       "a2a-external-conformance",
     ]);
-    assert.equal(bundle.planArtifact, "tmp/gaskit/a2a-public-proof-plan.json");
-    assert.equal(bundle.readinessArtifact, "tmp/gaskit/a2a-public-readiness.json");
+    assert.equal(bundle.planArtifact, "tmp/agentrail/a2a-public-proof-plan.json");
+    assert.equal(bundle.readinessArtifact, "tmp/agentrail/a2a-public-readiness.json");
     assert.ok(bundle.blockerCodes.includes("A2A_PUBLIC_DISCOVERY_REPORT_NOT_FOUND"));
     assert.ok(bundle.blockerCodes.includes("A2A_PUBLIC_PUSH_DELIVERY_REPORT_NOT_FOUND"));
     assert.ok(bundle.blockerCodes.includes("A2A_EXTERNAL_CONFORMANCE_REPORT_NOT_FOUND"));
@@ -46,12 +46,12 @@ test("A2A public proof bundle writes templates, plan, and blocked summary withou
     assert.equal(bundle.steps.find((step) => step.id === "run-public-discovery-smoke")?.contactsPublicNetwork, true);
     assert.equal(bundle.steps.find((step) => step.id === "write-public-proof-plan")?.contactsPublicNetwork, false);
 
-    await assertMode(join(cwd, "tmp/gaskit/a2a-public-proof-bundle.json"), 0o600);
-    await assertMode(join(cwd, "tmp/gaskit/a2a-public-proof-plan.json"), 0o600);
-    await assertMode(join(cwd, "tmp/gaskit/a2a-public-readiness.json"), 0o600);
-    await assertMode(join(cwd, "tmp/gaskit/a2a-public-discovery-report-template.json"), 0o600);
-    await assertMode(join(cwd, "tmp/gaskit/a2a-public-push-delivery-report-template.json"), 0o600);
-    await assertMode(join(cwd, "tmp/gaskit/a2a-external-conformance-report-template.json"), 0o600);
+    await assertMode(join(cwd, "tmp/agentrail/a2a-public-proof-bundle.json"), 0o600);
+    await assertMode(join(cwd, "tmp/agentrail/a2a-public-proof-plan.json"), 0o600);
+    await assertMode(join(cwd, "tmp/agentrail/a2a-public-readiness.json"), 0o600);
+    await assertMode(join(cwd, "tmp/agentrail/a2a-public-discovery-report-template.json"), 0o600);
+    await assertMode(join(cwd, "tmp/agentrail/a2a-public-push-delivery-report-template.json"), 0o600);
+    await assertMode(join(cwd, "tmp/agentrail/a2a-external-conformance-report-template.json"), 0o600);
 
     const allOutput = `${JSON.stringify(bundle)}\n${bundleRaw}\n${planRaw}\n${readinessRaw}`;
     assert.doesNotMatch(allOutput, /agents\.example/);
@@ -95,7 +95,7 @@ test("A2A public proof bundle is ready for approval when public reports pass", a
         A2A_EXTERNAL_CONFORMANCE_REPORT: "a2a-conformance-report.json",
       }),
     });
-    const bundleRaw = await readFile(join(cwd, "tmp/gaskit/a2a-public-proof-bundle.json"), "utf8");
+    const bundleRaw = await readFile(join(cwd, "tmp/agentrail/a2a-public-proof-bundle.json"), "utf8");
 
     assert.equal(bundle.status, "ready-for-approval");
     assert.equal(bundle.publicReady, true);
@@ -123,7 +123,7 @@ function configuredA2AEnv(extra: Record<string, string>): Record<string, string>
 }
 
 async function writeA2AEvidence(): Promise<string> {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-a2a-proof-bundle-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-a2a-proof-bundle-"));
   for (const path of [
     "packages/registry/src/a2aCard.ts",
     "packages/registry/src/a2aWellKnown.ts",

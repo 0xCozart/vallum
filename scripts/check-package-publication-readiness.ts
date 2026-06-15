@@ -29,7 +29,7 @@ export interface PackagePublicationReadinessReport {
 
 export interface PackagePublicationReadinessArtifact {
   readonly schemaVersion: 1;
-  readonly kind: "agentic-gaskit.package-publication-readiness-report";
+  readonly kind: "agentrail.package-publication-readiness-report";
   readonly generatedAt: string;
   readonly localProofOk: boolean;
   readonly liveReady: boolean;
@@ -71,9 +71,9 @@ interface StructuredPackagePublicationReport {
 
 const MAX_REPORT_BYTES = 64 * 1024;
 const MAX_REPORT_AGE_MS = 30 * 24 * 60 * 60 * 1000;
-const PACKAGE_PUBLICATION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind package-publication --out tmp/gaskit/package-publication-report-template.json";
+const PACKAGE_PUBLICATION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind package-publication --out tmp/agentrail/package-publication-report-template.json";
 const REQUIRED_SOURCE_PATHS = [
-  "docs/agentic-gaskit/package-release-strategy.md",
+  "docs/agentrail/package-release-strategy.md",
   "scripts/package-publish-dry-run.ts",
   "scripts/smoke-package-install.ts",
   "scripts/smoke-package-paid-mcp-consumer.ts",
@@ -104,7 +104,7 @@ const ARTIFACT_BOUNDARIES = [
 
 const usage = `usage: npm exec tsx -- scripts/check-package-publication-readiness.ts [--json] [--out <path>]
 
-Reports current Agentic GasKit package publication readiness without contacting npm or publishing packages.
+Reports current AgentRail package publication readiness without contacting npm or publishing packages.
 
 Options:
   --json        Print a redacted machine-readable artifact.
@@ -136,7 +136,7 @@ export async function checkPackagePublicationReadiness(
 
 export function formatPackagePublicationReadinessReport(report: PackagePublicationReadinessReport): string {
   const lines = [
-    `Agentic GasKit package publication readiness ${report.liveReady ? "ready-for-approval" : "blocked"}`,
+    `AgentRail package publication readiness ${report.liveReady ? "ready-for-approval" : "blocked"}`,
     `localProofOk=${report.localProofOk}`,
     `liveReady=${report.liveReady}`,
     `packages=${report.packageNames.join(",")}`,
@@ -160,7 +160,7 @@ export function buildPackagePublicationReadinessArtifact(
 
   return {
     schemaVersion: 1,
-    kind: "agentic-gaskit.package-publication-readiness-report",
+    kind: "agentrail.package-publication-readiness-report",
     generatedAt: now.toISOString(),
     localProofOk: report.localProofOk,
     liveReady: report.liveReady,
@@ -359,8 +359,8 @@ function validateStructuredReport(
   if (report.schemaVersion !== 1) {
     return invalidReport("PACKAGE_PUBLICATION_REPORT_UNSUPPORTED_SCHEMA", "Package publication proof report schema is unsupported.", "configured-report-unsupported-schema", "Provide a structured evidence report with schemaVersion=1.");
   }
-  if (report.kind !== "agentic-gaskit.package-publication-proof") {
-    return invalidReport("PACKAGE_PUBLICATION_REPORT_KIND_MISMATCH", "Package publication proof report has the wrong kind.", "configured-report-kind-mismatch", "Provide an agentic-gaskit.package-publication-proof structured report.");
+  if (report.kind !== "agentrail.package-publication-proof") {
+    return invalidReport("PACKAGE_PUBLICATION_REPORT_KIND_MISMATCH", "Package publication proof report has the wrong kind.", "configured-report-kind-mismatch", "Provide an agentrail.package-publication-proof structured report.");
   }
   if (report.result !== "passed") {
     return invalidReport("PACKAGE_PUBLICATION_REPORT_NOT_PASSED", "Package publication proof report did not pass.", "configured-report-not-passed", "Rerun the approved publication proof after resolving registry failures.");

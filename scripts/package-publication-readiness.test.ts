@@ -27,14 +27,14 @@ test("package publication readiness reports local proof and missing registry rep
 
   assert.equal(report.localProofOk, true);
   assert.equal(report.liveReady, false);
-  assert.equal(artifact.kind, "agentic-gaskit.package-publication-readiness-report");
+  assert.equal(artifact.kind, "agentrail.package-publication-readiness-report");
   assert.equal(artifact.localProofOk, true);
   assert.equal(artifact.liveReady, false);
-  assert.ok(artifact.packageNames.includes("@iota-gaskit/sdk"));
+  assert.ok(artifact.packageNames.includes("@agentrail/sdk"));
   assert.ok(artifact.provenLocalCheckIds.includes("local-package-publication-proof"));
   assert.ok(artifact.blockedCheckIds.includes("npm-registry-publication-report"));
   assert.ok(artifact.blockerCodes.includes("PACKAGE_PUBLICATION_REPORT_MISSING"));
-  assert.ok(report.packageNames.includes("@iota-gaskit/sdk"));
+  assert.ok(report.packageNames.includes("@agentrail/sdk"));
   assert.equal(
     report.checks.find((check) => check.id === "local-package-publication-proof")?.code,
     "PACKAGE_PUBLICATION_LOCAL_PROOF_CONFIGURED",
@@ -50,9 +50,9 @@ test("package publication readiness reports local proof and missing registry rep
 });
 
 test("package publication readiness artifact writer uses restrictive local file permissions", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-package-publication-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-package-publication-"));
   try {
-    const outFile = "tmp/gaskit/package-publication-readiness.json";
+    const outFile = "tmp/agentrail/package-publication-readiness.json";
     const artifact = await writePackagePublicationReadinessArtifact({
       cwd: repoRoot,
       env: {},
@@ -62,8 +62,8 @@ test("package publication readiness artifact writer uses restrictive local file 
     const written = JSON.parse(await readFile(join(cwd, outFile), "utf8")) as typeof artifact;
     const mode = (await stat(join(cwd, outFile))).mode & 0o777;
 
-    assert.equal(artifact.kind, "agentic-gaskit.package-publication-readiness-report");
-    assert.equal(written.kind, "agentic-gaskit.package-publication-readiness-report");
+    assert.equal(artifact.kind, "agentrail.package-publication-readiness-report");
+    assert.equal(written.kind, "agentrail.package-publication-readiness-report");
     assert.equal(written.liveReady, false);
     assert.equal(written.blockerCodes.includes("PACKAGE_PUBLICATION_REPORT_MISSING"), true);
     assert.equal(mode, 0o600);
@@ -73,7 +73,7 @@ test("package publication readiness artifact writer uses restrictive local file 
 });
 
 test("package publication readiness accepts a recent redacted registry report", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-package-publication-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-package-publication-"));
   try {
     const baseline = await checkPackagePublicationReadiness({
       cwd: repoRoot,
@@ -83,7 +83,7 @@ test("package publication readiness accepts a recent redacted registry report", 
     const reportPath = join(cwd, "publication-report.json");
     await writeFile(reportPath, JSON.stringify({
       schemaVersion: 1,
-      kind: "agentic-gaskit.package-publication-proof",
+      kind: "agentrail.package-publication-proof",
       result: "passed",
       observedAt: "2026-06-11T11:00:00.000Z",
       registry: "npm",
@@ -118,13 +118,13 @@ test("package publication readiness accepts a recent redacted registry report", 
 });
 
 test("package publication readiness rejects unsafe report fields and stale reports", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-package-publication-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-package-publication-"));
   try {
     const baseline = await checkPackagePublicationReadiness({ cwd: repoRoot, env: {} });
     const unsafePath = join(cwd, "unsafe.json");
     await writeFile(unsafePath, JSON.stringify({
       schemaVersion: 1,
-      kind: "agentic-gaskit.package-publication-proof",
+      kind: "agentrail.package-publication-proof",
       result: "passed",
       observedAt: "2026-06-11T11:00:00.000Z",
       registry: "npm",
@@ -142,7 +142,7 @@ test("package publication readiness rejects unsafe report fields and stale repor
     const stalePath = join(cwd, "stale.json");
     await writeFile(stalePath, JSON.stringify({
       schemaVersion: 1,
-      kind: "agentic-gaskit.package-publication-proof",
+      kind: "agentrail.package-publication-proof",
       result: "passed",
       observedAt: "2026-04-01T00:00:00.000Z",
       registry: "npm",
@@ -159,7 +159,7 @@ test("package publication readiness rejects unsafe report fields and stale repor
     const unsafeValuePath = join(cwd, "unsafe-value.json");
     await writeFile(unsafeValuePath, JSON.stringify({
       schemaVersion: 1,
-      kind: "agentic-gaskit.package-publication-proof",
+      kind: "agentrail.package-publication-proof",
       result: "passed",
       observedAt: "2026-06-11T11:00:00.000Z",
       registry: "npm",
@@ -209,7 +209,7 @@ test("package publication readiness rejects unsafe report fields and stale repor
 });
 
 test("package publication readiness blocks incomplete local script wiring", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-package-publication-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-package-publication-"));
   try {
     const report = await checkPackagePublicationReadiness({
       cwd,

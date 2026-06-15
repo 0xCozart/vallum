@@ -1,6 +1,6 @@
 # A2A Task/Message Demo
 
-This local demo shows how Agentic GasKit can model current A2A task and message
+This local demo shows how AgentRail can model current A2A task and message
 operations without operating a public A2A server.
 
 It proves:

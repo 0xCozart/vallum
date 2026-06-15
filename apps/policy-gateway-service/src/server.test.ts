@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { after, before, test } from "node:test";
 
-import { createGasKitClient, GasKitAuthError, GasKitError, GasKitPolicyError } from "@iota-gaskit/sdk";
+import { createAgentRailClient, AgentRailAuthError, AgentRailError, AgentRailPolicyError } from "@agentrail/sdk";
 import { createGatewayServer, type GatewayConfig } from "./server.js";
 
 const demoPolicy = {
@@ -101,7 +101,7 @@ test("GET /health returns local gateway status without app auth", async () => {
 
   assert.equal(response.status, 200);
   assert.equal(body.status, "ok");
-  assert.equal(body.service, "iota-gaskit-policy-gateway");
+  assert.equal(body.service, "agentrail-policy-gateway");
   assert.equal(body.upstream.configured, true);
 });
 
@@ -146,7 +146,7 @@ test("GET /operator/usage requires a separate bearer token and returns no-store 
               packageId: "0xDEMO_PACKAGE",
               functionName: "mint_badge",
               gasBudget: 7,
-              gasKitTransactionId: "gaskit_public_id",
+              agentRailTransactionId: "agentrail_public_id",
               upstreamReservationId: "reservation-1",
             },
           ],
@@ -231,7 +231,7 @@ test("reserveGas rejects missing app credentials with AUTH_MISSING", async () =>
 test("reserveGas rejects invalid app credentials with AUTH_INVALID", async () => {
   const fixture = await startGateway();
   after(() => fixture.close());
-  const client = createGasKitClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "wrong-key" });
+  const client = createAgentRailClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "wrong-key" });
 
   await assert.rejects(
     () =>
@@ -240,7 +240,7 @@ test("reserveGas rejects invalid app credentials with AUTH_INVALID", async () =>
         packageId: "0xDEMO_PACKAGE",
         functionName: "mint_badge",
       }),
-    (error) => error instanceof GasKitAuthError && error.status === 403,
+    (error) => error instanceof AgentRailAuthError && error.status === 403,
   );
   assert.equal(fixture.upstream.requests.length, 0);
 });
@@ -248,7 +248,7 @@ test("reserveGas rejects invalid app credentials with AUTH_INVALID", async () =>
 test("reserveGas rejects non-allowlisted package before upstream proxy", async () => {
   const fixture = await startGateway();
   after(() => fixture.close());
-  const client = createGasKitClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+  const client = createAgentRailClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
 
   await assert.rejects(
     () =>
@@ -257,7 +257,7 @@ test("reserveGas rejects non-allowlisted package before upstream proxy", async (
         packageId: "0xNOT_ALLOWED",
         functionName: "mint_badge",
       }),
-    (error) => error instanceof GasKitPolicyError && error.reasonCode === "PACKAGE_NOT_ALLOWED",
+    (error) => error instanceof AgentRailPolicyError && error.reasonCode === "PACKAGE_NOT_ALLOWED",
   );
   assert.equal(fixture.upstream.requests.length, 0);
 });
@@ -265,7 +265,7 @@ test("reserveGas rejects non-allowlisted package before upstream proxy", async (
 test("reserveGas proxies allowed requests and returns SDK-compatible transaction id", async () => {
   const fixture = await startGateway();
   after(() => fixture.close());
-  const client = createGasKitClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+  const client = createAgentRailClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
 
   const result = await client.reserveGas({
     gasBudget: 1,
@@ -276,14 +276,14 @@ test("reserveGas proxies allowed requests and returns SDK-compatible transaction
   });
 
   assert.equal(result.reservationId, "reservation-1");
-  assert.match(result.gasKitTransactionId, /^gaskit_/);
+  assert.match(result.agentRailTransactionId, /^agentrail_/);
   assert.equal(result.sponsorAddress, "0xSPONSOR");
   assert.equal(fixture.upstream.requests.length, 1);
   assert.equal(fixture.upstream.requests[0]?.url, "/v1/reserve_gas");
   assert.equal(fixture.upstream.requests[0]?.authorization, "Bearer upstream-local-token");
 });
 
-test("reserveGas response exposes only the public GasKit transaction id field", async () => {
+test("reserveGas response exposes only the public AgentRail transaction id field", async () => {
   const fixture = await startGateway();
   after(() => fixture.close());
 
@@ -295,14 +295,14 @@ test("reserveGas response exposes only the public GasKit transaction id field", 
   const body = await response.json();
 
   assert.equal(response.status, 200);
-  assert.match(body.gasKitTransactionId, /^gaskit_/);
+  assert.match(body.agentRailTransactionId, /^agentrail_/);
   assert.equal(Object.hasOwn(body, "_saas_tx_id"), false);
 });
 
 test("reserveGas coerces numeric upstream reservation ids for official Gas Station compatibility", async () => {
   const fixture = await startGateway({}, { reservationId: 1 });
   after(() => fixture.close());
-  const client = createGasKitClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+  const client = createAgentRailClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
 
   const result = await client.reserveGas({
     gasBudget: 1,
@@ -313,18 +313,18 @@ test("reserveGas coerces numeric upstream reservation ids for official Gas Stati
   });
 
   assert.equal(result.reservationId, "1");
-  assert.match(result.gasKitTransactionId, /^gaskit_/);
+  assert.match(result.agentRailTransactionId, /^agentrail_/);
 });
 
 test("executeSponsoredTransaction sends numeric official reservation ids back upstream as numbers", async () => {
   const fixture = await startGateway({}, { reservationId: 2 });
   after(() => fixture.close());
-  const client = createGasKitClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+  const client = createAgentRailClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
 
   const reserve = await client.reserveGas({ gasBudget: 1, packageId: "0xDEMO_PACKAGE", functionName: "mint_badge" });
   const execute = await client.executeSponsoredTransaction({
     reservationId: reserve.reservationId,
-    gasKitTransactionId: reserve.gasKitTransactionId,
+    agentRailTransactionId: reserve.agentRailTransactionId,
     transactionBytes: "AAE=",
     userSignature: "sig",
   });
@@ -340,7 +340,7 @@ test("executeSponsoredTransaction sends numeric official reservation ids back up
 test("executeSponsoredTransaction proxies only a known prior reservation", async () => {
   const fixture = await startGateway();
   after(() => fixture.close());
-  const client = createGasKitClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+  const client = createAgentRailClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
 
   const reserve = await client.reserveGas({
     gasBudget: 1,
@@ -351,7 +351,7 @@ test("executeSponsoredTransaction proxies only a known prior reservation", async
 
   const execute = await client.executeSponsoredTransaction({
     reservationId: reserve.reservationId,
-    gasKitTransactionId: reserve.gasKitTransactionId,
+    agentRailTransactionId: reserve.agentRailTransactionId,
     transactionBytes: "AAE=",
     userSignature: "sig",
   });
@@ -377,7 +377,7 @@ test("execute does not re-consume one-use app quotas after a successful reservat
     },
   });
   after(() => fixture.close());
-  const client = createGasKitClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+  const client = createAgentRailClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
 
   const reserve = await client.reserveGas({
     gasBudget: 1,
@@ -387,7 +387,7 @@ test("execute does not re-consume one-use app quotas after a successful reservat
   });
   const execute = await client.executeSponsoredTransaction({
     reservationId: reserve.reservationId,
-    gasKitTransactionId: reserve.gasKitTransactionId,
+    agentRailTransactionId: reserve.agentRailTransactionId,
     transactionBytes: "AAE=",
     userSignature: "sig",
   });
@@ -395,7 +395,7 @@ test("execute does not re-consume one-use app quotas after a successful reservat
   assert.equal(execute.digest, "digest-1");
 });
 
-test("execute accepts the returned gasKitTransactionId alias for non-SDK callers", async () => {
+test("execute accepts the returned agentRailTransactionId alias for non-SDK callers", async () => {
   const fixture = await startGateway();
   after(() => fixture.close());
 
@@ -410,7 +410,7 @@ test("execute accepts the returned gasKitTransactionId alias for non-SDK callers
     method: "POST",
     headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
     body: JSON.stringify({
-      gasKitTransactionId: reserveBody.gasKitTransactionId,
+      agentRailTransactionId: reserveBody.agentRailTransactionId,
       reservation_id: reserveBody.result.reservation_id,
       tx_bytes: "AAE=",
       user_sig: "sig",
@@ -577,7 +577,7 @@ test("reserveGas normalizes upstream non-JSON failures without consuming quota",
   assert.equal(upstreamCalls, 2);
 });
 
-test("execute rejects conflicting GasKit transaction id aliases without touching upstream", async () => {
+test("execute rejects conflicting AgentRail transaction id aliases without touching upstream", async () => {
   const fixture = await startGateway();
   after(() => fixture.close());
 
@@ -592,8 +592,8 @@ test("execute rejects conflicting GasKit transaction id aliases without touching
     method: "POST",
     headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
     body: JSON.stringify({
-      _saas_tx_id: reserveBody.gasKitTransactionId,
-      gasKitTransactionId: "gaskit_conflicting_id",
+      _saas_tx_id: reserveBody.agentRailTransactionId,
+      agentRailTransactionId: "agentrail_conflicting_id",
       reservation_id: reserveBody.result.reservation_id,
       tx_bytes: "AAE=",
       user_sig: "sig",
@@ -632,23 +632,23 @@ test("execute keeps a reservation retryable after a transient upstream failure",
     },
   });
   after(() => fixture.close());
-  const client = createGasKitClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+  const client = createAgentRailClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
 
   const reserve = await client.reserveGas({ gasBudget: 1, packageId: "0xDEMO_PACKAGE", functionName: "mint_badge" });
   await assert.rejects(
     () =>
       client.executeSponsoredTransaction({
         reservationId: reserve.reservationId,
-        gasKitTransactionId: reserve.gasKitTransactionId,
+        agentRailTransactionId: reserve.agentRailTransactionId,
         transactionBytes: "AAE=",
         userSignature: "sig",
       }),
-    (error) => error instanceof GasKitError && error.status === 502,
+    (error) => error instanceof AgentRailError && error.status === 502,
   );
 
   const retried = await client.executeSponsoredTransaction({
     reservationId: reserve.reservationId,
-    gasKitTransactionId: reserve.gasKitTransactionId,
+    agentRailTransactionId: reserve.agentRailTransactionId,
     transactionBytes: "AAE=",
     userSignature: "sig",
   });

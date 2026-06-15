@@ -10,7 +10,7 @@ import {
 
 const now = new Date("2026-06-10T12:00:00.000Z");
 
-test("x402 v2 payment requirements map to an Agentic GasKit manifest", () => {
+test("x402 v2 payment requirements map to an AgentRail manifest", () => {
   const manifest = mapX402PaymentRequiredToManifest(paymentRequiredFixture(), {
     agent: { id: "agent:x402-buyer" },
     owner: { id: "owner:alice" },

@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "name": "agentic-gaskit",
-  "description": "Apex Workflow profile for Agentic GasKit. Product truth stays in repo docs; Apex configures local slice scope, evidence, and verification only.",
+  "name": "agentrail",
+  "description": "Apex Workflow profile for AgentRail. Product truth stays in repo docs; Apex configures local slice scope, evidence, and verification only.",
   "operatorCautions": [
     "Do not run live testnet commands without explicit operator intent.",
     "Do not expose sponsor keys, app API keys, bearer tokens, seeds, mnemonics, private keys, raw transaction bytes, user signatures, payment credentials, or private prompt text.",
@@ -20,16 +20,16 @@
       "docs/product-requirements.md",
       "docs/overview.md",
       "docs/architecture.md",
-      "docs/agentic-gaskit/roadmap.md",
-      "docs/agentic-gaskit/account-wallet-safety.md"
+      "docs/agentrail/roadmap.md",
+      "docs/agentrail/account-wallet-safety.md"
     ],
     "executionTruth": [
-      "docs/agentic-gaskit/migration-plan.md",
-      "docs/agentic-gaskit/execution-slices.md",
-      "docs/agentic-gaskit/launch-readiness-evidence.md",
-      "docs/agentic-gaskit/testnet-digest-proof.md",
+      "docs/agentrail/migration-plan.md",
+      "docs/agentrail/execution-slices.md",
+      "docs/agentrail/launch-readiness-evidence.md",
+      "docs/agentrail/testnet-digest-proof.md",
       "docs/reviewer-walkthrough.md",
-      "docs/agentic-gaskit/verification-hardening.md"
+      "docs/agentrail/verification-hardening.md"
     ],
     "workflowRules": [
       "AGENTS.md",
@@ -37,11 +37,11 @@
       "docs/CODEBASE_MAP.md"
     ],
     "doNotUseAsAuthority": [
-      "docs/agentic-gaskit/source-thesis.md",
+      "docs/agentrail/source-thesis.md",
       "docs/managed-service-roadmap.md",
-      "docs/agentic-gaskit/full-roadmap-execution-goal.md",
-      "docs/agentic-gaskit/handoff-next-product-build.md",
-      "docs/agentic-gaskit/codex-active-goal.md"
+      "docs/agentrail/full-roadmap-execution-goal.md",
+      "docs/agentrail/handoff-next-product-build.md",
+      "docs/agentrail/codex-active-goal.md"
     ]
   },
   "orientation": {
@@ -178,11 +178,11 @@
     "stateContracts": [],
     "surrogates": [
       "docs/architecture.md",
-      "docs/agentic-gaskit/account-wallet-safety.md",
+      "docs/agentrail/account-wallet-safety.md",
       "docs/security/secrets.md",
       "docs/security/sponsor-wallet.md",
       "docs/testnet-readiness.md",
-      "docs/agentic-gaskit/verification-hardening.md"
+      "docs/agentrail/verification-hardening.md"
     ]
   },
   "verification": {
@@ -340,12 +340,12 @@
       "enabled": false
     },
     "apexRoot": "/home/sacred/code/apex-workflow",
-    "targetRoot": "/home/sacred/code/agentic-gaskit",
+    "targetRoot": "/home/sacred/code/agentrail",
     "reviewRequiredBeforeFirstSlice": false,
     "reviewNeeded": [],
     "acceptedReviewNeeded": [
       "No contract directories were detected. Shared-surface work will rely on source search and surrogate docs.",
-      "Authority and orientation paths were manually reviewed for Agentic GasKit before enabling manifest tooling."
+      "Authority and orientation paths were manually reviewed for AgentRail before enabling manifest tooling."
     ],
     "inferredPaths": {
       "authority": {
@@ -366,34 +366,34 @@
             "reason": "system boundary and architecture source"
           },
           {
-            "path": "docs/agentic-gaskit/roadmap.md",
+            "path": "docs/agentrail/roadmap.md",
             "confidence": "confirmed",
-            "reason": "public Agentic GasKit roadmap"
+            "reason": "public AgentRail roadmap"
           },
           {
-            "path": "docs/agentic-gaskit/account-wallet-safety.md",
+            "path": "docs/agentrail/account-wallet-safety.md",
             "confidence": "confirmed",
             "reason": "wallet and signer-reference safety contract"
           }
         ],
         "executionTruth": [
           {
-            "path": "docs/agentic-gaskit/migration-plan.md",
+            "path": "docs/agentrail/migration-plan.md",
             "confidence": "confirmed",
             "reason": "canonical migration and repo setup plan"
           },
           {
-            "path": "docs/agentic-gaskit/execution-slices.md",
+            "path": "docs/agentrail/execution-slices.md",
             "confidence": "confirmed",
             "reason": "vertical slice ledger"
           },
           {
-            "path": "docs/agentic-gaskit/launch-readiness-evidence.md",
+            "path": "docs/agentrail/launch-readiness-evidence.md",
             "confidence": "confirmed",
             "reason": "launch-readiness evidence matrix"
           },
           {
-            "path": "docs/agentic-gaskit/testnet-digest-proof.md",
+            "path": "docs/agentrail/testnet-digest-proof.md",
             "confidence": "confirmed",
             "reason": "testnet proof boundary"
           },
@@ -403,7 +403,7 @@
             "reason": "reviewer verification path"
           },
           {
-            "path": "docs/agentic-gaskit/verification-hardening.md",
+            "path": "docs/agentrail/verification-hardening.md",
             "confidence": "confirmed",
             "reason": "verification and hardening requirements"
           }
@@ -427,7 +427,7 @@
         ],
         "doNotUseAsAuthority": [
           {
-            "path": "docs/agentic-gaskit/source-thesis.md",
+            "path": "docs/agentrail/source-thesis.md",
             "confidence": "confirmed",
             "reason": "background thesis, not execution authority"
           },
@@ -437,17 +437,17 @@
             "reason": "managed-service planning, not current open-source execution authority"
           },
           {
-            "path": "docs/agentic-gaskit/full-roadmap-execution-goal.md",
+            "path": "docs/agentrail/full-roadmap-execution-goal.md",
             "confidence": "confirmed",
             "reason": "local Codex goal pointer, not public product authority"
           },
           {
-            "path": "docs/agentic-gaskit/handoff-next-product-build.md",
+            "path": "docs/agentrail/handoff-next-product-build.md",
             "confidence": "confirmed",
             "reason": "local handoff history, not public product authority"
           },
           {
-            "path": "docs/agentic-gaskit/codex-active-goal.md",
+            "path": "docs/agentrail/codex-active-goal.md",
             "confidence": "confirmed",
             "reason": "local active-goal note, not public product authority"
           }

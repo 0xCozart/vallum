@@ -4,13 +4,13 @@ Status: reviewed
 Reviewed at: 2026-06-14T12:45:00.000Z
 Last updated: 2026-06-14.
 
-Purpose: fast, reviewed orientation for engineering work in Agentic GasKit.
+Purpose: fast, reviewed orientation for engineering work in AgentRail.
 Use this map before broad search. It is routing evidence, not product proof.
 
 ## High-Level Layout
 
-Agentic GasKit is a local fork of IOTA GasKit. It preserves the original gas
-sponsorship toolkit and extends it with agent-safe accounts, signer
+AgentRail is a local fork of the original IOTA GasKit sponsorship toolkit. It
+preserves the gas sponsorship foundation and extends it with agent-safe accounts, signer
 references, manifests, receipts, contract workflows, registry/identity
 adapters, standards bridges, and readiness gates.
 
@@ -52,26 +52,26 @@ Read these first:
 - `docs/overview.md`
 - `docs/architecture.md`
 - `docs/product-requirements.md`
-- `docs/agentic-gaskit/migration-plan.md`
-- `docs/agentic-gaskit/account-wallet-safety.md`
-- `docs/agentic-gaskit/execution-slices.md`
-- `docs/agentic-gaskit/verification-hardening.md`
+- `docs/agentrail/migration-plan.md`
+- `docs/agentrail/account-wallet-safety.md`
+- `docs/agentrail/execution-slices.md`
+- `docs/agentrail/verification-hardening.md`
 
 Product authority:
 
 - `docs/product-requirements.md`
 - `docs/overview.md`
 - `docs/architecture.md`
-- `docs/agentic-gaskit/roadmap.md`
-- `docs/agentic-gaskit/account-wallet-safety.md`
+- `docs/agentrail/roadmap.md`
+- `docs/agentrail/account-wallet-safety.md`
 
 Execution evidence authority:
 
-- `docs/agentic-gaskit/execution-slices.md`
-- `docs/agentic-gaskit/launch-readiness-evidence.md`
-- `docs/agentic-gaskit/testnet-digest-proof.md`
+- `docs/agentrail/execution-slices.md`
+- `docs/agentrail/launch-readiness-evidence.md`
+- `docs/agentrail/testnet-digest-proof.md`
 - `docs/reviewer-walkthrough.md`
-- `docs/agentic-gaskit/verification-hardening.md`
+- `docs/agentrail/verification-hardening.md`
 
 Local Codex goal, handoff, raw thesis, scratch audit, and private planning docs
 are intentionally ignored or marked non-authoritative for open-source product
@@ -87,7 +87,7 @@ truth. Do not cite them as public product evidence.
 - HTTP gateway service: `apps/policy-gateway-service/src/`.
 - Shared request/response contracts: `packages/shared-types/src/`.
 - Agent accounts and signer references: `packages/accounts/src/`,
-  `docs/agentic-gaskit/account-wallet-safety.md`.
+  `docs/agentrail/account-wallet-safety.md`.
 - Agent manifests: `packages/manifest/src/`.
 - Receipts: `packages/receipts/src/`.
 - Contract template metadata: `packages/contracts-metadata/src/`.
@@ -101,8 +101,8 @@ truth. Do not cite them as public product evidence.
 - Docs site: `apps/docs-site/`.
 - Testnet, Gas Station, live proof, and operator gates: `scripts/`,
   `docs/testnet-readiness.md`, `docs/testnet-attempts.md`,
-  `docs/agentic-gaskit/live-proof-status.md`,
-  `docs/agentic-gaskit/operator-live-gates.md`.
+  `docs/agentrail/live-proof-status.md`,
+  `docs/agentrail/operator-live-gates.md`.
 - Security and secret hygiene: `docs/security/`, `docs/threat-model.md`,
   `scripts/scan-secrets.ts`.
 
@@ -225,7 +225,7 @@ Secret and redaction invariants:
   credentials, private prompts, raw upstream bodies, raw webhook bodies, or
   local secret paths.
 - Browser/demo code must call same-origin backend routes; backend routes own
-  GasKit app credentials.
+  AgentRail app credentials.
 - Signer references are opaque scoped handles, not bearer credentials.
 - Live/testnet commands require explicit operator intent and operator-owned
   config outside committed files.
@@ -247,7 +247,7 @@ External proof boundaries:
   `scripts/product-status.test.ts`.
 - Package-script wiring: `package.json`, `scripts/package-scripts.test.ts`.
 - Public product and operator docs: `docs/overview.md`,
-  `docs/agentic-gaskit/*.md`, `docs/marketplace-readiness.md`,
+  `docs/agentrail/*.md`, `docs/marketplace-readiness.md`,
   `docs/testnet-readiness.md`.
 - Standards/A2A work: `packages/standards/src/`, `examples/a2a-*`,
   `scripts/smoke-a2a-*`, `scripts/check-a2a-public-readiness.ts`.
@@ -315,7 +315,7 @@ Ignored or local-only state includes:
 - `dist/`
 - `tmp/`
 - `tmp/apex-workflow/`
-- `tmp/gaskit/`
+- `tmp/agentrail/`
 - `deploy/gas-station/config.local.yaml`
 - local Gas Station rendered configs and logs
 - local proof reports and report templates

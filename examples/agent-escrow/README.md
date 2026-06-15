@@ -1,6 +1,6 @@
 # Agent Escrow Demo
 
-This local demo shows one agent hiring another agent through the Agentic GasKit
+This local demo shows one agent hiring another agent through the AgentRail
 mock sponsorship gateway. It proves:
 
 - approved escrow opens through the SDK and gateway;

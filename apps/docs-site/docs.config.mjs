@@ -1,22 +1,22 @@
 export default {
-  title: "Agentic GasKit Docs",
+  title: "AgentRail Docs",
   description: "Self-hostable documentation for IOTA gas sponsorship plus agent-safe wallets, manifests, policy controls, receipts, and integrations.",
-  repositoryUrl: "https://github.com/0xCozart/agentic-gaskit",
+  repositoryUrl: "https://github.com/0xCozart/agentrail",
   sections: [
     {
       label: "Start",
       pages: [
         {
-          title: "IOTA and GasKit Basics",
+          title: "IOTA and AgentRail Basics",
           source: "docs/concepts.md",
           slug: "concepts",
-          description: "Plain-English explanations of IOTA, sponsored gas, GasKit roles, architecture, and common terms."
+          description: "Plain-English explanations of IOTA, sponsored gas, AgentRail roles, architecture, and common terms."
         },
         {
           title: "Overview",
           source: "docs/overview.md",
           slug: "overview",
-          description: "What GasKit is, why it exists, what exists today, what remains roadmap, and where to start."
+          description: "What AgentRail is, why it exists, what exists today, what remains roadmap, and where to start."
         },
         {
           title: "Quickstart",
@@ -37,37 +37,37 @@ export default {
       pages: [
         {
           title: "Execution Entry",
-          source: "docs/agentic-gaskit/execution-entry.md",
+          source: "docs/agentrail/execution-entry.md",
           slug: "agentic-execution-entry",
-          description: "Start here to begin actual Agentic GasKit product implementation."
+          description: "Start here to begin actual AgentRail product implementation."
         },
         {
           title: "Migration Plan",
-          source: "docs/agentic-gaskit/migration-plan.md",
+          source: "docs/agentrail/migration-plan.md",
           slug: "agentic-migration-plan",
-          description: "Canonical migration plan for the Agentic GasKit fork, docs, package decisions, and verification gates."
+          description: "Canonical migration plan for the AgentRail fork, docs, package decisions, and verification gates."
         },
         {
           title: "Agentic Roadmap",
-          source: "docs/agentic-gaskit/roadmap.md",
+          source: "docs/agentrail/roadmap.md",
           slug: "agentic-roadmap",
           description: "End-to-end roadmap for agent wallets, manifests, policy, identity, contracts, receipts, and standards bridges."
         },
         {
           title: "Account And Wallet Safety",
-          source: "docs/agentic-gaskit/account-wallet-safety.md",
+          source: "docs/agentrail/account-wallet-safety.md",
           slug: "agentic-wallet-safety",
           description: "Signer-reference-first safety model for agent-created wallets and recovery boundaries."
         },
         {
           title: "Execution Slices",
-          source: "docs/agentic-gaskit/execution-slices.md",
+          source: "docs/agentrail/execution-slices.md",
           slug: "agentic-execution-slices",
-          description: "Vertical implementation packets and acceptance criteria for the Agentic GasKit buildout."
+          description: "Vertical implementation packets and acceptance criteria for the AgentRail buildout."
         },
         {
           title: "Verification Hardening",
-          source: "docs/agentic-gaskit/verification-hardening.md",
+          source: "docs/agentrail/verification-hardening.md",
           slug: "agentic-verification-hardening",
           description: "Risk register, verification matrix, and hardening gates for agentic sponsored execution."
         },
@@ -79,55 +79,55 @@ export default {
         },
         {
           title: "Package Release Strategy",
-          source: "docs/agentic-gaskit/package-release-strategy.md",
+          source: "docs/agentrail/package-release-strategy.md",
           slug: "agentic-package-release-strategy",
           description: "Current package namespace decision, local tarball consumer proof, prerelease metadata gates, and registry-publication boundaries."
         },
         {
           title: "Device Access Safety Gate",
-          source: "docs/agentic-gaskit/device-access-safety-gate.md",
+          source: "docs/agentrail/device-access-safety-gate.md",
           slug: "agentic-device-access-safety-gate",
           description: "Physical-device blocker and virtual-only path for any future device access lease work."
         },
         {
           title: "Live Proof Status",
-          source: "docs/agentic-gaskit/live-proof-status.md",
+          source: "docs/agentrail/live-proof-status.md",
           slug: "agentic-live-proof-status",
           description: "Non-networked live/testnet proof status command, blocker codes, and safe next commands."
         },
         {
           title: "Testnet Digest Proof",
-          source: "docs/agentic-gaskit/testnet-digest-proof.md",
+          source: "docs/agentrail/testnet-digest-proof.md",
           slug: "agentic-testnet-digest-proof",
           description: "Non-networked documented digest check plus opt-in read-only IOTA testnet lookup for public transaction evidence."
         },
         {
           title: "A2A Public Readiness",
-          source: "docs/agentic-gaskit/a2a-public-readiness.md",
+          source: "docs/agentrail/a2a-public-readiness.md",
           slug: "agentic-a2a-public-readiness",
           description: "Non-networked A2A public-readiness gate for local proof, public hosting inputs, unsupported capabilities, and conformance blockers."
         },
         {
           title: "Product Status Proof",
-          source: "docs/agentic-gaskit/product-status.md",
+          source: "docs/agentrail/product-status.md",
           slug: "agentic-product-status",
           description: "Non-networked product evidence audit that separates local proof from live, production, publication, and safety blockers."
         },
         {
           title: "Launch Readiness Evidence",
-          source: "docs/agentic-gaskit/launch-readiness-evidence.md",
+          source: "docs/agentrail/launch-readiness-evidence.md",
           slug: "agentic-launch-readiness-evidence",
           description: "Non-networked launch-readiness matrix mapping roadmap areas to evidence, commands, blockers, and next gates."
         },
         {
           title: "Operator Live Gates",
-          source: "docs/agentic-gaskit/operator-live-gates.md",
+          source: "docs/agentrail/operator-live-gates.md",
           slug: "agentic-operator-live-gates",
           description: "Non-networked operator runbook classifying live, production, publication, custody, and safety gates before execution."
         },
         {
           title: "Verification Profiles",
-          source: "docs/agentic-gaskit/verification-profiles.md",
+          source: "docs/agentrail/verification-profiles.md",
           slug: "agentic-verification-profiles",
           description: "Fast and full local verification profiles for iteration, handoff, reviewer, and launch evidence."
         },
@@ -158,7 +158,7 @@ export default {
           title: "Agent Guide",
           source: "docs/agent-guide.md",
           slug: "agent-guide",
-          description: "How AI coding agents should navigate, verify, and safely work with GasKit."
+          description: "How AI coding agents should navigate, verify, and safely work with AgentRail."
         },
         {
           title: "Policy Gateway",
@@ -176,7 +176,7 @@ export default {
           title: "Deployment",
           source: "docs/deployment.md",
           slug: "deployment",
-          description: "Local and production deployment notes for GasKit operators."
+          description: "Local and production deployment notes for AgentRail operators."
         }
       ]
     },

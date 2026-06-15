@@ -7,7 +7,7 @@ import { test } from "node:test";
 import { writeIdentityProofBundle } from "./write-identity-proof-bundle.js";
 
 test("identity proof bundle writes templates, plan, and blocked summary without secret values", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-identity-bundle-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-identity-bundle-"));
   try {
     const bundle = await writeIdentityProofBundle({
       cwd,
@@ -15,11 +15,11 @@ test("identity proof bundle writes templates, plan, and blocked summary without 
       env: configuredIdentityEnv(),
       gasStationRuntimeReport: readyGasStationRuntime(),
     });
-    const bundleRaw = await readFile(join(cwd, "tmp/gaskit/identity-proof-bundle.json"), "utf8");
-    const planRaw = await readFile(join(cwd, "tmp/gaskit/live-proof-plan.json"), "utf8");
-    const liveStatusRaw = await readFile(join(cwd, "tmp/gaskit/live-proof-status.json"), "utf8");
+    const bundleRaw = await readFile(join(cwd, "tmp/agentrail/identity-proof-bundle.json"), "utf8");
+    const planRaw = await readFile(join(cwd, "tmp/agentrail/live-proof-plan.json"), "utf8");
+    const liveStatusRaw = await readFile(join(cwd, "tmp/agentrail/live-proof-status.json"), "utf8");
 
-    assert.equal(bundle.kind, "agentic-gaskit.identity-proof-bundle");
+    assert.equal(bundle.kind, "agentrail.identity-proof-bundle");
     assert.equal(bundle.status, "blocked");
     assert.equal(bundle.ready, false);
     assert.deepEqual(bundle.templateArtifacts.map((template) => template.id), [
@@ -27,8 +27,8 @@ test("identity proof bundle writes templates, plan, and blocked summary without 
       "iota-identity-live",
       "vc-validation-live",
     ]);
-    assert.equal(bundle.planArtifact, "tmp/gaskit/live-proof-plan.json");
-    assert.equal(bundle.liveStatusArtifact, "tmp/gaskit/live-proof-status.json");
+    assert.equal(bundle.planArtifact, "tmp/agentrail/live-proof-plan.json");
+    assert.equal(bundle.liveStatusArtifact, "tmp/agentrail/live-proof-status.json");
     assert.deepEqual(bundle.checks.map((check) => [check.id, check.status, check.code]), [
       ["iota-names-live", "blocked", "IOTA_NAMES_LIVE_REPORT_MISSING"],
       ["iota-identity-live", "blocked", "IOTA_IDENTITY_LIVE_REPORT_MISSING"],
@@ -46,12 +46,12 @@ test("identity proof bundle writes templates, plan, and blocked summary without 
     assert.equal(bundle.steps.find((step) => step.id === "run-iota-names-smoke")?.contactsLiveService, true);
     assert.equal(bundle.steps.find((step) => step.id === "write-live-proof-plan")?.contactsLiveService, false);
 
-    await assertMode(join(cwd, "tmp/gaskit/identity-proof-bundle.json"), 0o600);
-    await assertMode(join(cwd, "tmp/gaskit/live-proof-plan.json"), 0o600);
-    await assertMode(join(cwd, "tmp/gaskit/live-proof-status.json"), 0o600);
-    await assertMode(join(cwd, "tmp/gaskit/iota-names-live-report-template.json"), 0o600);
-    await assertMode(join(cwd, "tmp/gaskit/iota-identity-live-report-template.json"), 0o600);
-    await assertMode(join(cwd, "tmp/gaskit/vc-validation-live-report-template.json"), 0o600);
+    await assertMode(join(cwd, "tmp/agentrail/identity-proof-bundle.json"), 0o600);
+    await assertMode(join(cwd, "tmp/agentrail/live-proof-plan.json"), 0o600);
+    await assertMode(join(cwd, "tmp/agentrail/live-proof-status.json"), 0o600);
+    await assertMode(join(cwd, "tmp/agentrail/iota-names-live-report-template.json"), 0o600);
+    await assertMode(join(cwd, "tmp/agentrail/iota-identity-live-report-template.json"), 0o600);
+    await assertMode(join(cwd, "tmp/agentrail/vc-validation-live-report-template.json"), 0o600);
 
     const allOutput = `${JSON.stringify(bundle)}\n${bundleRaw}\n${planRaw}\n${liveStatusRaw}`;
     assert.doesNotMatch(allOutput, /graphql\.testnet\.example/);
@@ -67,7 +67,7 @@ test("identity proof bundle writes templates, plan, and blocked summary without 
 });
 
 test("identity proof bundle is ready when names, identity, and VC gates are ready", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-identity-bundle-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-identity-bundle-"));
   try {
     await mkdir(cwd, { recursive: true });
     await writeFile(join(cwd, "iota-names-report.json"), JSON.stringify(readyIotaNamesReport()));
@@ -83,8 +83,8 @@ test("identity proof bundle is ready when names, identity, and VC gates are read
       },
       gasStationRuntimeReport: readyGasStationRuntime(),
     });
-    const bundleRaw = await readFile(join(cwd, "tmp/gaskit/identity-proof-bundle.json"), "utf8");
-    const liveStatusRaw = await readFile(join(cwd, "tmp/gaskit/live-proof-status.json"), "utf8");
+    const bundleRaw = await readFile(join(cwd, "tmp/agentrail/identity-proof-bundle.json"), "utf8");
+    const liveStatusRaw = await readFile(join(cwd, "tmp/agentrail/live-proof-status.json"), "utf8");
 
     assert.equal(bundle.status, "ready");
     assert.equal(bundle.ready, true);
@@ -94,7 +94,7 @@ test("identity proof bundle is ready when names, identity, and VC gates are read
       "IOTA_IDENTITY_LIVE_REPORT_VALID",
       "VC_VALIDATION_LIVE_REPORT_VALID",
     ]);
-    assert.equal(JSON.parse(liveStatusRaw).kind, "agentic-gaskit.live-proof-status-report");
+    assert.equal(JSON.parse(liveStatusRaw).kind, "agentrail.live-proof-status-report");
     assert.equal(JSON.parse(liveStatusRaw).ok, false);
     assert.deepEqual(bundle.checks.map((check) => [check.id, check.status, check.code]), [
       ["iota-names-live", "ready", "IOTA_NAMES_LIVE_REPORT_VALID"],
@@ -134,7 +134,7 @@ function readyGasStationRuntime() {
 function readyIotaNamesReport() {
   return {
     schemaVersion: 1,
-    kind: "agentic-gaskit.iota-names-live-smoke-report",
+    kind: "agentrail.iota-names-live-smoke-report",
     observedAt: new Date().toISOString(),
     result: "passed",
     code: "IOTA_NAMES_LIVE_SMOKE_PASSED",
@@ -151,7 +151,7 @@ function readyIotaNamesReport() {
 function readyIotaIdentityReport() {
   return {
     schemaVersion: 1,
-    kind: "agentic-gaskit.iota-identity-live-smoke-report",
+    kind: "agentrail.iota-identity-live-smoke-report",
     observedAt: new Date().toISOString(),
     result: "passed",
     code: "IOTA_IDENTITY_LIVE_SMOKE_PASSED",

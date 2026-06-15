@@ -40,6 +40,7 @@ Thumbs.db
 
 # Local tooling
 tmp/apex-workflow/
+tmp/agentrail/
 tmp/gaskit/
 tmp/iota-move-scaffold-check/
 tmp/tooling/
@@ -51,12 +52,14 @@ docs/audits/
 docs/evals/
 docs/evidence/
 docs/handoffs/
+docs/agentrail/local-plans/
+docs/agentrail/local-handoffs/
 docs/agentic-gaskit/local-plans/
 docs/agentic-gaskit/local-handoffs/
-docs/agentic-gaskit/*.local.md
-docs/agentic-gaskit/*-draft.md
-docs/agentic-gaskit/*-scratch.md
-docs/agentic-gaskit/*-handoff-local.md
+docs/agentrail/*.local.md
+docs/agentrail/*-draft.md
+docs/agentrail/*-scratch.md
+docs/agentrail/*-handoff-local.md
 
 # Internal planning docs. These patterns prevent re-adding local/private
 # planning artifacts after they are intentionally de-indexed in a dedicated
@@ -92,6 +95,13 @@ docs/**/*-planning.md
 docs/**/*-planning-*.md
 docs/**/*-plan-local.md
 docs/**/*-evidence-local.md
+docs/agentrail/codex-active-goal.md
+docs/agentrail/codex-execution-prompt.md
+docs/agentrail/end-to-end-goal.md
+docs/agentrail/full-roadmap-execution-goal.md
+docs/agentrail/handoff-next-product-build.md
+docs/agentrail/local-dirty-work-review.md
+docs/agentrail/planning-structure-audit.md
 docs/agentic-gaskit/codex-active-goal.md
 docs/agentic-gaskit/codex-execution-prompt.md
 docs/agentic-gaskit/end-to-end-goal.md
@@ -109,6 +119,10 @@ docs/managed-service-roadmap.md
 docs/milestone-*-proof.md
 docs/milestone-0-proof.md
 docs/team.md
+docs/agentrail/external-api-notes.md
+docs/agentrail/module-specs.md
+docs/agentrail/source-thesis.md
+docs/agentrail/prds/
 docs/agentic-gaskit/external-api-notes.md
 docs/agentic-gaskit/module-specs.md
 docs/agentic-gaskit/source-thesis.md

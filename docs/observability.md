@@ -1,6 +1,6 @@
 # Observability
 
-GasKit observability starts at the policy gateway boundary, where sponsorship decisions should be visible through a minimal event schema that omits known secret-bearing fields such as app API keys, bearer tokens, transaction bytes, and user signatures.
+AgentRail observability starts at the policy gateway boundary, where sponsorship decisions should be visible through a minimal event schema that omits known secret-bearing fields such as app API keys, bearer tokens, transaction bytes, and user signatures.
 
 ## Local gateway decision events
 
@@ -34,12 +34,12 @@ Event fields include:
 - `packageId`
 - `functionName`
 - `gasBudget`
-- `gasKitTransactionId`
+- `agentRailTransactionId`
 - `upstreamReservationId`
 - `reasonCode`
 - `upstreamStatus`
 
-The gateway omits unverified execute correlation IDs from rejection events. Once an execute request matches an in-memory reservation, the event can include the gateway-issued `gasKitTransactionId` and upstream reservation id for correlation.
+The gateway omits unverified execute correlation IDs from rejection events. Once an execute request matches an in-memory reservation, the event can include the gateway-issued `agentRailTransactionId` and upstream reservation id for correlation.
 
 The event payload intentionally does not include:
 
@@ -109,15 +109,15 @@ This is still a local foundation, not the final production usage database. It do
 `GET /operator/usage` is an opt-in local operator API for reading the sanitized usage snapshot from the local JSONL event store. It is absent unless `GatewayConfig.operatorUsage` is configured, or unless `loadGatewayConfigFromEnv()` receives both a local usage store path and a separate operator token:
 
 ```bash
-GASKIT_USAGE_EVENT_STORE_PATH=tmp/gaskit/usage-events.jsonl
-GASKIT_OPERATOR_USAGE_TOKEN=replace-with-local-operator-token
-GASKIT_OPERATOR_USAGE_MAX_RECENT_EVENTS=100
+AGENTRAIL_USAGE_EVENT_STORE_PATH=tmp/agentrail/usage-events.jsonl
+AGENTRAIL_OPERATOR_USAGE_TOKEN=replace-with-local-operator-token
+AGENTRAIL_OPERATOR_USAGE_MAX_RECENT_EVENTS=100
 ```
 
 Requests must send the operator token as a bearer token:
 
 ```bash
-curl -H "Authorization: Bearer $GASKIT_OPERATOR_USAGE_TOKEN" \
+curl -H "Authorization: Bearer $AGENTRAIL_OPERATOR_USAGE_TOKEN" \
   http://127.0.0.1:8787/operator/usage
 ```
 

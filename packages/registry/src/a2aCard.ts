@@ -15,8 +15,8 @@ import {
 
 export const A2A_AGENT_CARD_PROTOCOL_VERSION = "1.0" as const;
 export const A2A_AGENT_CARD_WELL_KNOWN_PATH = "/.well-known/agent-card.json" as const;
-export const AGENTIC_GASKIT_A2A_PROFILE_EXTENSION_URI =
-  "https://agentic-gaskit.dev/a2a/extensions/profile/v1" as const;
+export const AGENTIC_AGENTRAIL_A2A_PROFILE_EXTENSION_URI =
+  "https://agentrail.dev/a2a/extensions/profile/v1" as const;
 
 export type A2AProtocolBinding = "JSONRPC" | "GRPC" | "HTTP+JSON";
 
@@ -235,7 +235,7 @@ export function createA2AAgentCardFromProfile(
 
   const defaultInputModes = nonEmptyList(options.defaultInputModes ?? ["text/plain", "application/json"]);
   const defaultOutputModes = nonEmptyList(options.defaultOutputModes ?? ["text/plain", "application/json"]);
-  const securitySchemeName = nonEmptyString(options.securitySchemeName ?? "gaskitBearer", "$.securitySchemeName");
+  const securitySchemeName = nonEmptyString(options.securitySchemeName ?? "agentrailBearer", "$.securitySchemeName");
   const securitySchemes = options.securitySchemes ?? defaultSecuritySchemes(securitySchemeName);
   assertValidSecuritySchemes(securitySchemes);
   const securityRequirements = options.securityRequirements ?? [{ schemes: { [securitySchemeName]: [] } }];
@@ -244,7 +244,7 @@ export function createA2AAgentCardFromProfile(
 
   const card: A2AAgentCard = {
     name: profile.name,
-    description: options.description ?? `Agentic GasKit agent ${profile.name}.`,
+    description: options.description ?? `AgentRail agent ${profile.name}.`,
     supportedInterfaces: [{
       url: resolveA2AEndpoint(profile, options.endpointUrl),
       protocolBinding: options.protocolBinding ?? "HTTP+JSON",
@@ -424,8 +424,8 @@ function capabilityToSkill(
   return {
     id: capability.id,
     name: capability.displayName ?? capability.id,
-    description: `Agentic GasKit capability ${capability.id}.`,
-    tags: unique(["agentic-gaskit", ...(capability.scopes ?? []), ...(capability.contracts ?? [])]),
+    description: `AgentRail capability ${capability.id}.`,
+    tags: unique(["agentrail", ...(capability.scopes ?? []), ...(capability.contracts ?? [])]),
     inputModes,
     outputModes,
     securityRequirements,
@@ -434,8 +434,8 @@ function capabilityToSkill(
 
 function publicProfileExtension(profile: AgentProfile): A2AAgentExtension {
   return {
-    uri: AGENTIC_GASKIT_A2A_PROFILE_EXTENSION_URI,
-    description: "Public Agentic GasKit profile context.",
+    uri: AGENTIC_AGENTRAIL_A2A_PROFILE_EXTENSION_URI,
+    description: "Public AgentRail profile context.",
     required: false,
     params: {
       profileVersion: profile.version,
@@ -460,7 +460,7 @@ function defaultSecuritySchemes(schemeName: string): Record<string, A2ASecurityS
       httpAuthSecurityScheme: {
         scheme: "Bearer",
         bearerFormat: "JWT",
-        description: "Bearer token accepted by the Agentic GasKit A2A endpoint.",
+        description: "Bearer token accepted by the AgentRail A2A endpoint.",
       },
     },
   };

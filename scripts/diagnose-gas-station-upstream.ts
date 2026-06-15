@@ -33,7 +33,7 @@ Checks the configured live Gas Station boundary without printing secrets:
 
 The reserve probe uses a small gas_budget and should only be run against a funded, intended testnet Gas Station.`;
 
-const SPONSOR_FUNDING_REPORT_ENV = "GASKIT_SPONSOR_FUNDING_REPORT";
+const SPONSOR_FUNDING_REPORT_ENV = "AGENTRAIL_SPONSOR_FUNDING_REPORT";
 
 function parseArgs(argv: string[]): CliOptions {
   const options: CliOptions = { envFile: ".env", help: false, skipReserve: false };

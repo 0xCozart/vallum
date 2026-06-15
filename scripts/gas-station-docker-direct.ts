@@ -71,10 +71,10 @@ export type DockerInspectRunner = (
 ) => Promise<{ ok: boolean; output?: string }>;
 
 const DEFAULT_CONFIG_PATH = "deploy/gas-station/config.local.yaml";
-const DEFAULT_GAS_STATION_CONTAINER = "gaskit-gas-station";
+const DEFAULT_GAS_STATION_CONTAINER = "agentrail-gas-station";
 const DEFAULT_GAS_STATION_IMAGE = "iotaledger/gas-station:latest";
-const DEFAULT_NETWORK = "gaskit-local";
-const DEFAULT_REDIS_CONTAINER = "gaskit-redis";
+const DEFAULT_NETWORK = "agentrail-local";
+const DEFAULT_REDIS_CONTAINER = "agentrail-redis";
 const DEFAULT_REDIS_NETWORK_ALIAS = "redis";
 const START_COMMAND_ATTEMPTS = 3;
 const START_COMMAND_RETRY_DELAY_MS = 1_000;
@@ -172,7 +172,7 @@ export function buildGasStationDockerDirectPlan(
 
 export function formatGasStationDockerDirectPlan(plan: GasStationDockerDirectPlan): string {
   const lines = [
-    "Agentic GasKit direct Docker Gas Station plan",
+    "AgentRail direct Docker Gas Station plan",
     `configPath=${plan.configPath}`,
     `image=${plan.image}`,
     `network=${plan.networkName}`,
@@ -210,7 +210,7 @@ export async function checkGasStationDockerDirectStatus(
 
 export function formatGasStationDockerDirectStatus(report: GasStationDockerDirectStatusReport): string {
   const lines = [
-    "Agentic GasKit direct Docker Gas Station status",
+    "AgentRail direct Docker Gas Station status",
     `ready=${report.ready}`,
     `code=${report.code}`,
     `startsContainers=${report.startsContainers}`,
@@ -221,7 +221,7 @@ export function formatGasStationDockerDirectStatus(report: GasStationDockerDirec
     lines.push(`message=${check.message}`);
   }
   lines.push(report.ready
-    ? "next=npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json"
+    ? "next=npm run diagnose:gas-station -- --report tmp/agentrail/testnet-upstream-diagnostic.json"
     : "next=Start the local stack intentionally with npm run gas-station:docker-direct -- --execute, then rerun --status.");
   return lines.join("\n");
 }
@@ -434,7 +434,7 @@ async function main(): Promise<number> {
       return 1;
     }
     console.log("executed=true");
-    console.log("next=npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json");
+    console.log("next=npm run diagnose:gas-station -- --report tmp/agentrail/testnet-upstream-diagnostic.json");
   } else {
     console.log("executed=false");
     console.log("next=npm run gas-station:docker-direct -- --execute");

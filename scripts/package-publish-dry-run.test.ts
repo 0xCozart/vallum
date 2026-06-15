@@ -28,8 +28,8 @@ test("publish dry-run helper enumerates every public package and excludes privat
 
 test("publish dry-run command uses explicit npm dry-run args for every public workspace", async () => {
   const packages: PublishablePackage[] = [
-    { dir: "packages/accounts", name: "@iota-gaskit/accounts" },
-    { dir: "packages/sdk", name: "@iota-gaskit/sdk" },
+    { dir: "packages/accounts", name: "@agentrail/accounts" },
+    { dir: "packages/sdk", name: "@agentrail/sdk" },
   ];
 
   assert.deepEqual(buildNpmPublishDryRunArgs(packages), [
@@ -40,9 +40,9 @@ test("publish dry-run command uses explicit npm dry-run args for every public wo
     "--access",
     "public",
     "-w",
-    "@iota-gaskit/accounts",
+    "@agentrail/accounts",
     "-w",
-    "@iota-gaskit/sdk",
+    "@agentrail/sdk",
   ]);
 });
 

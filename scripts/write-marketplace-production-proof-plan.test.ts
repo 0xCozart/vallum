@@ -30,7 +30,7 @@ test("marketplace production proof plan reports current blockers without marketp
   });
   const formatted = formatMarketplaceProductionProofPlan(plan);
 
-  assert.equal(plan.kind, "agentic-gaskit.marketplace-production-proof-plan");
+  assert.equal(plan.kind, "agentrail.marketplace-production-proof-plan");
   assert.equal(plan.status, "blocked");
   assert.equal(plan.localProofOk, true);
   assert.equal(plan.productionReady, false);
@@ -43,7 +43,7 @@ test("marketplace production proof plan reports current blockers without marketp
 });
 
 test("marketplace production proof plan can write a redacted local artifact", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-marketplace-plan-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-marketplace-plan-"));
   try {
     const outFile = join(cwd, "tmp", "marketplace-production-proof-plan.json");
     const plan = await writeMarketplaceProductionProofPlan({
@@ -56,7 +56,7 @@ test("marketplace production proof plan can write a redacted local artifact", as
     const parsed = JSON.parse(await readFile(outFile, "utf8")) as typeof plan;
 
     assert.equal(mode, 0o600);
-    assert.equal(parsed.kind, "agentic-gaskit.marketplace-production-proof-plan");
+    assert.equal(parsed.kind, "agentrail.marketplace-production-proof-plan");
     assert.deepEqual(parsed.blockerCodes, plan.blockerCodes);
     assert.deepEqual(parsed.requiredStructuredReportCheckIds, plan.requiredStructuredReportCheckIds);
   } finally {
@@ -65,12 +65,12 @@ test("marketplace production proof plan can write a redacted local artifact", as
 });
 
 test("marketplace production proof plan reports ready approval codes for a valid structured report", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-marketplace-plan-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-marketplace-plan-"));
   try {
     const reportPath = join(cwd, "marketplace-report.json");
     await writeFile(reportPath, JSON.stringify({
       schemaVersion: 1,
-      kind: "agentic-gaskit.marketplace-production-proof",
+      kind: "agentrail.marketplace-production-proof",
       result: "passed",
       observedAt: "2026-06-13T11:00:00.000Z",
       environment: "testnet",

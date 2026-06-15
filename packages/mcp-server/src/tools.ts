@@ -1,5 +1,5 @@
-import type { IotaAgent, SponsoredActionResult } from "@iota-gaskit/sdk";
-import { validateAgentTransactionManifest, type AgentTransactionManifest } from "@iota-gaskit/manifest";
+import type { IotaAgent, SponsoredActionResult } from "@agentrail/sdk";
+import { validateAgentTransactionManifest, type AgentTransactionManifest } from "@agentrail/manifest";
 
 export const REQUEST_SPONSORED_TRANSACTION_TOOL = "iota.request_sponsored_transaction";
 export const OPEN_ESCROW_TOOL = "iota.open_escrow";
@@ -50,13 +50,13 @@ export const IOTA_MCP_TOOLS: readonly IotaMcpToolDescriptor[] = [
   {
     name: REQUEST_SPONSORED_TRANSACTION_TOOL,
     title: "Request sponsored IOTA transaction",
-    description: "Submit an Agent Transaction Manifest through the Agentic GasKit SDK and policy gateway.",
+    description: "Submit an Agent Transaction Manifest through the AgentRail SDK and policy gateway.",
     inputSchema: manifestToolInputSchema(),
   },
   {
     name: OPEN_ESCROW_TOOL,
     title: "Open sponsored escrow",
-    description: "Submit an escrow Agent Transaction Manifest through the Agentic GasKit SDK and policy gateway.",
+    description: "Submit an escrow Agent Transaction Manifest through the AgentRail SDK and policy gateway.",
     inputSchema: manifestToolInputSchema(),
   },
 ];

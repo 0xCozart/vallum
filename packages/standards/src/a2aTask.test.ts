@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { validManifestFixture } from "@iota-gaskit/manifest";
-import type { AgentActionPolicy } from "@iota-gaskit/policy-gateway";
+import { validManifestFixture } from "@agentrail/manifest";
+import type { AgentActionPolicy } from "@agentrail/policy-gateway";
 
 import {
   A2A_TASK_PROTOCOL_VERSION,

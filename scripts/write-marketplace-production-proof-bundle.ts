@@ -35,7 +35,7 @@ export interface MarketplaceProductionProofBundleCheck {
 
 export interface MarketplaceProductionProofBundle {
   readonly schemaVersion: 1;
-  readonly kind: "agentic-gaskit.marketplace-production-proof-bundle";
+  readonly kind: "agentrail.marketplace-production-proof-bundle";
   readonly generatedAt: string;
   readonly status: "blocked" | "ready-for-approval";
   readonly localProofOk: boolean;
@@ -74,10 +74,10 @@ type MutableCliOptions = {
   -readonly [Key in keyof CliOptions]: CliOptions[Key];
 };
 
-const DEFAULT_OUT_FILE = "tmp/gaskit/marketplace-production-proof-bundle.json";
-const DEFAULT_PLAN_OUT_FILE = "tmp/gaskit/marketplace-production-proof-plan.json";
-const DEFAULT_READINESS_OUT_FILE = "tmp/gaskit/marketplace-readiness.json";
-const DEFAULT_TEMPLATE_OUT_FILE = "tmp/gaskit/marketplace-production-report-template.json";
+const DEFAULT_OUT_FILE = "tmp/agentrail/marketplace-production-proof-bundle.json";
+const DEFAULT_PLAN_OUT_FILE = "tmp/agentrail/marketplace-production-proof-plan.json";
+const DEFAULT_READINESS_OUT_FILE = "tmp/agentrail/marketplace-readiness.json";
+const DEFAULT_TEMPLATE_OUT_FILE = "tmp/agentrail/marketplace-production-report-template.json";
 
 const REQUIRED_OPERATOR_INPUTS = [
   "MARKETPLACE_PRODUCTION_REPORT",
@@ -168,7 +168,7 @@ export async function writeMarketplaceProductionProofBundle(
 
   const bundle: MarketplaceProductionProofBundle = {
     schemaVersion: 1,
-    kind: "agentic-gaskit.marketplace-production-proof-bundle",
+    kind: "agentrail.marketplace-production-proof-bundle",
     generatedAt: now.toISOString(),
     status: readiness.productionReady ? "ready-for-approval" : "blocked",
     localProofOk: readiness.localProofOk,

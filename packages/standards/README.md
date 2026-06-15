@@ -1,19 +1,19 @@
-# @iota-gaskit/standards
+# @agentrail/standards
 
-Standards bridge adapters for Agentic GasKit.
+Standards bridge adapters for AgentRail.
 
 Current surface:
 
 - x402 v2 payment requirement to Agent Transaction Manifest mapping.
-- Local mock x402 facilitator flow wired through the Agentic GasKit policy
+- Local mock x402 facilitator flow wired through the AgentRail policy
   gateway evaluator.
 - x402 external payment receipt linkage and log-safe payment metadata redaction.
 - AP2 checkout/payment mandate to Agent Transaction Manifest mapping.
-- Local mock AP2 mandate flow wired through the Agentic GasKit policy gateway
+- Local mock AP2 mandate flow wired through the AgentRail policy gateway
   evaluator.
 - AP2 receipt evidence linkage, dispute evidence pointers, and log-safe
   mandate metadata redaction.
-- A2A Agent Card mapping from Agentic GasKit Agent Profiles using current
+- A2A Agent Card mapping from AgentRail Agent Profiles using current
   discovery fields, auth declarations, supported interfaces, modes, and skills.
 - A2A public-card hardening that fails closed for revoked/expired profiles,
   unsupported local protocol versions, malformed auth declarations, and private
@@ -26,7 +26,7 @@ Current surface:
   keys at the canonical `/.well-known/jwks.json` path without private key
   material.
 - Local/mock A2A task and message operation helpers for send-message,
-  get-task, list-tasks, and cancel-task semantics, gated by Agentic GasKit
+  get-task, list-tasks, and cancel-task semantics, gated by AgentRail
   manifest/policy metadata and log-safe redaction.
 - Local HTTP-shaped A2A handler for public Agent Card discovery and
   bearer-authenticated task send/get/list/cancel routes.

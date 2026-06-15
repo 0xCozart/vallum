@@ -2,8 +2,8 @@ import {
   A2A_AGENT_CARD_WELL_KNOWN_PATH,
   handleA2AAgentCardWellKnownRequest,
   type A2AAgentCardWellKnownOptions,
-} from "@iota-gaskit/registry";
-import type { AgentActionPolicy } from "@iota-gaskit/policy-gateway";
+} from "@agentrail/registry";
+import type { AgentActionPolicy } from "@agentrail/policy-gateway";
 
 import {
   A2APushNotificationError,
@@ -263,7 +263,7 @@ function handleExtendedAgentCardRequest(options: LocalA2AHttpHandlerOptions): A2
     return errorResponse(
       501,
       "A2A_EXTENDED_AGENT_CARD_NOT_CONFIGURED",
-      "A2A extended Agent Card is not configured for this local Agentic GasKit server.",
+      "A2A extended Agent Card is not configured for this local AgentRail server.",
     );
   }
 
@@ -317,7 +317,7 @@ function handlePushNotificationRoute(
     return errorResponse(
       501,
       "A2A_OPERATION_UNSUPPORTED",
-      "A2A push notification configuration is not enabled for this local Agentic GasKit server.",
+      "A2A push notification configuration is not enabled for this local AgentRail server.",
     );
   }
   getA2ATask({ store: options.store, id: route.taskId });

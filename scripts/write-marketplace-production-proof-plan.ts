@@ -24,7 +24,7 @@ export interface MarketplaceProductionProofPlanCheck {
 
 export interface MarketplaceProductionProofPlan {
   readonly schemaVersion: 1;
-  readonly kind: "agentic-gaskit.marketplace-production-proof-plan";
+  readonly kind: "agentrail.marketplace-production-proof-plan";
   readonly generatedAt: string;
   readonly localProofOk: boolean;
   readonly productionReady: boolean;
@@ -153,7 +153,7 @@ export function buildMarketplaceProductionProofPlan(
 
   return {
     schemaVersion: 1,
-    kind: "agentic-gaskit.marketplace-production-proof-plan",
+    kind: "agentrail.marketplace-production-proof-plan",
     generatedAt: now.toISOString(),
     localProofOk: report.localProofOk,
     productionReady: report.productionReady,

@@ -16,7 +16,7 @@ import {
 } from "./write-operator-report-template.js";
 
 test("operator report template builds testnet upstream guidance without accepted diagnostic shape", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "gaskit-testnet-upstream-template-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-testnet-upstream-template-"));
   const outFile = join(cwd, "testnet-upstream-report-template.json");
 
   await writeOperatorReportTemplate({
@@ -26,11 +26,11 @@ test("operator report template builds testnet upstream guidance without accepted
   });
 
   const parsed = JSON.parse(await readFile(outFile, "utf8")) as Record<string, unknown>;
-  assert.equal(parsed.kind, "agentic-gaskit.testnet-upstream-proof-template");
+  assert.equal(parsed.kind, "agentrail.testnet-upstream-proof-template");
   assert.equal(parsed.result, "pending-operator-proof");
-  assert.equal(parsed.diagnosticReportKind, "agentic-gaskit.testnet-upstream-diagnostic");
-  assert.equal(parsed.acceptedReportEnv, "GASKIT_TESTNET_UPSTREAM_REPORT");
-  assert.equal(parsed.sponsorFundingReportEnv, "GASKIT_SPONSOR_FUNDING_REPORT");
+  assert.equal(parsed.diagnosticReportKind, "agentrail.testnet-upstream-diagnostic");
+  assert.equal(parsed.acceptedReportEnv, "AGENTRAIL_TESTNET_UPSTREAM_REPORT");
+  assert.equal(parsed.sponsorFundingReportEnv, "AGENTRAIL_SPONSOR_FUNDING_REPORT");
   assert.deepEqual(parsed.supportedRuntimeModes, ["local-docker", "managed-upstream"]);
   assert.deepEqual(parsed.requiredEnv, ["IOTA_RPC_URL", "GAS_STATION_URL", "GAS_STATION_BEARER_TOKEN"]);
   assert.ok((parsed.commands as string[]).includes("npm run diagnose:gas-station -- --skip-reserve --report <ignored-json-path>"));
@@ -40,9 +40,9 @@ test("operator report template builds testnet upstream guidance without accepted
       < (parsed.commands as string[]).indexOf("npm run diagnose:gas-station -- --report <ignored-json-path>"),
   );
   assert.ok((parsed.commands as string[]).includes("npm run gas-station:docker-direct -- --status"));
-  assert.ok((parsed.commands as string[]).includes("npm run sponsor:write-funding-request -- --out tmp/gaskit/sponsor-funding-request.json"));
-  assert.ok((parsed.commands as string[]).includes("npm run sponsor:request-faucet-funds -- --execute --out tmp/gaskit/sponsor-faucet-request.json"));
-  assert.ok((parsed.commands as string[]).includes("npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json"));
+  assert.ok((parsed.commands as string[]).includes("npm run sponsor:write-funding-request -- --out tmp/agentrail/sponsor-funding-request.json"));
+  assert.ok((parsed.commands as string[]).includes("npm run sponsor:request-faucet-funds -- --execute --out tmp/agentrail/sponsor-faucet-request.json"));
+  assert.ok((parsed.commands as string[]).includes("npm run sponsor:check-funding -- --report tmp/agentrail/sponsor-funding-report.json"));
   assert.ok((parsed.checks as string[]).includes("sponsor-funding-readiness"));
   assert.ok((parsed.checks as string[]).includes("reserve-gas-compatibility"));
   assert.ok((parsed.notes as string[]).some((note) => note.includes("--skip-reserve diagnostic is reachability triage only")));
@@ -54,7 +54,7 @@ test("operator report template builds testnet upstream guidance without accepted
 });
 
 test("operator report template builds testnet digest guidance without accepted proof shape", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "gaskit-testnet-digest-template-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-testnet-digest-template-"));
   const outFile = join(cwd, "testnet-digest-report-template.json");
 
   await writeOperatorReportTemplate({
@@ -67,16 +67,16 @@ test("operator report template builds testnet digest guidance without accepted p
   assert.equal(mode, 0o600);
 
   const parsed = JSON.parse(await readFile(outFile, "utf8")) as Record<string, unknown>;
-  assert.equal(parsed.kind, "agentic-gaskit.testnet-digest-proof-template");
+  assert.equal(parsed.kind, "agentrail.testnet-digest-proof-template");
   assert.equal(parsed.result, "pending-operator-proof");
-  assert.equal(parsed.acceptedReportKind, "agentic-gaskit.testnet-digest-proof-report");
-  assert.equal(parsed.acceptedReportEnv, "GASKIT_TESTNET_DIGEST_REPORT");
+  assert.equal(parsed.acceptedReportKind, "agentrail.testnet-digest-proof-report");
+  assert.equal(parsed.acceptedReportEnv, "AGENTRAIL_TESTNET_DIGEST_REPORT");
   assert.deepEqual(parsed.requiredEnv, ["IOTA_RPC_URL"]);
   assert.ok((parsed.commands as string[]).includes("npm run proof:testnet-digest"));
-  assert.ok((parsed.commands as string[]).includes("npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json"));
+  assert.ok((parsed.commands as string[]).includes("npm run proof:testnet-digest:live -- --report tmp/agentrail/testnet-digest-proof.json"));
   assert.ok(
     (parsed.commands as string[]).indexOf("npm run proof:testnet-digest")
-      < (parsed.commands as string[]).indexOf("npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json"),
+      < (parsed.commands as string[]).indexOf("npm run proof:testnet-digest:live -- --report tmp/agentrail/testnet-digest-proof.json"),
   );
   assert.ok((parsed.commands as string[]).includes("npm run proof:live-status"));
   assert.ok((parsed.checks as string[]).includes("read-only-live-lookup"));
@@ -91,7 +91,7 @@ test("operator report template builds testnet digest guidance without accepted p
 });
 
 test("operator report template builds IOTA Names guidance without accepted report shape", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "gaskit-iota-names-template-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-iota-names-template-"));
   const outFile = join(cwd, "iota-names-live-report-template.json");
 
   await writeOperatorReportTemplate({
@@ -104,13 +104,13 @@ test("operator report template builds IOTA Names guidance without accepted repor
   assert.equal(mode, 0o600);
 
   const parsed = JSON.parse(await readFile(outFile, "utf8")) as Record<string, unknown>;
-  assert.equal(parsed.kind, "agentic-gaskit.iota-names-live-smoke-template");
+  assert.equal(parsed.kind, "agentrail.iota-names-live-smoke-template");
   assert.equal(parsed.result, "pending-operator-proof");
-  assert.equal(parsed.acceptedReportKind, "agentic-gaskit.iota-names-live-smoke-report");
+  assert.equal(parsed.acceptedReportKind, "agentrail.iota-names-live-smoke-report");
   assert.equal(parsed.acceptedReportEnv, "IOTA_NAMES_LIVE_REPORT");
   assert.deepEqual(parsed.requiredEnv, ["IOTA_NAMES_GRAPHQL_URL", "IOTA_NAMES_NAME", "IOTA_NAMES_EXPECTED_ADDRESS"]);
   assert.ok((parsed.commands as string[]).includes("npm run live:write-proof-plan"));
-  assert.ok((parsed.commands as string[]).includes("npm run smoke:iota-names-live -- --report tmp/gaskit/iota-names-live-report.json"));
+  assert.ok((parsed.commands as string[]).includes("npm run smoke:iota-names-live -- --report tmp/agentrail/iota-names-live-report.json"));
   assert.ok((parsed.checks as string[]).includes("expected-address-match"));
   assert.ok((parsed.notes as string[]).some((note) => note.includes("not accepted as passing IOTA Names evidence")));
 
@@ -121,7 +121,7 @@ test("operator report template builds IOTA Names guidance without accepted repor
 });
 
 test("operator report template builds IOTA Identity guidance without accepted report shape", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "gaskit-iota-identity-template-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-iota-identity-template-"));
   const outFile = join(cwd, "iota-identity-live-report-template.json");
 
   await writeOperatorReportTemplate({
@@ -131,9 +131,9 @@ test("operator report template builds IOTA Identity guidance without accepted re
   });
 
   const parsed = JSON.parse(await readFile(outFile, "utf8")) as Record<string, unknown>;
-  assert.equal(parsed.kind, "agentic-gaskit.iota-identity-live-smoke-template");
+  assert.equal(parsed.kind, "agentrail.iota-identity-live-smoke-template");
   assert.equal(parsed.result, "pending-operator-proof");
-  assert.equal(parsed.acceptedReportKind, "agentic-gaskit.iota-identity-live-smoke-report");
+  assert.equal(parsed.acceptedReportKind, "agentrail.iota-identity-live-smoke-report");
   assert.equal(parsed.acceptedReportEnv, "IOTA_IDENTITY_LIVE_REPORT");
   assert.deepEqual(parsed.requiredEnv, [
     "IOTA_IDENTITY_PROOF_ENDPOINT",
@@ -144,7 +144,7 @@ test("operator report template builds IOTA Identity guidance without accepted re
     "IOTA_IDENTITY_ACCEPTED_STATUS_TYPES",
     "IOTA_IDENTITY_CACHE_TTL_MS",
   ]);
-  assert.ok((parsed.commands as string[]).includes("npm run smoke:iota-identity-live -- --report tmp/gaskit/iota-identity-live-report.json"));
+  assert.ok((parsed.commands as string[]).includes("npm run smoke:iota-identity-live -- --report tmp/agentrail/iota-identity-live-report.json"));
   assert.ok((parsed.checks as string[]).includes("credential-evidence-validation"));
   assert.ok((parsed.notes as string[]).some((note) => note.includes("not accepted as passing IOTA Identity evidence")));
 
@@ -160,13 +160,13 @@ test("operator report template builds VC validation guidance against identity re
     now: new Date("2026-06-14T12:00:00.000Z"),
   });
 
-  assert.equal(template.kind, "agentic-gaskit.vc-validation-live-template");
+  assert.equal(template.kind, "agentrail.vc-validation-live-template");
   assert.equal(template.result, "pending-operator-proof");
-  assert.equal(template.acceptedReportKind, "agentic-gaskit.iota-identity-live-smoke-report");
+  assert.equal(template.acceptedReportKind, "agentrail.iota-identity-live-smoke-report");
   assert.equal(template.acceptedReportEnv, "IOTA_IDENTITY_LIVE_REPORT");
   assert.ok((template.requiredEnv as string[]).includes("IOTA_IDENTITY_TRUSTED_ISSUER_DIDS"));
   assert.ok((template.requiredEnv as string[]).includes("IOTA_IDENTITY_PROOF_ENDPOINT"));
-  assert.ok((template.commands as string[]).includes("npm run smoke:iota-identity-live -- --report tmp/gaskit/iota-identity-live-report.json"));
+  assert.ok((template.commands as string[]).includes("npm run smoke:iota-identity-live -- --report tmp/agentrail/iota-identity-live-report.json"));
   assert.ok((template.checks as string[]).includes("credential-evidence-present"));
   assert.ok((template.notes as string[]).some((note) => note.includes("uses the accepted IOTA Identity live smoke report")));
 });
@@ -178,11 +178,11 @@ test("operator report template builds package publication schema without marking
   });
 
   assert.equal(template.schemaVersion, 1);
-  assert.equal(template.kind, "agentic-gaskit.package-publication-proof");
+  assert.equal(template.kind, "agentrail.package-publication-proof");
   assert.equal(template.result, "pending-operator-proof");
   assert.equal(template.registry, "npm");
   assert.ok(Array.isArray(template.packageNames));
-  assert.ok((template.packageNames as string[]).includes("@iota-gaskit/sdk"));
+  assert.ok((template.packageNames as string[]).includes("@agentrail/sdk"));
   assert.deepEqual(template.checks, [
     "npm-pack-dry-run",
     "local-tarball-install",
@@ -194,7 +194,7 @@ test("operator report template builds package publication schema without marking
 });
 
 test("operator report template writes private local artifact and remains not-passed evidence", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "gaskit-report-template-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-report-template-"));
   const outFile = join(cwd, "package-report.json");
 
   await writeOperatorReportTemplate({
@@ -216,7 +216,7 @@ test("operator report template writes private local artifact and remains not-pas
 });
 
 test("operator report template builds A2A discovery report fields without unsafe report keys", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "gaskit-a2a-template-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-a2a-template-"));
   const outFile = join(cwd, "a2a-discovery-report.json");
 
   await writeOperatorReportTemplate({
@@ -263,10 +263,10 @@ test("operator report template builds production custody and marketplace choices
     now: new Date("2026-06-14T12:00:00.000Z"),
   });
 
-  assert.equal(custody.kind, "agentic-gaskit.custody-production-proof");
+  assert.equal(custody.kind, "agentrail.custody-production-proof");
   assert.equal(custody.custodyMode, "kms");
   assert.ok((custody.checks as string[]).includes("incident-response-review"));
-  assert.equal(marketplace.kind, "agentic-gaskit.marketplace-production-proof");
+  assert.equal(marketplace.kind, "agentrail.marketplace-production-proof");
   assert.equal(marketplace.environment, "production");
   assert.ok((marketplace.checks as string[]).includes("operations-incident-review"));
 });

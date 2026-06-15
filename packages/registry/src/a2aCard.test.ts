@@ -24,18 +24,18 @@ test("A2A Agent Card generation maps an active Agent Profile to current discover
 
   const card = createA2AAgentCardFromProfile(profile, {
     now: new Date("2026-06-10T12:00:00.000Z"),
-    description: "Research agent exposed through Agentic GasKit.",
+    description: "Research agent exposed through AgentRail.",
     agentVersion: "2026.6.10",
     provider: {
-      organization: "Agentic GasKit",
-      url: "https://agentic-gaskit.example.test",
+      organization: "AgentRail",
+      url: "https://agentrail.example.test",
     },
-    documentationUrl: "https://agentic-gaskit.example.test/docs/researcher",
+    documentationUrl: "https://agentrail.example.test/docs/researcher",
   });
 
   assert.equal(A2A_AGENT_CARD_WELL_KNOWN_PATH, "/.well-known/agent-card.json");
   assert.equal(card.name, "researcher.demo.iota");
-  assert.equal(card.description, "Research agent exposed through Agentic GasKit.");
+  assert.equal(card.description, "Research agent exposed through AgentRail.");
   assert.equal(card.version, "2026.6.10");
   assert.deepEqual(card.supportedInterfaces, [{
     url: "https://agent.example.test/a2a",
@@ -43,29 +43,29 @@ test("A2A Agent Card generation maps an active Agent Profile to current discover
     protocolVersion: A2A_AGENT_CARD_PROTOCOL_VERSION,
   }]);
   assert.deepEqual(card.provider, {
-    organization: "Agentic GasKit",
-    url: "https://agentic-gaskit.example.test",
+    organization: "AgentRail",
+    url: "https://agentrail.example.test",
   });
-  assert.equal(card.documentationUrl, "https://agentic-gaskit.example.test/docs/researcher");
+  assert.equal(card.documentationUrl, "https://agentrail.example.test/docs/researcher");
   assert.deepEqual(card.defaultInputModes, ["text/plain", "application/json"]);
   assert.deepEqual(card.defaultOutputModes, ["text/plain", "application/json"]);
   assert.deepEqual(card.securitySchemes, {
-    gaskitBearer: {
+    agentrailBearer: {
       httpAuthSecurityScheme: {
         scheme: "Bearer",
         bearerFormat: "JWT",
-        description: "Bearer token accepted by the Agentic GasKit A2A endpoint.",
+        description: "Bearer token accepted by the AgentRail A2A endpoint.",
       },
     },
   });
-  assert.deepEqual(card.securityRequirements, [{ schemes: { gaskitBearer: [] } }]);
+  assert.deepEqual(card.securityRequirements, [{ schemes: { agentrailBearer: [] } }]);
   assert.deepEqual(card.capabilities, {
     streaming: false,
     pushNotifications: false,
     extendedAgentCard: false,
     extensions: [{
-      uri: "https://agentic-gaskit.dev/a2a/extensions/profile/v1",
-      description: "Public Agentic GasKit profile context.",
+      uri: "https://agentrail.dev/a2a/extensions/profile/v1",
+      description: "Public AgentRail profile context.",
       required: false,
       params: {
         profileVersion: "agent-profile/v1",
@@ -79,11 +79,11 @@ test("A2A Agent Card generation maps an active Agent Profile to current discover
   assert.deepEqual(card.skills, [{
     id: "research.summary",
     name: "Research summary",
-    description: "Agentic GasKit capability research.summary.",
-    tags: ["agentic-gaskit", "contract:escrow", "action:open_escrow", "escrow:v1"],
+    description: "AgentRail capability research.summary.",
+    tags: ["agentrail", "contract:escrow", "action:open_escrow", "escrow:v1"],
     inputModes: ["text/plain", "application/json"],
     outputModes: ["text/plain", "application/json"],
-    securityRequirements: [{ schemes: { gaskitBearer: [] } }],
+    securityRequirements: [{ schemes: { agentrailBearer: [] } }],
   }]);
 });
 

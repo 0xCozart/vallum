@@ -68,7 +68,7 @@ export interface RoadmapExecutionProofBundleStep {
 
 export interface RoadmapExecutionProofBundle {
   readonly schemaVersion: 1;
-  readonly kind: "agentic-gaskit.roadmap-execution-proof-bundle";
+  readonly kind: "agentrail.roadmap-execution-proof-bundle";
   readonly generatedAt: string;
   readonly status: RoadmapExecutionProofBundleStatus;
   readonly roadmapComplete: boolean;
@@ -104,8 +104,8 @@ interface CliOptions {
   readonly artifactDir: string;
 }
 
-const DEFAULT_ARTIFACT_DIR = "tmp/gaskit/roadmap-execution";
-const DEFAULT_OUT_FILE = "tmp/gaskit/roadmap-execution-proof-bundle.json";
+const DEFAULT_ARTIFACT_DIR = "tmp/agentrail/roadmap-execution";
+const DEFAULT_OUT_FILE = "tmp/agentrail/roadmap-execution-proof-bundle.json";
 
 const BOUNDARIES = [
   "This bundle writer is non-networked and only writes ignored local status artifacts and proof-preparation bundle summaries.",
@@ -116,7 +116,7 @@ const BOUNDARIES = [
 
 const usage = `usage: npm exec tsx -- scripts/write-roadmap-execution-proof-bundle.ts [--out <path>] [--artifact-dir <path>]
 
-Writes one non-networked ignored local bundle for the remaining Agentic GasKit roadmap/operator proof gates.
+Writes one non-networked ignored local bundle for the remaining AgentRail roadmap/operator proof gates.
 The command composes existing status artifacts and proof-bundle writers; it does not contact live services, publish packages, reserve gas, sign transactions, or execute transactions.`;
 
 export async function writeRoadmapExecutionProofBundle(
@@ -242,7 +242,7 @@ export async function writeRoadmapExecutionProofBundle(
 
   const bundle: RoadmapExecutionProofBundle = {
     schemaVersion: 1,
-    kind: "agentic-gaskit.roadmap-execution-proof-bundle",
+    kind: "agentrail.roadmap-execution-proof-bundle",
     generatedAt: now.toISOString(),
     status: roadmapCompletion.roadmapComplete ? "ready-for-approval" : "blocked",
     roadmapComplete: roadmapCompletion.roadmapComplete,
@@ -349,9 +349,9 @@ function readyCodesForStatusArtifact(
     | OperatorLiveGateArtifact
     | RoadmapCompletionArtifact,
 ): readonly string[] {
-  if (artifact.kind === "agentic-gaskit.product-status-report") return artifact.readyLiveCheckIds;
-  if (artifact.kind === "agentic-gaskit.operator-live-gate-report") return artifact.readyApprovalGateIds;
-  if (artifact.kind === "agentic-gaskit.launch-readiness-report") return artifact.provenLocalAreaIds;
+  if (artifact.kind === "agentrail.product-status-report") return artifact.readyLiveCheckIds;
+  if (artifact.kind === "agentrail.operator-live-gate-report") return artifact.readyApprovalGateIds;
+  if (artifact.kind === "agentrail.launch-readiness-report") return artifact.provenLocalAreaIds;
   return [];
 }
 

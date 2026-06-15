@@ -28,7 +28,7 @@ const currentVersion = "0.0.0-prerelease";
 test("workspace root is private and keeps publishable packages out of root publication", async () => {
   const root = JSON.parse(await readFile("package.json", "utf8")) as PackageJson;
 
-  assert.equal(root.name, "agentic-gaskit");
+  assert.equal(root.name, "agentrail");
   assert.equal(root.private, true);
   assert.equal(root.version, currentVersion);
   assert.equal(root.license, "Apache-2.0");
@@ -40,7 +40,7 @@ test("public package metadata pins safe prerelease publish settings", async () =
   for (const packageDir of publicPackages) {
     const packageJson = await readPackageJson(packageDir);
 
-    assert.match(packageJson.name, /^@iota-gaskit\/[a-z0-9-]+$/, `${packageJson.name} must stay in the conservative namespace`);
+    assert.match(packageJson.name, /^@agentrail\/[a-z0-9-]+$/, `${packageJson.name} must stay in the conservative namespace`);
     assert.equal(packageJson.version, currentVersion, `${packageJson.name} must use the repo prerelease version`);
     assert.equal(packageJson.private, undefined, `${packageJson.name} must not be private if pack:check publishes it`);
     assert.equal(packageJson.type, "module", `${packageJson.name} must publish ESM`);
@@ -141,5 +141,5 @@ function internalDependencies(packageJson: PackageJson): [string, string][] {
   return Object.entries({
     ...packageJson.dependencies,
     ...packageJson.devDependencies,
-  }).filter(([name]) => name.startsWith("@iota-gaskit/"));
+  }).filter(([name]) => name.startsWith("@agentrail/"));
 }

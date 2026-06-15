@@ -227,11 +227,11 @@ export async function buildOperatorReportTemplate(
     case "testnet-upstream":
       return {
         ...base,
-        kind: "agentic-gaskit.testnet-upstream-proof-template",
-        diagnosticReportKind: "agentic-gaskit.testnet-upstream-diagnostic",
-        acceptedReportEnv: "GASKIT_TESTNET_UPSTREAM_REPORT",
-        sponsorFundingReportEnv: "GASKIT_SPONSOR_FUNDING_REPORT",
-        runtimeModeEnv: "GASKIT_GAS_STATION_RUNTIME_MODE",
+        kind: "agentrail.testnet-upstream-proof-template",
+        diagnosticReportKind: "agentrail.testnet-upstream-diagnostic",
+        acceptedReportEnv: "AGENTRAIL_TESTNET_UPSTREAM_REPORT",
+        sponsorFundingReportEnv: "AGENTRAIL_SPONSOR_FUNDING_REPORT",
+        runtimeModeEnv: "AGENTRAIL_GAS_STATION_RUNTIME_MODE",
         supportedRuntimeModes: ["local-docker", "managed-upstream"],
         requiredEnv: [
           "IOTA_RPC_URL",
@@ -241,9 +241,9 @@ export async function buildOperatorReportTemplate(
         commands: [
           "npm run gas-station:runtime-preflight",
           "npm run gas-station:docker-direct -- --status",
-          "npm run sponsor:write-funding-request -- --out tmp/gaskit/sponsor-funding-request.json",
-          "npm run sponsor:request-faucet-funds -- --execute --out tmp/gaskit/sponsor-faucet-request.json",
-          "npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json",
+          "npm run sponsor:write-funding-request -- --out tmp/agentrail/sponsor-funding-request.json",
+          "npm run sponsor:request-faucet-funds -- --execute --out tmp/agentrail/sponsor-faucet-request.json",
+          "npm run sponsor:check-funding -- --report tmp/agentrail/sponsor-funding-report.json",
           "npm run diagnose:gas-station -- --skip-reserve --report <ignored-json-path>",
           "npm run diagnose:gas-station -- --report <ignored-json-path>",
           "npm run proof:live-status",
@@ -255,15 +255,15 @@ export async function buildOperatorReportTemplate(
     case "testnet-digest":
       return {
         ...base,
-        kind: "agentic-gaskit.testnet-digest-proof-template",
-        acceptedReportKind: "agentic-gaskit.testnet-digest-proof-report",
-        acceptedReportEnv: "GASKIT_TESTNET_DIGEST_REPORT",
+        kind: "agentrail.testnet-digest-proof-template",
+        acceptedReportKind: "agentrail.testnet-digest-proof-report",
+        acceptedReportEnv: "AGENTRAIL_TESTNET_DIGEST_REPORT",
         requiredEnv: [
           "IOTA_RPC_URL",
         ],
         commands: [
           "npm run proof:testnet-digest",
-          "npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json",
+          "npm run proof:testnet-digest:live -- --report tmp/agentrail/testnet-digest-proof.json",
           "npm run proof:live-status",
           "npm run proof:product-status",
           "npm run proof:operator-gates",
@@ -274,8 +274,8 @@ export async function buildOperatorReportTemplate(
     case "iota-names-live":
       return {
         ...base,
-        kind: "agentic-gaskit.iota-names-live-smoke-template",
-        acceptedReportKind: "agentic-gaskit.iota-names-live-smoke-report",
+        kind: "agentrail.iota-names-live-smoke-template",
+        acceptedReportKind: "agentrail.iota-names-live-smoke-report",
         acceptedReportEnv: "IOTA_NAMES_LIVE_REPORT",
         requiredEnv: [
           "IOTA_NAMES_GRAPHQL_URL",
@@ -284,7 +284,7 @@ export async function buildOperatorReportTemplate(
         ],
         commands: [
           "npm run live:write-proof-plan",
-          "npm run smoke:iota-names-live -- --report tmp/gaskit/iota-names-live-report.json",
+          "npm run smoke:iota-names-live -- --report tmp/agentrail/iota-names-live-report.json",
           "npm run proof:live-status",
           "npm run proof:product-status",
           "npm run proof:operator-gates",
@@ -295,8 +295,8 @@ export async function buildOperatorReportTemplate(
     case "iota-identity-live":
       return {
         ...base,
-        kind: "agentic-gaskit.iota-identity-live-smoke-template",
-        acceptedReportKind: "agentic-gaskit.iota-identity-live-smoke-report",
+        kind: "agentrail.iota-identity-live-smoke-template",
+        acceptedReportKind: "agentrail.iota-identity-live-smoke-report",
         acceptedReportEnv: "IOTA_IDENTITY_LIVE_REPORT",
         requiredEnv: [
           "IOTA_IDENTITY_PROOF_ENDPOINT",
@@ -309,7 +309,7 @@ export async function buildOperatorReportTemplate(
         ],
         commands: [
           "npm run live:write-proof-plan",
-          "npm run smoke:iota-identity-live -- --report tmp/gaskit/iota-identity-live-report.json",
+          "npm run smoke:iota-identity-live -- --report tmp/agentrail/iota-identity-live-report.json",
           "npm run proof:live-status",
           "npm run proof:product-status",
           "npm run proof:operator-gates",
@@ -320,8 +320,8 @@ export async function buildOperatorReportTemplate(
     case "vc-validation-live":
       return {
         ...base,
-        kind: "agentic-gaskit.vc-validation-live-template",
-        acceptedReportKind: "agentic-gaskit.iota-identity-live-smoke-report",
+        kind: "agentrail.vc-validation-live-template",
+        acceptedReportKind: "agentrail.iota-identity-live-smoke-report",
         acceptedReportEnv: "IOTA_IDENTITY_LIVE_REPORT",
         requiredEnv: [
           "IOTA_IDENTITY_TRUSTED_ISSUER_DIDS",
@@ -334,7 +334,7 @@ export async function buildOperatorReportTemplate(
         ],
         commands: [
           "npm run live:write-proof-plan",
-          "npm run smoke:iota-identity-live -- --report tmp/gaskit/iota-identity-live-report.json",
+          "npm run smoke:iota-identity-live -- --report tmp/agentrail/iota-identity-live-report.json",
           "npm run proof:live-status",
           "npm run proof:product-status",
           "npm run proof:operator-gates",
@@ -367,14 +367,14 @@ export async function buildOperatorReportTemplate(
     case "payment-provider-live":
       return {
         ...base,
-        kind: "agentic-gaskit.payment-provider-live-proof",
+        kind: "agentrail.payment-provider-live-proof",
         providerKinds: ["x402", "ap2"],
         checks: PAYMENT_CHECKS,
       };
     case "package-publication":
       return {
         ...base,
-        kind: "agentic-gaskit.package-publication-proof",
+        kind: "agentrail.package-publication-proof",
         registry: "npm",
         packageNames: (await collectPublishablePackages(cwd)).map((packageInfo) => packageInfo.name),
         checks: PACKAGE_CHECKS,
@@ -382,14 +382,14 @@ export async function buildOperatorReportTemplate(
     case "marketplace-production":
       return {
         ...base,
-        kind: "agentic-gaskit.marketplace-production-proof",
+        kind: "agentrail.marketplace-production-proof",
         environment: options.environment ?? "testnet",
         checks: MARKETPLACE_CHECKS,
       };
     case "custody-production":
       return {
         ...base,
-        kind: "agentic-gaskit.custody-production-proof",
+        kind: "agentrail.custody-production-proof",
         custodyMode: options.custodyMode ?? "external-signer",
         checks: CUSTODY_CHECKS,
       };

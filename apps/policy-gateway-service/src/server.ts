@@ -1,8 +1,8 @@
 import { randomUUID, timingSafeEqual } from "node:crypto";
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 
-import { evaluateSponsorshipPolicy } from "@iota-gaskit/policy-gateway";
-import type { PolicyDecision, PolicyReasonCode, SponsorshipPolicy, SponsorshipRequestContext } from "@iota-gaskit/shared-types";
+import { evaluateSponsorshipPolicy } from "@agentrail/policy-gateway";
+import type { PolicyDecision, PolicyReasonCode, SponsorshipPolicy, SponsorshipRequestContext } from "@agentrail/shared-types";
 
 import type { GatewayUsageSnapshot } from "./usage.js";
 
@@ -25,7 +25,7 @@ export interface GatewayEvent {
   packageId?: string;
   functionName?: string;
   gasBudget?: number;
-  gasKitTransactionId?: string;
+  agentRailTransactionId?: string;
   upstreamReservationId?: string;
   reasonCode?: PolicyReasonCode;
   upstreamStatus?: number;
@@ -278,7 +278,7 @@ function sanitizeGatewayEvent(event: Omit<GatewayEvent, "id" | "timestamp">): Ga
   setEventString(sanitized, "packageId", event.packageId);
   setEventString(sanitized, "functionName", event.functionName);
   setEventNumber(sanitized, "gasBudget", event.gasBudget);
-  setEventString(sanitized, "gasKitTransactionId", event.gasKitTransactionId);
+  setEventString(sanitized, "agentRailTransactionId", event.agentRailTransactionId);
   setEventString(sanitized, "upstreamReservationId", event.upstreamReservationId);
   setEventString(sanitized, "reasonCode", event.reasonCode);
   setEventNumber(sanitized, "upstreamStatus", event.upstreamStatus);
@@ -410,7 +410,7 @@ export function createGatewayServer(config: GatewayConfig): Server {
   async function handleHealth(response: ServerResponse): Promise<void> {
     writeJson(response, 200, {
       status: "ok",
-      service: "iota-gaskit-policy-gateway",
+      service: "agentrail-policy-gateway",
       upstream: { configured: Boolean(config.upstreamBaseUrl) },
     });
   }
@@ -519,9 +519,9 @@ export function createGatewayServer(config: GatewayConfig): Server {
       return rejectDecision(response, decision);
     }
 
-    const gasKitTransactionId = `gaskit_${randomUUID()}`;
-    reservations.set(gasKitTransactionId, {
-      id: gasKitTransactionId,
+    const agentRailTransactionId = `agentrail_${randomUUID()}`;
+    reservations.set(agentRailTransactionId, {
+      id: agentRailTransactionId,
       upstreamReservationId,
       upstreamReservationIdForProxy: typeof upstreamReservationIdRaw === "number" ? upstreamReservationIdRaw : upstreamReservationId,
       appId,
@@ -536,12 +536,12 @@ export function createGatewayServer(config: GatewayConfig): Server {
       operation: "reserve",
       outcome: "allowed",
       httpStatus: 200,
-      gasKitTransactionId,
+      agentRailTransactionId,
       upstreamReservationId,
       ...eventContext,
     });
 
-    writeJson(response, 200, { ...upstreamBody, gasKitTransactionId });
+    writeJson(response, 200, { ...upstreamBody, agentRailTransactionId });
   }
 
   async function handleExecute(request: IncomingMessage, response: ServerResponse): Promise<void> {
@@ -559,9 +559,9 @@ export function createGatewayServer(config: GatewayConfig): Server {
     }
 
     const body = requestRecord(await readJson(request));
-    const legacyGasKitTransactionId = stringField(body, "_saas_tx_id");
-    const publicGasKitTransactionId = stringField(body, "gasKitTransactionId");
-    if (legacyGasKitTransactionId && publicGasKitTransactionId && legacyGasKitTransactionId !== publicGasKitTransactionId) {
+    const legacyAgentRailTransactionId = stringField(body, "_saas_tx_id");
+    const publicAgentRailTransactionId = stringField(body, "agentRailTransactionId");
+    if (legacyAgentRailTransactionId && publicAgentRailTransactionId && legacyAgentRailTransactionId !== publicAgentRailTransactionId) {
       emitGatewayEvent(config, {
         operation: "execute",
         outcome: "rejected",
@@ -569,12 +569,12 @@ export function createGatewayServer(config: GatewayConfig): Server {
         appId: appMatch.appId,
         reasonCode: "EXECUTION_FAILED",
       });
-      writeJson(response, 409, rejectionBody("EXECUTION_FAILED", "Conflicting GasKit transaction id aliases."));
+      writeJson(response, 409, rejectionBody("EXECUTION_FAILED", "Conflicting AgentRail transaction id aliases."));
       return;
     }
-    const gasKitTransactionId = publicGasKitTransactionId ?? legacyGasKitTransactionId;
+    const agentRailTransactionId = publicAgentRailTransactionId ?? legacyAgentRailTransactionId;
     const reservationId = stringField(body, "reservation_id");
-    const reservation = gasKitTransactionId ? reservations.get(gasKitTransactionId) : undefined;
+    const reservation = agentRailTransactionId ? reservations.get(agentRailTransactionId) : undefined;
 
     if (!reservation || reservation.appId !== appMatch.appId || reservation.upstreamReservationId !== reservationId) {
       emitGatewayEvent(config, {
@@ -584,7 +584,7 @@ export function createGatewayServer(config: GatewayConfig): Server {
         appId: appMatch.appId,
         reasonCode: "EXECUTION_FAILED",
       });
-      writeJson(response, 409, rejectionBody("EXECUTION_FAILED", "Unknown or mismatched GasKit reservation."));
+      writeJson(response, 409, rejectionBody("EXECUTION_FAILED", "Unknown or mismatched AgentRail reservation."));
       return;
     }
 
@@ -594,7 +594,7 @@ export function createGatewayServer(config: GatewayConfig): Server {
       packageId: reservation.packageId,
       functionName: reservation.functionName,
       gasBudget: reservation.gasBudget,
-      gasKitTransactionId,
+      agentRailTransactionId,
       upstreamReservationId: reservation.upstreamReservationId,
     };
 
@@ -606,7 +606,7 @@ export function createGatewayServer(config: GatewayConfig): Server {
         reasonCode: "EXECUTION_FAILED",
         ...eventContext,
       });
-      writeJson(response, 409, rejectionBody("EXECUTION_FAILED", "This GasKit reservation is not executable."));
+      writeJson(response, 409, rejectionBody("EXECUTION_FAILED", "This AgentRail reservation is not executable."));
       return;
     }
 
@@ -628,7 +628,7 @@ export function createGatewayServer(config: GatewayConfig): Server {
 
     const upstreamBody: JsonRecord = { ...body, reservation_id: reservation.upstreamReservationIdForProxy };
     delete upstreamBody._saas_tx_id;
-    delete upstreamBody.gasKitTransactionId;
+    delete upstreamBody.agentRailTransactionId;
     const upstream = await proxyJson(config, "/v1/execute_tx", upstreamBody);
     if (upstream.status >= 200 && upstream.status < 300) {
       reservation.status = "executed";

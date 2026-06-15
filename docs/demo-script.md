@@ -4,7 +4,7 @@ Target length: 2-3 minutes for pre-grant proof, longer final demo after mileston
 
 ## Pre-grant proof
 
-1. Show README and GasKit toolkit framing.
+1. Show README and AgentRail toolkit framing.
 2. Show architecture diagram.
 3. Run tests.
 4. Show policy reason-code test output.

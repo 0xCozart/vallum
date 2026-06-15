@@ -5,7 +5,7 @@ import {
   signA2AAgentCard,
   validAgentProfileFixture,
   verifyA2AAgentCardSignature,
-} from "@iota-gaskit/registry";
+} from "@agentrail/registry";
 
 export interface A2ASignedCardDemoResult {
   readonly agentName: string;

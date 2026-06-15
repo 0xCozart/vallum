@@ -3,8 +3,8 @@ import { once } from "node:events";
 import type { AddressInfo } from "node:net";
 import { test } from "node:test";
 
-import { validManifestFixture } from "@iota-gaskit/manifest";
-import { createAgentMockGatewayServer, type AgentActionPolicy } from "@iota-gaskit/policy-gateway";
+import { validManifestFixture } from "@agentrail/manifest";
+import { createAgentMockGatewayServer, type AgentActionPolicy } from "@agentrail/policy-gateway";
 import { openEscrow } from "./openEscrow.js";
 
 const now = new Date("2026-06-10T12:00:00.000Z");

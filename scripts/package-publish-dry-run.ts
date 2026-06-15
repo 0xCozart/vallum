@@ -53,7 +53,7 @@ export async function runPackagePublishDryRun(options: PublishDryRunOptions = {}
     return 1;
   }
 
-  console.log("Agentic GasKit package publish dry-run");
+  console.log("AgentRail package publish dry-run");
   console.log(`packages=${packages.map((packageInfo) => packageInfo.name).join(",")}`);
   console.log("mode=dry-run");
   console.log("realPublish=false");

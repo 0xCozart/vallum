@@ -27,7 +27,7 @@ export interface LiveProofPlanCheck {
 
 export interface LiveProofPlan {
   readonly schemaVersion: 1;
-  readonly kind: "agentic-gaskit.live-proof-plan";
+  readonly kind: "agentrail.live-proof-plan";
   readonly generatedAt: string;
   readonly liveProofReady: boolean;
   readonly status: "blocked" | "ready-to-run";
@@ -52,9 +52,9 @@ interface CliOptions {
 }
 
 const REQUIRED_OPERATOR_INPUTS = [
-  "GASKIT_SPONSOR_FUNDING_REPORT",
-  "GASKIT_TESTNET_UPSTREAM_REPORT",
-  "GASKIT_TESTNET_DIGEST_REPORT",
+  "AGENTRAIL_SPONSOR_FUNDING_REPORT",
+  "AGENTRAIL_TESTNET_UPSTREAM_REPORT",
+  "AGENTRAIL_TESTNET_DIGEST_REPORT",
   "IOTA_NAMES_GRAPHQL_URL",
   "IOTA_NAMES_NAME",
   "IOTA_NAMES_EXPECTED_ADDRESS",
@@ -70,7 +70,7 @@ const REQUIRED_OPERATOR_INPUTS = [
 ] as const;
 
 const OPTIONAL_OPERATOR_INPUTS = [
-  "GASKIT_SPONSOR_FAUCET_REPORT",
+  "AGENTRAIL_SPONSOR_FAUCET_REPORT",
 ] as const;
 
 const REQUIRED_EVIDENCE_ARTIFACTS = [
@@ -133,7 +133,7 @@ const PLAN_COMMANDS: readonly LiveProofPlanCommand[] = [
   },
   {
     id: "write-testnet-upstream-report-template",
-    command: "npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json",
+    command: "npm run operator:write-report-template -- --kind testnet-upstream --out tmp/agentrail/testnet-upstream-report-template.json",
     contactsLiveService: false,
     requiresOperatorApproval: false,
   },
@@ -145,7 +145,7 @@ const PLAN_COMMANDS: readonly LiveProofPlanCommand[] = [
   },
   {
     id: "write-testnet-digest-report-template",
-    command: "npm run operator:write-report-template -- --kind testnet-digest --out tmp/gaskit/testnet-digest-report-template.json",
+    command: "npm run operator:write-report-template -- --kind testnet-digest --out tmp/agentrail/testnet-digest-report-template.json",
     contactsLiveService: false,
     requiresOperatorApproval: false,
   },
@@ -157,7 +157,7 @@ const PLAN_COMMANDS: readonly LiveProofPlanCommand[] = [
   },
   {
     id: "write-iota-names-live-report-template",
-    command: "npm run operator:write-report-template -- --kind iota-names-live --out tmp/gaskit/iota-names-live-report-template.json",
+    command: "npm run operator:write-report-template -- --kind iota-names-live --out tmp/agentrail/iota-names-live-report-template.json",
     contactsLiveService: false,
     requiresOperatorApproval: false,
   },
@@ -169,7 +169,7 @@ const PLAN_COMMANDS: readonly LiveProofPlanCommand[] = [
   },
   {
     id: "write-iota-identity-live-report-template",
-    command: "npm run operator:write-report-template -- --kind iota-identity-live --out tmp/gaskit/iota-identity-live-report-template.json",
+    command: "npm run operator:write-report-template -- --kind iota-identity-live --out tmp/agentrail/iota-identity-live-report-template.json",
     contactsLiveService: false,
     requiresOperatorApproval: false,
   },
@@ -181,7 +181,7 @@ const PLAN_COMMANDS: readonly LiveProofPlanCommand[] = [
   },
   {
     id: "write-vc-validation-live-report-template",
-    command: "npm run operator:write-report-template -- --kind vc-validation-live --out tmp/gaskit/vc-validation-live-report-template.json",
+    command: "npm run operator:write-report-template -- --kind vc-validation-live --out tmp/agentrail/vc-validation-live-report-template.json",
     contactsLiveService: false,
     requiresOperatorApproval: false,
   },
@@ -240,7 +240,7 @@ export function buildLiveProofPlan(
 
   return {
     schemaVersion: 1,
-    kind: "agentic-gaskit.live-proof-plan",
+    kind: "agentrail.live-proof-plan",
     generatedAt: now.toISOString(),
     liveProofReady: report.ok,
     status: report.ok ? "ready-to-run" : "blocked",

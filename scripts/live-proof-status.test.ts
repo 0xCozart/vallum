@@ -13,7 +13,7 @@ import {
 } from "./check-live-proof-status.js";
 
 test("live proof status reports exact blockers without secret values", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-live-proof-"));
   try {
     const report = await checkLiveProofStatus({
       env: {},
@@ -36,9 +36,9 @@ test("live proof status reports exact blockers without secret values", async () 
         ["vc-validation-live", "blocked", "VC_TRUST_POLICY_CONFIG_MISSING"],
       ],
     );
-    assert.match(formatted, /GASKIT_SPONSOR_FUNDING_REPORT/);
-    assert.match(formatted, /GASKIT_TESTNET_UPSTREAM_REPORT/);
-    assert.match(formatted, /GASKIT_TESTNET_DIGEST_REPORT/);
+    assert.match(formatted, /AGENTRAIL_SPONSOR_FUNDING_REPORT/);
+    assert.match(formatted, /AGENTRAIL_TESTNET_UPSTREAM_REPORT/);
+    assert.match(formatted, /AGENTRAIL_TESTNET_DIGEST_REPORT/);
     assert.match(formatted, /operator:write-report-template -- --kind testnet-upstream/);
     assert.match(formatted, /operator:write-report-template -- --kind testnet-digest/);
     assert.match(formatted, /IOTA_NAMES_GRAPHQL_URL/);
@@ -47,7 +47,7 @@ test("live proof status reports exact blockers without secret values", async () 
     assert.match(formatted, /operator:write-report-template -- --kind iota-names-live/);
     assert.match(formatted, /operator:write-report-template -- --kind iota-identity-live/);
     assert.match(formatted, /operator:write-report-template -- --kind vc-validation-live/);
-    assert.match(formatted, /live:write-identity-proof-bundle -- --out tmp\/gaskit\/identity-proof-bundle\.json/);
+    assert.match(formatted, /live:write-identity-proof-bundle -- --out tmp\/agentrail\/identity-proof-bundle\.json/);
     assert.match(formatted, /\.env/);
     assert.doesNotMatch(formatted, /private|mnemonic|bearer|token|secret|iotaprivkey|local-secret/i);
   } finally {
@@ -56,12 +56,12 @@ test("live proof status reports exact blockers without secret values", async () 
 });
 
 test("live proof status marks a passing testnet upstream diagnostic report as ready without printing its path", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-live-proof-"));
   try {
     await writeFile(join(cwd, "sponsor-funding-report.json"), JSON.stringify(readySponsorFundingReport()));
     await writeFile(join(cwd, "upstream-report.json"), JSON.stringify({
       schemaVersion: 1,
-      kind: "agentic-gaskit.testnet-upstream-diagnostic",
+      kind: "agentrail.testnet-upstream-diagnostic",
       observedAt: new Date().toISOString(),
       gasStationRoot: { configured: true, ok: true, status: 200 },
       gasStationV1Health: { configured: true, ok: false, status: 404 },
@@ -73,8 +73,8 @@ test("live proof status marks a passing testnet upstream diagnostic report as re
       cwd,
       gasStationRuntimeReport: readyGasStationRuntime(),
       env: {
-        GASKIT_SPONSOR_FUNDING_REPORT: "sponsor-funding-report.json",
-        GASKIT_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
+        AGENTRAIL_SPONSOR_FUNDING_REPORT: "sponsor-funding-report.json",
+        AGENTRAIL_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
       },
     });
     const formatted = formatLiveProofStatusReport(report);
@@ -90,7 +90,7 @@ test("live proof status marks a passing testnet upstream diagnostic report as re
 });
 
 test("live proof status blocks insufficient sponsor funding reports", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-live-proof-"));
   try {
     await writeFile(join(cwd, "sponsor-funding-report.json"), JSON.stringify({
       ...readySponsorFundingReport(),
@@ -106,7 +106,7 @@ test("live proof status blocks insufficient sponsor funding reports", async () =
       cwd,
       gasStationRuntimeReport: readyGasStationRuntime(),
       env: {
-        GASKIT_SPONSOR_FUNDING_REPORT: "sponsor-funding-report.json",
+        AGENTRAIL_SPONSOR_FUNDING_REPORT: "sponsor-funding-report.json",
       },
     });
     const formatted = formatLiveProofStatusReport(report);
@@ -123,7 +123,7 @@ test("live proof status blocks insufficient sponsor funding reports", async () =
 });
 
 test("live proof status includes sanitized sponsor faucet failure context", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-live-proof-"));
   try {
     await writeFile(join(cwd, "sponsor-funding-report.json"), JSON.stringify({
       ...readySponsorFundingReport(),
@@ -137,7 +137,7 @@ test("live proof status includes sanitized sponsor faucet failure context", asyn
     }));
     await writeFile(join(cwd, "sponsor-faucet-report.json"), JSON.stringify({
       schemaVersion: 1,
-      kind: "agentic-gaskit.sponsor-faucet-request",
+      kind: "agentrail.sponsor-faucet-request",
       result: "failed",
       code: "SPONSOR_FAUCET_FAILED",
       observedAt: new Date().toISOString(),
@@ -153,14 +153,14 @@ test("live proof status includes sanitized sponsor faucet failure context", asyn
       faucetHttpStatus: 200,
       faucetFailureKind: "faucet-error",
       faucetErrorCode: "FUNDS_UNAVAILABLE",
-      nextCommands: ["npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json"],
+      nextCommands: ["npm run sponsor:check-funding -- --report tmp/agentrail/sponsor-funding-report.json"],
     }));
     const report = await checkLiveProofStatus({
       cwd,
       gasStationRuntimeReport: readyGasStationRuntime(),
       env: {
-        GASKIT_SPONSOR_FUNDING_REPORT: "sponsor-funding-report.json",
-        GASKIT_SPONSOR_FAUCET_REPORT: "sponsor-faucet-report.json",
+        AGENTRAIL_SPONSOR_FUNDING_REPORT: "sponsor-funding-report.json",
+        AGENTRAIL_SPONSOR_FAUCET_REPORT: "sponsor-faucet-report.json",
       },
     });
     const formatted = formatLiveProofStatusReport(report);
@@ -176,7 +176,7 @@ test("live proof status includes sanitized sponsor faucet failure context", asyn
 });
 
 test("live proof status uses the default ignored sponsor faucet report when env is unset", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-live-proof-"));
   try {
     await writeFile(join(cwd, "sponsor-funding-report.json"), JSON.stringify({
       ...readySponsorFundingReport(),
@@ -188,10 +188,10 @@ test("live proof status uses the default ignored sponsor faucet report when env 
       sampledCoinCount: 0,
       maxSampledCoinBalanceMist: "0",
     }));
-    await mkdir(join(cwd, "tmp/gaskit"), { recursive: true });
-    await writeFile(join(cwd, "tmp/gaskit/sponsor-faucet-request.json"), JSON.stringify({
+    await mkdir(join(cwd, "tmp/agentrail"), { recursive: true });
+    await writeFile(join(cwd, "tmp/agentrail/sponsor-faucet-request.json"), JSON.stringify({
       schemaVersion: 1,
-      kind: "agentic-gaskit.sponsor-faucet-request",
+      kind: "agentrail.sponsor-faucet-request",
       result: "failed",
       code: "SPONSOR_FAUCET_FAILED",
       observedAt: new Date().toISOString(),
@@ -207,13 +207,13 @@ test("live proof status uses the default ignored sponsor faucet report when env 
       faucetHttpStatus: 405,
       faucetFailureKind: "http-status",
       faucetErrorCode: "REQUEST_UNSUPPORTED",
-      nextCommands: ["npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json"],
+      nextCommands: ["npm run sponsor:check-funding -- --report tmp/agentrail/sponsor-funding-report.json"],
     }));
     const report = await checkLiveProofStatus({
       cwd,
       gasStationRuntimeReport: readyGasStationRuntime(),
       env: {
-        GASKIT_SPONSOR_FUNDING_REPORT: "sponsor-funding-report.json",
+        AGENTRAIL_SPONSOR_FUNDING_REPORT: "sponsor-funding-report.json",
       },
     });
     const formatted = formatLiveProofStatusReport(report);
@@ -222,19 +222,19 @@ test("live proof status uses the default ignored sponsor faucet report when env 
     assert.equal(funding?.status, "blocked");
     assert.equal(funding?.code, "SPONSOR_FUNDING_TOTAL_INSUFFICIENT");
     assert.match(funding?.next ?? "", /Latest sponsor faucet report failed via v0-documented with HTTP 405 \(http-status\) code=REQUEST_UNSUPPORTED/);
-    assert.doesNotMatch(formatted, /tmp\/gaskit\/sponsor-faucet-request\.json|0x1234567890abcdef|faucet\.testnet\.example|task-/);
+    assert.doesNotMatch(formatted, /tmp\/agentrail\/sponsor-faucet-request\.json|0x1234567890abcdef|faucet\.testnet\.example|task-/);
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }
 });
 
 test("live proof status blocks skipped reserve diagnostic reports", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-live-proof-"));
   try {
     await writeFile(join(cwd, "sponsor-funding-report.json"), JSON.stringify(readySponsorFundingReport()));
     await writeFile(join(cwd, "upstream-report.json"), JSON.stringify({
       schemaVersion: 1,
-      kind: "agentic-gaskit.testnet-upstream-diagnostic",
+      kind: "agentrail.testnet-upstream-diagnostic",
       observedAt: new Date().toISOString(),
       gasStationRoot: { configured: true, ok: true, status: 200 },
       gasStationV1Health: { configured: true, ok: false, status: 404 },
@@ -246,8 +246,8 @@ test("live proof status blocks skipped reserve diagnostic reports", async () => 
       cwd,
       gasStationRuntimeReport: readyGasStationRuntime(),
       env: {
-        GASKIT_SPONSOR_FUNDING_REPORT: "sponsor-funding-report.json",
-        GASKIT_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
+        AGENTRAIL_SPONSOR_FUNDING_REPORT: "sponsor-funding-report.json",
+        AGENTRAIL_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
       },
     });
     const upstream = report.checks.find((check) => check.id === "testnet-upstream");
@@ -262,14 +262,14 @@ test("live proof status blocks skipped reserve diagnostic reports", async () => 
 });
 
 test("live proof status marks sponsored execute digest ready with a passing digest report", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-live-proof-"));
   try {
     await writeFile(join(cwd, "digest-report.json"), JSON.stringify(readyTestnetDigestReport()));
     const report = await checkLiveProofStatus({
       cwd,
       gasStationRuntimeReport: readyGasStationRuntime(),
       env: {
-        GASKIT_TESTNET_DIGEST_REPORT: "digest-report.json",
+        AGENTRAIL_TESTNET_DIGEST_REPORT: "digest-report.json",
       },
     });
     const formatted = formatLiveProofStatusReport(report);
@@ -285,7 +285,7 @@ test("live proof status marks sponsored execute digest ready with a passing dige
 });
 
 test("live proof status blocks stale or unverified sponsored execute digest reports", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-live-proof-"));
   try {
     await writeFile(join(cwd, "digest-report.json"), JSON.stringify({
       ...readyTestnetDigestReport(),
@@ -295,7 +295,7 @@ test("live proof status blocks stale or unverified sponsored execute digest repo
       cwd,
       gasStationRuntimeReport: readyGasStationRuntime(),
       env: {
-        GASKIT_TESTNET_DIGEST_REPORT: "digest-report.json",
+        AGENTRAIL_TESTNET_DIGEST_REPORT: "digest-report.json",
       },
     });
     const formatted = formatLiveProofStatusReport(report);
@@ -311,7 +311,7 @@ test("live proof status blocks stale or unverified sponsored execute digest repo
 });
 
 test("live proof status routes ready local Gas Station runtime to diagnostics", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-live-proof-"));
   try {
     const report = await checkLiveProofStatus({
       cwd,
@@ -331,7 +331,7 @@ test("live proof status routes ready local Gas Station runtime to diagnostics", 
 });
 
 test("live proof status routes reserve failures blocked by sponsor funding to funding next steps", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-live-proof-"));
   try {
     await writeFile(join(cwd, "sponsor-funding-report.json"), JSON.stringify({
       ...readySponsorFundingReport(),
@@ -345,7 +345,7 @@ test("live proof status routes reserve failures blocked by sponsor funding to fu
     }));
     await writeFile(join(cwd, "upstream-report.json"), JSON.stringify({
       schemaVersion: 1,
-      kind: "agentic-gaskit.testnet-upstream-diagnostic",
+      kind: "agentrail.testnet-upstream-diagnostic",
       observedAt: new Date().toISOString(),
       gasStationRoot: { configured: true, ok: true, status: 200 },
       gasStationV1Health: { configured: true, ok: false, status: 404 },
@@ -363,8 +363,8 @@ test("live proof status routes reserve failures blocked by sponsor funding to fu
       cwd,
       gasStationRuntimeReport: readyGasStationRuntime(),
       env: {
-        GASKIT_SPONSOR_FUNDING_REPORT: "sponsor-funding-report.json",
-        GASKIT_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
+        AGENTRAIL_SPONSOR_FUNDING_REPORT: "sponsor-funding-report.json",
+        AGENTRAIL_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
       },
     });
     const upstream = report.checks.find((check) => check.id === "testnet-upstream");
@@ -381,12 +381,12 @@ test("live proof status routes reserve failures blocked by sponsor funding to fu
 });
 
 test("live proof status marks explicit managed upstream runtime ready without Docker", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-live-proof-"));
   try {
     const report = await checkLiveProofStatus({
       cwd,
       env: {
-        GASKIT_GAS_STATION_RUNTIME_MODE: "managed-upstream",
+        AGENTRAIL_GAS_STATION_RUNTIME_MODE: "managed-upstream",
         GAS_STATION_URL: "https://gas-station.testnet.example",
       },
       gasStationRuntimeRunner: async () => {
@@ -406,7 +406,7 @@ test("live proof status marks explicit managed upstream runtime ready without Do
 });
 
 test("live proof status blocks configured identity proof endpoint without a smoke report", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-live-proof-"));
   try {
     const report = await checkLiveProofStatus({
       cwd,
@@ -432,7 +432,7 @@ test("live proof status blocks configured identity proof endpoint without a smok
 });
 
 test("live proof status marks identity ready with a passing smoke report", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-live-proof-"));
   try {
     await writeFile(join(cwd, "iota-identity-report.json"), JSON.stringify(readyIotaIdentityReport()));
     const report = await checkLiveProofStatus({
@@ -456,7 +456,7 @@ test("live proof status marks identity ready with a passing smoke report", async
 });
 
 test("live proof status blocks unsafe identity proof endpoints without printing them", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-live-proof-"));
   try {
     const report = await checkLiveProofStatus({
       cwd,
@@ -478,7 +478,7 @@ test("live proof status blocks unsafe identity proof endpoints without printing 
 });
 
 test("live proof status blocks VC trust policy config without an identity smoke report", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-live-proof-"));
   try {
     const report = await checkLiveProofStatus({
       cwd,
@@ -506,7 +506,7 @@ test("live proof status blocks VC trust policy config without an identity smoke 
 });
 
 test("live proof status validates VC trust policy with current credential evidence report", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-live-proof-"));
   try {
     await writeFile(join(cwd, "iota-identity-report.json"), JSON.stringify(readyIotaIdentityReport()));
     const report = await checkLiveProofStatus({
@@ -537,7 +537,7 @@ test("live proof status validates VC trust policy with current credential eviden
 });
 
 test("live proof status blocks VC validation when identity report has no credential evidence", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-live-proof-"));
   try {
     await writeFile(join(cwd, "iota-identity-report.json"), JSON.stringify({
       ...readyIotaIdentityReport(),
@@ -570,7 +570,7 @@ test("live proof status blocks VC validation when identity report has no credent
 });
 
 test("live proof status blocks malformed VC trust policy config without printing values", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-live-proof-"));
   try {
     const report = await checkLiveProofStatus({
       cwd,
@@ -595,7 +595,7 @@ test("live proof status blocks malformed VC trust policy config without printing
 });
 
 test("live proof status blocks configured names without a smoke report", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-live-proof-"));
   try {
     const report = await checkLiveProofStatus({
       cwd,
@@ -620,7 +620,7 @@ test("live proof status blocks configured names without a smoke report", async (
 });
 
 test("live proof status marks names ready with a passing smoke report", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-live-proof-"));
   try {
     await writeFile(join(cwd, "iota-names-report.json"), JSON.stringify(readyIotaNamesReport()));
     const report = await checkLiveProofStatus({
@@ -645,7 +645,7 @@ test("live proof status marks names ready with a passing smoke report", async ()
 });
 
 test("live proof status blocks unsafe names endpoints without printing them", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-live-proof-"));
   try {
     const report = await checkLiveProofStatus({
       cwd,
@@ -668,7 +668,7 @@ test("live proof status blocks unsafe names endpoints without printing them", as
 });
 
 test("live proof status reports readiness failures by check id only", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-live-proof-"));
   try {
     await writeFile(join(cwd, ".env"), "IOTA_RPC_URL=https://api.testnet.iota.example\n");
     const report = await checkLiveProofStatus({
@@ -689,7 +689,7 @@ test("live proof status reports readiness failures by check id only", async () =
 });
 
 test("live proof status artifact summarizes blockers without secret values", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-live-proof-"));
   try {
     const report = await checkLiveProofStatus({
       cwd,
@@ -706,7 +706,7 @@ test("live proof status artifact summarizes blockers without secret values", asy
     const formatted = formatLiveProofStatusArtifact(artifact);
 
     assert.equal(artifact.schemaVersion, 1);
-    assert.equal(artifact.kind, "agentic-gaskit.live-proof-status-report");
+    assert.equal(artifact.kind, "agentrail.live-proof-status-report");
     assert.equal(artifact.generatedAt, "2026-06-14T00:00:00.000Z");
     assert.equal(artifact.ok, false);
     assert.ok(artifact.readyCheckIds.includes("gas-station-runtime"));
@@ -724,7 +724,7 @@ test("live proof status artifact summarizes blockers without secret values", asy
 });
 
 test("live proof status artifact writer uses restrictive local file permissions", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-live-proof-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-live-proof-"));
   try {
     const outFile = join("reports", "live-proof-status.json");
     const artifact = await writeLiveProofStatusArtifact({
@@ -772,7 +772,7 @@ function blockedGasStationRuntime() {
 function readySponsorFundingReport() {
   return {
     schemaVersion: 1,
-    kind: "agentic-gaskit.sponsor-funding-report",
+    kind: "agentrail.sponsor-funding-report",
     observedAt: new Date().toISOString(),
     ready: true,
     code: "SPONSOR_FUNDING_READY",
@@ -794,7 +794,7 @@ function readySponsorFundingReport() {
 function readyIotaNamesReport() {
   return {
     schemaVersion: 1,
-    kind: "agentic-gaskit.iota-names-live-smoke-report",
+    kind: "agentrail.iota-names-live-smoke-report",
     observedAt: new Date().toISOString(),
     result: "passed",
     code: "IOTA_NAMES_LIVE_SMOKE_PASSED",
@@ -811,7 +811,7 @@ function readyIotaNamesReport() {
 function readyIotaIdentityReport() {
   return {
     schemaVersion: 1,
-    kind: "agentic-gaskit.iota-identity-live-smoke-report",
+    kind: "agentrail.iota-identity-live-smoke-report",
     observedAt: new Date().toISOString(),
     result: "passed",
     code: "IOTA_IDENTITY_LIVE_SMOKE_PASSED",
@@ -828,7 +828,7 @@ function readyIotaIdentityReport() {
 function readyTestnetDigestReport() {
   return {
     schemaVersion: 1,
-    kind: "agentic-gaskit.testnet-digest-proof-report",
+    kind: "agentrail.testnet-digest-proof-report",
     observedAt: new Date().toISOString(),
     digest: "FLdnYRUACAKQn8CwugEv1u6gYTh9jBr8rGMk2JZ2adsd",
     rpcUrl: "https://api.testnet.iota.cafe",

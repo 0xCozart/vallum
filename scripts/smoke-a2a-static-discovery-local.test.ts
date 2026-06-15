@@ -22,7 +22,7 @@ const publicBaseUrl = "https://agents.example/a2a";
 const publicJwksUrl = "https://agents.example/.well-known/jwks.json";
 
 test("A2A static discovery local smoke serves generated artifacts on loopback only", async () => {
-  const root = await mkdtemp(join(tmpdir(), "agentic-gaskit-a2a-static-host-"));
+  const root = await mkdtemp(join(tmpdir(), "agentrail-a2a-static-host-"));
   try {
     const { agentCardPath, jwksPath } = await writeInputs(root);
     const outDir = join(root, "public");
@@ -58,7 +58,7 @@ test("A2A static discovery local smoke serves generated artifacts on loopback on
 });
 
 test("A2A static discovery local smoke refuses non-loopback hosts", async () => {
-  const root = await mkdtemp(join(tmpdir(), "agentic-gaskit-a2a-static-host-"));
+  const root = await mkdtemp(join(tmpdir(), "agentrail-a2a-static-host-"));
   try {
     await assert.rejects(
       () => smokeA2AStaticDiscoveryLocal({ outDir: root, host: "0.0.0.0" }),

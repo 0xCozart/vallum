@@ -1,7 +1,7 @@
 import type {
   ExecuteSponsoredTransactionResponse,
   ReserveGasResponse,
-} from "@iota-gaskit/sdk";
+} from "@agentrail/sdk";
 
 export const DEMO_PACKAGE_ID = "0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0";
 export const DEMO_FUNCTION_NAME = "mint_badge";
@@ -18,7 +18,7 @@ export interface DemoGrantFlowClient {
   }): Promise<ReserveGasResponse>;
   executeSponsoredTransaction(request: {
     reservationId: string;
-    gasKitTransactionId: string;
+    agentRailTransactionId: string;
     transactionBytes: string;
     userSignature: string;
   }): Promise<ExecuteSponsoredTransactionResponse>;
@@ -35,7 +35,7 @@ export interface DemoGrantFlowOptions {
 
 export interface DemoGrantFlowResult {
   reservationId: string;
-  gasKitTransactionId: string;
+  agentRailTransactionId: string;
   sponsorAddress?: string;
   digest: string;
 }
@@ -53,7 +53,7 @@ export async function runDemoGrantFlow(
 
   const executed = await client.executeSponsoredTransaction({
     reservationId: reservation.reservationId,
-    gasKitTransactionId: reservation.gasKitTransactionId,
+    agentRailTransactionId: reservation.agentRailTransactionId,
     transactionBytes: options.transactionBytes ?? DEMO_TRANSACTION_BYTES,
     userSignature: options.userSignature ?? DEMO_USER_SIGNATURE,
   });
@@ -64,7 +64,7 @@ export async function runDemoGrantFlow(
 
   return {
     reservationId: reservation.reservationId,
-    gasKitTransactionId: reservation.gasKitTransactionId,
+    agentRailTransactionId: reservation.agentRailTransactionId,
     sponsorAddress: reservation.sponsorAddress,
     digest: executed.digest,
   };
@@ -72,9 +72,9 @@ export async function runDemoGrantFlow(
 
 export function formatDemoGrantFlowResult(result: DemoGrantFlowResult): string {
   return [
-    "IOTA GasKit demo dApp local flow passed",
+    "AgentRail demo dApp local flow passed",
     `reservationId=${result.reservationId}`,
-    `gasKitTransactionId=${result.gasKitTransactionId}`,
+    `agentRailTransactionId=${result.agentRailTransactionId}`,
     result.sponsorAddress ? `sponsorAddress=${result.sponsorAddress}` : undefined,
     `digest=${result.digest}`,
   ].filter((line): line is string => Boolean(line)).join("\n");

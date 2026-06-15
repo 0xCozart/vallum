@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { validManifestFixture } from "@iota-gaskit/manifest";
+import { validManifestFixture } from "@agentrail/manifest";
 import { evaluateAgentActionPolicy, type AgentActionPolicy } from "./index.js";
 
 const basePolicy: AgentActionPolicy = {

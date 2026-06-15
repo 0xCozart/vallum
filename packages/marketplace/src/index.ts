@@ -4,13 +4,13 @@ import {
   defaultContractTemplateRegistry,
   type ContractTemplateMetadata,
   type ContractTemplateRegistry,
-} from "@iota-gaskit/contracts-metadata";
-import { validManifestFixture, type AgentTransactionManifest } from "@iota-gaskit/manifest";
+} from "@agentrail/contracts-metadata";
+import { validManifestFixture, type AgentTransactionManifest } from "@agentrail/manifest";
 import {
   evaluateProfileCapabilityPolicy,
   type AgentCapabilityPolicyDecision,
   type AgentCapabilityRequirement,
-} from "@iota-gaskit/policy-gateway";
+} from "@agentrail/policy-gateway";
 import {
   approveServiceBountyReceipt,
   completeServiceBountyReceipt,
@@ -24,13 +24,13 @@ import {
   type ReputationReceipt,
   type ServiceBountyReceipt,
   type SubscriptionReceipt,
-} from "@iota-gaskit/receipts";
+} from "@agentrail/receipts";
 import {
   validateAgentProfile,
   validAgentProfileFixture,
   type AgentProfile,
   type AgentProfileStatus,
-} from "@iota-gaskit/registry";
+} from "@agentrail/registry";
 
 export type MarketplaceEvidenceLevel = "mock" | "local" | "testnet" | "live";
 export type MarketplaceProfileLabel = AgentProfileStatus | "unverified";

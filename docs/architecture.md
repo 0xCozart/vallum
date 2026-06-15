@@ -1,10 +1,10 @@
 # Architecture
 
-GasKit is intentionally split into small layers. The current implemented goal
+AgentRail is intentionally split into small layers. The current implemented goal
 is to let an app sponsor IOTA gas without putting sponsor-wallet risk directly
 into frontend code or one-off backend glue.
 
-Agentic GasKit keeps that foundation and adds a planned agent layer: account
+AgentRail keeps that foundation and adds a planned agent layer: account
 creation through signer references, transaction manifests, identity/profile
 checks, MCP/A2A tool surfaces, receipts, and contract workflows. Those additions
 must route through the same policy and sponsor-wallet boundaries instead of
@@ -15,7 +15,7 @@ The plain-English shape is:
 ```text
 User action
   -> app backend
-  -> GasKit SDK or Policy Gateway
+  -> AgentRail SDK or Policy Gateway
   -> official IOTA Gas Station
   -> IOTA network
 ```
@@ -26,26 +26,26 @@ Planned agent flow:
 Agent action
   -> MCP/A2A adapter or agent SDK
   -> Agent manifest + signer reference
-  -> GasKit policy gateway
+  -> AgentRail policy gateway
   -> official IOTA Gas Station / IOTA contracts
   -> receipt and audit event
 ```
 
-The app backend owns the user experience. GasKit owns app-level sponsorship checks. IOTA Gas Station owns sponsor gas reservation and sponsored execution. IOTA owns final transaction validation.
+The app backend owns the user experience. AgentRail owns app-level sponsorship checks. IOTA Gas Station owns sponsor gas reservation and sponsored execution. IOTA owns final transaction validation.
 
 ## Why This Architecture
 
 ### Keep Sponsor Secrets Away From Browsers
 
-Browser and mobile code are public by default. Anything embedded there can be copied. A sponsor wallet or Gas Station bearer token must stay on a trusted backend. GasKit therefore treats browser flows as thin clients that call same-origin backend routes.
+Browser and mobile code are public by default. Anything embedded there can be copied. A sponsor wallet or Gas Station bearer token must stay on a trusted backend. AgentRail therefore treats browser flows as thin clients that call same-origin backend routes.
 
 ### Check Policy Before Spending Gas
 
-The official Gas Station can sponsor transactions, but the app still needs to decide which requests deserve sponsorship. GasKit adds a policy gateway before the Gas Station so requests can fail closed on missing auth, unknown apps, blocked wallets, package mismatches, function mismatches, or gas-budget limits.
+The official Gas Station can sponsor transactions, but the app still needs to decide which requests deserve sponsorship. AgentRail adds a policy gateway before the Gas Station so requests can fail closed on missing auth, unknown apps, blocked wallets, package mismatches, function mismatches, or gas-budget limits.
 
 ### Make Sponsorship Explainable
 
-Operators need to know what happened without leaking secrets. GasKit emits sanitized decision events: app ID, operation, outcome, reason code, package/function metadata, wallet address, and safe request identifiers. It does not emit app keys, bearer tokens, raw transaction bytes, user signatures, or raw upstream error bodies.
+Operators need to know what happened without leaking secrets. AgentRail emits sanitized decision events: app ID, operation, outcome, reason code, package/function metadata, wallet address, and safe request identifiers. It does not emit app keys, bearer tokens, raw transaction bytes, user signatures, or raw upstream error bodies.
 
 ### Separate Local Proof From Live Network Risk
 
@@ -53,11 +53,11 @@ Most docs and tests should run without live IOTA services, sponsor keys, Docker,
 
 ### Stay Self-Hostable
 
-The official IOTA Gas Station is a self-hosted building block. GasKit follows that model. The current project is an open-source toolkit and service foundation, not a closed managed sponsor service.
+The official IOTA Gas Station is a self-hosted building block. AgentRail follows that model. The current project is an open-source toolkit and service foundation, not a closed managed sponsor service.
 
 ## Component Map
 
-![IOTA GasKit architecture](docs/assets/iota-gaskit-architecture.svg)
+![AgentRail architecture](docs/assets/agentrail-architecture.svg)
 
 ```mermaid
 flowchart LR
@@ -74,7 +74,7 @@ flowchart LR
 
 - Demo dApp: a small app used to prove the integration path locally.
 - TypeScript SDK: a typed wrapper that app backends use instead of hand-writing HTTP calls.
-- GasKit Policy Gateway: validates app credentials, package/function policy, wallet limits, gas budgets, and request shape before proxying to Gas Station.
+- AgentRail Policy Gateway: validates app credentials, package/function policy, wallet limits, gas budgets, and request shape before proxying to Gas Station.
 - Usage Store: records sanitized decision events and usage aggregates for local proof and future dashboard work.
 - IOTA Gas Station: the official sponsored-transaction component that manages sponsor-owned gas objects.
 - IOTA RPC: the IOTA network endpoint used by Gas Station to submit or inspect transactions.
@@ -84,22 +84,22 @@ flowchart LR
 
 1. The user starts an action in the app.
 2. The app backend builds or describes the intended transaction.
-3. The backend calls GasKit, usually through the SDK.
-4. GasKit authenticates the app key and checks sponsorship policy.
-5. If the request is not allowed, GasKit returns a bounded rejection reason.
-6. If the request is allowed, GasKit reserves sponsor gas through IOTA Gas Station.
+3. The backend calls AgentRail, usually through the SDK.
+4. AgentRail authenticates the app key and checks sponsorship policy.
+5. If the request is not allowed, AgentRail returns a bounded rejection reason.
+6. If the request is allowed, AgentRail reserves sponsor gas through IOTA Gas Station.
 7. The user signs the transaction payload.
-8. GasKit executes the sponsored transaction path with the user signature and reservation.
-9. GasKit emits sanitized decision events for usage and troubleshooting.
+8. AgentRail executes the sponsored transaction path with the user signature and reservation.
+9. AgentRail emits sanitized decision events for usage and troubleshooting.
 
 ## Trust Boundaries
 
-| Boundary | Why it exists | GasKit default |
+| Boundary | Why it exists | AgentRail default |
 | --- | --- | --- |
 | Browser to backend | Browser code is inspectable and cannot protect sponsor secrets. | Keep app keys and Gas Station bearer tokens server-side. |
-| Backend to GasKit | Apps need authenticated sponsorship, not open public spend. | Require app credentials before policy evaluation. |
-| GasKit to Gas Station | The sponsor wallet can spend funded gas. | Apply allowlists, budgets, wallet controls, and bounded errors before proxying. |
-| GasKit to logs/events | Observability is useful, but raw payloads can leak secrets. | Emit allowlisted sanitized fields only. |
+| Backend to AgentRail | Apps need authenticated sponsorship, not open public spend. | Require app credentials before policy evaluation. |
+| AgentRail to Gas Station | The sponsor wallet can spend funded gas. | Apply allowlists, budgets, wallet controls, and bounded errors before proxying. |
+| AgentRail to logs/events | Observability is useful, but raw payloads can leak secrets. | Emit allowlisted sanitized fields only. |
 | Local proof to live testnet | Local checks should be repeatable without funded credentials. | Keep live testnet commands separate from `verify:local`. |
 | Agent runtime to signer | Agent runtimes should not receive raw seed/private-key material. | Return scoped signer references and require owner/agent context plus policy. |
 
@@ -114,17 +114,17 @@ For experiments, a direct backend call can work. For an app, the direct path lea
 - operators have no consistent usage record;
 - browser teams may accidentally expose sponsor credentials.
 
-GasKit centralizes those concerns so a team can start from safer defaults.
+AgentRail centralizes those concerns so a team can start from safer defaults.
 
 ## Local decision events and usage read model
 
-The runnable local policy gateway can emit sanitized structured decision events through an optional `eventSink` callback. Events cover reserve/execute approvals, policy/auth rejections, and upstream failures. They include operational fields such as app ID, wallet address, package/function metadata, HTTP status, reason code, and GasKit transaction ID, but never include app API keys, upstream bearer tokens, raw request bodies, transaction bytes, user signatures, or raw upstream error bodies.
+The runnable local policy gateway can emit sanitized structured decision events through an optional `eventSink` callback. Events cover reserve/execute approvals, policy/auth rejections, and upstream failures. They include operational fields such as app ID, wallet address, package/function metadata, HTTP status, reason code, and AgentRail transaction ID, but never include app API keys, upstream bearer tokens, raw request bodies, transaction bytes, user signatures, or raw upstream error bodies.
 
 `apps/policy-gateway-service/src/usage.ts` provides a local in-memory usage read model that consumes those sanitized events and returns aggregate counts by operation, outcome, app ID, wallet address, and reason code. Missing app, wallet, and reason metadata is counted under `unknown`, recent event retention is explicitly bounded, and `maxRecentEvents: 0` can disable recent payload retention while keeping counters.
 
 `apps/policy-gateway-service/src/usage-store.ts` provides a local file-backed JSONL event-store foundation. It appends only the same allowlisted sanitized event fields used by the in-memory read model, validates required and present optional event fields before storage/replay, tolerates missing files as empty stores, rejects malformed/corrupt event lines during replay without exposing raw corrupt content, and can replay into the usage read model. This is suitable for deterministic local smoke/proof and as a stepping stone toward a production durable store.
 
-`GET /operator/usage` provides an opt-in authenticated local operator API over that usage snapshot when `GatewayConfig.operatorUsage` is configured. Env wiring uses `GASKIT_USAGE_EVENT_STORE_PATH` plus a separate `GASKIT_OPERATOR_USAGE_TOKEN`; the endpoint is absent by default, returns `Cache-Control: no-store`, and hides usage-store load failures behind bounded error responses without app keys, upstream bearer tokens, operator tokens, raw corrupt content, or file paths.
+`GET /operator/usage` provides an opt-in authenticated local operator API over that usage snapshot when `GatewayConfig.operatorUsage` is configured. Env wiring uses `AGENTRAIL_USAGE_EVENT_STORE_PATH` plus a separate `AGENTRAIL_OPERATOR_USAGE_TOKEN`; the endpoint is absent by default, returns `Cache-Control: no-store`, and hides usage-store load failures behind bounded error responses without app keys, upstream bearer tokens, operator tokens, raw corrupt content, or file paths.
 
 These local pieces are deterministic foundations for later dashboard/storage work, not a complete production usage database or authenticated operator dashboard yet.
 

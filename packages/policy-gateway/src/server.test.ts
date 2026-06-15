@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { once } from "node:events";
 import type { AddressInfo } from "node:net";
 
-import { validManifestFixture } from "@iota-gaskit/manifest";
+import { validManifestFixture } from "@agentrail/manifest";
 import {
   createAgentMockGatewayServer,
   type AgentGatewayEvent,

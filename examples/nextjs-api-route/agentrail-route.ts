@@ -3,15 +3,15 @@ import type {
   ReserveGasRequest,
 } from "../../packages/sdk/src/index.js";
 import {
-  createGasKitBackendHandlers,
-  type CreateGasKitBackendHandlersOptions,
-  type GasKitExampleErrorBody,
-  type GasKitExampleResult,
-} from "../node-backend/gaskit-backend.js";
+  createAgentRailBackendHandlers,
+  type CreateAgentRailBackendHandlersOptions,
+  type AgentRailExampleErrorBody,
+  type AgentRailExampleResult,
+} from "../node-backend/agentrail-backend.js";
 
-export type CreateGasKitNextApiRoutesOptions = CreateGasKitBackendHandlersOptions;
+export type CreateAgentRailNextApiRoutesOptions = CreateAgentRailBackendHandlersOptions;
 
-export interface GasKitNextApiRoutes {
+export interface AgentRailNextApiRoutes {
   reserve(request: Request): Promise<Response>;
   execute(request: Request): Promise<Response>;
 }
@@ -21,7 +21,7 @@ interface BadRequestBody {
   message: string;
 }
 
-type RouteResponseBody<TBody extends object> = TBody | GasKitExampleErrorBody | BadRequestBody;
+type RouteResponseBody<TBody extends object> = TBody | AgentRailExampleErrorBody | BadRequestBody;
 
 function jsonResponse<TBody extends object>(status: number, body: TBody, headers: HeadersInit = {}): Response {
   return Response.json(body, {
@@ -35,7 +35,7 @@ function methodNotAllowed(): Response {
     405,
     {
       error: "METHOD_NOT_ALLOWED",
-      message: "Use POST for this GasKit endpoint.",
+      message: "Use POST for this AgentRail endpoint.",
     },
     { allow: "POST" },
   );
@@ -107,7 +107,7 @@ function requiredPositiveInteger(body: Record<string, unknown>, key: string): nu
   return value === undefined ? badRequest(`${key} must be a positive safe integer.`) : value;
 }
 
-function asResponse<TBody extends object>(result: GasKitExampleResult<TBody>): Response {
+function asResponse<TBody extends object>(result: AgentRailExampleResult<TBody>): Response {
   return jsonResponse<RouteResponseBody<TBody>>(result.status, result.body);
 }
 
@@ -151,9 +151,9 @@ function executeInputFromBody(body: Record<string, unknown>): ExecuteSponsoredTr
   if (reservationId instanceof Response) {
     return reservationId;
   }
-  const gasKitTransactionId = requiredString(body, "gasKitTransactionId");
-  if (gasKitTransactionId instanceof Response) {
-    return gasKitTransactionId;
+  const agentRailTransactionId = requiredString(body, "agentRailTransactionId");
+  if (agentRailTransactionId instanceof Response) {
+    return agentRailTransactionId;
   }
   const transactionBytes = requiredString(body, "transactionBytes");
   if (transactionBytes instanceof Response) {
@@ -166,14 +166,14 @@ function executeInputFromBody(body: Record<string, unknown>): ExecuteSponsoredTr
 
   return {
     reservationId,
-    gasKitTransactionId,
+    agentRailTransactionId,
     transactionBytes,
     userSignature,
   };
 }
 
-export function createGasKitNextApiRoutes(options: CreateGasKitNextApiRoutesOptions): GasKitNextApiRoutes {
-  const backend = createGasKitBackendHandlers(options);
+export function createAgentRailNextApiRoutes(options: CreateAgentRailNextApiRoutesOptions): AgentRailNextApiRoutes {
+  const backend = createAgentRailBackendHandlers(options);
 
   return {
     async reserve(request: Request): Promise<Response> {

@@ -61,7 +61,7 @@ export interface ProductStatusReport {
 
 export interface ProductStatusArtifact {
   readonly schemaVersion: 1;
-  readonly kind: "agentic-gaskit.product-status-report";
+  readonly kind: "agentrail.product-status-report";
   readonly generatedAt: string;
   readonly complete: boolean;
   readonly localProofOk: boolean;
@@ -131,23 +131,23 @@ const ARTIFACT_BOUNDARIES = [
   "Ready-live checks are readiness or report-valid states only; they still require operator review or explicit operator intent before live execution.",
 ] as const;
 const LIVE_TESTNET_ENV_FILE = ".env";
-const TESTNET_DIGEST_REPORT_ENV = "GASKIT_TESTNET_DIGEST_REPORT";
-const PACKAGE_PUBLICATION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind package-publication --out tmp/gaskit/package-publication-report-template.json";
+const TESTNET_DIGEST_REPORT_ENV = "AGENTRAIL_TESTNET_DIGEST_REPORT";
+const PACKAGE_PUBLICATION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind package-publication --out tmp/agentrail/package-publication-report-template.json";
 const PACKAGE_PUBLICATION_PROOF_BUNDLE_COMMAND = "npm run package:write-publication-proof-bundle -- --out <ignored-json-path>";
-const PAYMENT_PROVIDER_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind payment-provider-live --out tmp/gaskit/payment-provider-live-report-template.json";
+const PAYMENT_PROVIDER_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind payment-provider-live --out tmp/agentrail/payment-provider-live-report-template.json";
 const PAYMENT_PROVIDER_PROOF_BUNDLE_COMMAND = "npm run payment:write-provider-proof-bundle -- --out <ignored-json-path>";
-const MARKETPLACE_PRODUCTION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json";
+const MARKETPLACE_PRODUCTION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind marketplace-production --out tmp/agentrail/marketplace-production-report-template.json";
 const MARKETPLACE_PRODUCTION_PROOF_BUNDLE_COMMAND = "npm run marketplace:write-production-proof-bundle -- --out <ignored-json-path>";
-const CUSTODY_PRODUCTION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind custody-production --out tmp/gaskit/custody-production-report-template.json";
+const CUSTODY_PRODUCTION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind custody-production --out tmp/agentrail/custody-production-report-template.json";
 const CUSTODY_PRODUCTION_PROOF_BUNDLE_COMMAND = "npm run custody:write-production-proof-bundle -- --out <ignored-json-path>";
-const A2A_PUBLIC_DISCOVERY_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/gaskit/a2a-public-discovery-report-template.json";
-const A2A_PUBLIC_PUSH_DELIVERY_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/gaskit/a2a-public-push-delivery-report-template.json";
-const A2A_EXTERNAL_CONFORMANCE_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/gaskit/a2a-external-conformance-report-template.json";
+const A2A_PUBLIC_DISCOVERY_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/agentrail/a2a-public-discovery-report-template.json";
+const A2A_PUBLIC_PUSH_DELIVERY_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/agentrail/a2a-public-push-delivery-report-template.json";
+const A2A_EXTERNAL_CONFORMANCE_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/agentrail/a2a-external-conformance-report-template.json";
 const A2A_PUBLIC_PROOF_BUNDLE_COMMAND = "npm run a2a:write-public-proof-bundle -- --out <ignored-json-path>";
 
 const usage = `usage: npm exec tsx -- scripts/check-product-status.ts [--json] [--out <path>]
 
-Reports current Agentic GasKit product status without contacting live proof services.
+Reports current AgentRail product status without contacting live proof services.
 
 Options:
   --json        Print a redacted machine-readable artifact.
@@ -288,7 +288,7 @@ async function testnetDigestProofStatus(
 
 export function formatProductStatusReport(report: ProductStatusReport): string {
   const lines = [
-    `Agentic GasKit product status ${report.complete ? "complete" : "not-complete"}`,
+    `AgentRail product status ${report.complete ? "complete" : "not-complete"}`,
     `localProofOk=${report.localProofOk}`,
     `complete=${report.complete}`,
   ];
@@ -313,7 +313,7 @@ export function buildProductStatusArtifact(
 
   return {
     schemaVersion: 1,
-    kind: "agentic-gaskit.product-status-report",
+    kind: "agentrail.product-status-report",
     generatedAt: now.toISOString(),
     complete: report.complete,
     localProofOk: report.localProofOk,

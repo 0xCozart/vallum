@@ -4,37 +4,37 @@ Last updated: 2026-06-15.
 
 ## Decision
 
-Agentic GasKit keeps the conservative `@iota-gaskit/*` workspace package
+AgentRail keeps the conservative `@agentrail/*` workspace package
 namespace for the current prerelease line.
 
-The repository root remains `agentic-gaskit` and `private: true` so the
+The repository root remains `agentrail` and `private: true` so the
 monorepo root cannot be accidentally published. Publishable workspace packages
 remain public prerelease packages with `publishConfig.access=public` and
 `publishConfig.tag=next`.
 
 ## Why
 
-The current product extends the existing IOTA GasKit sponsorship toolkit. A
-full package namespace rename to `@agentic-gaskit/*` would touch every import,
+The current product extends the existing AgentRail sponsorship toolkit. A
+full package namespace rename to `@agentrail/*` would touch every import,
 example, README, lockfile, package dry-run, and downstream integration at the
 same time. That is a compatibility migration, not a feature slice.
 
-Keeping `@iota-gaskit/*` now avoids mixing package rename risk with wallet,
+Keeping `@agentrail/*` now avoids mixing package rename risk with wallet,
 policy gateway, SDK, MCP, payment, identity, A2A, or marketplace safety work.
 
 ## Current Publishable Packages
 
-- `@iota-gaskit/accounts`
-- `@iota-gaskit/contracts-metadata`
-- `@iota-gaskit/manifest`
-- `@iota-gaskit/marketplace`
-- `@iota-gaskit/mcp-server`
-- `@iota-gaskit/policy-gateway`
-- `@iota-gaskit/receipts`
-- `@iota-gaskit/registry`
-- `@iota-gaskit/sdk`
-- `@iota-gaskit/shared-types`
-- `@iota-gaskit/standards`
+- `@agentrail/accounts`
+- `@agentrail/contracts-metadata`
+- `@agentrail/manifest`
+- `@agentrail/marketplace`
+- `@agentrail/mcp-server`
+- `@agentrail/policy-gateway`
+- `@agentrail/receipts`
+- `@agentrail/registry`
+- `@agentrail/sdk`
+- `@agentrail/shared-types`
+- `@agentrail/standards`
 
 Private workspaces such as the demo app, docs site, and policy gateway service
 are not publishable package surfaces.
@@ -44,7 +44,7 @@ are not publishable package surfaces.
 The release metadata tests enforce:
 
 - root package is private;
-- public package names stay in `@iota-gaskit/*`;
+- public package names stay in `@agentrail/*`;
 - package versions stay aligned on `0.0.0-prerelease`;
 - packages publish ESM `dist/index.js` plus `dist/index.d.ts`;
 - package exports expose only the built root entrypoint;
@@ -94,14 +94,14 @@ package sets, or downstream application compatibility.
   project with lifecycle scripts, audit, funding prompts, and package-lock
   writes disabled;
 - runs a generated consumer program that imports only package root entrypoints
-  from `@iota-gaskit/sdk`, `@iota-gaskit/manifest`, and
-  `@iota-gaskit/policy-gateway`;
+  from `@agentrail/sdk`, `@agentrail/manifest`, and
+  `@agentrail/policy-gateway`;
 - starts an in-process mock policy gateway and exercises the canonical paid
   MCP-style flow through SDK-to-gateway calls;
 - proves approval, policy denial, failed-payment withholding, receipt event
   evidence, and redaction markers without live network calls.
 
-This proves a fresh local consumer project can run the first Agentic GasKit
+This proves a fresh local consumer project can run the first AgentRail
 adoption wedge from packed package APIs. It does not prove npm registry
 installability, package-name availability, live payments, custody,
 marketplace, public A2A hosting, or live IOTA/testnet execution. The command is
@@ -125,14 +125,14 @@ When the structured report is missing, the readiness gate points operators at
 the ignored report-template command first:
 
 ```bash
-npm run operator:write-report-template -- --kind package-publication --out tmp/gaskit/package-publication-report-template.json
+npm run operator:write-report-template -- --kind package-publication --out tmp/agentrail/package-publication-report-template.json
 ```
 
 The template is preparation only. It remains `pending-operator-proof` until a
 real operator-approved publication proof fills in status-only passing evidence.
 
 The structured report must be status-only JSON with `schemaVersion=1`,
-`kind=agentic-gaskit.package-publication-proof`, `result=passed`,
+`kind=agentrail.package-publication-proof`, `result=passed`,
 `registry=npm`, a recent `observedAt`, every current public package name, and
 check ids for pack dry-run, local tarball install, npm publish dry-run,
 registry install, provenance review, and rollback review. It must not include
@@ -143,7 +143,7 @@ The readiness gate can also emit a redacted local audit artifact:
 
 ```bash
 npm run proof:package-publication-readiness -- --json
-npm run proof:package-publication-readiness -- --out tmp/gaskit/package-publication-readiness.json
+npm run proof:package-publication-readiness -- --out tmp/agentrail/package-publication-readiness.json
 ```
 
 The artifact records schema version, kind, timestamp, local proof status,
@@ -161,13 +161,13 @@ publication proof-plan writer for operators:
 - emits command order, current blocker codes, package names, required
   structured report fields, required check ids, and proof boundaries;
 - can write an ignored local JSON artifact such as
-  `tmp/gaskit/package-publication-proof-plan.json`;
+  `tmp/agentrail/package-publication-proof-plan.json`;
 - keeps npm publication credentials, OTPs, npmrc contents, authorization
   headers, raw registry responses, signatures, package-owner account details,
   and local secret paths out of output and Git.
 
 `npm run package:write-publication-proof-bundle -- --out
-tmp/gaskit/package-publication-proof-bundle.json` writes the proof plan, the
+tmp/agentrail/package-publication-proof-bundle.json` writes the proof plan, the
 publication readiness artifact, and the package-publication report template
 together as ignored local artifacts. It also writes a summary with package
 names, blocker codes, required report fields, required check ids, command
@@ -180,7 +180,7 @@ structured publication report.
 
 No package is claimed as published to npm today.
 
-Do not present `npm install @iota-gaskit/*` as a current user instruction until
+Do not present `npm install @agentrail/*` as a current user instruction until
 operator-approved npm publication evidence exists. Before publication, package
 adoption proof means local tarball installation through
 `npm run smoke:package-install` and `npm run smoke:package-paid-mcp-consumer`.
@@ -192,7 +192,7 @@ publication is a separate operator-gated release slice.
 
 ## Future Rename Path
 
-A future `@agentic-gaskit/*` migration remains possible, but it must be a
+A future `@agentrail/*` migration remains possible, but it must be a
 dedicated compatibility slice that updates:
 
 - package names;

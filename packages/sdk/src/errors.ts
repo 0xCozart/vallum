@@ -1,20 +1,20 @@
-export class GasKitError extends Error {
+export class AgentRailError extends Error {
   constructor(message: string, readonly status?: number, readonly body?: unknown) {
     super(message);
-    this.name = "GasKitError";
+    this.name = "AgentRailError";
   }
 }
 
-export class GasKitPolicyError extends GasKitError {
+export class AgentRailPolicyError extends AgentRailError {
   constructor(message: string, readonly reasonCode?: string, status?: number, body?: unknown) {
     super(message, status, body);
-    this.name = "GasKitPolicyError";
+    this.name = "AgentRailPolicyError";
   }
 }
 
-export class GasKitAuthError extends GasKitError {
+export class AgentRailAuthError extends AgentRailError {
   constructor(message: string, status?: number, body?: unknown) {
     super(message, status, body);
-    this.name = "GasKitAuthError";
+    this.name = "AgentRailAuthError";
   }
 }

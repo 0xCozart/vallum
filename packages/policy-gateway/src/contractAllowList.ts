@@ -2,8 +2,8 @@ import {
   defaultContractTemplateRegistry,
   evaluateContractTemplateAction,
   type ContractTemplateRegistry,
-} from "@iota-gaskit/contracts-metadata";
-import type { AgentTransactionManifest } from "@iota-gaskit/manifest";
+} from "@agentrail/contracts-metadata";
+import type { AgentTransactionManifest } from "@agentrail/manifest";
 import type { AgentPolicyContract } from "./policySchema.js";
 
 export function contractActionAllowed(

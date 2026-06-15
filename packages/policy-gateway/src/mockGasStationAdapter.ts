@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import type { AgentTransactionManifest } from "@iota-gaskit/manifest";
+import type { AgentTransactionManifest } from "@agentrail/manifest";
 import type { AgentPolicyDecision } from "./policySchema.js";
 
 export interface MockSponsorshipReservation {

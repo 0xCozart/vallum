@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 
 import type { IotaIdentityLiveSmokeResult } from "./smoke-iota-identity-live.js";
 
-export const IOTA_IDENTITY_LIVE_REPORT_KIND = "agentic-gaskit.iota-identity-live-smoke-report" as const;
+export const IOTA_IDENTITY_LIVE_REPORT_KIND = "agentrail.iota-identity-live-smoke-report" as const;
 export const IOTA_IDENTITY_LIVE_REPORT_SCHEMA_VERSION = 1 as const;
 
 export type IotaIdentityLiveReportCode =

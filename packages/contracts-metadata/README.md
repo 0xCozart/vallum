@@ -1,6 +1,6 @@
-# @iota-gaskit/contracts-metadata
+# @agentrail/contracts-metadata
 
-Versioned contract template metadata registry for Agentic GasKit policy
+Versioned contract template metadata registry for AgentRail policy
 allow-lists.
 
 This package is local prerelease workspace code. It provides metadata and pure
@@ -13,6 +13,6 @@ recurring billing, or prove live package addresses.
 ## Local checks
 
 ```bash
-npm run build -w @iota-gaskit/contracts-metadata
+npm run build -w @agentrail/contracts-metadata
 node --import tsx --test packages/contracts-metadata/src/*.test.ts
 ```

@@ -60,7 +60,7 @@ test("A2A public discovery smoke rejects unsafe public config without printing v
 
 test("A2A public discovery smoke validates public Agent Card and JWKS through injected fetch", async () => {
   const requested: string[] = [];
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-a2a-discovery-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-a2a-discovery-"));
   try {
     const reportPath = join(cwd, "a2a-public-discovery-report.json");
     const result = await runA2APublicDiscoverySmoke({
@@ -186,14 +186,14 @@ function validAgentCard() {
       extendedAgentCard: true,
     },
     securitySchemes: {
-      gaskitBearer: {
+      agentrailBearer: {
         httpAuthSecurityScheme: {
           scheme: "Bearer",
           bearerFormat: "JWT",
         },
       },
     },
-    securityRequirements: [{ schemes: { gaskitBearer: [] } }],
+    securityRequirements: [{ schemes: { agentrailBearer: [] } }],
     defaultInputModes: ["text/plain", "application/json"],
     defaultOutputModes: ["text/plain", "application/json"],
     skills: [{

@@ -24,7 +24,7 @@ test("A2A public readiness reports local proof while public gates remain blocked
 
     assert.equal(report.localProofOk, true);
     assert.equal(report.publicReady, false);
-    assert.equal(artifact.kind, "agentic-gaskit.a2a-public-readiness-report");
+    assert.equal(artifact.kind, "agentrail.a2a-public-readiness-report");
     assert.equal(artifact.localProofOk, true);
     assert.equal(artifact.publicReady, false);
     assert.ok(artifact.provenLocalCheckIds.includes("local-a2a-proof"));
@@ -80,7 +80,7 @@ test("A2A public readiness reports local proof while public gates remain blocked
     assert.match(formatted, /operator:write-report-template -- --kind a2a-public-discovery/);
     assert.match(formatted, /operator:write-report-template -- --kind a2a-public-push-delivery/);
     assert.match(formatted, /operator:write-report-template -- --kind a2a-external-conformance/);
-    assert.match(formatted, /Agentic GasKit A2A public readiness blocked/);
+    assert.match(formatted, /AgentRail A2A public readiness blocked/);
     assert.doesNotMatch(formatted, /secret|token|private/i);
   } finally {
     await rm(cwd, { recursive: true, force: true });
@@ -90,7 +90,7 @@ test("A2A public readiness reports local proof while public gates remain blocked
 test("A2A public readiness artifact writer uses restrictive local file permissions", async () => {
   const cwd = await writeA2AEvidence();
   try {
-    const outFile = "tmp/gaskit/a2a-public-readiness.json";
+    const outFile = "tmp/agentrail/a2a-public-readiness.json";
     const artifact = await writeA2APublicReadinessArtifact({
       cwd,
       env: {},
@@ -101,8 +101,8 @@ test("A2A public readiness artifact writer uses restrictive local file permissio
     const written = JSON.parse(await readFile(join(cwd, outFile), "utf8")) as typeof artifact;
     const mode = (await stat(join(cwd, outFile))).mode & 0o777;
 
-    assert.equal(artifact.kind, "agentic-gaskit.a2a-public-readiness-report");
-    assert.equal(written.kind, "agentic-gaskit.a2a-public-readiness-report");
+    assert.equal(artifact.kind, "agentrail.a2a-public-readiness-report");
+    assert.equal(written.kind, "agentrail.a2a-public-readiness-report");
     assert.equal(written.publicReady, false);
     assert.equal(written.blockerCodes.includes("A2A_PUBLIC_AGENT_CARD_URL_MISSING"), true);
     assert.equal(mode, 0o600);
@@ -112,7 +112,7 @@ test("A2A public readiness artifact writer uses restrictive local file permissio
 });
 
 test("A2A public readiness fails local proof when commands or source evidence are missing", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-a2a-readiness-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-a2a-readiness-"));
   try {
     const report = await checkA2APublicReadiness({
       cwd,
@@ -269,7 +269,7 @@ test("A2A public readiness accepts redacted public push delivery evidence after 
 
     assert.equal(report.localProofOk, true);
     assert.equal(report.publicReady, true);
-    assert.match(formatted, /Agentic GasKit A2A public readiness ready-for-approval/);
+    assert.match(formatted, /AgentRail A2A public readiness ready-for-approval/);
     assert.equal(findCheck(report, "public-discovery").status, "ready-approval");
     assert.equal(findCheck(report, "public-discovery").code, "A2A_PUBLIC_DISCOVERY_REPORT_VALID");
     assert.equal(findCheck(report, "public-push-delivery").status, "ready-approval");
@@ -374,7 +374,7 @@ function findCheck(
 }
 
 async function writeA2AEvidence(): Promise<string> {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-a2a-readiness-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-a2a-readiness-"));
   for (const path of [
     "packages/registry/src/a2aCard.ts",
     "packages/registry/src/a2aWellKnown.ts",

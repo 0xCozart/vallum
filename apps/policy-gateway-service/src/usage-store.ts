@@ -107,8 +107,8 @@ function parseStoredEvent(value: unknown): GatewayEvent {
   if (functionName !== undefined) event.functionName = functionName;
   const gasBudget = optionalFiniteNumber(record, "gasBudget");
   if (gasBudget !== undefined) event.gasBudget = gasBudget;
-  const gasKitTransactionId = optionalString(record, "gasKitTransactionId");
-  if (gasKitTransactionId !== undefined) event.gasKitTransactionId = gasKitTransactionId;
+  const agentRailTransactionId = optionalString(record, "agentRailTransactionId");
+  if (agentRailTransactionId !== undefined) event.agentRailTransactionId = agentRailTransactionId;
   const upstreamReservationId = optionalString(record, "upstreamReservationId");
   if (upstreamReservationId !== undefined) event.upstreamReservationId = upstreamReservationId;
   const reasonCode = optionalString(record, "reasonCode") as GatewayEvent["reasonCode"] | undefined;

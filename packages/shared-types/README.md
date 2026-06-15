@@ -1,20 +1,20 @@
-# @iota-gaskit/shared-types
+# @agentrail/shared-types
 
-Shared TypeScript policy and request/decision types for IOTA GasKit packages.
+Shared TypeScript policy and request/decision types for AgentRail packages.
 
 ## Install
 
 Status: this package is a workspace package today and is not claimed as published to npm yet. Use the monorepo workspace for local review. After M3 publication, install from npm:
 
 ```sh
-npm install @iota-gaskit/shared-types
+npm install @agentrail/shared-types
 ```
 
 ## Usage
 
 ```ts
-import type { SponsorshipPolicy, SponsorshipRequestContext } from "@iota-gaskit/shared-types";
-import { POLICY_REASON_CODES } from "@iota-gaskit/shared-types";
+import type { SponsorshipPolicy, SponsorshipRequestContext } from "@agentrail/shared-types";
+import { POLICY_REASON_CODES } from "@agentrail/shared-types";
 
 const policy: SponsorshipPolicy = {
   appId: "demo-app",

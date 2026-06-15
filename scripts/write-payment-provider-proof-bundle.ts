@@ -35,7 +35,7 @@ export interface PaymentProviderProofBundleCheck {
 
 export interface PaymentProviderProofBundle {
   readonly schemaVersion: 1;
-  readonly kind: "agentic-gaskit.payment-provider-proof-bundle";
+  readonly kind: "agentrail.payment-provider-proof-bundle";
   readonly generatedAt: string;
   readonly status: "blocked" | "ready-for-approval";
   readonly localProofOk: boolean;
@@ -74,10 +74,10 @@ type MutableCliOptions = {
   -readonly [Key in keyof CliOptions]: CliOptions[Key];
 };
 
-const DEFAULT_OUT_FILE = "tmp/gaskit/payment-provider-proof-bundle.json";
-const DEFAULT_PLAN_OUT_FILE = "tmp/gaskit/payment-provider-proof-plan.json";
-const DEFAULT_READINESS_OUT_FILE = "tmp/gaskit/payment-provider-readiness.json";
-const DEFAULT_TEMPLATE_OUT_FILE = "tmp/gaskit/payment-provider-live-report-template.json";
+const DEFAULT_OUT_FILE = "tmp/agentrail/payment-provider-proof-bundle.json";
+const DEFAULT_PLAN_OUT_FILE = "tmp/agentrail/payment-provider-proof-plan.json";
+const DEFAULT_READINESS_OUT_FILE = "tmp/agentrail/payment-provider-readiness.json";
+const DEFAULT_TEMPLATE_OUT_FILE = "tmp/agentrail/payment-provider-live-report-template.json";
 
 const REQUIRED_OPERATOR_INPUTS = [
   "PAYMENT_PROVIDER_LIVE_REPORT",
@@ -161,7 +161,7 @@ export async function writePaymentProviderProofBundle(
 
   const bundle: PaymentProviderProofBundle = {
     schemaVersion: 1,
-    kind: "agentic-gaskit.payment-provider-proof-bundle",
+    kind: "agentrail.payment-provider-proof-bundle",
     generatedAt: now.toISOString(),
     status: readiness.liveReady ? "ready-for-approval" : "blocked",
     localProofOk: readiness.localProofOk,

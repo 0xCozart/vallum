@@ -78,8 +78,8 @@ test("sponsor faucet request rejects unsafe faucet URLs without contacting them"
 });
 
 test("sponsor faucet request calls injected faucet and writes sanitized report", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "gaskit-sponsor-faucet-"));
-  const outFile = join(cwd, "tmp/gaskit/sponsor-faucet-request.json");
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-sponsor-faucet-"));
+  const outFile = join(cwd, "tmp/agentrail/sponsor-faucet-request.json");
   let recipient = "";
   const requestFunds: SponsorFaucetRequester = async (input) => {
     assert.equal(input.host, "https://faucet.testnet.example");
@@ -115,8 +115,8 @@ test("sponsor faucet request calls injected faucet and writes sanitized report",
 });
 
 test("sponsor faucet report validation rejects unsafe full address fields", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "gaskit-sponsor-faucet-"));
-  const outFile = join(cwd, "tmp/gaskit/sponsor-faucet-request.json");
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-sponsor-faucet-"));
+  const outFile = join(cwd, "tmp/agentrail/sponsor-faucet-request.json");
   const report = await requestSponsorFaucetFunds({
     env: {
       GAS_STATION_KEYPAIR: sponsorKey,
@@ -423,7 +423,7 @@ test("sponsor faucet request records documented v0 HTTP failure metadata", async
     assert.equal(report.faucetFailureKind, "http-status");
     assert.equal(report.faucetErrorCode, "REQUEST_UNSUPPORTED");
     assert.ok(report.nextCommands.some((command) => command.includes("sponsor:write-funding-request") && command.includes("--faucet-report")));
-    assert.ok(report.nextCommands.some((command) => command.includes("GASKIT_SPONSOR_FAUCET_REPORT")));
+    assert.ok(report.nextCommands.some((command) => command.includes("AGENTRAIL_SPONSOR_FAUCET_REPORT")));
     assert.equal(report.nextCommands.some((command) => command.includes("diagnose:gas-station")), false);
     assert.doesNotMatch(formatted, new RegExp(escapeRegExp(rawResponse)));
     assert.doesNotMatch(formatted, /faucet\.testnet\.example/);
@@ -546,6 +546,6 @@ function escapeRegExp(value: string): string {
 }
 
 async function tempFaucetReportPath(): Promise<string> {
-  const cwd = await mkdtemp(join(tmpdir(), "gaskit-sponsor-faucet-"));
-  return join(cwd, "tmp/gaskit/sponsor-faucet-request.json");
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-sponsor-faucet-"));
+  return join(cwd, "tmp/agentrail/sponsor-faucet-request.json");
 }

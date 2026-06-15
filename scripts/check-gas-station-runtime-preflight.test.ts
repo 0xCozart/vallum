@@ -42,7 +42,7 @@ test("Gas Station runtime preflight passes when config Docker daemon and Compose
 test("Gas Station runtime preflight passes in managed upstream mode without Docker", async () => {
   const report = await checkGasStationRuntimePreflight({
     env: {
-      GASKIT_GAS_STATION_RUNTIME_MODE: "managed-upstream",
+      AGENTRAIL_GAS_STATION_RUNTIME_MODE: "managed-upstream",
       GAS_STATION_URL: "https://gas-station.testnet.example",
     },
     runner: async () => {
@@ -61,11 +61,11 @@ test("Gas Station runtime preflight passes in managed upstream mode without Dock
 
 test("Gas Station runtime preflight blocks invalid managed upstream config", async () => {
   const missingUrl = await checkGasStationRuntimePreflight({
-    env: { GASKIT_GAS_STATION_RUNTIME_MODE: "managed-upstream" },
+    env: { AGENTRAIL_GAS_STATION_RUNTIME_MODE: "managed-upstream" },
   });
   const invalidMode = await checkGasStationRuntimePreflight({
     env: {
-      GASKIT_GAS_STATION_RUNTIME_MODE: "managed",
+      AGENTRAIL_GAS_STATION_RUNTIME_MODE: "managed",
       GAS_STATION_URL: "https://gas-station.testnet.example",
     },
   });
@@ -167,7 +167,7 @@ test("Gas Station runtime preflight blocks on missing Compose when direct Docker
 });
 
 test("Gas Station runtime preflight blocks when rendered local config is missing", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-gas-runtime-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-gas-runtime-"));
   try {
     const report = await checkGasStationRuntimePreflight({
       cwd,
@@ -188,7 +188,7 @@ test("Gas Station runtime preflight blocks when rendered local config is missing
 });
 
 async function writeConfigFixture(): Promise<string> {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-gas-runtime-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-gas-runtime-"));
   const file = join(cwd, configPath);
   await mkdir(dirname(file), { recursive: true });
   await writeFile(file, "signer:\n  local:\n    key: hidden-local-fixture\n");

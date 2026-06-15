@@ -21,11 +21,11 @@ test("package publication proof plan reports current blockers without registry s
   });
   const formatted = formatPackagePublicationProofPlan(plan);
 
-  assert.equal(plan.kind, "agentic-gaskit.package-publication-proof-plan");
+  assert.equal(plan.kind, "agentrail.package-publication-proof-plan");
   assert.equal(plan.status, "blocked");
   assert.equal(plan.localProofOk, true);
   assert.equal(plan.liveReady, false);
-  assert.ok(plan.packageNames.includes("@iota-gaskit/sdk"));
+  assert.ok(plan.packageNames.includes("@agentrail/sdk"));
   assert.ok(plan.blockerCodes.includes("PACKAGE_PUBLICATION_REPORT_MISSING"));
   assert.ok(plan.requiredOperatorInputs.includes("PACKAGE_PUBLICATION_REPORT"));
   assert.ok(plan.requiredStructuredReportFields.includes("packageNames"));
@@ -35,7 +35,7 @@ test("package publication proof plan reports current blockers without registry s
 });
 
 test("package publication proof plan can write a redacted local artifact", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-package-plan-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-package-plan-"));
   try {
     const outFile = join(cwd, "tmp", "package-publication-proof-plan.json");
     const plan = await writePackagePublicationProofPlan({
@@ -48,7 +48,7 @@ test("package publication proof plan can write a redacted local artifact", async
     const parsed = JSON.parse(await readFile(outFile, "utf8")) as typeof plan;
 
     assert.equal(mode, 0o600);
-    assert.equal(parsed.kind, "agentic-gaskit.package-publication-proof-plan");
+    assert.equal(parsed.kind, "agentrail.package-publication-proof-plan");
     assert.deepEqual(parsed.blockerCodes, plan.blockerCodes);
     assert.deepEqual(parsed.packageNames, plan.packageNames);
   } finally {
@@ -57,7 +57,7 @@ test("package publication proof plan can write a redacted local artifact", async
 });
 
 test("package publication proof plan reports ready approval codes for a valid structured report", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-package-plan-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-package-plan-"));
   try {
     const baseline = await checkPackagePublicationReadiness({
       cwd: repoRoot,
@@ -67,7 +67,7 @@ test("package publication proof plan reports ready approval codes for a valid st
     const reportPath = join(cwd, "publication-report.json");
     await writeFile(reportPath, JSON.stringify({
       schemaVersion: 1,
-      kind: "agentic-gaskit.package-publication-proof",
+      kind: "agentrail.package-publication-proof",
       result: "passed",
       observedAt: "2026-06-13T11:00:00.000Z",
       registry: "npm",

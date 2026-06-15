@@ -6,7 +6,7 @@ Goal: a developer can clone the repo, verify the policy gateway and demo dApp lo
 
 ## Canonical agent-safe sponsored execution path
 
-Start here when evaluating Agentic GasKit as a developer integration:
+Start here when evaluating AgentRail as a developer integration:
 
 ```bash
 npm install
@@ -61,7 +61,7 @@ reviewer-facing proof.
 
 ## Local policy gateway smoke path
 
-This smoke path verifies the GasKit gateway API shape, app-key auth, package/function allowlist rejection, SDK-compatible reserve responses, and execute proxy behavior. It can run against a local/mock upstream before a real IOTA Gas Station is configured.
+This smoke path verifies the AgentRail gateway API shape, app-key auth, package/function allowlist rejection, SDK-compatible reserve responses, and execute proxy behavior. It can run against a local/mock upstream before a real IOTA Gas Station is configured.
 
 ### 1. Configure local environment
 
@@ -74,35 +74,35 @@ cp .env.example .env
 The policy gateway reads these variables from the process environment. Node does not automatically load `.env` in this package, so source the file before starting the service or pass variables inline:
 
 ```bash
-GASKIT_GATEWAY_PORT=8787
-GASKIT_GATEWAY_HOST=127.0.0.1
-GASKIT_POLICY_PATH=examples/policies/demo-dapp.yaml
-GASKIT_DEMO_APP_KEY=local-dev-demo-key
+AGENTRAIL_GATEWAY_PORT=8787
+AGENTRAIL_GATEWAY_HOST=127.0.0.1
+AGENTRAIL_POLICY_PATH=examples/policies/demo-dapp.yaml
+AGENTRAIL_DEMO_APP_KEY=local-dev-demo-key
 GAS_STATION_URL=http://127.0.0.1:9527
 GAS_STATION_BEARER_TOKEN=replace-with-local-gas-station-token
 ```
 
-`GASKIT_DEMO_APP_KEY` is a local development app key only. Do not commit real API keys, sponsor keys, bearer tokens, or `.env` files.
+`AGENTRAIL_DEMO_APP_KEY` is a local development app key only. Do not commit real API keys, sponsor keys, bearer tokens, or `.env` files.
 
 ### 2. Start the gateway
 
 ```bash
-npm run build -w @iota-gaskit/policy-gateway-service
+npm run build -w @agentrail/policy-gateway-service
 set -a
 . ./.env
 set +a
-npm run start -w @iota-gaskit/policy-gateway-service
+npm run start -w @agentrail/policy-gateway-service
 ```
 
 Equivalent inline start command:
 
 ```bash
-GASKIT_DEMO_APP_KEY=local-dev-demo-key \
-GASKIT_GATEWAY_HOST=127.0.0.1 \
-GASKIT_POLICY_PATH=examples/policies/demo-dapp.yaml \
+AGENTRAIL_DEMO_APP_KEY=local-dev-demo-key \
+AGENTRAIL_GATEWAY_HOST=127.0.0.1 \
+AGENTRAIL_POLICY_PATH=examples/policies/demo-dapp.yaml \
 GAS_STATION_URL=http://127.0.0.1:9527 \
 GAS_STATION_BEARER_TOKEN=replace-with-local-token \
-npm run start -w @iota-gaskit/policy-gateway-service
+npm run start -w @agentrail/policy-gateway-service
 ```
 
 ### 3. Check local health
@@ -116,7 +116,7 @@ Expected shape:
 ```json
 {
   "status": "ok",
-  "service": "iota-gaskit-policy-gateway",
+  "service": "agentrail-policy-gateway",
   "upstream": {
     "configured": true
   }
@@ -139,7 +139,7 @@ Expected result: HTTP 401 with reason code `AUTH_MISSING`.
 ```bash
 curl -i \
   -X POST http://127.0.0.1:8787/v1/reserve_gas \
-  -H "authorization: Bearer ${GASKIT_DEMO_APP_KEY}" \
+  -H "authorization: Bearer ${AGENTRAIL_DEMO_APP_KEY}" \
   -H 'content-type: application/json' \
   -d '{"gas_budget":1,"package_id":"0xNOT_ALLOWED","function_name":"mint_badge"}'
 ```
@@ -153,7 +153,7 @@ Use the simulation endpoint to preflight policy decisions without touching IOTA 
 ```bash
 curl -i \
   -X POST http://127.0.0.1:8787/v1/policy/simulate \
-  -H "authorization: Bearer ${GASKIT_DEMO_APP_KEY}" \
+  -H "authorization: Bearer ${AGENTRAIL_DEMO_APP_KEY}" \
   -H 'content-type: application/json' \
   -d '{"gas_budget":1,"wallet_address":"0xWALLET","package_id":"0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0","function_name":"mint_badge"}'
 ```
@@ -171,7 +171,7 @@ npm run smoke:local
 Expected output ends with:
 
 ```text
-IOTA GasKit local gateway smoke passed
+AgentRail local gateway smoke passed
 ```
 
 The smoke covers health, missing auth, invalid auth, local policy simulation, package/function allowlist rejection, allowed reserve proxying, and execute proxying.
@@ -188,24 +188,24 @@ npm run smoke:demo-browser
 Expected output ends with one of:
 
 ```text
-IOTA GasKit demo dApp local flow passed
-IOTA GasKit demo dApp browser smoke passed
+AgentRail demo dApp local flow passed
+AgentRail demo dApp browser smoke passed
 ```
 
 If you already have a local gateway running, you can point the CLI demo dApp at it:
 
 ```bash
-GASKIT_GATEWAY_URL=http://127.0.0.1:8787 \
-GASKIT_DEMO_APP_KEY=local-dev-demo-key \
-npm run dev -w @iota-gaskit/demo-dapp
+AGENTRAIL_GATEWAY_URL=http://127.0.0.1:8787 \
+AGENTRAIL_DEMO_APP_KEY=local-dev-demo-key \
+npm run dev -w @agentrail/demo-dapp
 ```
 
 Or start the browser wrapper locally:
 
 ```bash
-GASKIT_GATEWAY_URL=http://127.0.0.1:8787 \
-GASKIT_DEMO_APP_KEY=local-dev-demo-key \
-npm run browser -w @iota-gaskit/demo-dapp
+AGENTRAIL_GATEWAY_URL=http://127.0.0.1:8787 \
+AGENTRAIL_DEMO_APP_KEY=local-dev-demo-key \
+npm run browser -w @agentrail/demo-dapp
 ```
 
 Then open `http://127.0.0.1:8788`. The browser wrapper binds to loopback hosts only and calls a same-origin local backend endpoint so the app key stays server-side; it is not embedded into browser HTML or JavaScript.
@@ -257,12 +257,12 @@ If you are running a local IOTA Gas Station upstream at `GAS_STATION_URL`, call:
 ```bash
 curl -i \
   -X POST http://127.0.0.1:8787/v1/reserve_gas \
-  -H "authorization: Bearer ${GASKIT_DEMO_APP_KEY}" \
+  -H "authorization: Bearer ${AGENTRAIL_DEMO_APP_KEY}" \
   -H 'content-type: application/json' \
   -d '{"gas_budget":1,"wallet_address":"0xWALLET","package_id":"0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0","function_name":"mint_badge"}'
 ```
 
-Expected result: the request is proxied to `GAS_STATION_URL/v1/reserve_gas`; the response includes the upstream `result.reservation_id` plus a gateway-local `gasKitTransactionId` used later by `/v1/execute_tx`.
+Expected result: the request is proxied to `GAS_STATION_URL/v1/reserve_gas`; the response includes the upstream `result.reservation_id` plus a gateway-local `agentRailTransactionId` used later by `/v1/execute_tx`.
 
 If no upstream Gas Station is running, the gateway returns `GAS_STATION_UNAVAILABLE`. The current gateway keeps reservations in memory for local smoke use only; restart the service to clear local reservation state.
 
@@ -273,13 +273,13 @@ The live flow requires operator-owned local credentials and a reachable IOTA Gas
 1. Copy `.env.example` to `.env`.
 2. Add testnet sponsor wallet values locally.
 3. Run `npm run gas-station:render-config` for the default local Docker
-   Gas Station path, or set `GASKIT_GAS_STATION_RUNTIME_MODE=managed-upstream`
+   Gas Station path, or set `AGENTRAIL_GAS_STATION_RUNTIME_MODE=managed-upstream`
    when `GAS_STATION_URL` points at an operator-managed Gas Station.
 4. Run `npm run gas-station:runtime-preflight`.
 5. Start Redis, Gas Station, policy gateway, and dashboard for the local Docker
    path, or start only the policy gateway/dashboard when using managed
    upstream.
-6. Run `npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json`.
+6. Run `npm run diagnose:gas-station -- --report tmp/agentrail/testnet-upstream-diagnostic.json`.
 7. Open dashboard health page.
 8. Open demo dApp.
 9. Execute sponsored testnet transaction.

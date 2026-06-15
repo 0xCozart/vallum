@@ -2,13 +2,13 @@ import assert from "node:assert/strict";
 import { once } from "node:events";
 import type { AddressInfo } from "node:net";
 import { test } from "node:test";
-import { validManifestFixture } from "@iota-gaskit/manifest";
-import { createAgentMockGatewayServer, type AgentActionPolicy } from "@iota-gaskit/policy-gateway";
+import { validManifestFixture } from "@agentrail/manifest";
+import { createAgentMockGatewayServer, type AgentActionPolicy } from "@agentrail/policy-gateway";
 import {
-  createGasKitClient,
-  GasKitAuthError,
-  GasKitError,
-  GasKitPolicyError,
+  createAgentRailClient,
+  AgentRailAuthError,
+  AgentRailError,
+  AgentRailPolicyError,
   IotaAgent,
   requestSponsoredAction,
 } from "./index.js";
@@ -37,7 +37,7 @@ test("requestSponsoredAction submits a manifest to the mock gateway and returns 
   });
 
   try {
-    const client = createGasKitClient({
+    const client = createAgentRailClient({
       baseUrl: await listen(server),
       apiKey: "test-key",
     });
@@ -63,7 +63,7 @@ test("requestSponsoredAction returns gateway denial as typed data", async () => 
   });
 
   try {
-    const client = createGasKitClient({
+    const client = createAgentRailClient({
       baseUrl: await listen(server),
       apiKey: "test-key",
     });
@@ -147,7 +147,7 @@ test("IotaAgent exposes requestSponsoredAction through the gateway", async () =>
 
 test("reserveGas constructs the expected request", async () => {
   const calls: Array<{ url: string; init: RequestInit }> = [];
-  const client = createGasKitClient({
+  const client = createAgentRailClient({
     baseUrl: "https://api.example.test///",
     apiKey: "test-key",
     fetchImpl: async (url, init) => {
@@ -158,7 +158,7 @@ test("reserveGas constructs the expected request", async () => {
           sponsor_address: "0xsponsor",
           gas_coins: [{ objectId: "0xcoin" }],
         },
-        gasKitTransactionId: "tx-1",
+        agentRailTransactionId: "tx-1",
       }), { status: 200, headers: { "Content-Type": "application/json" } });
     },
   });
@@ -172,7 +172,7 @@ test("reserveGas constructs the expected request", async () => {
   });
 
   assert.equal(response.reservationId, "reservation-1");
-  assert.equal(response.gasKitTransactionId, "tx-1");
+  assert.equal(response.agentRailTransactionId, "tx-1");
   assert.equal(calls[0].url, "https://api.example.test/v1/reserve_gas");
   assert.equal((calls[0].init.headers as Record<string, string>).Authorization, "Bearer test-key");
   assert.deepEqual(JSON.parse(String(calls[0].init.body)), {
@@ -185,7 +185,7 @@ test("reserveGas constructs the expected request", async () => {
 });
 
 test("reserveGas still accepts legacy transaction id responses for compatibility", async () => {
-  const client = createGasKitClient({
+  const client = createAgentRailClient({
     baseUrl: "https://api.example.test",
     apiKey: "test-key",
     fetchImpl: async () => new Response(JSON.stringify({
@@ -196,11 +196,11 @@ test("reserveGas still accepts legacy transaction id responses for compatibility
 
   const response = await client.reserveGas({ gasBudget: 1 });
 
-  assert.equal(response.gasKitTransactionId, "legacy-tx-1");
+  assert.equal(response.agentRailTransactionId, "legacy-tx-1");
 });
 
 test("reserveGas rejects malformed success responses", async () => {
-  const client = createGasKitClient({
+  const client = createAgentRailClient({
     baseUrl: "https://api.example.test",
     apiKey: "test-key",
     fetchImpl: async () => new Response(JSON.stringify({ result: {} }), {
@@ -211,13 +211,13 @@ test("reserveGas rejects malformed success responses", async () => {
 
   await assert.rejects(
     () => client.reserveGas({ gasBudget: 100 }),
-    (error) => error instanceof GasKitError && error.message.includes("result.reservation_id"),
+    (error) => error instanceof AgentRailError && error.message.includes("result.reservation_id"),
   );
 });
 
 test("simulatePolicy constructs a local policy preflight request", async () => {
   const calls: Array<{ url: string; init: RequestInit }> = [];
-  const client = createGasKitClient({
+  const client = createAgentRailClient({
     baseUrl: "https://api.example.test///",
     apiKey: "test-key",
     fetchImpl: async (url, init) => {
@@ -245,7 +245,7 @@ test("simulatePolicy constructs a local policy preflight request", async () => {
 });
 
 test("simulatePolicy returns policy rejections as decision data", async () => {
-  const client = createGasKitClient({
+  const client = createAgentRailClient({
     baseUrl: "https://api.example.test",
     apiKey: "test-key",
     fetchImpl: async () => new Response(JSON.stringify({
@@ -265,7 +265,7 @@ test("simulatePolicy returns policy rejections as decision data", async () => {
 });
 
 test("simulatePolicy keeps auth failures as transport errors", async () => {
-  const client = createGasKitClient({
+  const client = createAgentRailClient({
     baseUrl: "https://api.example.test",
     apiKey: "test-key",
     fetchImpl: async () => new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -276,12 +276,12 @@ test("simulatePolicy keeps auth failures as transport errors", async () => {
 
   await assert.rejects(
     () => client.simulatePolicy({ gasBudget: 1 }),
-    (error) => error instanceof GasKitAuthError && error.status === 401,
+    (error) => error instanceof AgentRailAuthError && error.status === 401,
   );
 });
 
 test("simulatePolicy rejects malformed decision responses", async () => {
-  const client = createGasKitClient({
+  const client = createAgentRailClient({
     baseUrl: "https://api.example.test",
     apiKey: "test-key",
     fetchImpl: async () => new Response(JSON.stringify({}), { status: 200, headers: { "Content-Type": "application/json" } }),
@@ -289,13 +289,13 @@ test("simulatePolicy rejects malformed decision responses", async () => {
 
   await assert.rejects(
     () => client.simulatePolicy({ gasBudget: 1 }),
-    (error) => error instanceof GasKitError && error.message.includes("policy simulation decision"),
+    (error) => error instanceof AgentRailError && error.message.includes("policy simulation decision"),
   );
 });
 
 test("executeSponsoredTransaction returns transaction digest", async () => {
   const calls: Array<{ url: string; init: RequestInit }> = [];
-  const client = createGasKitClient({
+  const client = createAgentRailClient({
     baseUrl: "https://api.example.test",
     apiKey: "test-key",
     fetchImpl: async (url, init) => {
@@ -308,7 +308,7 @@ test("executeSponsoredTransaction returns transaction digest", async () => {
 
   const response = await client.executeSponsoredTransaction({
     reservationId: "reservation-1",
-    gasKitTransactionId: "tx-1",
+    agentRailTransactionId: "tx-1",
     transactionBytes: "base64-tx",
     userSignature: "base64-sig",
   });
@@ -316,14 +316,14 @@ test("executeSponsoredTransaction returns transaction digest", async () => {
   assert.equal(response.digest, "digest-1");
   assert.deepEqual(JSON.parse(String(calls[0].init.body)), {
     reservation_id: "reservation-1",
-    gasKitTransactionId: "tx-1",
+    agentRailTransactionId: "tx-1",
     tx_bytes: "base64-tx",
     user_sig: "base64-sig",
   });
 });
 
-test("auth rejection throws GasKitAuthError", async () => {
-  const client = createGasKitClient({
+test("auth rejection throws AgentRailAuthError", async () => {
+  const client = createAgentRailClient({
     baseUrl: "https://api.example.test",
     apiKey: "test-key",
     fetchImpl: async () => new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -334,12 +334,12 @@ test("auth rejection throws GasKitAuthError", async () => {
 
   await assert.rejects(
     () => client.reserveGas({ gasBudget: 100 }),
-    (error) => error instanceof GasKitAuthError && error.status === 401,
+    (error) => error instanceof AgentRailAuthError && error.status === 401,
   );
 });
 
-test("policy rejection throws GasKitPolicyError", async () => {
-  const client = createGasKitClient({
+test("policy rejection throws AgentRailPolicyError", async () => {
+  const client = createAgentRailClient({
     baseUrl: "https://api.example.test",
     apiKey: "test-key",
     fetchImpl: async () => new Response(JSON.stringify({
@@ -350,7 +350,7 @@ test("policy rejection throws GasKitPolicyError", async () => {
 
   await assert.rejects(
     () => client.reserveGas({ gasBudget: 100 }),
-    (error) => error instanceof GasKitPolicyError && error.reasonCode === "PACKAGE_NOT_ALLOWED",
+    (error) => error instanceof AgentRailPolicyError && error.reasonCode === "PACKAGE_NOT_ALLOWED",
   );
 });
 

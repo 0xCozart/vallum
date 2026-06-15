@@ -1,17 +1,17 @@
 # Node Backend Example
 
-This example shows a minimal server-side integration using `@iota-gaskit/sdk` without exposing the app credential to browser code.
+This example shows a minimal server-side integration using `@agentrail/sdk` without exposing the app credential to browser code.
 
-The example exports framework-neutral handlers from `gaskit-backend.ts` so it can be adapted to Express, Fastify, Hono, Next.js route handlers, or another backend. Your real backend owns the SDK client and app API key; frontend callers only provide transaction metadata and user signatures.
+The example exports framework-neutral handlers from `agentrail-backend.ts` so it can be adapted to Express, Fastify, Hono, Next.js route handlers, or another backend. Your real backend owns the SDK client and app API key; frontend callers only provide transaction metadata and user signatures.
 
 ```ts
-import { createGasKitClient } from "@iota-gaskit/sdk";
-import { createGasKitBackendHandlers } from "./gaskit-backend.js";
+import { createAgentRailClient } from "@agentrail/sdk";
+import { createAgentRailBackendHandlers } from "./agentrail-backend.js";
 
-const handlers = createGasKitBackendHandlers({
-  client: createGasKitClient({
-    baseUrl: process.env.GASKIT_GATEWAY_URL!,
-    apiKey: process.env.GASKIT_DEMO_APP_KEY!,
+const handlers = createAgentRailBackendHandlers({
+  client: createAgentRailClient({
+    baseUrl: process.env.AGENTRAIL_GATEWAY_URL!,
+    apiKey: process.env.AGENTRAIL_DEMO_APP_KEY!,
   }),
 });
 
@@ -25,13 +25,13 @@ const reservation = await handlers.reserve({
 
 const executed = await handlers.execute({
   reservationId: reservation.body.reservationId,
-  gasKitTransactionId: reservation.body.gasKitTransactionId,
+  agentRailTransactionId: reservation.body.agentRailTransactionId,
   transactionBytes: "client-built-transaction-bytes",
   userSignature: "client-user-signature",
 });
 ```
 
-The safe response bodies include only the reservation identifiers, optional sponsor address, execution digest, and sanitized error codes/messages. The handlers map SDK policy/auth/gateway failures to frontend-safe error responses without returning thrown SDK messages or raw upstream error bodies. Policy error responses forward only known GasKit policy reason codes and omit unknown upstream-provided reason strings. They intentionally omit:
+The safe response bodies include only the reservation identifiers, optional sponsor address, execution digest, and sanitized error codes/messages. The handlers map SDK policy/auth/gateway failures to frontend-safe error responses without returning thrown SDK messages or raw upstream error bodies. Policy error responses forward only known AgentRail policy reason codes and omit unknown upstream-provided reason strings. They intentionally omit:
 
 - app API keys and bearer tokens;
 - raw upstream bodies;
@@ -42,7 +42,7 @@ The safe response bodies include only the reservation identifiers, optional spon
 Run the example regression tests from the repo root:
 
 ```bash
-node --import tsx --test examples/node-backend/gaskit-backend.test.ts
+node --import tsx --test examples/node-backend/agentrail-backend.test.ts
 ```
 
 The root `npm test` command also includes checked example tests, and `npm run typecheck` includes `examples/**/*.ts`.

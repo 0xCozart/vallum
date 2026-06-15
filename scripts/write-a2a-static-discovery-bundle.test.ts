@@ -18,7 +18,7 @@ const publicBaseUrl = "https://agents.example/a2a";
 const publicJwksUrl = "https://agents.example/.well-known/jwks.json";
 
 test("A2A static discovery bundle script writes deployable artifacts from public JSON inputs", async () => {
-  const root = await mkdtemp(join(tmpdir(), "agentic-gaskit-a2a-static-script-"));
+  const root = await mkdtemp(join(tmpdir(), "agentrail-a2a-static-script-"));
   try {
     const { agentCardPath, jwksPath } = await writeInputs(root);
     const outDir = join(root, "public");
@@ -57,7 +57,7 @@ test("A2A static discovery bundle script writes deployable artifacts from public
 });
 
 test("A2A static discovery bundle script rejects JWKS private material", async () => {
-  const root = await mkdtemp(join(tmpdir(), "agentic-gaskit-a2a-static-script-"));
+  const root = await mkdtemp(join(tmpdir(), "agentrail-a2a-static-script-"));
   try {
     const { agentCardPath, jwksPath } = await writeInputs(root);
     const jwks = JSON.parse(await readFile(jwksPath, "utf8")) as { keys: Array<Record<string, unknown>> };

@@ -22,13 +22,13 @@ npm run proof:testnet-digest
 Optionally perform a read-only testnet lookup of that public digest:
 
 ```bash
-npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json
+npm run proof:testnet-digest:live -- --report tmp/agentrail/testnet-digest-proof.json
 ```
 
 The live digest lookup does not reserve gas, execute transactions, sign
 transactions, or use sponsor credentials.
 
-Set `GASKIT_TESTNET_DIGEST_REPORT=tmp/gaskit/testnet-digest-proof.json`
+Set `AGENTRAIL_TESTNET_DIGEST_REPORT=tmp/agentrail/testnet-digest-proof.json`
 outside committed files to let `npm run proof:product-status` consume the
 current sanitized lookup report without contacting IOTA RPC.
 
@@ -47,7 +47,7 @@ npm run build
 npm exec tsx -- scripts/check-testnet-readiness.ts --env-file path/to/local.env
 ```
 
-When `GASKIT_POLICY_PATH` is relative, this CLI resolves it relative to the selected env file directory before falling back to the repo working directory.
+When `AGENTRAIL_POLICY_PATH` is relative, this CLI resolves it relative to the selected env file directory before falling back to the repo working directory.
 
 ## Opt-In IOTA Names Resolution Smoke
 
@@ -58,7 +58,7 @@ name/address pair, the registry adapter can be checked without spending gas:
 IOTA_NAMES_GRAPHQL_URL=https://...
 IOTA_NAMES_NAME=example.iota
 IOTA_NAMES_EXPECTED_ADDRESS=0x...
-npm run smoke:iota-names-live -- --report tmp/gaskit/iota-names-live-report.json
+npm run smoke:iota-names-live -- --report tmp/agentrail/iota-names-live-report.json
 ```
 
 The command contacts the configured GraphQL endpoint and verifies that
@@ -86,10 +86,10 @@ The preflight requires these keys to be present:
 - `GAS_STATION_AUTH`
 - `JWT_SECRET`
 - `DATABASE_URL`
-- `GASKIT_GATEWAY_HOST`
-- `GASKIT_GATEWAY_PORT`
-- `GASKIT_POLICY_PATH`
-- `GASKIT_DEMO_APP_KEY`
+- `AGENTRAIL_GATEWAY_HOST`
+- `AGENTRAIL_GATEWAY_PORT`
+- `AGENTRAIL_POLICY_PATH`
+- `AGENTRAIL_DEMO_APP_KEY`
 - `GAS_STATION_URL`
 - `GAS_STATION_BEARER_TOKEN`
 
@@ -97,11 +97,11 @@ It also checks:
 
 - `IOTA_RPC_URL` is HTTPS and points at a testnet endpoint.
 - `GAS_STATION_URL` is a valid URL.
-- `GASKIT_GATEWAY_HOST` remains loopback-only for the first testnet demo boundary.
-- `GASKIT_GATEWAY_PORT` is a valid TCP port.
+- `AGENTRAIL_GATEWAY_HOST` remains loopback-only for the first testnet demo boundary.
+- `AGENTRAIL_GATEWAY_PORT` is a valid TCP port.
 - secret-like values are not placeholders in real readiness mode.
 - `JWT_SECRET` is at least 32 characters in real readiness mode.
-- `GASKIT_POLICY_PATH` loads through the gateway config parser.
+- `AGENTRAIL_POLICY_PATH` loads through the gateway config parser.
 - the policy has a non-empty package allowlist.
 - the policy package allowlist does not still contain placeholder package IDs in real readiness mode.
 
@@ -140,23 +140,23 @@ building/signing a transaction unless all of these are true:
   container running. This is local Docker state only.
 - If reserve compatibility fails after Gas Station root and IOTA RPC checks
   pass, `npm run sponsor:write-funding-request -- --out
-  tmp/gaskit/sponsor-funding-request.json` can write the public sponsor address
+  tmp/agentrail/sponsor-funding-request.json` can write the public sponsor address
   to an ignored local artifact for operator funding while keeping stdout
   redacted. If `--faucet-report <ignored-json-path>` or
-  `GASKIT_SPONSOR_FAUCET_REPORT` is set, the artifact can include only bounded
+  `AGENTRAIL_SPONSOR_FAUCET_REPORT` is set, the artifact can include only bounded
   sanitized faucet attempt context such as result, code, API version, HTTP
   status, failure kind, and bounded faucet error code; this is advisory and
   does not clear funding readiness. If an approved faucet is available, `npm run
   sponsor:request-faucet-funds -- --execute --out
-  tmp/gaskit/sponsor-faucet-request.json` can request testnet gas from
+  tmp/agentrail/sponsor-faucet-request.json` can request testnet gas from
   `IOTA_FAUCET_URL` or `--faucet-url`; it requires explicit `--execute`.
   Then `npm run sponsor:check-funding -- --report
-  tmp/gaskit/sponsor-funding-report.json` reports whether the configured
+  tmp/agentrail/sponsor-funding-report.json` reports whether the configured
   sponsor wallet has enough readable testnet IOTA balance and sampled coin
   shape for the reserve budget. It is read-only and prints no private key or
-  full sponsor address. Point `GASKIT_SPONSOR_FUNDING_REPORT` at that ignored
+  full sponsor address. Point `AGENTRAIL_SPONSOR_FUNDING_REPORT` at that ignored
   report when running the non-networked proof gates.
-- `GASKIT_TESTNET_UPSTREAM_REPORT` points at a current sanitized report created
+- `AGENTRAIL_TESTNET_UPSTREAM_REPORT` points at a current sanitized report created
   by `npm run diagnose:gas-station -- --report <ignored-json-path>` without
   `--skip-reserve`. The report includes a bounded Gas Station reachability code
   such as `GAS_STATION_ROOT_READY` or `GAS_STATION_V1_HEALTH_READY`; the raw
@@ -172,23 +172,23 @@ Compose or the direct Docker fallback. Operators who intentionally use a
 separately managed Gas Station can set:
 
 ```bash
-GASKIT_GAS_STATION_RUNTIME_MODE=managed-upstream
+AGENTRAIL_GAS_STATION_RUNTIME_MODE=managed-upstream
 ```
 
 Managed mode is still non-networked. It only verifies that a Gas Station URL is
 configured without printing it. It does not prove that the endpoint is healthy
-or compatible; `GASKIT_TESTNET_UPSTREAM_REPORT` must still point at a current
+or compatible; `AGENTRAIL_TESTNET_UPSTREAM_REPORT` must still point at a current
 passing diagnostic report before `npm run execute:testnet-demo` can reserve gas
 or build/sign a transaction.
 
 Operators can generate a non-networked checklist for this proof path with:
 
 ```bash
-npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json
-npm run proof:live-status -- --out tmp/gaskit/live-proof-status.json
+npm run operator:write-report-template -- --kind testnet-upstream --out tmp/agentrail/testnet-upstream-report-template.json
+npm run proof:live-status -- --out tmp/agentrail/live-proof-status.json
 ```
 
-The report template is not accepted by `GASKIT_TESTNET_UPSTREAM_REPORT`. It
+The report template is not accepted by `AGENTRAIL_TESTNET_UPSTREAM_REPORT`. It
 remains `pending-operator-proof`; the accepted report must be the sanitized
 diagnostic JSON emitted by `npm run diagnose:gas-station -- --report
 <ignored-json-path>`. The live-proof status artifact is also not accepted as
@@ -207,7 +207,7 @@ network and containers are running. It does not prove Gas Station HTTP health,
 IOTA RPC reachability, reserve_gas compatibility, or sponsored execution.
 
 `npm run sponsor:write-funding-request -- --out
-tmp/gaskit/sponsor-funding-request.json` can be used when the operator needs
+tmp/agentrail/sponsor-funding-request.json` can be used when the operator needs
 the configured public sponsor address to request or transfer IOTA testnet gas.
 The full public address is written only to the ignored artifact; the command
 does not contact live services, reserve gas, sign transactions, execute
@@ -217,7 +217,7 @@ faucet-attempt context, including any bounded `faucetErrorCode`, into the
 ignored funding artifact so operators can avoid repeating a failed route.
 
 `npm run sponsor:request-faucet-funds -- --execute --out
-tmp/gaskit/sponsor-faucet-request.json` can be used only when the operator has
+tmp/agentrail/sponsor-faucet-request.json` can be used only when the operator has
 configured `IOTA_FAUCET_URL` or passes `--faucet-url`. Without `--execute`, the
 command writes a blocked local report and does not contact the faucet. With
 `--execute`, it sends the public sponsor address to the configured HTTPS or
@@ -233,15 +233,15 @@ Faucet success is not accepted as reserve_gas compatibility; rerun the funding
 diagnostic and upstream diagnostic afterward. Failed faucet reports should be
 copied into the funding request or live-status context, but they should not
 advance operators to the upstream diagnostic until sponsor funding is ready.
-If `GASKIT_SPONSOR_FAUCET_REPORT` points at the ignored faucet report, or if
-the default ignored `tmp/gaskit/sponsor-faucet-request.json` report exists and
+If `AGENTRAIL_SPONSOR_FAUCET_REPORT` points at the ignored faucet report, or if
+the default ignored `tmp/agentrail/sponsor-faucet-request.json` report exists and
 validates, `npm run proof:live-status` can include the latest sanitized faucet
 outcome in the sponsor-funding next step. This is triage context only, not
 readiness evidence.
-`npm run live:write-proof-plan -- --out tmp/gaskit/live-proof-plan.json`
+`npm run live:write-proof-plan -- --out tmp/agentrail/live-proof-plan.json`
 includes the same sponsor funding command order and required
-`GASKIT_SPONSOR_FUNDING_REPORT` evidence artifact before the upstream
-diagnostic step, while keeping `GASKIT_SPONSOR_FAUCET_REPORT` optional.
+`AGENTRAIL_SPONSOR_FUNDING_REPORT` evidence artifact before the upstream
+diagnostic step, while keeping `AGENTRAIL_SPONSOR_FAUCET_REPORT` optional.
 Faucet failure reports may include a bounded `faucetErrorCode` such as
 `REQUEST_RATE_LIMITED`, `REQUEST_COOLDOWN`, `FUNDS_UNAVAILABLE`,
 `ADDRESS_INVALID`, `REQUEST_UNSUPPORTED`, `SERVICE_UNAVAILABLE`, or `UNKNOWN`.
@@ -254,14 +254,14 @@ The raw faucet response body and raw faucet error text must stay out of stdout,
 docs, tracked files, and committed artifacts.
 
 `npm run sponsor:check-funding -- --report
-tmp/gaskit/sponsor-funding-report.json` can be used as a read-only funding
+tmp/agentrail/sponsor-funding-report.json` can be used as a read-only funding
 diagnostic when reserve_gas fails after auth succeeds. It contacts IOTA RPC,
 but it does not reserve gas, sign transactions, execute transactions, or print
 sponsor signer material. The ignored report contains only the redacted sponsor
 address and aggregate numeric funding fields.
 
 `npm run smoke:iota-identity-live -- --report
-tmp/gaskit/iota-identity-live-report.json` is the report-backed IOTA Identity
+tmp/agentrail/iota-identity-live-report.json` is the report-backed IOTA Identity
 proof path. It contacts the configured proof endpoint only after operator-owned
 Identity variables are present, writes a sanitized ignored report, and does not
 print endpoint values, profile paths, DIDs, credential refs, raw proof

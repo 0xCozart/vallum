@@ -23,7 +23,7 @@ const publicBaseUrl = "https://agents.example/a2a";
 const publicJwksUrl = "https://agents.example/.well-known/jwks.json";
 
 test("A2A static discovery bundle check validates generated local artifacts", async () => {
-  const outDir = await mkdtemp(join(tmpdir(), "agentic-gaskit-a2a-static-check-"));
+  const outDir = await mkdtemp(join(tmpdir(), "agentrail-a2a-static-check-"));
   try {
     await writeA2APublicDiscoveryBundle({ bundle: validBundle(), outDir });
 
@@ -46,7 +46,7 @@ test("A2A static discovery bundle check validates generated local artifacts", as
 });
 
 test("A2A static discovery bundle check rejects tampered local metadata", async () => {
-  const outDir = await mkdtemp(join(tmpdir(), "agentic-gaskit-a2a-static-check-"));
+  const outDir = await mkdtemp(join(tmpdir(), "agentrail-a2a-static-check-"));
   try {
     await writeA2APublicDiscoveryBundle({ bundle: validBundle(), outDir });
     const manifestPath = join(outDir, "a2a-discovery-bundle-manifest.json");

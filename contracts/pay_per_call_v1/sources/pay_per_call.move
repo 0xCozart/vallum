@@ -1,4 +1,4 @@
-/// Minimal Agentic GasKit pay-per-call state contract.
+/// Minimal AgentRail pay-per-call state contract.
 ///
 /// This MVP records paid tool-call state. It does not custody funds.
 module pay_per_call_v1::pay_per_call {

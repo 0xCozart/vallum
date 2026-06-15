@@ -6,7 +6,7 @@ import config from "../docs.config.mjs";
 const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repoRoot = resolve(appRoot, "../..");
 const checkOnly = process.argv.includes("--check");
-const outDir = checkOnly ? resolve(repoRoot, "tmp/gaskit/docs-site-check") : resolve(appRoot, "dist");
+const outDir = checkOnly ? resolve(repoRoot, "tmp/agentrail/docs-site-check") : resolve(appRoot, "dist");
 
 const allPages = config.sections.flatMap((section) =>
   section.pages.map((page) => ({
@@ -33,7 +33,7 @@ function slugify(value) {
 }
 
 function htmlToken(placeholders, html) {
-  const token = `__GASKIT_HTML_${placeholders.length}__`;
+  const token = `__AGENTRAIL_HTML_${placeholders.length}__`;
   placeholders.push([token, html]);
   return token;
 }
@@ -282,7 +282,7 @@ function pageCards() {
 function themeInitScript() {
   return `<script>
 (() => {
-  const key = "gaskit-docs-theme";
+  const key = "agentrail-docs-theme";
   const root = document.documentElement;
   let stored = null;
   try {
@@ -297,7 +297,7 @@ function themeInitScript() {
 function themeRuntimeScript() {
   return `<script>
 (() => {
-  const key = "gaskit-docs-theme";
+  const key = "agentrail-docs-theme";
   const root = document.documentElement;
   const toggle = document.querySelector("[data-theme-toggle]");
   const label = document.querySelector("[data-theme-label]");
@@ -381,7 +381,7 @@ function shell({ page, content, isIndex = false }) {
         <a class="brand" href="${basePath}">
           <span class="brand-mark">GK</span>
           <span>
-            <strong>IOTA GasKit</strong>
+            <strong>AgentRail</strong>
             <small>Self-hosted gas sponsorship toolkit</small>
           </span>
         </a>
@@ -470,10 +470,10 @@ async function build() {
     if (!deployment.includes("<table>")) {
       throw new Error("Docs check failed: live testnet deployment checkpoints did not render as a table.");
     }
-    if (!examples.includes("createGasKitClient") || !examples.includes("fetch(&quot;/api/gaskit/reserve&quot;")) {
+    if (!examples.includes("createAgentRailClient") || !examples.includes("fetch(&quot;/api/agentrail/reserve&quot;")) {
       throw new Error("Docs check failed: code examples page did not render expected SDK and browser examples.");
     }
-    if (!overview.includes("data-theme-toggle") || !overview.includes("gaskit-docs-theme")) {
+    if (!overview.includes("data-theme-toggle") || !overview.includes("agentrail-docs-theme")) {
       throw new Error("Docs check failed: theme toggle did not render into generated pages.");
     }
   }

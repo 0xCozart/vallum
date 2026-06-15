@@ -28,7 +28,7 @@ const validPolicy = `apps:
 `;
 
 test("product status reports local proof gates and explicit live blockers without secrets", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-product-status-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-product-status-"));
   try {
     const report = await checkProductStatus({
       cwd,
@@ -99,7 +99,7 @@ test("product status reports local proof gates and explicit live blockers withou
 });
 
 test("product status artifact summarizes blockers without secret values", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-product-status-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-product-status-"));
   try {
     const report = await checkProductStatus({
       cwd,
@@ -117,7 +117,7 @@ test("product status artifact summarizes blockers without secret values", async 
     const json = formatProductStatusArtifact(artifact);
     const parsed = JSON.parse(json) as typeof artifact;
 
-    assert.equal(parsed.kind, "agentic-gaskit.product-status-report");
+    assert.equal(parsed.kind, "agentrail.product-status-report");
     assert.equal(parsed.complete, false);
     assert.equal(parsed.localProofOk, true);
     assert.deepEqual(parsed.provenLocalCheckIds, [
@@ -137,9 +137,9 @@ test("product status artifact summarizes blockers without secret values", async 
 });
 
 test("product status artifact writer uses restrictive local file permissions", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-product-status-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-product-status-"));
   try {
-    const outFile = "tmp/gaskit/product-status.json";
+    const outFile = "tmp/agentrail/product-status.json";
     const artifact = await writeProductStatusArtifact({
       cwd,
       env: {},
@@ -157,8 +157,8 @@ test("product status artifact writer uses restrictive local file permissions", a
     const written = await readFile(join(cwd, outFile), "utf8");
     const mode = (await stat(join(cwd, outFile))).mode & 0o777;
 
-    assert.equal(artifact.kind, "agentic-gaskit.product-status-report");
-    assert.equal(JSON.parse(written).kind, "agentic-gaskit.product-status-report");
+    assert.equal(artifact.kind, "agentrail.product-status-report");
+    assert.equal(JSON.parse(written).kind, "agentrail.product-status-report");
     assert.equal(mode, 0o600);
   } finally {
     await rm(cwd, { recursive: true, force: true });
@@ -166,7 +166,7 @@ test("product status artifact writer uses restrictive local file permissions", a
 });
 
 test("product status marks report-backed live gates ready without contacting endpoints", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-product-status-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-product-status-"));
   try {
     await writeFile(join(cwd, "policy.yaml"), validPolicy);
     await writeFile(
@@ -176,18 +176,18 @@ test("product status marks report-backed live gates ready without contacting end
         "GAS_STATION_KEYPAIR=fake-testnet-sponsor-key-with-enough-entropy-for-preflight",
         "GAS_STATION_AUTH=fake-gas-station-auth-value-with-enough-entropy",
         "JWT_SECRET=jwt-secret-with-at-least-thirty-two-characters",
-        "DATABASE_URL=file:./data/gaskit.sqlite3",
-        "GASKIT_GATEWAY_HOST=127.0.0.1",
-        "GASKIT_GATEWAY_PORT=8787",
-        "GASKIT_POLICY_PATH=policy.yaml",
-        "GASKIT_DEMO_APP_KEY=demo-app-key-with-enough-entropy",
+        "DATABASE_URL=file:./data/agentrail.sqlite3",
+        "AGENTRAIL_GATEWAY_HOST=127.0.0.1",
+        "AGENTRAIL_GATEWAY_PORT=8787",
+        "AGENTRAIL_POLICY_PATH=policy.yaml",
+        "AGENTRAIL_DEMO_APP_KEY=demo-app-key-with-enough-entropy",
         "GAS_STATION_URL=http://127.0.0.1:9527",
         "GAS_STATION_BEARER_TOKEN=fake-upstream-bearer-value-with-enough-entropy",
       ].join("\n"),
     );
     await writeFile(join(cwd, "upstream-report.json"), JSON.stringify({
       schemaVersion: 1,
-      kind: "agentic-gaskit.testnet-upstream-diagnostic",
+      kind: "agentrail.testnet-upstream-diagnostic",
       observedAt: new Date().toISOString(),
       gasStationRoot: { configured: true, ok: true, status: 200 },
       gasStationV1Health: { configured: true, ok: false, status: 404 },
@@ -209,9 +209,9 @@ test("product status marks report-backed live gates ready without contacting end
       packagePublicationReadiness: blockedPackagePublicationReadiness(),
       gasStationRuntimeReport: readyGasStationRuntime(),
       env: {
-        GASKIT_SPONSOR_FUNDING_REPORT: "sponsor-funding-report.json",
-        GASKIT_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
-        GASKIT_TESTNET_DIGEST_REPORT: "testnet-digest-report.json",
+        AGENTRAIL_SPONSOR_FUNDING_REPORT: "sponsor-funding-report.json",
+        AGENTRAIL_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
+        AGENTRAIL_TESTNET_DIGEST_REPORT: "testnet-digest-report.json",
         IOTA_NAMES_GRAPHQL_URL: "https://graphql.testnet.example/iota",
         IOTA_NAMES_NAME: "researcher.demo.iota",
         IOTA_NAMES_EXPECTED_ADDRESS: "0x1111111111111111111111111111111111111111111111111111111111111111",
@@ -260,7 +260,7 @@ test("product status marks report-backed live gates ready without contacting end
 });
 
 test("product status blocks stale configured testnet digest reports without contacting live RPC", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-product-status-digest-report-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-product-status-digest-report-"));
   try {
     await writeFile(join(cwd, "testnet-digest-report.json"), JSON.stringify({
       ...readyTestnetDigestReport(),
@@ -277,7 +277,7 @@ test("product status blocks stale configured testnet digest reports without cont
       paymentProviderReadiness: blockedPaymentProviderReadiness(),
       gasStationRuntimeReport: blockedGasStationRuntime(),
       env: {
-        GASKIT_TESTNET_DIGEST_REPORT: "testnet-digest-report.json",
+        AGENTRAIL_TESTNET_DIGEST_REPORT: "testnet-digest-report.json",
       },
     });
     const sponsoredExecute = report.checks.find((check) => check.id === "testnet-sponsored-execute");
@@ -292,12 +292,12 @@ test("product status blocks stale configured testnet digest reports without cont
 });
 
 test("product status can mark managed upstream runtime ready while upstream proof remains separate", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-product-status-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-product-status-"));
   try {
     const report = await checkProductStatus({
       cwd,
       env: {
-        GASKIT_GAS_STATION_RUNTIME_MODE: "managed-upstream",
+        AGENTRAIL_GAS_STATION_RUNTIME_MODE: "managed-upstream",
         GAS_STATION_URL: "https://gas-station.testnet.example",
       },
       a2aPublicReadiness: blockedA2APublicReadiness(),
@@ -324,7 +324,7 @@ test("product status can mark managed upstream runtime ready while upstream proo
 });
 
 test("product status can mark package publication report ready for approval without exposing report values", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-product-status-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-product-status-"));
   try {
     const report = await checkProductStatus({
       cwd,
@@ -336,7 +336,7 @@ test("product status can mark package publication report ready for approval with
       packagePublicationReadiness: {
         localProofOk: true,
         liveReady: true,
-        packageNames: ["@iota-gaskit/sdk"],
+        packageNames: ["@agentrail/sdk"],
         checks: [
           {
             id: "local-package-publication-proof",
@@ -373,7 +373,7 @@ test("product status can mark package publication report ready for approval with
 });
 
 test("product status can mark payment provider report ready for approval without exposing report values", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-product-status-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-product-status-"));
   try {
     const report = await checkProductStatus({
       cwd,
@@ -417,7 +417,7 @@ test("product status can mark payment provider report ready for approval without
 });
 
 test("product status can mark public A2A readiness ready for approval without exposing report values", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-product-status-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-product-status-"));
   try {
     const report = await checkProductStatus({
       cwd,
@@ -440,7 +440,7 @@ test("product status can mark public A2A readiness ready for approval without ex
 });
 
 test("product status can mark marketplace report ready for approval without exposing report values", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-product-status-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-product-status-"));
   try {
     const report = await checkProductStatus({
       cwd,
@@ -484,7 +484,7 @@ test("product status can mark marketplace report ready for approval without expo
 });
 
 test("product status can mark custody report ready for approval without exposing report values", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-product-status-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-product-status-"));
   try {
     const report = await checkProductStatus({
       cwd,
@@ -528,7 +528,7 @@ test("product status can mark custody report ready for approval without exposing
 });
 
 test("product status fails the local proof surface when required commands are missing", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-product-status-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-product-status-"));
   try {
     const report = await checkProductStatus({
       cwd,
@@ -561,7 +561,7 @@ test("product status fails the local proof surface when required commands are mi
 });
 
 test("product status keeps publish dry-run opt-in", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-product-status-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-product-status-"));
   try {
     const scripts = completeScripts({
       "verify:local": `${completeScripts()["verify:local"]} && npm run publish:dry-run`,
@@ -628,7 +628,7 @@ function verifiedTestnetDigestProof() {
 function readyTestnetDigestReport() {
   return {
     schemaVersion: 1,
-    kind: "agentic-gaskit.testnet-digest-proof-report",
+    kind: "agentrail.testnet-digest-proof-report",
     observedAt: new Date().toISOString(),
     ...verifiedTestnetDigestProof(),
   };
@@ -667,11 +667,11 @@ function completeScripts(overrides: Record<string, string | undefined> = {}): Re
       "npm run docs:check",
       "npm run secrets:scan",
     ].join(" && "),
-    "pack:check": "npm run build && npm pack --dry-run -w @iota-gaskit/sdk",
+    "pack:check": "npm run build && npm pack --dry-run -w @agentrail/sdk",
     "smoke:package-install": "npm run build && tsx scripts/smoke-package-install.ts",
     "publish:dry-run": "npm run build && tsx scripts/package-publish-dry-run.ts",
     "operator:write-report-template": "npm run build && tsx scripts/write-operator-report-template.ts",
-    build: "npm run build -w @iota-gaskit/marketplace",
+    build: "npm run build -w @agentrail/marketplace",
     "smoke:marketplace-read-model": "npm run build && tsx scripts/smoke-marketplace-read-model.ts",
     ...overrides,
   };
@@ -777,7 +777,7 @@ function blockedPackagePublicationReadiness() {
   return {
     localProofOk: true,
     liveReady: false,
-    packageNames: ["@iota-gaskit/sdk"],
+    packageNames: ["@agentrail/sdk"],
     checks: [
       {
         id: "local-package-publication-proof",
@@ -867,7 +867,7 @@ function blockedGasStationRuntime() {
 function readySponsorFundingReport() {
   return {
     schemaVersion: 1,
-    kind: "agentic-gaskit.sponsor-funding-report",
+    kind: "agentrail.sponsor-funding-report",
     observedAt: new Date().toISOString(),
     ready: true,
     code: "SPONSOR_FUNDING_READY",
@@ -889,7 +889,7 @@ function readySponsorFundingReport() {
 function readyIotaNamesReport() {
   return {
     schemaVersion: 1,
-    kind: "agentic-gaskit.iota-names-live-smoke-report",
+    kind: "agentrail.iota-names-live-smoke-report",
     observedAt: new Date().toISOString(),
     result: "passed",
     code: "IOTA_NAMES_LIVE_SMOKE_PASSED",
@@ -906,7 +906,7 @@ function readyIotaNamesReport() {
 function readyIotaIdentityReport() {
   return {
     schemaVersion: 1,
-    kind: "agentic-gaskit.iota-identity-live-smoke-report",
+    kind: "agentrail.iota-identity-live-smoke-report",
     observedAt: new Date().toISOString(),
     result: "passed",
     code: "IOTA_IDENTITY_LIVE_SMOKE_PASSED",

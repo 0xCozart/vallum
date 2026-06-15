@@ -18,24 +18,24 @@ test("payment provider proof bundle writes template, plan, and blocked summary w
         PAYMENT_PROVIDER_LIVE_REPORT: "missing-payment-report.json",
       },
     });
-    const bundleRaw = await readFile(join(cwd, "tmp/gaskit/payment-provider-proof-bundle.json"), "utf8");
-    const planRaw = await readFile(join(cwd, "tmp/gaskit/payment-provider-proof-plan.json"), "utf8");
-    const readinessRaw = await readFile(join(cwd, "tmp/gaskit/payment-provider-readiness.json"), "utf8");
-    const templateRaw = await readFile(join(cwd, "tmp/gaskit/payment-provider-live-report-template.json"), "utf8");
+    const bundleRaw = await readFile(join(cwd, "tmp/agentrail/payment-provider-proof-bundle.json"), "utf8");
+    const planRaw = await readFile(join(cwd, "tmp/agentrail/payment-provider-proof-plan.json"), "utf8");
+    const readinessRaw = await readFile(join(cwd, "tmp/agentrail/payment-provider-readiness.json"), "utf8");
+    const templateRaw = await readFile(join(cwd, "tmp/agentrail/payment-provider-live-report-template.json"), "utf8");
 
-    assert.equal(bundle.kind, "agentic-gaskit.payment-provider-proof-bundle");
+    assert.equal(bundle.kind, "agentrail.payment-provider-proof-bundle");
     assert.equal(bundle.status, "blocked");
     assert.equal(bundle.localProofOk, true);
     assert.equal(bundle.liveReady, false);
     assert.deepEqual(bundle.templateArtifacts, [
       {
         id: "payment-provider-live",
-        path: "tmp/gaskit/payment-provider-live-report-template.json",
+        path: "tmp/agentrail/payment-provider-live-report-template.json",
         acceptedReportEnv: "PAYMENT_PROVIDER_LIVE_REPORT",
       },
     ]);
-    assert.equal(bundle.planArtifact, "tmp/gaskit/payment-provider-proof-plan.json");
-    assert.equal(bundle.readinessArtifact, "tmp/gaskit/payment-provider-readiness.json");
+    assert.equal(bundle.planArtifact, "tmp/agentrail/payment-provider-proof-plan.json");
+    assert.equal(bundle.readinessArtifact, "tmp/agentrail/payment-provider-readiness.json");
     assert.ok(bundle.blockerCodes.includes("PAYMENT_PROVIDER_LIVE_REPORT_NOT_FOUND"));
     assert.equal(bundle.readyApprovalCodes.length, 0);
     assert.ok(bundle.requiredOperatorInputs.includes("PAYMENT_PROVIDER_LIVE_REPORT"));
@@ -45,10 +45,10 @@ test("payment provider proof bundle writes template, plan, and blocked summary w
     assert.equal(bundle.steps.find((step) => step.id === "run-approved-x402-provider-proof")?.contactsPaymentProvider, true);
     assert.equal(bundle.steps.find((step) => step.id === "write-payment-provider-template")?.contactsPaymentProvider, false);
 
-    await assertMode(join(cwd, "tmp/gaskit/payment-provider-proof-bundle.json"), 0o600);
-    await assertMode(join(cwd, "tmp/gaskit/payment-provider-proof-plan.json"), 0o600);
-    await assertMode(join(cwd, "tmp/gaskit/payment-provider-readiness.json"), 0o600);
-    await assertMode(join(cwd, "tmp/gaskit/payment-provider-live-report-template.json"), 0o600);
+    await assertMode(join(cwd, "tmp/agentrail/payment-provider-proof-bundle.json"), 0o600);
+    await assertMode(join(cwd, "tmp/agentrail/payment-provider-proof-plan.json"), 0o600);
+    await assertMode(join(cwd, "tmp/agentrail/payment-provider-readiness.json"), 0o600);
+    await assertMode(join(cwd, "tmp/agentrail/payment-provider-live-report-template.json"), 0o600);
 
     const allOutput = `${JSON.stringify(bundle)}\n${bundleRaw}\n${planRaw}\n${readinessRaw}\n${templateRaw}`;
     assert.doesNotMatch(
@@ -72,7 +72,7 @@ test("payment provider proof bundle is ready for approval when structured report
         PAYMENT_PROVIDER_LIVE_REPORT: "payment-provider-live-report.json",
       },
     });
-    const bundleRaw = await readFile(join(cwd, "tmp/gaskit/payment-provider-proof-bundle.json"), "utf8");
+    const bundleRaw = await readFile(join(cwd, "tmp/agentrail/payment-provider-proof-bundle.json"), "utf8");
 
     assert.equal(bundle.status, "ready-for-approval");
     assert.equal(bundle.liveReady, true);
@@ -89,7 +89,7 @@ test("payment provider proof bundle is ready for approval when structured report
 });
 
 async function writePaymentProviderEvidence(): Promise<string> {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-payment-proof-bundle-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-payment-proof-bundle-"));
   for (const path of [
     "packages/manifest/src/x402Mapping.ts",
     "packages/manifest/src/x402Mapping.test.ts",
@@ -126,7 +126,7 @@ async function assertMode(path: string, expected: number): Promise<void> {
 function validLiveReport() {
   return {
     schemaVersion: 1,
-    kind: "agentic-gaskit.payment-provider-live-proof",
+    kind: "agentrail.payment-provider-live-proof",
     result: "passed",
     observedAt: NOW.toISOString(),
     providerKinds: ["x402", "ap2"],

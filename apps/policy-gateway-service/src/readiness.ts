@@ -26,9 +26,9 @@ const SECRET_KEYS = new Set([
   "GAS_STATION_KEYPAIR",
   "GAS_STATION_AUTH",
   "JWT_SECRET",
-  "GASKIT_DEMO_APP_KEY",
+  "AGENTRAIL_DEMO_APP_KEY",
   "GAS_STATION_BEARER_TOKEN",
-  "GASKIT_OPERATOR_USAGE_TOKEN",
+  "AGENTRAIL_OPERATOR_USAGE_TOKEN",
 ]);
 
 const REQUIRED_KEYS = [
@@ -37,10 +37,10 @@ const REQUIRED_KEYS = [
   "GAS_STATION_AUTH",
   "JWT_SECRET",
   "DATABASE_URL",
-  "GASKIT_GATEWAY_HOST",
-  "GASKIT_GATEWAY_PORT",
-  "GASKIT_POLICY_PATH",
-  "GASKIT_DEMO_APP_KEY",
+  "AGENTRAIL_GATEWAY_HOST",
+  "AGENTRAIL_GATEWAY_PORT",
+  "AGENTRAIL_POLICY_PATH",
+  "AGENTRAIL_DEMO_APP_KEY",
   "GAS_STATION_URL",
   "GAS_STATION_BEARER_TOKEN",
 ] as const;
@@ -178,11 +178,11 @@ function validatePort(checks: ReadinessCheck[], value: string | undefined): void
   const port = Number(value);
   addCheck(
     checks,
-    "GASKIT_GATEWAY_PORT.range",
+    "AGENTRAIL_GATEWAY_PORT.range",
     Number.isInteger(port) && port > 0 && port <= 65_535 ? "pass" : "fail",
     Number.isInteger(port) && port > 0 && port <= 65_535
-      ? "GASKIT_GATEWAY_PORT is a valid TCP port."
-      : "GASKIT_GATEWAY_PORT must be an integer from 1 to 65535.",
+      ? "AGENTRAIL_GATEWAY_PORT is a valid TCP port."
+      : "AGENTRAIL_GATEWAY_PORT must be an integer from 1 to 65535.",
   );
 }
 
@@ -194,11 +194,11 @@ function validateGatewayHost(checks: ReadinessCheck[], value: string | undefined
   if (!hasValue(value)) return;
   addCheck(
     checks,
-    "GASKIT_GATEWAY_HOST.loopback",
+    "AGENTRAIL_GATEWAY_HOST.loopback",
     isLoopbackHost(value) ? "pass" : "fail",
     isLoopbackHost(value)
-      ? "GASKIT_GATEWAY_HOST is loopback-only for the first testnet demo boundary."
-      : "GASKIT_GATEWAY_HOST must stay loopback-only before deployment hardening is complete.",
+      ? "AGENTRAIL_GATEWAY_HOST is loopback-only for the first testnet demo boundary."
+      : "AGENTRAIL_GATEWAY_HOST must stay loopback-only before deployment hardening is complete.",
   );
 }
 
@@ -208,7 +208,7 @@ async function validatePolicy(
   expectPlaceholders: boolean,
   cwd?: string,
 ): Promise<void> {
-  if (!hasValue(env.GASKIT_POLICY_PATH) || !hasValue(env.GASKIT_DEMO_APP_KEY)) return;
+  if (!hasValue(env.AGENTRAIL_POLICY_PATH) || !hasValue(env.AGENTRAIL_DEMO_APP_KEY)) return;
   try {
     const config = await loadGatewayConfigFromEnv(cwd ? { ...env, INIT_CWD: cwd } : env);
     const policies = Object.values(config.apps).map((app) => app.policy);
@@ -217,7 +217,7 @@ async function validatePolicy(
       checks,
       "policy.load",
       "pass",
-      "GASKIT_POLICY_PATH loads through the gateway config parser.",
+      "AGENTRAIL_POLICY_PATH loads through the gateway config parser.",
     );
     addCheck(
       checks,
@@ -252,8 +252,8 @@ export async function checkTestnetReadiness(options: CheckReadinessOptions): Pro
   validateSecretPlaceholders(checks, env, expectPlaceholders);
   validateUrl(checks, "IOTA_RPC_URL", env.IOTA_RPC_URL, { requireHttps: true, requireTestnet: true });
   validateUrl(checks, "GAS_STATION_URL", env.GAS_STATION_URL);
-  validateGatewayHost(checks, env.GASKIT_GATEWAY_HOST);
-  validatePort(checks, env.GASKIT_GATEWAY_PORT);
+  validateGatewayHost(checks, env.AGENTRAIL_GATEWAY_HOST);
+  validatePort(checks, env.AGENTRAIL_GATEWAY_PORT);
   await validatePolicy(checks, env, expectPlaceholders, options.cwd);
 
   const failures = checks.filter((check) => check.status === "fail");
@@ -270,7 +270,7 @@ function secretKeyForCheckId(id: string): string | undefined {
 }
 
 export function formatReadinessReport(report: ReadinessReport): string {
-  const lines = [`IOTA GasKit ${report.mode} readiness ${report.ok ? "passed" : "failed"}`];
+  const lines = [`AgentRail ${report.mode} readiness ${report.ok ? "passed" : "failed"}`];
   for (const check of report.checks) {
     const prefix = check.status === "pass" ? "ok" : "fail";
     const sensitiveSuffix = secretKeyForCheckId(check.id) ? " [value hidden]" : "";

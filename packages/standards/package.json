@@ -1,5 +1,5 @@
 {
-  "name": "@iota-gaskit/standards",
+  "name": "@agentrail/standards",
   "version": "0.0.0-prerelease",
   "type": "module",
   "main": "dist/index.js",
@@ -12,12 +12,12 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@iota-gaskit/manifest": "0.0.0-prerelease",
-    "@iota-gaskit/policy-gateway": "0.0.0-prerelease",
-    "@iota-gaskit/receipts": "0.0.0-prerelease",
-    "@iota-gaskit/registry": "0.0.0-prerelease"
+    "@agentrail/manifest": "0.0.0-prerelease",
+    "@agentrail/policy-gateway": "0.0.0-prerelease",
+    "@agentrail/receipts": "0.0.0-prerelease",
+    "@agentrail/registry": "0.0.0-prerelease"
   },
-  "description": "Standards bridge adapters for Agentic GasKit.",
+  "description": "Standards bridge adapters for AgentRail.",
   "files": [
     "dist/**/*.js",
     "dist/**/*.d.ts",

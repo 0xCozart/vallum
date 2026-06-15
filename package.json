@@ -1,5 +1,5 @@
 {
-  "name": "agentic-gaskit",
+  "name": "agentrail",
   "version": "0.0.0-prerelease",
   "private": true,
   "description": "Open-source toolkit for IOTA gas sponsorship plus agent-safe wallets, manifests, policy controls, receipts, and integrations.",
@@ -10,7 +10,7 @@
     "apps/*"
   ],
   "scripts": {
-    "build": "npm run build -w @iota-gaskit/shared-types && npm run build -w @iota-gaskit/manifest && npm run build -w @iota-gaskit/registry && npm run build -w @iota-gaskit/contracts-metadata && npm run build -w @iota-gaskit/policy-gateway && npm run build -w @iota-gaskit/receipts && npm run build -w @iota-gaskit/standards && npm run build -w @iota-gaskit/marketplace && npm run build -w @iota-gaskit/sdk && npm run build -w @iota-gaskit/mcp-server && npm run build -w @iota-gaskit/accounts && npm run build -w @iota-gaskit/policy-gateway-service",
+    "build": "npm run build -w @agentrail/shared-types && npm run build -w @agentrail/manifest && npm run build -w @agentrail/registry && npm run build -w @agentrail/contracts-metadata && npm run build -w @agentrail/policy-gateway && npm run build -w @agentrail/receipts && npm run build -w @agentrail/standards && npm run build -w @agentrail/marketplace && npm run build -w @agentrail/sdk && npm run build -w @agentrail/mcp-server && npm run build -w @agentrail/accounts && npm run build -w @agentrail/policy-gateway-service",
     "test": "npm run build && node --import tsx --test scripts/*.test.ts examples/**/*.test.ts packages/*/src/*.test.ts apps/*/src/*.test.ts",
     "contracts:test": "tsx scripts/run-move-tests.ts",
     "typecheck": "npm run build && tsc --noEmit",
@@ -46,7 +46,7 @@
     "proof:operator-gates": "npm run build && tsx scripts/check-operator-live-gates.ts",
     "proof:roadmap-completion": "npm run build && tsx scripts/check-roadmap-completion.ts",
     "roadmap:write-execution-proof-bundle": "npm run build && tsx scripts/write-roadmap-execution-proof-bundle.ts",
-    "operator:write-live-gate-report": "npm run build && tsx scripts/check-operator-live-gates.ts --json --out tmp/gaskit/operator-live-gates.json",
+    "operator:write-live-gate-report": "npm run build && tsx scripts/check-operator-live-gates.ts --json --out tmp/agentrail/operator-live-gates.json",
     "proof:testnet-digest": "npm run build && tsx scripts/check-testnet-digest-proof.ts",
     "proof:testnet-digest:live": "npm run build && tsx scripts/check-testnet-digest-proof.ts --live",
     "proof:a2a-public-readiness": "npm run build && tsx scripts/check-a2a-public-readiness.ts",
@@ -75,13 +75,13 @@
     "execute:testnet-demo": "npm run build && tsx scripts/execute-testnet-sponsored-demo.ts",
     "readiness:testnet:example": "npm run build && tsx scripts/check-testnet-readiness.ts --env-file .env.example --expect-placeholders",
     "secrets:scan": "tsx scripts/scan-secrets.ts",
-    "pack:check": "npm run build && npm pack --dry-run -w @iota-gaskit/shared-types -w @iota-gaskit/policy-gateway -w @iota-gaskit/receipts -w @iota-gaskit/standards -w @iota-gaskit/marketplace -w @iota-gaskit/sdk -w @iota-gaskit/mcp-server -w @iota-gaskit/accounts -w @iota-gaskit/manifest -w @iota-gaskit/registry -w @iota-gaskit/contracts-metadata",
+    "pack:check": "npm run build && npm pack --dry-run -w @agentrail/shared-types -w @agentrail/policy-gateway -w @agentrail/receipts -w @agentrail/standards -w @agentrail/marketplace -w @agentrail/sdk -w @agentrail/mcp-server -w @agentrail/accounts -w @agentrail/manifest -w @agentrail/registry -w @agentrail/contracts-metadata",
     "smoke:package-install": "npm run build && tsx scripts/smoke-package-install.ts",
     "smoke:package-paid-mcp-consumer": "npm run build && tsx scripts/smoke-package-paid-mcp-consumer.ts",
     "publish:dry-run": "npm run build && tsx scripts/package-publish-dry-run.ts",
-    "docs:build": "npm run build -w @iota-gaskit/docs-site",
-    "docs:check": "npm run check -w @iota-gaskit/docs-site",
-    "docs:serve": "npm run serve -w @iota-gaskit/docs-site --",
+    "docs:build": "npm run build -w @agentrail/docs-site",
+    "docs:check": "npm run check -w @agentrail/docs-site",
+    "docs:serve": "npm run serve -w @agentrail/docs-site --",
     "verify:fast": "npm run build && npm test && npm run docs:check && npm run secrets:scan && npm run proof:product-status && npm run proof:launch-readiness && npm run proof:operator-gates",
     "verify:local": "npm test && npm run contracts:test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp && npm run smoke:demo-browser && npm run smoke:agent-escrow && npm run smoke:paid-mcp-tool && npm run smoke:data-license && npm run smoke:service-bounty && npm run smoke:reputation-receipt && npm run smoke:subscription && npm run smoke:a2a-well-known && npm run smoke:a2a-signed-card && npm run smoke:a2a-task-message && npm run smoke:a2a-http && npm run smoke:a2a-local-server && npm run smoke:marketplace-read-model && npm run readiness:testnet:example && npm run proof:testnet-digest && npm run pack:check && npm run smoke:package-install && npm run proof:a2a-public-readiness && npm run proof:verification-profiles && npm run proof:product-status && npm run proof:launch-readiness && npm run proof:operator-gates && npm run docs:check && npm run secrets:scan",
     "grant:check": "npm run verify:local"

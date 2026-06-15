@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an improvement to IOTA GasKit
+about: Suggest an improvement to AgentRail
 title: "feat: "
 labels: enhancement
 assignees: ""
@@ -12,7 +12,7 @@ What builder/operator problem does this solve?
 
 ## Proposed solution
 
-What should GasKit do?
+What should AgentRail do?
 
 ## Alternatives considered
 

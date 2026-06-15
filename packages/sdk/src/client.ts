@@ -1,12 +1,12 @@
-import { POLICY_REASON_CODES } from "@iota-gaskit/shared-types";
-import type { PolicyReasonCode } from "@iota-gaskit/shared-types";
+import { POLICY_REASON_CODES } from "@agentrail/shared-types";
+import type { PolicyReasonCode } from "@agentrail/shared-types";
 
-import { GasKitAuthError, GasKitError, GasKitPolicyError } from "./errors.js";
+import { AgentRailAuthError, AgentRailError, AgentRailPolicyError } from "./errors.js";
 import { requestSponsoredAction as requestSponsoredActionThroughGateway } from "./requestSponsoredAction.js";
 import type {
   ExecuteSponsoredTransactionRequest,
   ExecuteSponsoredTransactionResponse,
-  GasKitClientOptions,
+  AgentRailClientOptions,
   PolicySimulationRequest,
   PolicySimulationResponse,
   ReserveGasRequest,
@@ -32,7 +32,7 @@ function asRecord(value: unknown): JsonRecord {
 function requireString(value: unknown, fieldPath: string, raw: unknown): string {
   if (typeof value === "string" && value.length > 0) return value;
   if (typeof value === "number" && Number.isFinite(value)) return String(value);
-  throw new GasKitError(`Malformed GasKit response: missing ${fieldPath}.`, undefined, raw);
+  throw new AgentRailError(`Malformed AgentRail response: missing ${fieldPath}.`, undefined, raw);
 }
 
 function isPolicyReasonCode(value: unknown): value is PolicyReasonCode {
@@ -49,27 +49,27 @@ function parsePolicySimulationDecision(value: unknown): PolicySimulationResponse
       message: record["message"],
     };
   }
-  throw new GasKitError("Malformed GasKit response: missing policy simulation decision.", undefined, value);
+  throw new AgentRailError("Malformed AgentRail response: missing policy simulation decision.", undefined, value);
 }
 
-function buildError(status: number, body: unknown): GasKitError {
+function buildError(status: number, body: unknown): AgentRailError {
   const record = asRecord(body);
   const message =
     typeof record["message"] === "string"
       ? record["message"]
       : typeof record["error"] === "string"
         ? record["error"]
-        : `GasKit request failed with HTTP ${status}`;
+        : `AgentRail request failed with HTTP ${status}`;
   const reasonCode = typeof record["reasonCode"] === "string" ? record["reasonCode"] : undefined;
 
-  if (status === 401 || status === 403) return new GasKitAuthError(message, status, body);
+  if (status === 401 || status === 403) return new AgentRailAuthError(message, status, body);
   if (status === 400 || status === 409 || status === 429) {
-    return new GasKitPolicyError(message, reasonCode, status, body);
+    return new AgentRailPolicyError(message, reasonCode, status, body);
   }
-  return new GasKitError(message, status, body);
+  return new AgentRailError(message, status, body);
 }
 
-export function createGasKitClient(options: GasKitClientOptions) {
+export function createAgentRailClient(options: AgentRailClientOptions) {
   const baseUrl = normalizeBaseUrl(options.baseUrl);
   const fetchImpl = options.fetchImpl ?? fetch;
 
@@ -121,7 +121,7 @@ export function createGasKitClient(options: GasKitClientOptions) {
       const result = asRecord(json["result"]);
       return {
         reservationId: requireString(result["reservation_id"], "result.reservation_id", json),
-        gasKitTransactionId: requireString(json["gasKitTransactionId"] ?? json["_saas_tx_id"], "gasKitTransactionId", json),
+        agentRailTransactionId: requireString(json["agentRailTransactionId"] ?? json["_saas_tx_id"], "agentRailTransactionId", json),
         sponsorAddress: typeof result["sponsor_address"] === "string" ? result["sponsor_address"] : undefined,
         gasCoins: Array.isArray(result["gas_coins"]) ? result["gas_coins"] : undefined,
         raw: json,
@@ -133,7 +133,7 @@ export function createGasKitClient(options: GasKitClientOptions) {
     ): Promise<ExecuteSponsoredTransactionResponse> {
       const json = await post<JsonRecord>("/v1/execute_tx", {
         reservation_id: request.reservationId,
-        gasKitTransactionId: request.gasKitTransactionId,
+        agentRailTransactionId: request.agentRailTransactionId,
         tx_bytes: request.transactionBytes,
         user_sig: request.userSignature,
       });

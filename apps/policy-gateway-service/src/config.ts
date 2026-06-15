@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { isAbsolute, resolve } from "node:path";
 
-import type { SponsorshipPolicy } from "@iota-gaskit/shared-types";
+import type { SponsorshipPolicy } from "@agentrail/shared-types";
 
 import type { GatewayConfig } from "./server.js";
 import { createFileGatewayUsageEventStore } from "./usage-store.js";
@@ -124,29 +124,29 @@ function validateDemoPolicy(parsed: DemoPolicyYaml): SponsorshipPolicy["appStatu
 }
 
 function demoAppKeyFromEnv(env: NodeJS.ProcessEnv): string {
-  if (env.GASKIT_DEMO_APP_KEY) return env.GASKIT_DEMO_APP_KEY;
-  if (env.GASKIT_ALLOW_INSECURE_DEMO_KEY === "true") return "local-dev-demo-key";
-  throw new Error("GASKIT_DEMO_APP_KEY must be set. Use GASKIT_ALLOW_INSECURE_DEMO_KEY=true only for local smoke demos.");
+  if (env.AGENTRAIL_DEMO_APP_KEY) return env.AGENTRAIL_DEMO_APP_KEY;
+  if (env.AGENTRAIL_ALLOW_INSECURE_DEMO_KEY === "true") return "local-dev-demo-key";
+  throw new Error("AGENTRAIL_DEMO_APP_KEY must be set. Use AGENTRAIL_ALLOW_INSECURE_DEMO_KEY=true only for local smoke demos.");
 }
 
 function parseOperatorUsageMaxRecentEvents(value: string | undefined): number {
   if (value === undefined || value.trim() === "") return 100;
   const parsed = Number(value);
   if (!Number.isSafeInteger(parsed) || parsed < 0 || parsed > 1_000) {
-    throw new Error("GASKIT_OPERATOR_USAGE_MAX_RECENT_EVENTS must be an integer between 0 and 1000.");
+    throw new Error("AGENTRAIL_OPERATOR_USAGE_MAX_RECENT_EVENTS must be an integer between 0 and 1000.");
   }
   return parsed;
 }
 
 function configureLocalUsageStore(config: GatewayConfig, env: NodeJS.ProcessEnv, appKey: string): GatewayConfig {
-  const rawUsageStorePath = env.GASKIT_USAGE_EVENT_STORE_PATH;
+  const rawUsageStorePath = env.AGENTRAIL_USAGE_EVENT_STORE_PATH;
   const usageStorePath = rawUsageStorePath?.trim();
-  const operatorToken = env.GASKIT_OPERATOR_USAGE_TOKEN;
+  const operatorToken = env.AGENTRAIL_OPERATOR_USAGE_TOKEN;
   if (rawUsageStorePath !== undefined && !usageStorePath) {
-    throw new Error("GASKIT_USAGE_EVENT_STORE_PATH must be a non-empty path when set.");
+    throw new Error("AGENTRAIL_USAGE_EVENT_STORE_PATH must be a non-empty path when set.");
   }
   if (!usageStorePath && operatorToken) {
-    throw new Error("GASKIT_USAGE_EVENT_STORE_PATH must be set before enabling GASKIT_OPERATOR_USAGE_TOKEN.");
+    throw new Error("AGENTRAIL_USAGE_EVENT_STORE_PATH must be set before enabling AGENTRAIL_OPERATOR_USAGE_TOKEN.");
   }
   if (!usageStorePath) return config;
 
@@ -162,13 +162,13 @@ function configureLocalUsageStore(config: GatewayConfig, env: NodeJS.ProcessEnv,
 
   if (!operatorToken) return withUsageStore;
   if (!operatorToken.trim()) {
-    throw new Error("GASKIT_OPERATOR_USAGE_TOKEN must be a non-empty token.");
+    throw new Error("AGENTRAIL_OPERATOR_USAGE_TOKEN must be a non-empty token.");
   }
   if (operatorToken === appKey || operatorToken === env.GAS_STATION_BEARER_TOKEN) {
-    throw new Error("GASKIT_OPERATOR_USAGE_TOKEN must be distinct from app and upstream credentials.");
+    throw new Error("AGENTRAIL_OPERATOR_USAGE_TOKEN must be distinct from app and upstream credentials.");
   }
 
-  const maxRecentEvents = parseOperatorUsageMaxRecentEvents(env.GASKIT_OPERATOR_USAGE_MAX_RECENT_EVENTS);
+  const maxRecentEvents = parseOperatorUsageMaxRecentEvents(env.AGENTRAIL_OPERATOR_USAGE_MAX_RECENT_EVENTS);
   return {
     ...withUsageStore,
     operatorUsage: {
@@ -183,7 +183,7 @@ function configureLocalUsageStore(config: GatewayConfig, env: NodeJS.ProcessEnv,
 }
 
 export async function loadGatewayConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Promise<GatewayConfig> {
-  const policyPath = env.GASKIT_POLICY_PATH ?? "examples/policies/demo-dapp.yaml";
+  const policyPath = env.AGENTRAIL_POLICY_PATH ?? "examples/policies/demo-dapp.yaml";
   const appKey = demoAppKeyFromEnv(env);
   const parsed = parseDemoPolicyYaml(await readPolicyConfig(policyPath, env));
   const appStatus = validateDemoPolicy(parsed);

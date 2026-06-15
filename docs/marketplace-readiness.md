@@ -4,7 +4,7 @@ Last reviewed: 2026-06-10.
 
 ## Verdict
 
-Agentic GasKit is ready for marketplace requirements/design work that stays
+AgentRail is ready for marketplace requirements/design work that stays
 inside local and mock proof. It is not ready for production marketplace
 implementation, live provider onboarding, real-money settlement, custody,
 staking, public moderation, or provider verification.
@@ -128,7 +128,7 @@ When `MARKETPLACE_PRODUCTION_REPORT` is missing, generate the status-only
 template first:
 
 ```bash
-npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json
+npm run operator:write-report-template -- --kind marketplace-production --out tmp/agentrail/marketplace-production-report-template.json
 ```
 
 The generated template is preparation material only. It does not contact
@@ -138,7 +138,7 @@ as production marketplace proof until an operator completes the required review
 and sets `MARKETPLACE_PRODUCTION_REPORT` to a valid ignored structured report.
 
 `npm run proof:marketplace-readiness -- --out
-tmp/gaskit/marketplace-readiness.json` writes the same readiness state as a
+tmp/agentrail/marketplace-readiness.json` writes the same readiness state as a
 redacted mode-0600 local JSON artifact for audit snapshots. The artifact does
 not contact production marketplace systems, provider systems, payment systems,
 IOTA services, public A2A endpoints, or Gas Station endpoints, and it does not
@@ -153,14 +153,14 @@ marketplace production proof-plan writer for operators:
 - emits command order, current blocker codes, required structured report
   fields, required check ids, and proof boundaries;
 - can write an ignored local JSON artifact such as
-  `tmp/gaskit/marketplace-production-proof-plan.json`;
+  `tmp/agentrail/marketplace-production-proof-plan.json`;
 - keeps provider credentials, session tokens, authorization headers, payment
   instruments, raw payloads, response bodies, moderation payloads, provider
   secrets, private prompts, signatures, and local secret paths out of output
   and Git.
 
 `npm run marketplace:write-production-proof-bundle -- --out
-tmp/gaskit/marketplace-production-proof-bundle.json` writes the report
+tmp/agentrail/marketplace-production-proof-bundle.json` writes the report
 template, proof plan, readiness artifact, and redacted summary together as
 ignored local artifacts. The bundle is preparation only: it contacts no
 production marketplace system, provider system, payment system, IOTA service,
@@ -168,7 +168,7 @@ public A2A endpoint, or Gas Station endpoint, and it does not clear production
 marketplace readiness without an operator-approved structured report.
 
 The structured report must be status-only JSON with `schemaVersion=1`,
-`kind=agentic-gaskit.marketplace-production-proof`, `result=passed`, a recent
+`kind=agentrail.marketplace-production-proof`, `result=passed`, a recent
 `observedAt`, `environment=testnet` or `environment=production`, and check ids
 for provider onboarding, provider verification, moderation/abuse response,
 session authorization, receipt access, payment settlement, dispute workflow,
@@ -189,5 +189,5 @@ Names/Identity, payment, provider-access, and standards-discovery paths.
 - Marketplace non-goals remain explicit.
 - Production custody, payment, provider verification, moderation, staking, and
   tokenomics remain blocked.
-- Future marketplace work consumes existing Agentic GasKit primitives instead
+- Future marketplace work consumes existing AgentRail primitives instead
   of rebuilding gateway, identity, policy, or receipt truth.

@@ -25,7 +25,7 @@ test("payment provider readiness reports local proof while live report remains m
 
     assert.equal(report.localProofOk, true);
     assert.equal(report.liveReady, false);
-    assert.equal(artifact.kind, "agentic-gaskit.payment-provider-readiness-report");
+    assert.equal(artifact.kind, "agentrail.payment-provider-readiness-report");
     assert.equal(artifact.localProofOk, true);
     assert.equal(artifact.liveReady, false);
     assert.ok(artifact.provenLocalCheckIds.includes("local-standards-proof"));
@@ -35,7 +35,7 @@ test("payment provider readiness reports local proof while live report remains m
     assert.equal(findCheck(report, "local-standards-proof").code, "PAYMENT_PROVIDER_LOCAL_PROOF_CONFIGURED");
     assert.equal(findCheck(report, "live-payment-provider-report").status, "blocked-config");
     assert.equal(findCheck(report, "live-payment-provider-report").code, "PAYMENT_PROVIDER_LIVE_REPORT_MISSING");
-    assert.match(formatted, /Agentic GasKit payment provider readiness blocked/);
+    assert.match(formatted, /AgentRail payment provider readiness blocked/);
     assert.match(formatted, /operator:write-report-template -- --kind payment-provider-live/);
     assert.doesNotMatch(formatted, /secret|token|private|mnemonic|seed|authorization/i);
     assert.doesNotMatch(
@@ -50,7 +50,7 @@ test("payment provider readiness reports local proof while live report remains m
 test("payment provider readiness artifact writer uses restrictive local file permissions", async () => {
   const cwd = await writeLocalPaymentProviderEvidence();
   try {
-    const outFile = "tmp/gaskit/payment-provider-readiness.json";
+    const outFile = "tmp/agentrail/payment-provider-readiness.json";
     const artifact = await writePaymentProviderReadinessArtifact({
       cwd,
       env: {},
@@ -60,8 +60,8 @@ test("payment provider readiness artifact writer uses restrictive local file per
     const written = JSON.parse(await readFile(join(cwd, outFile), "utf8")) as typeof artifact;
     const mode = (await stat(join(cwd, outFile))).mode & 0o777;
 
-    assert.equal(artifact.kind, "agentic-gaskit.payment-provider-readiness-report");
-    assert.equal(written.kind, "agentic-gaskit.payment-provider-readiness-report");
+    assert.equal(artifact.kind, "agentrail.payment-provider-readiness-report");
+    assert.equal(written.kind, "agentrail.payment-provider-readiness-report");
     assert.equal(written.liveReady, false);
     assert.equal(written.blockerCodes.includes("PAYMENT_PROVIDER_LIVE_REPORT_MISSING"), true);
     assert.equal(mode, 0o600);
@@ -87,7 +87,7 @@ test("payment provider readiness accepts valid structured live report without pr
     assert.equal(report.liveReady, true);
     assert.equal(findCheck(report, "live-payment-provider-report").status, "ready-approval");
     assert.equal(findCheck(report, "live-payment-provider-report").code, "PAYMENT_PROVIDER_LIVE_REPORT_VALID");
-    assert.match(formatted, /Agentic GasKit payment provider readiness ready-for-approval/);
+    assert.match(formatted, /AgentRail payment provider readiness ready-for-approval/);
     assert.doesNotMatch(formatted, /payment-provider-live-report|tmp\/|x402-verify|ap2-payment-receipt/);
   } finally {
     await rm(cwd, { recursive: true, force: true });
@@ -148,7 +148,7 @@ test("payment provider readiness rejects unsafe, malformed, and stale reports wi
 });
 
 test("payment provider readiness fails local proof when source evidence is missing", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-payment-provider-readiness-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-payment-provider-readiness-"));
   try {
     const report = await checkPaymentProviderReadiness({ cwd, env: {}, now: NOW });
     const local = findCheck(report, "local-standards-proof");
@@ -165,7 +165,7 @@ test("payment provider readiness fails local proof when source evidence is missi
 });
 
 async function writeLocalPaymentProviderEvidence(): Promise<string> {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-payment-provider-readiness-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-payment-provider-readiness-"));
   for (const path of [
     "packages/manifest/src/x402Mapping.ts",
     "packages/manifest/src/x402Mapping.test.ts",
@@ -197,7 +197,7 @@ async function writeFileWithParents(path: string, content: string): Promise<void
 function validLiveReport() {
   return {
     schemaVersion: 1,
-    kind: "agentic-gaskit.payment-provider-live-proof",
+    kind: "agentrail.payment-provider-live-proof",
     result: "passed",
     observedAt: NOW.toISOString(),
     providerKinds: ["x402", "ap2"],

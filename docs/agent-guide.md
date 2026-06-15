@@ -1,22 +1,22 @@
 # Agent Guide
 
-Agentic GasKit now ships a repo-local Codex skill at
-`skills/iota-gaskit/SKILL.md`.
+AgentRail now ships a repo-local Codex skill at
+`skills/agentrail/SKILL.md`.
 
 Use it when an agent needs to navigate the repo, make SDK or gateway changes,
-improve docs, run verification, review secret boundaries, integrate GasKit into
+improve docs, run verification, review secret boundaries, integrate AgentRail into
 another app, or add the new agent-facing surfaces.
 
 Before broad work, read
-[`docs/agentic-gaskit/migration-plan.md`](agentic-gaskit/migration-plan.md).
+[`docs/agentrail/migration-plan.md`](agentrail/migration-plan.md).
 That file is the current authority for repo ownership, branding, migrated docs,
 package namespace decisions, and the wallet/custody boundary.
 
 ## What the Skill Teaches
 
 - where product, architecture, examples, SDK, policy, gateway, observability, readiness, and docs-site files live;
-- how to preserve existing GasKit sponsorship behavior while extending the
-  fork toward Agentic GasKit;
+- how to preserve existing AgentRail sponsorship behavior while extending the
+  fork toward AgentRail;
 - which commands are local-only and which commands may touch live testnet services;
 - how to keep sponsor-wallet, app-key, and upstream bearer-token boundaries intact;
 - how to avoid exposing agent wallet seeds, mnemonics, private keys, raw
@@ -25,16 +25,16 @@ package namespace decisions, and the wallet/custody boundary.
 
 ## When to Invoke It
 
-Use `$iota-gaskit` for prompts like:
+Use `$agentrail` for prompts like:
 
-- "review the GasKit docs";
+- "review the AgentRail docs";
 - "add a new SDK example";
 - "change policy gateway behavior";
 - "debug testnet readiness";
-- "integrate GasKit into a Next.js backend";
+- "integrate AgentRail into a Next.js backend";
 - "add an agent account or signer-reference API";
 - "add an MCP tool for sponsored execution";
-- "migrate package names or docs into the Agentic GasKit direction";
+- "migrate package names or docs into the AgentRail direction";
 - "check whether sponsor secrets are safe";
 - "run the local proof path";
 - "prepare a new agent to work in this repo."

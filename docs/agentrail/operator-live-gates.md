@@ -1,7 +1,7 @@
 # Operator Live Gates
 
 `npm run proof:operator-gates` is a non-networked operator runbook for the
-remaining Agentic GasKit live and production gates.
+remaining AgentRail live and production gates.
 
 It reads the product-status proof and classifies each gate as:
 
@@ -32,8 +32,8 @@ operator handoff or live-proof prep session, run:
 npm run operator:write-live-gate-report
 ```
 
-The artifact is written under `tmp/gaskit/`, which is ignored by Git. It uses
-kind `agentic-gaskit.operator-live-gate-report` and contains gate ids, blocker
+The artifact is written under `tmp/agentrail/`, which is ignored by Git. It uses
+kind `agentrail.operator-live-gate-report` and contains gate ids, blocker
 codes, ready-approval gate ids, approval flags, live-service flags, command
 names, messages, and next steps. It does not include configured endpoint
 values, names, addresses, profile paths, credentials, tokens, response bodies,
@@ -43,7 +43,7 @@ To prepare an ignored structured report skeleton for a later approved proof
 run, use:
 
 ```bash
-npm run operator:write-report-template -- --kind package-publication --out tmp/gaskit/package-publication-report-template.json
+npm run operator:write-report-template -- --kind package-publication --out tmp/agentrail/package-publication-report-template.json
 ```
 
 The template writer is also non-networked. It can write templates for
@@ -65,7 +65,7 @@ prompts, signer material, raw payloads, or local secret paths into any report.
 Expected status in an unconfigured checkout:
 
 ```text
-Agentic GasKit operator live gates blocked
+AgentRail operator live gates blocked
 allGatesClear=false
 ```
 
@@ -81,21 +81,21 @@ hosts, marketplace systems, or physical devices.
 - Separates rendered local Gas Station config from local Docker runtime
   readiness using the `gas-station-runtime` preflight gate, including the
   direct Docker fallback when Compose is unavailable.
-- Lets operators explicitly choose `GASKIT_GAS_STATION_RUNTIME_MODE=managed-upstream`
+- Lets operators explicitly choose `AGENTRAIL_GAS_STATION_RUNTIME_MODE=managed-upstream`
   when a separately managed Gas Station is configured; that skips Docker
   inspection but still leaves upstream reachability and reserve compatibility
   to the sanitized `testnet-upstream` diagnostic report.
 - Separates sponsor-wallet testnet balance proof from reserve compatibility
   with the `sponsor-funding` gate. The accepted evidence is a sanitized
   ignored report written by `npm run sponsor:check-funding -- --report
-  <ignored-json-path>` and referenced through `GASKIT_SPONSOR_FUNDING_REPORT`.
+  <ignored-json-path>` and referenced through `AGENTRAIL_SPONSOR_FUNDING_REPORT`.
 - Separates local testnet `.env` readiness from live Gas Station upstream
   readiness using the sanitized `testnet-upstream` diagnostic report gate.
 - Routes `testnet-sponsored-execute` to `npm run proof:testnet-digest:live --
-  --report tmp/gaskit/testnet-digest-proof.json` when a documented digest is
+  --report tmp/agentrail/testnet-digest-proof.json` when a documented digest is
   present, so operators can perform and persist a read-only IOTA testnet lookup
   before deciding whether to refresh sponsored execution. Set
-  `GASKIT_TESTNET_DIGEST_REPORT` outside committed files when product-status
+  `AGENTRAIL_TESTNET_DIGEST_REPORT` outside committed files when product-status
   should accept the current successful lookup without contacting IOTA RPC. If
   sponsored execute evidence is missing, the gate points to `npm run
   execute:testnet-demo`, which requires explicit operator intent and can spend
@@ -185,11 +185,11 @@ hosts, marketplace systems, or physical devices.
 - Includes a `testnet-upstream` template for self-hosted or managed Gas
   Station proof planning. It lists the optional `--skip-reserve` reachability
   diagnostic before the full reserve diagnostic, but that template is not
-  accepted by `GASKIT_TESTNET_UPSTREAM_REPORT`; only the sanitized diagnostic
+  accepted by `AGENTRAIL_TESTNET_UPSTREAM_REPORT`; only the sanitized diagnostic
   report emitted by `npm run diagnose:gas-station -- --report
   <ignored-json-path>` can clear the upstream gate.
 - Includes a `testnet-digest` template for the accepted
-  `GASKIT_TESTNET_DIGEST_REPORT` artifact. The template points at the
+  `AGENTRAIL_TESTNET_DIGEST_REPORT` artifact. The template points at the
   non-networked digest-docs check before the read-only live lookup command, but
   it is not accepted as sponsored execute evidence.
 - Includes `iota-names-live`, `iota-identity-live`, and `vc-validation-live`
@@ -203,10 +203,10 @@ hosts, marketplace systems, or physical devices.
   reports.
 - Lets operators write an ignored sponsor funding request artifact with
   `npm run sponsor:write-funding-request -- --out
-  tmp/gaskit/sponsor-funding-request.json` when they need the public sponsor
+  tmp/agentrail/sponsor-funding-request.json` when they need the public sponsor
   address for testnet funding. The full address stays in the ignored artifact;
   stdout remains redacted, and the command does not contact live services. If
-  `--faucet-report <ignored-json-path>` or `GASKIT_SPONSOR_FAUCET_REPORT` is
+  `--faucet-report <ignored-json-path>` or `AGENTRAIL_SPONSOR_FAUCET_REPORT` is
   supplied, only bounded sanitized faucet result/code/status context is copied
   into that ignored artifact for operator triage; it does not prove funding.
   Unsupported faucet routes such as an HTTP 405 from a documented route are
@@ -215,17 +215,17 @@ hosts, marketplace systems, or physical devices.
   transfer.
 - Lets operators request IOTA testnet faucet funds with
   `npm run sponsor:request-faucet-funds -- --execute --out
-  tmp/gaskit/sponsor-faucet-request.json` only after they configure
+  tmp/agentrail/sponsor-faucet-request.json` only after they configure
   `IOTA_FAUCET_URL` or pass `--faucet-url`. The command writes a sanitized
   ignored report, requires explicit `--execute`, and does not prove reserve_gas
   compatibility.
-- Lets operators point `GASKIT_SPONSOR_FAUCET_REPORT` at that sanitized faucet
+- Lets operators point `AGENTRAIL_SPONSOR_FAUCET_REPORT` at that sanitized faucet
   report so live-status/product/operator gates can include the latest faucet
   failure, rate-limit, blocked request, or completed request in the
   `sponsor-funding` next step without accepting it as proof.
 - Lets operators write the funding evidence report with
   `npm run sponsor:check-funding -- --report
-  tmp/gaskit/sponsor-funding-report.json`. The command contacts IOTA RPC, but
+  tmp/agentrail/sponsor-funding-report.json`. The command contacts IOTA RPC, but
   writes only redacted address and aggregate funding fields, and does not sign,
   reserve gas, execute transactions, or print sponsor signer material.
 - Points public A2A hosting/conformance review at the non-networked
@@ -243,7 +243,7 @@ hosts, marketplace systems, or physical devices.
 - It does not run `npm run smoke:iota-identity-live -- --report <ignored-json-path>`.
 - It does not run the Identity live smoke on behalf of VC validation.
 - It does not run `npm run proof:testnet-digest:live -- --report
-  tmp/gaskit/testnet-digest-proof.json`.
+  tmp/agentrail/testnet-digest-proof.json`.
 - It does not run `npm run execute:testnet-demo`.
 - It does not start Docker, Redis, or Gas Station containers.
 - It does not run `npm run diagnose:gas-station`.
@@ -264,47 +264,47 @@ hosts, marketplace systems, or physical devices.
 Use this report with the other proof gates:
 
 ```bash
-npm run roadmap:write-execution-proof-bundle -- --out tmp/gaskit/roadmap-execution-proof-bundle.json
+npm run roadmap:write-execution-proof-bundle -- --out tmp/agentrail/roadmap-execution-proof-bundle.json
 npm run proof:product-status
 npm run proof:launch-readiness
 npm run proof:testnet-digest
-npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json
-npm run package:write-publication-proof-bundle -- --out tmp/gaskit/package-publication-proof-bundle.json
-npm run payment:write-provider-proof-bundle -- --out tmp/gaskit/payment-provider-proof-bundle.json
-npm run a2a:write-public-proof-plan -- --out tmp/gaskit/a2a-public-proof-plan.json
-npm run a2a:write-public-proof-bundle -- --out tmp/gaskit/a2a-public-proof-bundle.json
+npm run proof:testnet-digest:live -- --report tmp/agentrail/testnet-digest-proof.json
+npm run package:write-publication-proof-bundle -- --out tmp/agentrail/package-publication-proof-bundle.json
+npm run payment:write-provider-proof-bundle -- --out tmp/agentrail/payment-provider-proof-bundle.json
+npm run a2a:write-public-proof-plan -- --out tmp/agentrail/a2a-public-proof-plan.json
+npm run a2a:write-public-proof-bundle -- --out tmp/agentrail/a2a-public-proof-bundle.json
 npm run proof:a2a-public-readiness
 npm run proof:package-publication-readiness
 npm run proof:payment-provider-readiness
 npm run proof:marketplace-readiness
-npm run marketplace:write-production-proof-bundle -- --out tmp/gaskit/marketplace-production-proof-bundle.json
-npm run marketplace:write-production-proof-plan -- --out tmp/gaskit/marketplace-production-proof-plan.json
-npm run custody:write-production-proof-bundle -- --out tmp/gaskit/custody-production-proof-bundle.json
+npm run marketplace:write-production-proof-bundle -- --out tmp/agentrail/marketplace-production-proof-bundle.json
+npm run marketplace:write-production-proof-plan -- --out tmp/agentrail/marketplace-production-proof-plan.json
+npm run custody:write-production-proof-bundle -- --out tmp/agentrail/custody-production-proof-bundle.json
 npm run proof:custody-readiness
-npm run custody:write-production-proof-plan -- --out tmp/gaskit/custody-production-proof-plan.json
-npm run live:write-proof-plan -- --out tmp/gaskit/live-proof-plan.json
-npm run live:write-identity-proof-bundle -- --out tmp/gaskit/identity-proof-bundle.json
-npm run proof:live-status -- --out tmp/gaskit/live-proof-status.json
-npm run package:write-publication-proof-plan -- --out tmp/gaskit/package-publication-proof-plan.json
-npm run payment:write-provider-proof-plan -- --out tmp/gaskit/payment-provider-proof-plan.json
-npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json
-npm run operator:write-report-template -- --kind testnet-digest --out tmp/gaskit/testnet-digest-report-template.json
-npm run operator:write-report-template -- --kind iota-names-live --out tmp/gaskit/iota-names-live-report-template.json
-npm run operator:write-report-template -- --kind iota-identity-live --out tmp/gaskit/iota-identity-live-report-template.json
-npm run operator:write-report-template -- --kind vc-validation-live --out tmp/gaskit/vc-validation-live-report-template.json
+npm run custody:write-production-proof-plan -- --out tmp/agentrail/custody-production-proof-plan.json
+npm run live:write-proof-plan -- --out tmp/agentrail/live-proof-plan.json
+npm run live:write-identity-proof-bundle -- --out tmp/agentrail/identity-proof-bundle.json
+npm run proof:live-status -- --out tmp/agentrail/live-proof-status.json
+npm run package:write-publication-proof-plan -- --out tmp/agentrail/package-publication-proof-plan.json
+npm run payment:write-provider-proof-plan -- --out tmp/agentrail/payment-provider-proof-plan.json
+npm run operator:write-report-template -- --kind testnet-upstream --out tmp/agentrail/testnet-upstream-report-template.json
+npm run operator:write-report-template -- --kind testnet-digest --out tmp/agentrail/testnet-digest-report-template.json
+npm run operator:write-report-template -- --kind iota-names-live --out tmp/agentrail/iota-names-live-report-template.json
+npm run operator:write-report-template -- --kind iota-identity-live --out tmp/agentrail/iota-identity-live-report-template.json
+npm run operator:write-report-template -- --kind vc-validation-live --out tmp/agentrail/vc-validation-live-report-template.json
 npm run gas-station:docker-direct -- --status
-npm run sponsor:write-funding-request -- --out tmp/gaskit/sponsor-funding-request.json
-npm run sponsor:write-funding-request -- --faucet-report tmp/gaskit/sponsor-faucet-request.json --out tmp/gaskit/sponsor-funding-request.json
-npm run sponsor:request-faucet-funds -- --execute --out tmp/gaskit/sponsor-faucet-request.json
-GASKIT_SPONSOR_FAUCET_REPORT=tmp/gaskit/sponsor-faucet-request.json npm run proof:live-status
-npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json
-npm run operator:write-report-template -- --kind package-publication --out tmp/gaskit/package-publication-report-template.json
-npm run operator:write-report-template -- --kind payment-provider-live --out tmp/gaskit/payment-provider-live-report-template.json
-npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json
-npm run operator:write-report-template -- --kind custody-production --out tmp/gaskit/custody-production-report-template.json
-npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/gaskit/a2a-public-discovery-report-template.json
-npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/gaskit/a2a-public-push-delivery-report-template.json
-npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/gaskit/a2a-external-conformance-report-template.json
+npm run sponsor:write-funding-request -- --out tmp/agentrail/sponsor-funding-request.json
+npm run sponsor:write-funding-request -- --faucet-report tmp/agentrail/sponsor-faucet-request.json --out tmp/agentrail/sponsor-funding-request.json
+npm run sponsor:request-faucet-funds -- --execute --out tmp/agentrail/sponsor-faucet-request.json
+AGENTRAIL_SPONSOR_FAUCET_REPORT=tmp/agentrail/sponsor-faucet-request.json npm run proof:live-status
+npm run sponsor:check-funding -- --report tmp/agentrail/sponsor-funding-report.json
+npm run operator:write-report-template -- --kind package-publication --out tmp/agentrail/package-publication-report-template.json
+npm run operator:write-report-template -- --kind payment-provider-live --out tmp/agentrail/payment-provider-live-report-template.json
+npm run operator:write-report-template -- --kind marketplace-production --out tmp/agentrail/marketplace-production-report-template.json
+npm run operator:write-report-template -- --kind custody-production --out tmp/agentrail/custody-production-report-template.json
+npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/agentrail/a2a-public-discovery-report-template.json
+npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/agentrail/a2a-public-push-delivery-report-template.json
+npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/agentrail/a2a-external-conformance-report-template.json
 npm run smoke:a2a-public-discovery
 npm run verify:fast
 npm run proof:verification-profiles
@@ -313,12 +313,12 @@ npm run operator:write-live-gate-report
 npm run readiness:testnet
 npm run gas-station:render-config
 npm run gas-station:runtime-preflight
-GASKIT_GAS_STATION_RUNTIME_MODE=managed-upstream npm run gas-station:runtime-preflight
+AGENTRAIL_GAS_STATION_RUNTIME_MODE=managed-upstream npm run gas-station:runtime-preflight
 npm run gas-station:docker-direct -- --dry-run
-npm run diagnose:gas-station -- --skip-reserve --report tmp/gaskit/testnet-upstream-diagnostic.json
-npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
-npm run smoke:iota-names-live -- --report tmp/gaskit/iota-names-live-report.json
-npm run smoke:iota-identity-live -- --report tmp/gaskit/iota-identity-live-report.json
+npm run diagnose:gas-station -- --skip-reserve --report tmp/agentrail/testnet-upstream-diagnostic.json
+npm run diagnose:gas-station -- --report tmp/agentrail/testnet-upstream-diagnostic.json
+npm run smoke:iota-names-live -- --report tmp/agentrail/iota-names-live-report.json
+npm run smoke:iota-identity-live -- --report tmp/agentrail/iota-identity-live-report.json
 ```
 
 The aggregate roadmap execution proof bundle is a non-networked handoff packet:

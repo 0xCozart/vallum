@@ -1,6 +1,6 @@
 # Paid MCP Tool Demo
 
-This local demo shows a paid MCP-style tool using Agentic GasKit policy,
+This local demo shows a paid MCP-style tool using AgentRail policy,
 payment confirmation, and receipt state before returning the paid result.
 
 It proves:

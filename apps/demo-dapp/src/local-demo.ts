@@ -1,25 +1,25 @@
 import { pathToFileURL } from "node:url";
 
-import { createGasKitClient } from "@iota-gaskit/sdk";
+import { createAgentRailClient } from "@agentrail/sdk";
 
 import { formatDemoGrantFlowResult, runDemoGrantFlow } from "./local-flow.js";
 
 export interface LocalDemoEnv {
-  GASKIT_GATEWAY_URL?: string;
-  GASKIT_DEMO_APP_KEY?: string;
+  AGENTRAIL_GATEWAY_URL?: string;
+  AGENTRAIL_DEMO_APP_KEY?: string;
 }
 
 function readLocalDemoEnv(): LocalDemoEnv {
   return {
-    GASKIT_GATEWAY_URL: process.env.GASKIT_GATEWAY_URL,
-    GASKIT_DEMO_APP_KEY: process.env.GASKIT_DEMO_APP_KEY,
+    AGENTRAIL_GATEWAY_URL: process.env.AGENTRAIL_GATEWAY_URL,
+    AGENTRAIL_DEMO_APP_KEY: process.env.AGENTRAIL_DEMO_APP_KEY,
   };
 }
 
 export async function runLocalDemoFromEnv(env: LocalDemoEnv = readLocalDemoEnv()): Promise<string> {
-  const baseUrl = env.GASKIT_GATEWAY_URL ?? "http://127.0.0.1:8787";
-  const apiKey = env.GASKIT_DEMO_APP_KEY ?? "local-dev-demo-key";
-  const client = createGasKitClient({ baseUrl, apiKey });
+  const baseUrl = env.AGENTRAIL_GATEWAY_URL ?? "http://127.0.0.1:8787";
+  const apiKey = env.AGENTRAIL_DEMO_APP_KEY ?? "local-dev-demo-key";
+  const client = createAgentRailClient({ baseUrl, apiKey });
   const result = await runDemoGrantFlow(client);
   return formatDemoGrantFlowResult(result);
 }

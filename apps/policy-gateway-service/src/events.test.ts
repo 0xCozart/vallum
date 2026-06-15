@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { after, test } from "node:test";
 
-import { createGasKitClient, GasKitPolicyError } from "../../../packages/sdk/src/index.js";
+import { createAgentRailClient, AgentRailPolicyError } from "../../../packages/sdk/src/index.js";
 import { createGatewayServer, type GatewayConfig, type GatewayEvent } from "./server.js";
 
 const demoPolicy = {
@@ -99,7 +99,7 @@ function eventText(events: GatewayEvent[]): string {
 test("gateway emits sanitized structured events for reserve and execute success", async () => {
   const fixture = await startGateway();
   after(() => fixture.close());
-  const client = createGasKitClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+  const client = createAgentRailClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
 
   const reserve = await client.reserveGas({
     gasBudget: 1,
@@ -109,7 +109,7 @@ test("gateway emits sanitized structured events for reserve and execute success"
   });
   await client.executeSponsoredTransaction({
     reservationId: reserve.reservationId,
-    gasKitTransactionId: reserve.gasKitTransactionId,
+    agentRailTransactionId: reserve.agentRailTransactionId,
     transactionBytes: "SENSITIVE_TX_BYTES",
     userSignature: "SENSITIVE_USER_SIGNATURE",
   });
@@ -126,8 +126,8 @@ test("gateway emits sanitized structured events for reserve and execute success"
   assert.equal(fixture.events[0]?.packageId, "0xDEMO_PACKAGE");
   assert.equal(fixture.events[0]?.functionName, "mint_badge");
   assert.equal(fixture.events[0]?.gasBudget, 1);
-  assert.match(fixture.events[0]?.gasKitTransactionId ?? "", /^gaskit_/);
-  assert.equal(fixture.events[1]?.gasKitTransactionId, reserve.gasKitTransactionId);
+  assert.match(fixture.events[0]?.agentRailTransactionId ?? "", /^agentrail_/);
+  assert.equal(fixture.events[1]?.agentRailTransactionId, reserve.agentRailTransactionId);
   assert.equal(fixture.events[1]?.upstreamReservationId, reserve.reservationId);
 
   const serialized = eventText(fixture.events);
@@ -140,7 +140,7 @@ test("gateway emits sanitized structured events for reserve and execute success"
 test("gateway emits sanitized rejection events before upstream calls", async () => {
   const fixture = await startGateway();
   after(() => fixture.close());
-  const client = createGasKitClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+  const client = createAgentRailClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
 
   await assert.rejects(
     () =>
@@ -150,7 +150,7 @@ test("gateway emits sanitized rejection events before upstream calls", async () 
         packageId: "0xNOT_ALLOWED",
         functionName: "mint_badge",
       }),
-    (error) => error instanceof GasKitPolicyError && error.reasonCode === "PACKAGE_NOT_ALLOWED",
+    (error) => error instanceof AgentRailPolicyError && error.reasonCode === "PACKAGE_NOT_ALLOWED",
   );
 
   assert.equal(fixture.upstream.requests.length, 0);
@@ -208,7 +208,7 @@ test("gateway event sink failures do not affect request handling", async () => {
     },
   });
   after(() => fixture.close());
-  const client = createGasKitClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+  const client = createAgentRailClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
 
   const reserve = await client.reserveGas({ gasBudget: 1, packageId: "0xDEMO_PACKAGE", functionName: "mint_badge" });
 
@@ -233,7 +233,7 @@ test("gateway event sink rejections do not create unhandled rejections", async (
   after(() => fixture.close());
 
   try {
-    const client = createGasKitClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+    const client = createAgentRailClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
     const reserve = await client.reserveGas({ gasBudget: 1, packageId: "0xDEMO_PACKAGE", functionName: "mint_badge" });
     await new Promise((resolve) => setImmediate(resolve));
 
@@ -254,7 +254,7 @@ test("gateway omits unverified execute ids from rejection events", async () => {
     headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
     body: JSON.stringify({
       _saas_tx_id: "SENSITIVE_TX_BYTES\nlegacy",
-      gasKitTransactionId: "SENSITIVE_USER_SIGNATURE-public",
+      agentRailTransactionId: "SENSITIVE_USER_SIGNATURE-public",
       reservation_id: "SENSITIVE_RESERVATION_ID",
     }),
   });
@@ -264,7 +264,7 @@ test("gateway omits unverified execute ids from rejection events", async () => {
     method: "POST",
     headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
     body: JSON.stringify({
-      gasKitTransactionId: "SENSITIVE_TX_BYTES",
+      agentRailTransactionId: "SENSITIVE_TX_BYTES",
       reservation_id: "SENSITIVE_USER_SIGNATURE",
     }),
   });
@@ -278,7 +278,7 @@ test("gateway omits unverified execute ids from rejection events", async () => {
       outcome: event.outcome,
       httpStatus: event.httpStatus,
       appId: event.appId,
-      gasKitTransactionId: event.gasKitTransactionId,
+      agentRailTransactionId: event.agentRailTransactionId,
       upstreamReservationId: event.upstreamReservationId,
       reasonCode: event.reasonCode,
     })),
@@ -288,7 +288,7 @@ test("gateway omits unverified execute ids from rejection events", async () => {
         outcome: "rejected",
         httpStatus: 409,
         appId: "demo-dapp",
-        gasKitTransactionId: undefined,
+        agentRailTransactionId: undefined,
         upstreamReservationId: undefined,
         reasonCode: "EXECUTION_FAILED",
       },
@@ -297,7 +297,7 @@ test("gateway omits unverified execute ids from rejection events", async () => {
         outcome: "rejected",
         httpStatus: 409,
         appId: "demo-dapp",
-        gasKitTransactionId: undefined,
+        agentRailTransactionId: undefined,
         upstreamReservationId: undefined,
         reasonCode: "EXECUTION_FAILED",
       },
@@ -312,7 +312,7 @@ test("gateway omits unverified execute ids from rejection events", async () => {
 test("gateway sanitizes control characters, C1 controls, and long event metadata strings", async () => {
   const fixture = await startGateway();
   after(() => fixture.close());
-  const client = createGasKitClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+  const client = createAgentRailClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
   const walletAddress = `0xWALLET\u0000\u001f\u007f\u0085${"x".repeat(300)}`;
 
   await client.reserveGas({ gasBudget: 1, walletAddress, packageId: "0xDEMO_PACKAGE", functionName: "mint_badge" });
@@ -327,7 +327,7 @@ test("gateway sanitizes control characters, C1 controls, and long event metadata
 test("gateway omits undefined optional event fields", async () => {
   const fixture = await startGateway();
   after(() => fixture.close());
-  const client = createGasKitClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+  const client = createAgentRailClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
 
   await client.reserveGas({ gasBudget: 1, packageId: "0xDEMO_PACKAGE", functionName: "mint_badge" });
 

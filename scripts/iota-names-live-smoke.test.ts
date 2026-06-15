@@ -145,7 +145,7 @@ test("IOTA Names live smoke report stores only sanitized proof metadata", async 
 test("IOTA Names live smoke report rejects unsafe full-address fields", async () => {
   const unsafe = {
     schemaVersion: 1,
-    kind: "agentic-gaskit.iota-names-live-smoke-report",
+    kind: "agentrail.iota-names-live-smoke-report",
     observedAt: new Date().toISOString(),
     result: "passed",
     code: "IOTA_NAMES_LIVE_SMOKE_PASSED",
@@ -157,7 +157,7 @@ test("IOTA Names live smoke report rejects unsafe full-address fields", async ()
     addressMatched: true,
     address: "0x1111111111111111111111111111111111111111111111111111111111111111",
   };
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-iota-names-report-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-iota-names-report-"));
   try {
     const path = join(cwd, "names-report.json");
     await writeFile(path, JSON.stringify(unsafe));

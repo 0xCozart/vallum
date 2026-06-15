@@ -1,5 +1,5 @@
 {
-  "name": "@iota-gaskit/policy-gateway",
+  "name": "@agentrail/policy-gateway",
   "version": "0.0.0-prerelease",
   "type": "module",
   "main": "dist/index.js",
@@ -12,12 +12,12 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@iota-gaskit/contracts-metadata": "0.0.0-prerelease",
-    "@iota-gaskit/manifest": "0.0.0-prerelease",
-    "@iota-gaskit/registry": "0.0.0-prerelease",
-    "@iota-gaskit/shared-types": "0.0.0-prerelease"
+    "@agentrail/contracts-metadata": "0.0.0-prerelease",
+    "@agentrail/manifest": "0.0.0-prerelease",
+    "@agentrail/registry": "0.0.0-prerelease",
+    "@agentrail/shared-types": "0.0.0-prerelease"
   },
-  "description": "Fail-closed policy decision engine scaffold for IOTA GasKit sponsorship gateways.",
+  "description": "Fail-closed policy decision engine scaffold for AgentRail sponsorship gateways.",
   "files": [
     "dist/**/*.js",
     "dist/**/*.d.ts",

@@ -2,7 +2,7 @@ export {
   A2A_AGENT_CARD_MEDIA_TYPE,
   A2A_AGENT_CARD_PROTOCOL_VERSION,
   A2A_AGENT_CARD_WELL_KNOWN_PATH,
-  AGENTIC_GASKIT_A2A_PROFILE_EXTENSION_URI,
+  AGENTIC_AGENTRAIL_A2A_PROFILE_EXTENSION_URI,
   A2AAgentCardError,
   createA2AAgentCardWellKnownResponse,
   createA2AAgentCardFromProfile,
@@ -33,4 +33,4 @@ export {
   type SignA2AAgentCardOptions,
   type SignedA2AAgentCard,
   type VerifyA2AAgentCardSignatureOptions,
-} from "@iota-gaskit/registry";
+} from "@agentrail/registry";

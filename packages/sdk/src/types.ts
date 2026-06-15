@@ -1,7 +1,7 @@
-import type { PolicyDecision } from "@iota-gaskit/shared-types";
-import type { AgentTransactionManifest } from "@iota-gaskit/manifest";
+import type { PolicyDecision } from "@agentrail/shared-types";
+import type { AgentTransactionManifest } from "@agentrail/manifest";
 
-export interface GasKitClientOptions {
+export interface AgentRailClientOptions {
   baseUrl: string;
   apiKey: string;
   fetchImpl?: typeof fetch;
@@ -26,7 +26,7 @@ export type PolicySimulationResponse = PolicyDecision;
 
 export interface ReserveGasResponse {
   reservationId: string;
-  gasKitTransactionId: string;
+  agentRailTransactionId: string;
   sponsorAddress?: string;
   gasCoins?: unknown[];
   raw: unknown;
@@ -34,7 +34,7 @@ export interface ReserveGasResponse {
 
 export interface ExecuteSponsoredTransactionRequest {
   reservationId: string;
-  gasKitTransactionId: string;
+  agentRailTransactionId: string;
   transactionBytes: string;
   userSignature: string;
 }

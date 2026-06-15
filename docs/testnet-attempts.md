@@ -10,7 +10,7 @@ Preflight checks completed before the attempt:
 
 - `npm run grant:check` passed.
 - `npm run readiness:testnet` passed with secret values hidden.
-- Package publish dry-run passed for `@iota-gaskit/shared-types`, `@iota-gaskit/policy-gateway`, and `@iota-gaskit/sdk`.
+- Package publish dry-run passed for `@agentrail/shared-types`, `@agentrail/policy-gateway`, and `@agentrail/sdk`.
 - Apex manifest detection passed for `tmp/apex-workflow/testnet-demo-package-readiness.json`.
 - Independent staged-diff review passed with no blocking issues.
 
@@ -91,8 +91,8 @@ Docker access was recovered in this WSL session by using the existing Docker gro
 
 Started local live upstream containers:
 
-- `gaskit-redis`
-- `gaskit-gas-station`, bound to `127.0.0.1:9527`
+- `agentrail-redis`
+- `agentrail-gas-station`, bound to `127.0.0.1:9527`
 
 Sanitized Gas Station observations:
 
@@ -113,7 +113,7 @@ ok: Gas Station reserve_gas compatibility probe HTTP 200
 
 Compatibility fix discovered during this retry: the official Gas Station returns numeric `reservation_id` values. The gateway and SDK now coerce finite numeric response identifiers to strings before storing/returning them, preserving SDK compatibility while accepting the official upstream shape.
 
-Gateway reserve through the local policy gateway now succeeds against the real Gas Station upstream and returns sponsor address, reservation id, gas coins, and a GasKit transaction id.
+Gateway reserve through the local policy gateway now succeeds against the real Gas Station upstream and returns sponsor address, reservation id, gas coins, and a AgentRail transaction id.
 
 A follow-up execute attempt using placeholder transaction bytes/signature reached the official Gas Station but failed at upstream validation with HTTP 422, mapped by the gateway to `GAS_STATION_UNAVAILABLE`. This is expected for placeholder transaction data and confirms the flow is now past the previous reserve/connectivity blocker.
 
@@ -146,7 +146,7 @@ demoTarget=0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0::d
 ephemeralUserAddress=0x80b3fadd...253b5b
 reservedGas=true
 reservationId=<redacted-id>
-gasKitTransactionId=gaskit_5...3b726
+agentRailTransactionId=agentrail_5...3b726
 sponsorAddress=0xd046a4fb...29b9b868
 executed=true
 transactionDigest=2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H
@@ -157,16 +157,16 @@ Outcome: the real IOTA testnet sponsored transaction path is complete end-to-end
 ## 2026-06-14 fresh funded sponsored testnet execute
 
 After locating a funded sibling testnet sponsor in local ignored env files,
-the Agentic GasKit ignored `.env` was updated locally, the Gas Station config
+the AgentRail ignored `.env` was updated locally, the Gas Station config
 was rerendered, and the direct Docker Gas Station stack was restarted. The
 fresh funding and upstream gates passed before execution:
 
 ```bash
-npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json
+npm run sponsor:check-funding -- --report tmp/agentrail/sponsor-funding-report.json
 npm run gas-station:render-config
 npm run gas-station:docker-direct -- --execute
 npm run gas-station:runtime-preflight
-npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
+npm run diagnose:gas-station -- --report tmp/agentrail/testnet-upstream-diagnostic.json
 ```
 
 Sanitized pre-execute status:
@@ -192,7 +192,7 @@ demoTarget=0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0::d
 ephemeralUserAddress=0x8bd84516...12034ade
 reservedGas=true
 reservationId=<redacted-id>
-gasKitTransactionId=gaskit_b...f2234e
+agentRailTransactionId=agentrail_b...f2234e
 sponsorAddress=0xd046a4fb...29b9b868
 executed=true
 transactionDigest=FLdnYRUACAKQn8CwugEv1u6gYTh9jBr8rGMk2JZ2adsd
@@ -205,12 +205,12 @@ sponsor key, bearer token, raw transaction bytes, user signature, full
 reservation id, or full address was written to this tracked evidence.
 
 Follow-up hardening: `npm run execute:testnet-demo` now accepts
-`-- --report tmp/gaskit/sponsored-execute-report.json` to write an ignored
+`-- --report tmp/agentrail/sponsored-execute-report.json` to write an ignored
 sanitized execution report with restrictive permissions. The report records the
 public digest and redacted execution identifiers only; it is not a substitute
 for updating tracked public digest docs and running
 `npm run proof:testnet-digest:live -- --digest <digest> --report
-tmp/gaskit/testnet-digest-proof.json`.
+tmp/agentrail/testnet-digest-proof.json`.
 
 ## 2026-06-14 sponsored execute report artifact refresh
 
@@ -218,13 +218,13 @@ After adding the ignored execution report option, one fresh sponsored testnet
 transaction was executed with output redirected to ignored local files:
 
 ```bash
-npm run execute:testnet-demo -- --report tmp/gaskit/sponsored-execute-report-20260614.json
+npm run execute:testnet-demo -- --report tmp/agentrail/sponsored-execute-report-20260614.json
 ```
 
 Sanitized result:
 
 ```text
-reportKind=agentic-gaskit.sponsored-testnet-execute-report
+reportKind=agentrail.sponsored-testnet-execute-report
 result=passed
 contactsLiveService=true
 spendsGas=true
@@ -246,7 +246,7 @@ preflight, and upstream reserve compatibility were current, one fresh sponsored
 testnet transaction was executed with an ignored sanitized report:
 
 ```bash
-npm run execute:testnet-demo -- --report tmp/gaskit/sponsored-execute-report.json
+npm run execute:testnet-demo -- --report tmp/agentrail/sponsored-execute-report.json
 ```
 
 Sanitized successful run:
@@ -258,7 +258,7 @@ demoTarget=0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0::d
 ephemeralUserAddress=0xacbb7110...56e0ba6e
 reservedGas=true
 reservationId=<redacted-id>
-gasKitTransactionId=gaskit_e...787967
+agentRailTransactionId=agentrail_e...787967
 sponsorAddress=0xd046a4fb...29b9b868
 executed=true
 transactionDigest=Fc32GFCU95wUGs5iGjewJuMxxXwtRrjzLh3LUGrf85uf
@@ -275,7 +275,7 @@ written to tracked evidence.
 ## 2026-06-14 live proof refresh after funded-account audit
 
 After auditing local IOTA-related repositories for ignored env files, the
-current Agentic GasKit checkout was confirmed to have a funded testnet sponsor
+current AgentRail checkout was confirmed to have a funded testnet sponsor
 and passing readiness gates. A first execute attempt failed before reservation
 because the local policy gateway was not listening, so the gateway was started
 explicitly from the operator-owned local env and health checked before retry.
@@ -284,10 +284,10 @@ Fresh gates passed before execution:
 
 ```bash
 npm run readiness:testnet
-npm run sponsor:check-funding -- --report tmp/gaskit/sponsor-funding-report.json
+npm run sponsor:check-funding -- --report tmp/agentrail/sponsor-funding-report.json
 npm run gas-station:docker-direct -- --status
 npm run gas-station:runtime-preflight
-npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
+npm run diagnose:gas-station -- --report tmp/agentrail/testnet-upstream-diagnostic.json
 ```
 
 Sanitized successful run:
@@ -299,7 +299,7 @@ demoTarget=0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0::d
 ephemeralUserAddress=0xba719b9f...91b8af31
 reservedGas=true
 reservationId=<redacted-id>
-gasKitTransactionId=gaskit_1...a4724c
+agentRailTransactionId=agentrail_1...a4724c
 sponsorAddress=0xd046a4fb...29b9b868
 executed=true
 transactionDigest=5qSeMePKyUWVf6e5AiQCZD4MNLe6dwTrcXzo7cXtN5Zg
@@ -318,7 +318,7 @@ from the ignored operator-owned env and one fresh sponsored testnet
 transaction was executed with an ignored sanitized report:
 
 ```bash
-npm run execute:testnet-demo -- --report tmp/gaskit/sponsored-execute-report-20260614-refresh.json
+npm run execute:testnet-demo -- --report tmp/agentrail/sponsored-execute-report-20260614-refresh.json
 ```
 
 Sanitized successful run:
@@ -330,7 +330,7 @@ demoTarget=0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0::d
 ephemeralUserAddress=0x4a18440f...244a7dee
 reservedGas=true
 reservationId=<redacted-id>
-gasKitTransactionId=gaskit_5...bbad51
+agentRailTransactionId=agentrail_5...bbad51
 sponsorAddress=0xd046a4fb...29b9b868
 executed=true
 transactionDigest=6gA8pyrYStnHWbYrE7Edr9iKd4PFG4mf2J2u9x14JoR3
@@ -354,7 +354,7 @@ availability.
 Command run:
 
 ```bash
-npm run diagnose:gas-station -- --skip-reserve --report tmp/gaskit/testnet-upstream-diagnostic.json
+npm run diagnose:gas-station -- --skip-reserve --report tmp/agentrail/testnet-upstream-diagnostic.json
 ```
 
 Sanitized diagnostic result:
@@ -367,7 +367,7 @@ fail: Gas Station root fetch failed
 fail: Gas Station /v1/health fetch failed
 ok: IOTA RPC iota_getLatestCheckpointSequenceNumber HTTP 200
 skip: reserve_gas compatibility probe
-report=tmp/gaskit/testnet-upstream-diagnostic.json
+report=tmp/agentrail/testnet-upstream-diagnostic.json
 ```
 
 `npm run proof:live-status`, `npm run proof:product-status`, `npm run
@@ -429,7 +429,7 @@ Outcome: local Gas Station config generation is now reproducible, but the
 container was not started in this session. The next operator action is to enable
 Docker daemon plus Compose integration for this WSL distro, start the local
 compose stack, then rerun `npm run diagnose:gas-station -- --report
-tmp/gaskit/testnet-upstream-diagnostic.json` without `--skip-reserve`.
+tmp/agentrail/testnet-upstream-diagnostic.json` without `--skip-reserve`.
 
 ## 2026-06-14 local Gas Station startup and sponsor funding blocker
 
@@ -446,7 +446,7 @@ npm run gas-station:docker-direct -- --status
 Sanitized status result:
 
 ```text
-Agentic GasKit direct Docker Gas Station status
+AgentRail direct Docker Gas Station status
 ready=true
 code=DOCKER_DIRECT_STACK_READY
 startsContainers=false
@@ -518,7 +518,7 @@ The upstream diagnostic was refreshed after adding bounded Gas Station
 reachability classification:
 
 ```bash
-npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
+npm run diagnose:gas-station -- --report tmp/agentrail/testnet-upstream-diagnostic.json
 ```
 
 Sanitized status result:
@@ -548,7 +548,7 @@ The upstream diagnostic was refreshed after adding bounded reserve failure
 classification:
 
 ```bash
-npm run diagnose:gas-station -- --report tmp/gaskit/testnet-upstream-diagnostic.json
+npm run diagnose:gas-station -- --report tmp/agentrail/testnet-upstream-diagnostic.json
 ```
 
 Sanitized status result:
@@ -591,7 +591,7 @@ The current upstream diagnostic was refreshed with `--skip-reserve` to prove
 reachability without reserving gas:
 
 ```bash
-npm run diagnose:gas-station -- --skip-reserve --report tmp/gaskit/testnet-upstream-diagnostic.json
+npm run diagnose:gas-station -- --skip-reserve --report tmp/agentrail/testnet-upstream-diagnostic.json
 ```
 
 Sanitized status result:

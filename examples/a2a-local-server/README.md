@@ -1,6 +1,6 @@
 # A2A Local Server Demo
 
-Deterministic loopback proof for running the Agentic GasKit A2A HTTP boundary
+Deterministic loopback proof for running the AgentRail A2A HTTP boundary
 behind a real local HTTP server.
 
 This demo binds to `127.0.0.1` on an ephemeral port and does not contact live

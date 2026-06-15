@@ -1,12 +1,12 @@
 import {
   validateAgentTransactionManifest,
   type AgentTransactionManifest,
-} from "@iota-gaskit/manifest";
+} from "@agentrail/manifest";
 import {
   evaluateAgentActionPolicy,
   type AgentActionPolicy,
   type AgentPolicyDecision,
-} from "@iota-gaskit/policy-gateway";
+} from "@agentrail/policy-gateway";
 
 export const A2A_TASK_PROTOCOL_VERSION = "1.0" as const;
 export const A2A_TASK_MEDIA_TYPE = "application/a2a+json" as const;
@@ -60,7 +60,7 @@ export interface A2ATask {
   readonly status: A2ATaskStatus;
   readonly history: readonly A2AMessage[];
   readonly artifacts?: readonly A2AArtifact[];
-  readonly agenticGasKit?: {
+  readonly agenticAgentRail?: {
     readonly manifestId: string;
     readonly agentId: string;
     readonly counterpartyId: string;
@@ -239,10 +239,10 @@ function createTask(
   now: Date,
 ): Promise<SendA2AMessageResult> | SendA2AMessageResult {
   if (options.manifest === undefined) {
-    throw new A2ATaskError("A2A_MANIFEST_REQUIRED", "New A2A tasks require an Agentic GasKit manifest.");
+    throw new A2ATaskError("A2A_MANIFEST_REQUIRED", "New A2A tasks require an AgentRail manifest.");
   }
   if (!options.policy) {
-    throw new A2ATaskError("A2A_POLICY_REQUIRED", "New A2A tasks require an Agentic GasKit policy.");
+    throw new A2ATaskError("A2A_POLICY_REQUIRED", "New A2A tasks require an AgentRail policy.");
   }
 
   const manifestResult = validateAgentTransactionManifest(options.manifest, { now });
@@ -260,7 +260,7 @@ function createTask(
       ...(!policyDecision.allowed ? { message: rejectionMessage(policyDecision, now) } : {}),
     },
     history: policyDecision.allowed ? [message] : [message, rejectionMessage(policyDecision, now)],
-    agenticGasKit: {
+    agenticAgentRail: {
       manifestId: manifest.idempotencyKey,
       agentId: manifest.agent.id,
       counterpartyId: manifest.counterparty.id,
@@ -305,7 +305,7 @@ async function continueTask(
       ...(task.status.message ? { message: task.status.message } : {}),
     },
   };
-  return processAndStoreTask(options, nextTask, message, now, undefined, task.agenticGasKit?.policyDecision);
+  return processAndStoreTask(options, nextTask, message, now, undefined, task.agenticAgentRail?.policyDecision);
 }
 
 async function processAndStoreTask(
@@ -322,7 +322,7 @@ async function processAndStoreTask(
         state: "TASK_STATE_COMPLETED" as const,
         artifacts: [{
           artifactId: randomId("artifact"),
-          parts: [{ text: "A2A task accepted by local Agentic GasKit runtime." }],
+          parts: [{ text: "A2A task accepted by local AgentRail runtime." }],
         }],
       };
   assertValidTaskState(outcome.state);
@@ -356,7 +356,7 @@ function rejectionMessage(policyDecision: Exclude<AgentPolicyDecision, { allowed
   return {
     messageId: `policy-${timestamp(now)}`,
     role: "ROLE_AGENT",
-    parts: [{ text: `Agentic GasKit policy denied the A2A task: ${policyDecision.reasonCode}` }],
+    parts: [{ text: `AgentRail policy denied the A2A task: ${policyDecision.reasonCode}` }],
     metadata: {
       reasonCode: policyDecision.reasonCode,
     },

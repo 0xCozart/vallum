@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { GasKitPolicyError } from "@iota-gaskit/sdk";
+import { AgentRailPolicyError } from "@agentrail/sdk";
 
 import {
   DEMO_FUNCTION_NAME,
@@ -27,7 +27,7 @@ test("runDemoGrantFlow reserves gas then executes the sponsored transaction", as
       });
       return {
         reservationId: "reservation-1",
-        gasKitTransactionId: "gaskit_tx_1",
+        agentRailTransactionId: "agentrail_tx_1",
         sponsorAddress: "0xSPONSOR",
         raw: {},
       };
@@ -36,7 +36,7 @@ test("runDemoGrantFlow reserves gas then executes the sponsored transaction", as
       calls.push("execute");
       assert.deepEqual(request, {
         reservationId: "reservation-1",
-        gasKitTransactionId: "gaskit_tx_1",
+        agentRailTransactionId: "agentrail_tx_1",
         transactionBytes: DEMO_TRANSACTION_BYTES,
         userSignature: DEMO_USER_SIGNATURE,
       });
@@ -49,7 +49,7 @@ test("runDemoGrantFlow reserves gas then executes the sponsored transaction", as
   assert.deepEqual(calls, ["reserve", "execute"]);
   assert.deepEqual(result, {
     reservationId: "reservation-1",
-    gasKitTransactionId: "gaskit_tx_1",
+    agentRailTransactionId: "agentrail_tx_1",
     sponsorAddress: "0xSPONSOR",
     digest: "digest-1",
   });
@@ -59,7 +59,7 @@ test("runDemoGrantFlow propagates policy rejection and does not execute", async 
   let executeCalled = false;
   const client: DemoGrantFlowClient = {
     async reserveGas() {
-      throw new GasKitPolicyError("Package not allowed", "PACKAGE_NOT_ALLOWED", 400, {});
+      throw new AgentRailPolicyError("Package not allowed", "PACKAGE_NOT_ALLOWED", 400, {});
     },
     async executeSponsoredTransaction() {
       executeCalled = true;
@@ -69,7 +69,7 @@ test("runDemoGrantFlow propagates policy rejection and does not execute", async 
 
   await assert.rejects(
     () => runDemoGrantFlow(client),
-    (error) => error instanceof GasKitPolicyError && error.reasonCode === "PACKAGE_NOT_ALLOWED",
+    (error) => error instanceof AgentRailPolicyError && error.reasonCode === "PACKAGE_NOT_ALLOWED",
   );
   assert.equal(executeCalled, false);
 });
@@ -79,7 +79,7 @@ test("runDemoGrantFlow fails if execute returns no digest", async () => {
     async reserveGas() {
       return {
         reservationId: "reservation-1",
-        gasKitTransactionId: "gaskit_tx_1",
+        agentRailTransactionId: "agentrail_tx_1",
         raw: {},
       };
     },
@@ -97,12 +97,12 @@ test("runDemoGrantFlow fails if execute returns no digest", async () => {
 test("formatDemoGrantFlowResult does not include credentials", () => {
   const formatted = formatDemoGrantFlowResult({
     reservationId: "reservation-1",
-    gasKitTransactionId: "gaskit_tx_1",
+    agentRailTransactionId: "agentrail_tx_1",
     sponsorAddress: "0xSPONSOR",
     digest: "digest-1",
   });
 
-  assert.match(formatted, /IOTA GasKit demo dApp local flow passed/);
+  assert.match(formatted, /AgentRail demo dApp local flow passed/);
   assert.match(formatted, /reservationId=reservation-1/);
   assert.match(formatted, /digest=digest-1/);
   assert.doesNotMatch(formatted, /apiKey|Bearer|local-dev-demo-key/i);

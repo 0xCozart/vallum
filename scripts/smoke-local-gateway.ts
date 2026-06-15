@@ -4,7 +4,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { createGasKitClient, GasKitAuthError, GasKitPolicyError } from "../packages/sdk/src/index.js";
+import { createAgentRailClient, AgentRailAuthError, AgentRailPolicyError } from "../packages/sdk/src/index.js";
 import { loadGatewayConfigFromEnv } from "../apps/policy-gateway-service/src/config.js";
 import { createGatewayServer, type GatewayEvent } from "../apps/policy-gateway-service/src/server.js";
 import { createGatewayUsageReadModel } from "../apps/policy-gateway-service/src/usage.js";
@@ -78,7 +78,7 @@ async function close(server: Server): Promise<void> {
 
 async function main(): Promise<void> {
   const upstream = createMockGasStation();
-  const usageStoreDir = await mkdtemp(join(tmpdir(), "gaskit-smoke-usage-store-"));
+  const usageStoreDir = await mkdtemp(join(tmpdir(), "agentrail-smoke-usage-store-"));
   let usageStoreWrites = Promise.resolve();
   let gateway: Server | undefined;
 
@@ -88,13 +88,13 @@ async function main(): Promise<void> {
     const usage = createGatewayUsageReadModel({ maxRecentEvents: 10 });
     const usageStorePath = join(usageStoreDir, "usage-events.jsonl");
     const config = await loadGatewayConfigFromEnv({
-      GASKIT_POLICY_PATH: "examples/policies/demo-dapp.yaml",
-      GASKIT_DEMO_APP_KEY: "local-dev-demo-key",
+      AGENTRAIL_POLICY_PATH: "examples/policies/demo-dapp.yaml",
+      AGENTRAIL_DEMO_APP_KEY: "local-dev-demo-key",
       GAS_STATION_URL: upstreamBaseUrl,
       GAS_STATION_BEARER_TOKEN: "local-smoke-token",
-      GASKIT_USAGE_EVENT_STORE_PATH: usageStorePath,
-      GASKIT_OPERATOR_USAGE_TOKEN: "local-operator-smoke-token",
-      GASKIT_OPERATOR_USAGE_MAX_RECENT_EVENTS: "10",
+      AGENTRAIL_USAGE_EVENT_STORE_PATH: usageStorePath,
+      AGENTRAIL_OPERATOR_USAGE_TOKEN: "local-operator-smoke-token",
+      AGENTRAIL_OPERATOR_USAGE_MAX_RECENT_EVENTS: "10",
     });
 
     gateway = createGatewayServer({
@@ -107,12 +107,12 @@ async function main(): Promise<void> {
       },
     });
     const gatewayBaseUrl = await listen(gateway);
-    const client = createGasKitClient({ baseUrl: gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+    const client = createAgentRailClient({ baseUrl: gatewayBaseUrl, apiKey: "local-dev-demo-key" });
 
     const health = await fetch(`${gatewayBaseUrl}/health`);
     const healthBody = await health.json();
     assert.equal(health.status, 200);
-    assert.equal(healthBody.service, "iota-gaskit-policy-gateway");
+    assert.equal(healthBody.service, "agentrail-policy-gateway");
     console.log("ok: gateway health");
 
     const missingAuth = await fetch(`${gatewayBaseUrl}/v1/reserve_gas`, {
@@ -125,23 +125,23 @@ async function main(): Promise<void> {
     assert.equal(missingAuthBody.reasonCode, "AUTH_MISSING");
     console.log("ok: missing auth fails closed");
 
-    const wrongKeyClient = createGasKitClient({ baseUrl: gatewayBaseUrl, apiKey: "wrong-local-key" });
+    const wrongKeyClient = createAgentRailClient({ baseUrl: gatewayBaseUrl, apiKey: "wrong-local-key" });
     await assert.rejects(
       () => wrongKeyClient.reserveGas({ gasBudget: 1, packageId: "0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0", functionName: "mint_badge" }),
-      (error) => error instanceof GasKitAuthError && error.status === 403,
+      (error) => error instanceof AgentRailAuthError && error.status === 403,
     );
     console.log("ok: invalid auth fails closed");
 
     await assert.rejects(
       () => client.reserveGas({ gasBudget: 1, packageId: "0xNOT_ALLOWED", functionName: "mint_badge" }),
-      (error) => error instanceof GasKitPolicyError && error.reasonCode === "PACKAGE_NOT_ALLOWED",
+      (error) => error instanceof AgentRailPolicyError && error.reasonCode === "PACKAGE_NOT_ALLOWED",
     );
     assert.equal(upstream.requests.length, 0);
     console.log("ok: policy rejection does not call upstream");
 
     await assert.rejects(
       () => client.reserveGas({ gasBudget: 1, packageId: "0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0", functionName: "burn_badge" }),
-      (error) => error instanceof GasKitPolicyError && error.reasonCode === "FUNCTION_NOT_ALLOWED",
+      (error) => error instanceof AgentRailPolicyError && error.reasonCode === "FUNCTION_NOT_ALLOWED",
     );
     assert.equal(upstream.requests.length, 0);
     console.log("ok: function policy rejection does not call upstream");
@@ -169,7 +169,7 @@ async function main(): Promise<void> {
           packageId: "0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0",
           functionName: "mint_badge",
         }),
-      (error) => error instanceof GasKitPolicyError && error.status === 400,
+      (error) => error instanceof AgentRailPolicyError && error.status === 400,
     );
     assert.equal(upstream.requests.length, 0);
     assert.equal(events.length, 4);
@@ -182,7 +182,7 @@ async function main(): Promise<void> {
       functionName: "mint_badge",
     });
     assert.equal(reservation.reservationId, "smoke-reservation-1");
-    assert.match(reservation.gasKitTransactionId, /^gaskit_/);
+    assert.match(reservation.agentRailTransactionId, /^agentrail_/);
     assert.equal(reservation.sponsorAddress, "0xSMOKE_SPONSOR");
     assert.equal(upstream.requests.length, 1);
     assert.equal(upstream.requests[0]?.method, "POST");
@@ -198,7 +198,7 @@ async function main(): Promise<void> {
 
     const executed = await client.executeSponsoredTransaction({
       reservationId: reservation.reservationId,
-      gasKitTransactionId: reservation.gasKitTransactionId,
+      agentRailTransactionId: reservation.agentRailTransactionId,
       transactionBytes: "AAE=",
       userSignature: "smoke-signature",
     });
@@ -299,7 +299,7 @@ async function main(): Promise<void> {
     assert.equal(operatorUsageOutput.includes("smoke-signature"), false);
     console.log("ok: authenticated local operator usage API returns sanitized usage");
 
-    console.log("IOTA GasKit local gateway smoke passed");
+    console.log("AgentRail local gateway smoke passed");
   } finally {
     await usageStoreWrites.catch(() => undefined);
     await Promise.all([gateway ? close(gateway) : Promise.resolve(), close(upstream.server)]);

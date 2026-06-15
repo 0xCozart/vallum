@@ -4,19 +4,19 @@ import {
   type X402ManifestMappingContext,
   type X402PaymentRequired,
   type X402PaymentRequirements,
-} from "@iota-gaskit/manifest";
+} from "@agentrail/manifest";
 import {
   evaluateAgentActionPolicy,
   type AgentActionPolicy,
   type AgentPolicyDecision,
-} from "@iota-gaskit/policy-gateway";
+} from "@agentrail/policy-gateway";
 import {
   createX402ExternalPaymentReceiptState,
   redactX402PaymentMetadata,
   type X402ExternalPaymentReceiptState,
   type X402SettleEvidence,
   type X402VerifyEvidence,
-} from "@iota-gaskit/receipts";
+} from "@agentrail/receipts";
 
 export type { X402ManifestMappingContext, X402PaymentRequired, X402PaymentRequirements };
 

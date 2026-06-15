@@ -2,7 +2,7 @@ import {
   resolveAgent as resolveRegistryAgent,
   type AgentResolver,
   type ResolveAgentResult,
-} from "@iota-gaskit/registry";
+} from "@agentrail/registry";
 
 export interface ResolveAgentOptions {
   readonly resolver: AgentResolver;

@@ -1,15 +1,15 @@
 # TypeScript SDK
 
-The SDK helps dApp backends interact with GasKit without hand-writing raw HTTP calls.
+The SDK helps dApp backends interact with AgentRail without hand-writing raw HTTP calls.
 
 ## Backend API Example
 
 ```ts
-import { createGasKitClient } from "@iota-gaskit/sdk";
+import { createAgentRailClient } from "@agentrail/sdk";
 
-const client = createGasKitClient({
+const client = createAgentRailClient({
   baseUrl: "https://api.example.com",
-  apiKey: process.env.GASKIT_API_KEY!,
+  apiKey: process.env.AGENTRAIL_API_KEY!,
 });
 
 const simulation = await client.simulatePolicy({
@@ -33,13 +33,13 @@ const reservation = await client.reserveGas({
 
 const result = await client.executeSponsoredTransaction({
   reservationId: reservation.reservationId,
-  gasKitTransactionId: reservation.gasKitTransactionId,
+  agentRailTransactionId: reservation.agentRailTransactionId,
   transactionBytes,
   userSignature,
 });
 ```
 
-The API key belongs on the backend, not in browser code. `simulatePolicy()` uses the same authenticated gateway boundary as `reserveGas()`, but a rejected simulation is returned as `{ allowed: false, reasonCode, message }` decision data rather than thrown as `GasKitPolicyError`; auth and malformed transport responses still throw SDK errors.
+The API key belongs on the backend, not in browser code. `simulatePolicy()` uses the same authenticated gateway boundary as `reserveGas()`, but a rejected simulation is returned as `{ allowed: false, reasonCode, message }` decision data rather than thrown as `AgentRailPolicyError`; auth and malformed transport responses still throw SDK errors.
 
 ## More Examples
 

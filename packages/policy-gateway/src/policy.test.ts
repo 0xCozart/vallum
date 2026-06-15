@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { SponsorshipPolicy } from "@iota-gaskit/shared-types";
+import type { SponsorshipPolicy } from "@agentrail/shared-types";
 import { evaluateSponsorshipPolicy } from "./policy.js";
 
 const basePolicy: SponsorshipPolicy = {

@@ -3,7 +3,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import {
   validateAgentTransactionManifest,
   type AgentTransactionManifest,
-} from "@iota-gaskit/manifest";
+} from "@agentrail/manifest";
 import { evaluateAgentActionPolicy } from "./evaluatePolicy.js";
 import type { MockGasStationAdapter } from "./mockGasStationAdapter.js";
 import type { AgentActionPolicy, AgentPolicyDecision } from "./policySchema.js";

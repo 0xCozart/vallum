@@ -35,7 +35,7 @@ export interface A2APublicProofBundleCheck {
 
 export interface A2APublicProofBundle {
   readonly schemaVersion: 1;
-  readonly kind: "agentic-gaskit.a2a-public-proof-bundle";
+  readonly kind: "agentrail.a2a-public-proof-bundle";
   readonly generatedAt: string;
   readonly status: "blocked" | "ready-for-approval";
   readonly localProofOk: boolean;
@@ -76,12 +76,12 @@ type MutableCliOptions = {
   -readonly [Key in keyof CliOptions]: CliOptions[Key];
 };
 
-const DEFAULT_OUT_FILE = "tmp/gaskit/a2a-public-proof-bundle.json";
-const DEFAULT_PLAN_OUT_FILE = "tmp/gaskit/a2a-public-proof-plan.json";
-const DEFAULT_READINESS_OUT_FILE = "tmp/gaskit/a2a-public-readiness.json";
-const DEFAULT_DISCOVERY_TEMPLATE_OUT_FILE = "tmp/gaskit/a2a-public-discovery-report-template.json";
-const DEFAULT_PUSH_TEMPLATE_OUT_FILE = "tmp/gaskit/a2a-public-push-delivery-report-template.json";
-const DEFAULT_CONFORMANCE_TEMPLATE_OUT_FILE = "tmp/gaskit/a2a-external-conformance-report-template.json";
+const DEFAULT_OUT_FILE = "tmp/agentrail/a2a-public-proof-bundle.json";
+const DEFAULT_PLAN_OUT_FILE = "tmp/agentrail/a2a-public-proof-plan.json";
+const DEFAULT_READINESS_OUT_FILE = "tmp/agentrail/a2a-public-readiness.json";
+const DEFAULT_DISCOVERY_TEMPLATE_OUT_FILE = "tmp/agentrail/a2a-public-discovery-report-template.json";
+const DEFAULT_PUSH_TEMPLATE_OUT_FILE = "tmp/agentrail/a2a-public-push-delivery-report-template.json";
+const DEFAULT_CONFORMANCE_TEMPLATE_OUT_FILE = "tmp/agentrail/a2a-external-conformance-report-template.json";
 
 const REQUIRED_OPERATOR_INPUTS = [
   "A2A_PUBLIC_AGENT_CARD_URL",
@@ -162,7 +162,7 @@ export async function writeA2APublicProofBundle(
 
   const bundle: A2APublicProofBundle = {
     schemaVersion: 1,
-    kind: "agentic-gaskit.a2a-public-proof-bundle",
+    kind: "agentrail.a2a-public-proof-bundle",
     generatedAt: now.toISOString(),
     status: readiness.publicReady ? "ready-for-approval" : "blocked",
     localProofOk: readiness.localProofOk,
@@ -255,7 +255,7 @@ function buildSteps(input: {
     },
     {
       id: "run-public-discovery-smoke",
-      command: "npm run smoke:a2a-public-discovery -- --report tmp/gaskit/a2a-public-discovery-report.json",
+      command: "npm run smoke:a2a-public-discovery -- --report tmp/agentrail/a2a-public-discovery-report.json",
       contactsPublicNetwork: true,
       requiresOperatorApproval: true,
       dependsOn: ["write-public-discovery-template"],

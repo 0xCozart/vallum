@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { GasKitPolicyError } from "@iota-gaskit/sdk";
+import { AgentRailPolicyError } from "@agentrail/sdk";
 
 import {
   createDemoBrowserServer,
@@ -26,22 +26,22 @@ async function withServer<T>(options: DemoBrowserServerOptions, run: (baseUrl: s
 test("renderDemoBrowserPage renders a same-origin demo runner without credentials", () => {
   const html = renderDemoBrowserPage();
 
-  assert.match(html, /IOTA GasKit Local Demo/);
+  assert.match(html, /AgentRail Local Demo/);
   assert.match(html, /data-testid="run-demo"/);
   assert.match(html, /fetch\("\/api\/run-demo"/);
-  assert.doesNotMatch(html, /local-dev-demo-key|Bearer|GASKIT_DEMO_APP_KEY/i);
+  assert.doesNotMatch(html, /local-dev-demo-key|Bearer|AGENTRAIL_DEMO_APP_KEY/i);
 });
 
 test("demo browser server serves the page and health endpoint", async () => {
-  await withServer({ runFlow: async () => ({ reservationId: "unused", gasKitTransactionId: "unused", digest: "unused" }) }, async (baseUrl) => {
+  await withServer({ runFlow: async () => ({ reservationId: "unused", agentRailTransactionId: "unused", digest: "unused" }) }, async (baseUrl) => {
     const page = await fetch(`${baseUrl}/`);
     assert.equal(page.status, 200);
     assert.match(page.headers.get("content-type") ?? "", /text\/html/);
-    assert.match(await page.text(), /IOTA GasKit Local Demo/);
+    assert.match(await page.text(), /AgentRail Local Demo/);
 
     const health = await fetch(`${baseUrl}/health`);
     assert.equal(health.status, 200);
-    assert.deepEqual(await health.json(), { status: "ok", service: "iota-gaskit-demo-dapp" });
+    assert.deepEqual(await health.json(), { status: "ok", service: "agentrail-demo-dapp" });
   });
 });
 
@@ -52,7 +52,7 @@ test("demo browser server runs the local grant flow through a POST API", async (
       calls += 1;
       return {
         reservationId: "reservation-1",
-        gasKitTransactionId: "gaskit_tx_1",
+        agentRailTransactionId: "agentrail_tx_1",
         sponsorAddress: "0xSPONSOR",
         digest: "digest-1",
         apiKey: "local-dev-demo-key",
@@ -67,7 +67,7 @@ test("demo browser server runs the local grant flow through a POST API", async (
       ok: true,
       result: {
         reservationId: "reservation-1",
-        gasKitTransactionId: "gaskit_tx_1",
+        agentRailTransactionId: "agentrail_tx_1",
         sponsorAddress: "0xSPONSOR",
         digest: "digest-1",
       },
@@ -80,7 +80,7 @@ test("demo browser server runs the local grant flow through a POST API", async (
 test("demo browser server sanitizes SDK errors without exposing raw upstream bodies", async () => {
   await withServer({
     runFlow: async () => {
-      throw new GasKitPolicyError("Package not allowed for local-dev-demo-key", "PACKAGE_NOT_ALLOWED", 400, {
+      throw new AgentRailPolicyError("Package not allowed for local-dev-demo-key", "PACKAGE_NOT_ALLOWED", 400, {
         bearer: "secret-token",
       });
     },
@@ -91,7 +91,7 @@ test("demo browser server sanitizes SDK errors without exposing raw upstream bod
     assert.deepEqual(body, {
       ok: false,
       error: {
-        name: "GasKitPolicyError",
+        name: "AgentRailPolicyError",
         message: "Package not allowed for [REDACTED]",
         reasonCode: "PACKAGE_NOT_ALLOWED",
         status: 400,
@@ -127,7 +127,7 @@ test("demo browser server rejects request bodies before running the flow", async
   await withServer({
     runFlow: async () => {
       calls += 1;
-      return { reservationId: "unused", gasKitTransactionId: "unused", digest: "unused" };
+      return { reservationId: "unused", agentRailTransactionId: "unused", digest: "unused" };
     },
   }, async (baseUrl) => {
     const response = await fetch(`${baseUrl}/api/run-demo`, {
@@ -149,7 +149,7 @@ test("demo browser server rejects cross-origin POST attempts before running the 
   await withServer({
     runFlow: async () => {
       calls += 1;
-      return { reservationId: "unused", gasKitTransactionId: "unused", digest: "unused" };
+      return { reservationId: "unused", agentRailTransactionId: "unused", digest: "unused" };
     },
   }, async (baseUrl) => {
     const response = await fetch(`${baseUrl}/api/run-demo`, {
@@ -166,7 +166,7 @@ test("demo browser server rejects cross-origin POST attempts before running the 
 });
 
 test("demo browser server rejects unsupported methods and unknown routes", async () => {
-  await withServer({ runFlow: async () => ({ reservationId: "unused", gasKitTransactionId: "unused", digest: "unused" }) }, async (baseUrl) => {
+  await withServer({ runFlow: async () => ({ reservationId: "unused", agentRailTransactionId: "unused", digest: "unused" }) }, async (baseUrl) => {
     const getApi = await fetch(`${baseUrl}/api/run-demo`);
     assert.equal(getApi.status, 405);
     assert.equal(getApi.headers.get("allow"), "POST");
@@ -178,12 +178,12 @@ test("demo browser server rejects unsupported methods and unknown routes", async
 
 test("demo browser server refuses non-loopback hosts and invalid ports", async () => {
   await assert.rejects(
-    () => startDemoBrowserServerFromEnv({ GASKIT_DEMO_DAPP_HOST: "0.0.0.0", GASKIT_DEMO_DAPP_PORT: "0" }),
+    () => startDemoBrowserServerFromEnv({ AGENTRAIL_DEMO_DAPP_HOST: "0.0.0.0", AGENTRAIL_DEMO_DAPP_PORT: "0" }),
     /loopback/i,
   );
 
   await assert.rejects(
-    () => startDemoBrowserServerFromEnv({ GASKIT_DEMO_DAPP_HOST: "127.0.0.1", GASKIT_DEMO_DAPP_PORT: "not-a-port" }),
+    () => startDemoBrowserServerFromEnv({ AGENTRAIL_DEMO_DAPP_HOST: "127.0.0.1", AGENTRAIL_DEMO_DAPP_PORT: "not-a-port" }),
     /valid port/i,
   );
 });

@@ -2,9 +2,9 @@ import assert from "node:assert/strict";
 import { generateKeyPairSync } from "node:crypto";
 import { test } from "node:test";
 
-import { validManifestFixture } from "@iota-gaskit/manifest";
-import type { AgentActionPolicy } from "@iota-gaskit/policy-gateway";
-import { A2A_JWKS_WELL_KNOWN_PATH, validAgentProfileFixture } from "@iota-gaskit/registry";
+import { validManifestFixture } from "@agentrail/manifest";
+import type { AgentActionPolicy } from "@agentrail/policy-gateway";
+import { A2A_JWKS_WELL_KNOWN_PATH, validAgentProfileFixture } from "@agentrail/registry";
 
 import {
   A2A_AGENT_CARD_WELL_KNOWN_PATH,

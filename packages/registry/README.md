@@ -1,6 +1,6 @@
-# @iota-gaskit/registry
+# @agentrail/registry
 
-Versioned Agent Profile schema and validation helpers for Agentic GasKit.
+Versioned Agent Profile schema and validation helpers for AgentRail.
 
 Current surface:
 

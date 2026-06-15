@@ -1,14 +1,14 @@
-# Agentic GasKit Execution Entry
+# AgentRail Execution Entry
 
 Last updated: 2026-06-10.
 
 ## Purpose
 
-This is the entry document for starting actual Agentic GasKit product
+This is the entry document for starting actual AgentRail product
 implementation.
 
 The repo migration is complete enough to build here. The product is not
-complete. The current codebase still implements the GasKit sponsorship
+complete. The current codebase still implements the AgentRail sponsorship
 foundation: policy gateway, SDK, local service, examples, docs, readiness, and
 safe smoke paths. Agentic accounts, manifests, MCP/A2A tools, registry,
 receipts, and contract workflows are next.
@@ -16,13 +16,13 @@ receipts, and contract workflows are next.
 ## Objective Contract
 
 Goal:
-Turn the migrated GasKit fork into a working Agentic GasKit MVP by adding the
-first agent-specific primitives without weakening existing GasKit sponsorship
+Turn the migrated AgentRail fork into a working AgentRail MVP by adding the
+first agent-specific primitives without weakening existing AgentRail sponsorship
 safety.
 
 Why:
 Agents need IOTA execution rails, but the product fails if agents receive raw
-seeds, bypass the policy gateway, or rebuild proven GasKit sponsorship behavior
+seeds, bypass the policy gateway, or rebuild proven AgentRail sponsorship behavior
 from scratch.
 
 Desired first outcome:
@@ -56,10 +56,10 @@ Non-goals for the first implementation pass:
 
    - `CLAUDE.md`
    - `docs/CODEBASE_MAP.md`
-   - `docs/agentic-gaskit/migration-plan.md`
-   - `docs/agentic-gaskit/account-wallet-safety.md`
-   - `docs/agentic-gaskit/execution-slices.md`
-   - `docs/agentic-gaskit/verification-hardening.md`
+   - `docs/agentrail/migration-plan.md`
+   - `docs/agentrail/account-wallet-safety.md`
+   - `docs/agentrail/execution-slices.md`
+   - `docs/agentrail/verification-hardening.md`
 
 3. Run baseline local proof before editing:
 
@@ -71,7 +71,7 @@ Non-goals for the first implementation pass:
    ```
 
 4. Start with Slice 1.0 from
-   `docs/agentic-gaskit/execution-slices.md`.
+   `docs/agentrail/execution-slices.md`.
 
 ## First Product Slice
 
@@ -83,10 +83,10 @@ Recommended package:
 
 Recommended package name for now:
 
-- `@iota-gaskit/accounts`
+- `@agentrail/accounts`
 
 Do not do the full package namespace rebrand in the same slice. Keep
-`@agentic-gaskit/*` as a later compatibility and release-planning decision.
+`@agentrail/*` as a later compatibility and release-planning decision.
 
 Minimum public types:
 
@@ -133,7 +133,7 @@ missing idempotency keys.
 After Slice 1.1 passes, extend policy evaluation for agent-aware sponsored
 actions.
 
-Do not bypass existing GasKit policy behavior. Add agent checks around the
+Do not bypass existing AgentRail policy behavior. Add agent checks around the
 current foundation:
 
 - known agent/owner
@@ -185,6 +185,6 @@ Every implementation slice should end with:
 - commit hash
 
 Record local continuation notes under ignored handoff or execution-manifest
-paths, such as `docs/agentic-gaskit/local-handoffs/` or
+paths, such as `docs/agentrail/local-handoffs/` or
 `tmp/apex-workflow/`, rather than adding private Codex planning state to the
 public documentation site.

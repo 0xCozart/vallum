@@ -1,7 +1,7 @@
 services:
   redis:
     image: redis:7-alpine
-    container_name: gaskit-redis
+    container_name: agentrail-redis
     ports:
       - "127.0.0.1:6379:6379"
     volumes:
@@ -9,7 +9,7 @@ services:
 
   gas-station:
     image: ${IOTA_GAS_STATION_IMAGE:-iotaledger/gas-station:latest}
-    container_name: gaskit-gas-station
+    container_name: agentrail-gas-station
     command: ["--config-path", "/app/config.yaml"]
     depends_on:
       - redis
@@ -20,7 +20,7 @@ services:
       GAS_STATION_AUTH: ${GAS_STATION_AUTH:-}
       RUST_BACKTRACE: "1"
     volumes:
-      - ${GASKIT_GAS_STATION_CONFIG:-../gas-station/config.local.yaml}:/app/config.yaml:ro
+      - ${AGENTRAIL_GAS_STATION_CONFIG:-../gas-station/config.local.yaml}:/app/config.yaml:ro
 
 volumes:
   redis_data:

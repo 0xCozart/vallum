@@ -1,6 +1,6 @@
-# Agentic GasKit
+# AgentRail
 
-Agentic GasKit is the next direction for IOTA GasKit: a self-hostable toolkit
+AgentRail is the next direction for AgentRail: a self-hostable toolkit
 for teams that want to pay IOTA transaction fees for users and give agents a
 safe execution stack.
 
@@ -14,7 +14,7 @@ and receipts. The first runnable path is the paid MCP-style tool flow, followed
 by the package consumer tarball proof that installs public packages into a
 fresh temporary consumer project and imports package root entrypoints only.
 
-The implemented foundation is GasKit plus the first Agentic GasKit slices: SDK,
+The implemented foundation is AgentRail plus the first AgentRail slices: SDK,
 policy gateway, local service, examples, deployment docs, observability
 foundations, account/signer-reference primitives, manifests, mock agent
 sponsorship, MCP tool facade, receipts, local escrow/receipt/pay-per-call
@@ -69,7 +69,7 @@ configuration, require explicit approval, remain production-blocked, or are
 safety-deferred before execution, and can write a redacted local JSON handoff
 artifact before any live command is approved.
 
-If terms like gas, sponsor wallet, package ID, or IOTA Gas Station are new, start with [IOTA and GasKit Basics](concepts.md).
+If terms like gas, sponsor wallet, package ID, or IOTA Gas Station are new, start with [IOTA and AgentRail Basics](concepts.md).
 
 ## Why This Exists
 
@@ -89,23 +89,23 @@ controls:
 - how much gas an app or wallet can use;
 - what happened when a request was allowed or rejected.
 
-Agentic GasKit keeps those controls and extends them with agent manifests,
+AgentRail keeps those controls and extends them with agent manifests,
 wallet/account references, identity/profile checks, receipts, contract
 workflows, MCP/A2A surfaces, and standards-compatible payment bridges.
 
 ## Relationship to IOTA Gas Station
 
-GasKit does not replace the official IOTA Gas Station. It sits around it.
+AgentRail does not replace the official IOTA Gas Station. It sits around it.
 
-Application backends call the GasKit SDK or gateway. GasKit applies app credentials and sponsorship policy. Only allowed requests are proxied to IOTA Gas Station, which manages sponsor-owned gas objects and talks to the IOTA network.
+Application backends call the AgentRail SDK or gateway. AgentRail applies app credentials and sponsorship policy. Only allowed requests are proxied to IOTA Gas Station, which manages sponsor-owned gas objects and talks to the IOTA network.
 
 ```text
-dApp backend -> GasKit -> IOTA Gas Station -> IOTA network
+dApp backend -> AgentRail -> IOTA Gas Station -> IOTA network
 ```
 
-The official Gas Station is the sponsorship engine. GasKit is the app integration and operator safety layer around that engine.
+The official Gas Station is the sponsorship engine. AgentRail is the app integration and operator safety layer around that engine.
 
-## What GasKit Helps With
+## What AgentRail Helps With
 
 - Keep sponsor credentials and app API keys off the frontend.
 - Apply app-level and wallet-level sponsorship limits.
@@ -127,32 +127,32 @@ The official Gas Station is the sponsorship engine. GasKit is the app integratio
 | Area | Current status | Start here |
 | --- | --- | --- |
 | Canonical adoption wedge | `npm run smoke:paid-mcp-tool` proves a local paid MCP-style tool call through SDK to mock policy gateway, with manifest/action intent, signer-reference redaction, policy approval, policy denial, failed-payment withholding, receipt events, and local-only boundaries. | [Quickstart](quickstart.md) |
-| Package consumer proof | `npm run smoke:package-paid-mcp-consumer` packs public workspace packages, installs local tarballs into a fresh temporary consumer project, imports package root entrypoints only, and runs the same canonical paid MCP-style flow without live network calls. | [Package Release Strategy](agentic-gaskit/package-release-strategy.md) |
-| Agentic migration | The fork direction, migrated planning docs, code-slice gates, and remote/package decisions are documented. | [Agentic Migration Plan](agentic-gaskit/migration-plan.md) |
-| Agent workflow harness | The reviewed `apex.workflow.json` profile uses local-only manifests, no external tracker, focused-search code review, no browser adapter, and repo-local verification presets; local Codex goal and handoff docs stay outside product authority. | [Agentic Migration Plan](agentic-gaskit/migration-plan.md) |
-| Agent wallets | Signer-reference-first account/wallet safety model and local package implementation exist; production custody remains blocked behind `npm run proof:custody-readiness` and an operator-approved report; `npm run proof:custody-readiness -- --out tmp/gaskit/custody-readiness.json` writes a redacted mode-600 audit artifact, and `npm run custody:write-production-proof-bundle` writes the custody report template, proof plan, readiness artifact, and redacted summary together as ignored local artifacts. | [Account And Wallet Safety](agentic-gaskit/account-wallet-safety.md) |
+| Package consumer proof | `npm run smoke:package-paid-mcp-consumer` packs public workspace packages, installs local tarballs into a fresh temporary consumer project, imports package root entrypoints only, and runs the same canonical paid MCP-style flow without live network calls. | [Package Release Strategy](agentrail/package-release-strategy.md) |
+| Agentic migration | The fork direction, migrated planning docs, code-slice gates, and remote/package decisions are documented. | [Agentic Migration Plan](agentrail/migration-plan.md) |
+| Agent workflow harness | The reviewed `apex.workflow.json` profile uses local-only manifests, no external tracker, focused-search code review, no browser adapter, and repo-local verification presets; local Codex goal and handoff docs stay outside product authority. | [Agentic Migration Plan](agentrail/migration-plan.md) |
+| Agent wallets | Signer-reference-first account/wallet safety model and local package implementation exist; production custody remains blocked behind `npm run proof:custody-readiness` and an operator-approved report; `npm run proof:custody-readiness -- --out tmp/agentrail/custody-readiness.json` writes a redacted mode-600 audit artifact, and `npm run custody:write-production-proof-bundle` writes the custody report template, proof plan, readiness artifact, and redacted summary together as ignored local artifacts. | [Account And Wallet Safety](agentrail/account-wallet-safety.md) |
 | Agent manifests and policy | Manifest validation, pure agent action policy, and mock sponsorship gateway are implemented locally. | [Architecture](architecture.md) |
-| Agent MCP tools | Local MCP-shaped sponsorship tools route through the SDK and policy gateway. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
-| Receipts and contracts | Local receipt state package, non-custodial Move escrow/receipt/pay-per-call/data-license/service-bounty/reputation-receipt/subscription state contracts, and contract-template metadata allow-list checks are implemented and covered by local tests. Device access remains safety-gated and is not implemented. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
+| Agent MCP tools | Local MCP-shaped sponsorship tools route through the SDK and policy gateway. | [Agentic Roadmap](agentrail/roadmap.md) |
+| Receipts and contracts | Local receipt state package, non-custodial Move escrow/receipt/pay-per-call/data-license/service-bounty/reputation-receipt/subscription state contracts, and contract-template metadata allow-list checks are implemented and covered by local tests. Device access remains safety-gated and is not implemented. | [Agentic Roadmap](agentrail/roadmap.md) |
 | Agent escrow demo | Local demo shows one agent hiring another, gateway approval, verifier release, receipt output, and over-budget policy denial without live IOTA calls. | [Agent Escrow Demo](demo-agent-escrow.md) |
-| Paid MCP-style tool demo | Local demo returns a paid result only after gateway approval, mock payment confirmation, and receipt submission; denial and failed payment withhold paid results. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
-| Agent profiles | Local `@iota-gaskit/registry` schema validation, fixture resolution, mock-tested IOTA Names/Identity adapter interfaces, an opt-in IOTA Names live resolution smoke, and bounded identity verification cache helpers cover required fields, expired/revoked states, unsupported versions, secret-field rejection, SDK resolution, capability policy checks, and stale identity evidence fail-closed behavior. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
-| Live proof status | `npm run proof:live-status` reports testnet, local Gas Station runtime, IOTA Names, IOTA Identity, and VC proof readiness or blockers without contacting live services or printing configured values; `npm run live:write-identity-proof-bundle` writes the linked identity templates, live proof plan, live proof status artifact, and redacted summary together as ignored local artifacts. | [Live Proof Status](agentic-gaskit/live-proof-status.md) |
-| Testnet digest proof | `npm run proof:testnet-digest` checks documented public IOTA testnet digest evidence locally; `npm run proof:testnet-digest:live` performs an opt-in read-only lookup. | [Testnet Digest Proof](agentic-gaskit/testnet-digest-proof.md) |
-| A2A public readiness | `npm run proof:a2a-public-readiness` classifies local A2A proof, local authenticated extended-card access, local public JWKS serving, local static discovery bundle generation, local static discovery artifact writing, validation, loopback host smoke, local static hosting review, redacted public proof planning, local loopback streaming, local push notification configuration, local injected push delivery, local opt-in push HTTP transport, callback URL admission hardening, callback host allowlisting, local retry/attempt observability, local durable attempt evidence, local delivery queueing, a local injected-transport worker, public hosting inputs, production JWKS/auth decisions, redacted structured public discovery evidence, public push delivery evidence, and structured external conformance blockers without contacting public endpoints. `npm run a2a:write-static-discovery-bundle` prepares local static hosting artifacts from already-signed public inputs, `npm run a2a:check-static-discovery-bundle` validates those local artifacts before upload, `npm run smoke:a2a-static-discovery-local` serves and fetches them over loopback only, `npm run a2a:write-static-hosting-review` emits a redacted local review packet for canonical paths and required headers, `npm run a2a:write-public-proof-plan` emits a redacted non-networked operator plan, and `npm run smoke:a2a-public-discovery` is an opt-in public Agent Card/JWKS probe for approved public config only that can emit the discovery report consumed by readiness. | [A2A Public Readiness](agentic-gaskit/a2a-public-readiness.md) |
-| Payment provider readiness | `npm run proof:payment-provider-readiness` validates local x402/AP2 source and tests plus an optional ignored structured report path, without contacting payment providers or printing report paths or secret-like fields. `npm run proof:payment-provider-readiness -- --out tmp/gaskit/payment-provider-readiness.json` writes a redacted mode-600 audit artifact. `npm run payment:write-provider-proof-plan` emits a redacted non-networked command/report checklist, and `npm run payment:write-provider-proof-bundle` writes the report template, proof plan, readiness artifact, and redacted summary together as ignored local artifacts for the operator-approved proof. | [Product Status Proof](agentic-gaskit/product-status.md) |
-| Verification profiles | `npm run verify:fast` provides a bounded iteration profile, while `npm run proof:verification-profiles` confirms `npm run verify:local` remains the full reviewer and launch evidence gate. | [Verification Profiles](agentic-gaskit/verification-profiles.md) |
-| Product status proof | `npm run proof:product-status` reports the current product evidence boundary: local proof configured, live/testnet gates ready or blocked, and production-only claims still blocked or safety-gated. | [Product Status Proof](agentic-gaskit/product-status.md) |
-| Launch readiness evidence | `npm run proof:launch-readiness` maps roadmap areas to evidence paths, local commands, blocker codes, and safe next gates without contacting live services. | [Launch Readiness Evidence](agentic-gaskit/launch-readiness-evidence.md) |
-| Operator live gates | `npm run proof:operator-gates` classifies remaining live/testnet, publication, public A2A, payment, marketplace, custody, and safety gates before execution; `npm run operator:write-live-gate-report` writes the redacted local JSON handoff artifact. | [Operator Live Gates](agentic-gaskit/operator-live-gates.md) |
-| A2A bridge | Local Agent Card mapping, signed-card verification helpers, `/.well-known/agent-card.json` and `/.well-known/jwks.json` response helpers, local static discovery bundle generation plus local artifact writing, validation, loopback host smoke, and static hosting review for signed Agent Card plus JWKS artifacts, local/mock task/message operation helpers, authenticated extended-card access, local push notification config CRUD, injected push delivery, opt-in push HTTP transport, callback URL admission hardening, callback host allowlisting, local retry/attempt observability, local durable attempt evidence, local delivery queueing, a local injected-transport worker, a local HTTP-shaped handler, and a loopback HTTP server smoke expose sanitized profile and task metadata with bearer-authenticated task routes and local SSE task events. Public-readiness proof now reports the remaining public hosting, production key/auth, structured public discovery report, structured public push delivery report, and structured conformance blockers; the opt-in public discovery smoke can later verify public Agent Card/JWKS reachability only. | [A2A Public Readiness](agentic-gaskit/a2a-public-readiness.md) |
-| Marketplace evidence | Local `@iota-gaskit/marketplace` read model consumes registry profiles, policy compatibility, contract template metadata, receipts, manifests, and standards evidence to prove access-controlled receipt views and redacted dispute bundles without production marketplace operation; a non-networked readiness gate keeps production marketplace claims blocked until an operator report exists, `npm run proof:marketplace-readiness -- --out tmp/gaskit/marketplace-readiness.json` writes a redacted mode-600 audit artifact, and `npm run marketplace:write-production-proof-bundle` writes the report template, proof plan, readiness artifact, and redacted summary together as ignored local artifacts. | [Marketplace Readiness](marketplace-readiness.md) |
-| Package release strategy | The prerelease package strategy keeps `@iota-gaskit/*` package names, keeps the monorepo root private, checks public package metadata mechanically, proves local tarball install/import plus the paid MCP consumer flow, provides opt-in pack and publish dry-run gates, adds a non-networked npm publication readiness report gate, and defers any `@agentic-gaskit/*` rename to a dedicated compatibility slice. | [Package Release Strategy](agentic-gaskit/package-release-strategy.md) |
-| Device access safety | Physical device operation is blocked; any future proof must start with virtual or simulated devices only. | [Device Access Safety Gate](agentic-gaskit/device-access-safety-gate.md) |
-| Agent roadmap | PRDs, execution slices, module specs, and hardening gates have been migrated into this fork. | [Agentic Roadmap](agentic-gaskit/roadmap.md) |
-| Beginner concepts | Plain-English explanations of IOTA, sponsored gas, GasKit roles, and common terms. | [IOTA and GasKit Basics](concepts.md) |
+| Paid MCP-style tool demo | Local demo returns a paid result only after gateway approval, mock payment confirmation, and receipt submission; denial and failed payment withhold paid results. | [Agentic Roadmap](agentrail/roadmap.md) |
+| Agent profiles | Local `@agentrail/registry` schema validation, fixture resolution, mock-tested IOTA Names/Identity adapter interfaces, an opt-in IOTA Names live resolution smoke, and bounded identity verification cache helpers cover required fields, expired/revoked states, unsupported versions, secret-field rejection, SDK resolution, capability policy checks, and stale identity evidence fail-closed behavior. | [Agentic Roadmap](agentrail/roadmap.md) |
+| Live proof status | `npm run proof:live-status` reports testnet, local Gas Station runtime, IOTA Names, IOTA Identity, and VC proof readiness or blockers without contacting live services or printing configured values; `npm run live:write-identity-proof-bundle` writes the linked identity templates, live proof plan, live proof status artifact, and redacted summary together as ignored local artifacts. | [Live Proof Status](agentrail/live-proof-status.md) |
+| Testnet digest proof | `npm run proof:testnet-digest` checks documented public IOTA testnet digest evidence locally; `npm run proof:testnet-digest:live` performs an opt-in read-only lookup. | [Testnet Digest Proof](agentrail/testnet-digest-proof.md) |
+| A2A public readiness | `npm run proof:a2a-public-readiness` classifies local A2A proof, local authenticated extended-card access, local public JWKS serving, local static discovery bundle generation, local static discovery artifact writing, validation, loopback host smoke, local static hosting review, redacted public proof planning, local loopback streaming, local push notification configuration, local injected push delivery, local opt-in push HTTP transport, callback URL admission hardening, callback host allowlisting, local retry/attempt observability, local durable attempt evidence, local delivery queueing, a local injected-transport worker, public hosting inputs, production JWKS/auth decisions, redacted structured public discovery evidence, public push delivery evidence, and structured external conformance blockers without contacting public endpoints. `npm run a2a:write-static-discovery-bundle` prepares local static hosting artifacts from already-signed public inputs, `npm run a2a:check-static-discovery-bundle` validates those local artifacts before upload, `npm run smoke:a2a-static-discovery-local` serves and fetches them over loopback only, `npm run a2a:write-static-hosting-review` emits a redacted local review packet for canonical paths and required headers, `npm run a2a:write-public-proof-plan` emits a redacted non-networked operator plan, and `npm run smoke:a2a-public-discovery` is an opt-in public Agent Card/JWKS probe for approved public config only that can emit the discovery report consumed by readiness. | [A2A Public Readiness](agentrail/a2a-public-readiness.md) |
+| Payment provider readiness | `npm run proof:payment-provider-readiness` validates local x402/AP2 source and tests plus an optional ignored structured report path, without contacting payment providers or printing report paths or secret-like fields. `npm run proof:payment-provider-readiness -- --out tmp/agentrail/payment-provider-readiness.json` writes a redacted mode-600 audit artifact. `npm run payment:write-provider-proof-plan` emits a redacted non-networked command/report checklist, and `npm run payment:write-provider-proof-bundle` writes the report template, proof plan, readiness artifact, and redacted summary together as ignored local artifacts for the operator-approved proof. | [Product Status Proof](agentrail/product-status.md) |
+| Verification profiles | `npm run verify:fast` provides a bounded iteration profile, while `npm run proof:verification-profiles` confirms `npm run verify:local` remains the full reviewer and launch evidence gate. | [Verification Profiles](agentrail/verification-profiles.md) |
+| Product status proof | `npm run proof:product-status` reports the current product evidence boundary: local proof configured, live/testnet gates ready or blocked, and production-only claims still blocked or safety-gated. | [Product Status Proof](agentrail/product-status.md) |
+| Launch readiness evidence | `npm run proof:launch-readiness` maps roadmap areas to evidence paths, local commands, blocker codes, and safe next gates without contacting live services. | [Launch Readiness Evidence](agentrail/launch-readiness-evidence.md) |
+| Operator live gates | `npm run proof:operator-gates` classifies remaining live/testnet, publication, public A2A, payment, marketplace, custody, and safety gates before execution; `npm run operator:write-live-gate-report` writes the redacted local JSON handoff artifact. | [Operator Live Gates](agentrail/operator-live-gates.md) |
+| A2A bridge | Local Agent Card mapping, signed-card verification helpers, `/.well-known/agent-card.json` and `/.well-known/jwks.json` response helpers, local static discovery bundle generation plus local artifact writing, validation, loopback host smoke, and static hosting review for signed Agent Card plus JWKS artifacts, local/mock task/message operation helpers, authenticated extended-card access, local push notification config CRUD, injected push delivery, opt-in push HTTP transport, callback URL admission hardening, callback host allowlisting, local retry/attempt observability, local durable attempt evidence, local delivery queueing, a local injected-transport worker, a local HTTP-shaped handler, and a loopback HTTP server smoke expose sanitized profile and task metadata with bearer-authenticated task routes and local SSE task events. Public-readiness proof now reports the remaining public hosting, production key/auth, structured public discovery report, structured public push delivery report, and structured conformance blockers; the opt-in public discovery smoke can later verify public Agent Card/JWKS reachability only. | [A2A Public Readiness](agentrail/a2a-public-readiness.md) |
+| Marketplace evidence | Local `@agentrail/marketplace` read model consumes registry profiles, policy compatibility, contract template metadata, receipts, manifests, and standards evidence to prove access-controlled receipt views and redacted dispute bundles without production marketplace operation; a non-networked readiness gate keeps production marketplace claims blocked until an operator report exists, `npm run proof:marketplace-readiness -- --out tmp/agentrail/marketplace-readiness.json` writes a redacted mode-600 audit artifact, and `npm run marketplace:write-production-proof-bundle` writes the report template, proof plan, readiness artifact, and redacted summary together as ignored local artifacts. | [Marketplace Readiness](marketplace-readiness.md) |
+| Package release strategy | The prerelease package strategy keeps `@agentrail/*` package names, keeps the monorepo root private, checks public package metadata mechanically, proves local tarball install/import plus the paid MCP consumer flow, provides opt-in pack and publish dry-run gates, adds a non-networked npm publication readiness report gate, and defers any `@agentrail/*` rename to a dedicated compatibility slice. | [Package Release Strategy](agentrail/package-release-strategy.md) |
+| Device access safety | Physical device operation is blocked; any future proof must start with virtual or simulated devices only. | [Device Access Safety Gate](agentrail/device-access-safety-gate.md) |
+| Agent roadmap | PRDs, execution slices, module specs, and hardening gates have been migrated into this fork. | [Agentic Roadmap](agentrail/roadmap.md) |
+| Beginner concepts | Plain-English explanations of IOTA, sponsored gas, AgentRail roles, and common terms. | [IOTA and AgentRail Basics](concepts.md) |
 | Code examples | Backend SDK calls, Next.js route shape, browser caller shape, curl requests, and policy YAML. | [Code Examples](examples.md) |
-| Agent workflow | Repo-local Codex skill for agents that need to navigate, develop, verify, or integrate GasKit safely. | [Agent Guide](agent-guide.md) |
+| Agent workflow | Repo-local Codex skill for agents that need to navigate, develop, verify, or integrate AgentRail safely. | [Agent Guide](agent-guide.md) |
 | Local verification | Tests, typecheck, local gateway smoke, demo dApp smoke, agent escrow smoke, package dry-runs, contract tests, and secret scan run without live IOTA services. | [Quickstart](quickstart.md) |
 | Policy gateway | App auth, allowlists, quotas, wallet denial, simulation, reserve proxying, execute proxying, and safe errors are implemented for local proof. | [Policy Gateway](policy.md) |
 | SDK | Backend client helpers cover policy simulation, reserve, execute, typed errors, and malformed-response handling. | [TypeScript SDK](sdk.md) |
@@ -186,14 +186,14 @@ These are not complete production claims yet:
 
 ## Recommended First Path
 
-1. Read [IOTA and GasKit Basics](concepts.md) if sponsored gas or IOTA terms are unfamiliar.
+1. Read [IOTA and AgentRail Basics](concepts.md) if sponsored gas or IOTA terms are unfamiliar.
 2. Run [Quickstart](quickstart.md), starting with
    `npm run smoke:paid-mcp-tool`.
 3. Run `npm run smoke:package-paid-mcp-consumer` when you need proof that a
    fresh local consumer project can use the public package root entrypoints.
-4. Read [Agentic Migration Plan](agentic-gaskit/migration-plan.md) before
+4. Read [Agentic Migration Plan](agentrail/migration-plan.md) before
    changing repo branding, package names, wallet behavior, or agent surfaces.
-5. Read [Account And Wallet Safety](agentic-gaskit/account-wallet-safety.md)
+5. Read [Account And Wallet Safety](agentrail/account-wallet-safety.md)
    before adding any wallet/account API.
 6. Read [Architecture](architecture.md) to understand why the gateway, SDK, and policy layers are separate.
 7. Copy the safe backend and route patterns from [Code Examples](examples.md).
@@ -207,7 +207,7 @@ These are not complete production claims yet:
 Treat the sponsor wallet as a funded operational asset. Every sponsored path
 should be authenticated, allowlisted, budgeted, observable, and secret-free in
 logs. Use `simulatePolicy()` when possible, and keep browser code behind
-same-origin backend routes that own GasKit app credentials.
+same-origin backend routes that own AgentRail app credentials.
 
 Agent-created wallets must be signer-reference-first. Normal APIs return
 addresses and scoped signer references, not seeds, mnemonics, private keys, or

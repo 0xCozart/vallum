@@ -35,7 +35,7 @@ export interface CustodyProductionProofBundleCheck {
 
 export interface CustodyProductionProofBundle {
   readonly schemaVersion: 1;
-  readonly kind: "agentic-gaskit.custody-production-proof-bundle";
+  readonly kind: "agentrail.custody-production-proof-bundle";
   readonly generatedAt: string;
   readonly status: "blocked" | "ready-for-approval";
   readonly localProofOk: boolean;
@@ -74,10 +74,10 @@ type MutableCliOptions = {
   -readonly [Key in keyof CliOptions]: CliOptions[Key];
 };
 
-const DEFAULT_OUT_FILE = "tmp/gaskit/custody-production-proof-bundle.json";
-const DEFAULT_PLAN_OUT_FILE = "tmp/gaskit/custody-production-proof-plan.json";
-const DEFAULT_READINESS_OUT_FILE = "tmp/gaskit/custody-readiness.json";
-const DEFAULT_TEMPLATE_OUT_FILE = "tmp/gaskit/custody-production-report-template.json";
+const DEFAULT_OUT_FILE = "tmp/agentrail/custody-production-proof-bundle.json";
+const DEFAULT_PLAN_OUT_FILE = "tmp/agentrail/custody-production-proof-plan.json";
+const DEFAULT_READINESS_OUT_FILE = "tmp/agentrail/custody-readiness.json";
+const DEFAULT_TEMPLATE_OUT_FILE = "tmp/agentrail/custody-production-report-template.json";
 
 const REQUIRED_OPERATOR_INPUTS = [
   "CUSTODY_PRODUCTION_REPORT",
@@ -169,7 +169,7 @@ export async function writeCustodyProductionProofBundle(
 
   const bundle: CustodyProductionProofBundle = {
     schemaVersion: 1,
-    kind: "agentic-gaskit.custody-production-proof-bundle",
+    kind: "agentrail.custody-production-proof-bundle",
     generatedAt: now.toISOString(),
     status: readiness.productionReady ? "ready-for-approval" : "blocked",
     localProofOk: readiness.localProofOk,

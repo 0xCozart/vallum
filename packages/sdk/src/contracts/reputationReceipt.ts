@@ -1,4 +1,4 @@
-import type { AgentTransactionManifest } from "@iota-gaskit/manifest";
+import type { AgentTransactionManifest } from "@agentrail/manifest";
 import {
   approveReputationReceipt,
   completeReputationReceipt,
@@ -9,7 +9,7 @@ import {
   submitReputationReceipt,
   type ReceiptAmount,
   type ReputationReceipt,
-} from "@iota-gaskit/receipts";
+} from "@agentrail/receipts";
 
 import { requestSponsoredAction } from "../requestSponsoredAction.js";
 import type { SponsoredActionResult } from "../types.js";

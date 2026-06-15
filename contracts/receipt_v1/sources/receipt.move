@@ -1,4 +1,4 @@
-/// Minimal Agentic GasKit receipt lifecycle contract.
+/// Minimal AgentRail receipt lifecycle contract.
 module receipt_v1::receipt {
     const EInvalidStatus: u64 = 1;
 

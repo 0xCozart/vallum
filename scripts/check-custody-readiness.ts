@@ -27,7 +27,7 @@ export interface CustodyReadinessReport {
 
 export interface CustodyReadinessArtifact {
   readonly schemaVersion: 1;
-  readonly kind: "agentic-gaskit.custody-readiness-report";
+  readonly kind: "agentrail.custody-readiness-report";
   readonly generatedAt: string;
   readonly localProofOk: boolean;
   readonly productionReady: boolean;
@@ -67,13 +67,13 @@ interface StructuredCustodyReport {
 
 const MAX_REPORT_BYTES = 64 * 1024;
 const MAX_REPORT_AGE_MS = 30 * 24 * 60 * 60 * 1000;
-const CUSTODY_PRODUCTION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind custody-production --out tmp/gaskit/custody-production-report-template.json";
+const CUSTODY_PRODUCTION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind custody-production --out tmp/agentrail/custody-production-report-template.json";
 const REQUIRED_SOURCE_PATHS = [
   "packages/accounts/src/index.ts",
   "packages/accounts/src/accounts.test.ts",
   "packages/accounts/README.md",
-  "docs/agentic-gaskit/account-wallet-safety.md",
-  "docs/agentic-gaskit/verification-hardening.md",
+  "docs/agentrail/account-wallet-safety.md",
+  "docs/agentrail/verification-hardening.md",
 ] as const;
 
 const REQUIRED_PRODUCTION_CHECKS = [
@@ -99,7 +99,7 @@ const ARTIFACT_BOUNDARIES = [
 
 const usage = `usage: npm exec tsx -- scripts/check-custody-readiness.ts [--json] [--out <path>]
 
-Reports current Agentic GasKit custody readiness without contacting custody systems or live signer infrastructure.
+Reports current AgentRail custody readiness without contacting custody systems or live signer infrastructure.
 
 Options:
   --json        Print a redacted machine-readable artifact.
@@ -128,7 +128,7 @@ export async function checkCustodyReadiness(
 
 export function formatCustodyReadinessReport(report: CustodyReadinessReport): string {
   const lines = [
-    `Agentic GasKit custody readiness ${report.productionReady ? "ready-for-approval" : "blocked"}`,
+    `AgentRail custody readiness ${report.productionReady ? "ready-for-approval" : "blocked"}`,
     `localProofOk=${report.localProofOk}`,
     `productionReady=${report.productionReady}`,
   ];
@@ -151,7 +151,7 @@ export function buildCustodyReadinessArtifact(
 
   return {
     schemaVersion: 1,
-    kind: "agentic-gaskit.custody-readiness-report",
+    kind: "agentrail.custody-readiness-report",
     generatedAt: now.toISOString(),
     localProofOk: report.localProofOk,
     productionReady: report.productionReady,
@@ -213,7 +213,7 @@ async function checkLocalCustodyProof(
   const verifyLocal = scripts["verify:local"] ?? "";
   const grantCheck = scripts["grant:check"] ?? "";
 
-  if (!build.includes("npm run build -w @iota-gaskit/accounts")) missing.push("build @iota-gaskit/accounts");
+  if (!build.includes("npm run build -w @agentrail/accounts")) missing.push("build @agentrail/accounts");
   if (!verifyLocal.includes("npm test")) missing.push("verify:local account tests via npm test");
   if (
     verifyFast.includes("proof:custody-readiness")
@@ -317,8 +317,8 @@ function validateStructuredReport(
   if (report.schemaVersion !== 1) {
     return invalidReport("CUSTODY_PRODUCTION_REPORT_UNSUPPORTED_SCHEMA", "Production custody proof report schema is unsupported.", "configured-report-unsupported-schema", "Provide a structured evidence report with schemaVersion=1.");
   }
-  if (report.kind !== "agentic-gaskit.custody-production-proof") {
-    return invalidReport("CUSTODY_PRODUCTION_REPORT_KIND_MISMATCH", "Production custody proof report has the wrong kind.", "configured-report-kind-mismatch", "Provide an agentic-gaskit.custody-production-proof structured report.");
+  if (report.kind !== "agentrail.custody-production-proof") {
+    return invalidReport("CUSTODY_PRODUCTION_REPORT_KIND_MISMATCH", "Production custody proof report has the wrong kind.", "configured-report-kind-mismatch", "Provide an agentrail.custody-production-proof structured report.");
   }
   if (report.result !== "passed") {
     return invalidReport("CUSTODY_PRODUCTION_REPORT_NOT_PASSED", "Production custody proof report did not pass.", "configured-report-not-passed", "Rerun the approved custody review after resolving production blockers.");

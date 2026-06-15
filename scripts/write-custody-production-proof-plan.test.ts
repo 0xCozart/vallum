@@ -30,7 +30,7 @@ test("custody production proof plan reports current blockers without custody sec
   });
   const formatted = formatCustodyProductionProofPlan(plan);
 
-  assert.equal(plan.kind, "agentic-gaskit.custody-production-proof-plan");
+  assert.equal(plan.kind, "agentrail.custody-production-proof-plan");
   assert.equal(plan.status, "blocked");
   assert.equal(plan.localProofOk, true);
   assert.equal(plan.productionReady, false);
@@ -43,7 +43,7 @@ test("custody production proof plan reports current blockers without custody sec
 });
 
 test("custody production proof plan can write a redacted local artifact", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-custody-plan-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-custody-plan-"));
   try {
     const outFile = join(cwd, "tmp", "custody-production-proof-plan.json");
     const plan = await writeCustodyProductionProofPlan({
@@ -56,7 +56,7 @@ test("custody production proof plan can write a redacted local artifact", async 
     const parsed = JSON.parse(await readFile(outFile, "utf8")) as typeof plan;
 
     assert.equal(mode, 0o600);
-    assert.equal(parsed.kind, "agentic-gaskit.custody-production-proof-plan");
+    assert.equal(parsed.kind, "agentrail.custody-production-proof-plan");
     assert.deepEqual(parsed.blockerCodes, plan.blockerCodes);
     assert.deepEqual(parsed.requiredStructuredReportCheckIds, plan.requiredStructuredReportCheckIds);
   } finally {
@@ -65,12 +65,12 @@ test("custody production proof plan can write a redacted local artifact", async 
 });
 
 test("custody production proof plan reports ready approval codes for a valid structured report", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentic-gaskit-custody-plan-"));
+  const cwd = await mkdtemp(join(tmpdir(), "agentrail-custody-plan-"));
   try {
     const reportPath = join(cwd, "custody-report.json");
     await writeFile(reportPath, JSON.stringify({
       schemaVersion: 1,
-      kind: "agentic-gaskit.custody-production-proof",
+      kind: "agentrail.custody-production-proof",
       result: "passed",
       observedAt: "2026-06-13T11:00:00.000Z",
       custodyMode: "kms",

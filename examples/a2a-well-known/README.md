@@ -1,6 +1,6 @@
 # A2A Well-Known Demo
 
-This local demo shows how Agentic GasKit can serve a current A2A Agent Card
+This local demo shows how AgentRail can serve a current A2A Agent Card
 from an Agent Profile at `/.well-known/agent-card.json`.
 
 It proves:

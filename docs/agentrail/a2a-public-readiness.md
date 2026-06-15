@@ -1,7 +1,7 @@
 # A2A Public Readiness
 
 `npm run proof:a2a-public-readiness` is a non-networked proof-boundary command
-for Agentic GasKit A2A interoperability claims.
+for AgentRail A2A interoperability claims.
 
 It does not fetch public Agent Cards, operate a public A2A server, publish JWKS
 material, run external conformance tools, deliver webhooks, or store webhook
@@ -41,7 +41,7 @@ decisions, report paths, key ids, credentials, response bodies, or report
 contents.
 
 For a single local artifact bundle before public proof work, run
-`npm run a2a:write-public-proof-bundle -- --out tmp/gaskit/a2a-public-proof-bundle.json`.
+`npm run a2a:write-public-proof-bundle -- --out tmp/agentrail/a2a-public-proof-bundle.json`.
 It is non-networked and writes the public proof plan, public readiness
 artifact, discovery report template, push-delivery report template, external
 conformance template, and a redacted summary of the current blockers. It does
@@ -51,9 +51,9 @@ When the public A2A structured reports are missing, generate the status-only
 templates first:
 
 ```bash
-npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/gaskit/a2a-public-discovery-report-template.json
-npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/gaskit/a2a-public-push-delivery-report-template.json
-npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/gaskit/a2a-external-conformance-report-template.json
+npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/agentrail/a2a-public-discovery-report-template.json
+npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/agentrail/a2a-public-push-delivery-report-template.json
+npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/agentrail/a2a-external-conformance-report-template.json
 ```
 
 The generated templates are preparation material only. They do not fetch public
@@ -71,15 +71,15 @@ Run it from the repository root:
 
 ```bash
 npm run proof:a2a-public-readiness
-npm run a2a:write-public-proof-bundle -- --out tmp/gaskit/a2a-public-proof-bundle.json
+npm run a2a:write-public-proof-bundle -- --out tmp/agentrail/a2a-public-proof-bundle.json
 npm run proof:a2a-public-readiness -- --json
-npm run proof:a2a-public-readiness -- --out tmp/gaskit/a2a-public-readiness.json
+npm run proof:a2a-public-readiness -- --out tmp/agentrail/a2a-public-readiness.json
 ```
 
 Expected status in an unconfigured checkout:
 
 ```text
-Agentic GasKit A2A public readiness blocked
+AgentRail A2A public readiness blocked
 localProofOk=true
 publicReady=false
 ```
@@ -260,7 +260,7 @@ npm run a2a:write-static-hosting-review -- \
 
 The review packet validates the local artifact bundle first, then records only
 reviewable metadata: schema version, kind
-`agentic-gaskit.a2a-static-hosting-review`, canonical public file paths,
+`agentrail.a2a-static-hosting-review`, canonical public file paths,
 required response headers, command order, operator input names, and boundaries.
 It is safe for local handoff review but still reports
 `publicHostingProven=false` and `publicDiscoveryProven=false`; public proof
@@ -278,11 +278,11 @@ npm run a2a:write-public-proof-plan
 To write the JSON artifact to a local ignored path:
 
 ```bash
-npm run a2a:write-public-proof-plan -- --out tmp/gaskit/a2a-public-proof-plan.json
-npm run a2a:write-public-proof-bundle -- --out tmp/gaskit/a2a-public-proof-bundle.json
+npm run a2a:write-public-proof-plan -- --out tmp/agentrail/a2a-public-proof-plan.json
+npm run a2a:write-public-proof-bundle -- --out tmp/agentrail/a2a-public-proof-bundle.json
 ```
 
-The plan writes `kind=agentic-gaskit.a2a-public-proof-plan` and includes
+The plan writes `kind=agentrail.a2a-public-proof-plan` and includes
 command order, `contactsPublicNetwork` flags, remaining blocker codes,
 `ready-approval` codes, operator input variable names, and safety boundaries.
 It is still local planning evidence only. It does not fetch public URLs,
