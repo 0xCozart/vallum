@@ -616,3 +616,54 @@ boundary is still to fund or consolidate the configured sponsor wallet, rerun
 the read-only sponsor funding diagnostic, and then rerun
 `npm run diagnose:gas-station -- --report <ignored-json-path>` without
 `--skip-reserve`.
+
+## 2026-06-14 funded sponsor proof refresh
+
+After the configured sponsor account was funded, the live testnet proof chain
+was refreshed from the same machine.
+
+Read-only sponsor funding check:
+
+```text
+ready=true
+code=SPONSOR_FUNDING_READY
+contactsLiveService=true
+spendsGas=false
+signsTransactions=false
+totalBalanceMist=9876305600
+coinObjectCount=98
+sampledCoinCount=50
+maxSampledCoinBalanceMist=196864170
+```
+
+Upstream diagnostic:
+
+```text
+gasStationUrl=<loopback-gas-station-url>
+iotaRpcUrl=<iota-testnet-rpc-url>
+bearerTokenConfigured=true
+sponsorFundingCode=SPONSOR_FUNDING_REPORT_VALID
+ok: Gas Station root HTTP 200
+info: Gas Station /v1/health HTTP 404 (optional wrapper health endpoint)
+gasStationReachabilityCode=GAS_STATION_ROOT_READY
+ok: IOTA RPC iota_getLatestCheckpointSequenceNumber HTTP 200
+ok: Gas Station reserve_gas compatibility probe HTTP 200
+reserveGasCode=RESERVE_GAS_READY
+```
+
+Sponsored execute:
+
+```text
+gatewayConfigured=true
+iotaRpcConfigured=true
+demoTarget=<testnet-demo-package>::demo_badge::mint_badge
+reservedGas=true
+executed=true
+transactionDigest=BF7BvoqLmw3AwtYtpPNSoP8JinKbZ67NyP6f7xQMYHYX
+```
+
+Outcome: the current machine again proves a real IOTA testnet sponsored
+transaction through the local policy gateway, local Gas Station, and IOTA
+testnet RPC. The command consumed testnet gas only. No raw transaction bytes,
+user signatures, full addresses, bearer tokens, sponsor keys, endpoint values,
+or raw upstream bodies were written to tracked docs.
