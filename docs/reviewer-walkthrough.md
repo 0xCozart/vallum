@@ -27,6 +27,41 @@ Documented public IOTA testnet evidence already in the repo: latest digest `BF7B
 
 External showcase evidence: [Gasless ProofDrop](https://proofdrop.xyz) is the separate M1 showcase dApp for the GasKit integration pattern. It has a hosted live testnet badge-claim proof for `0xd35b2cda222b21fcc7b6c46b00a5a172023d3de1f20c94a5ac553e290cf5f032::proofdrop_badge::claim_proof_badge` with public digest [`GRVtucGZkKZXsXG8HssCPGmRkWbiBom9NGWzJDcVspnF`](https://explorer.iota.org/txblock/GRVtucGZkKZXsXG8HssCPGmRkWbiBom9NGWzJDcVspnF?network=testnet). ProofDrop remains outside this repository.
 
+## Agent-safe sponsored execution demo
+
+The first Agentic GasKit adoption wedge is the local paid MCP-style tool demo:
+
+```bash
+npm run smoke:paid-mcp-tool
+```
+
+Expected result: the command builds the workspace and prints a structured,
+local-only proof packet. It should include `boundary.localOnly=true`,
+`boundary.route=SDK->mock-policy-gateway`, `request.action=pay_per_call.request_call`,
+`manifest.signerReference.internal=true`,
+`manifest.signerReference.exposed=false`, `approved.status=completed`,
+`denied.reason=GAS_BUDGET_TOO_HIGH`, and
+`failedPayment.reason=mock-payment-failed`.
+
+What to verify:
+
+- the agent request is represented as a manifest/action intent before
+  sponsorship;
+- the flow routes through the SDK and mock policy gateway;
+- approved output has receipt events ending in `completed`;
+- policy denial output has no paid result and receipt events ending in
+  `denied`;
+- failed payment output has no paid result and receipt events ending in
+  `failed`;
+- formatted output does not print API keys, signer reference values, raw
+  transaction bytes, user signatures, private keys, seeds, or mnemonics.
+
+This is deterministic local proof. It does not contact IOTA RPC, IOTA Gas
+Station, testnet, mainnet, paid APIs, payment providers, custody providers,
+marketplace services, or public A2A endpoints. Optional live sponsored
+testnet proof remains separate and does not make the paid MCP-style demo a
+live payment or production custody proof.
+
 ## 1. Start with the thesis
 
 Read:
@@ -103,6 +138,7 @@ npm run typecheck
 npm run smoke:local
 npm run smoke:demo-dapp
 npm run smoke:demo-browser
+npm run smoke:paid-mcp-tool
 npm run readiness:testnet:example
 npm run proof:testnet-digest
 npm run proof:a2a-public-readiness
@@ -121,6 +157,10 @@ Expected current result:
 - TypeScript typecheck passes;
 - local policy gateway smoke passes against an in-process mock upstream;
 - local demo dApp CLI and browser-wrapper smokes pass using loopback-only calls without external network, live IOTA RPC, or official Gas Station calls;
+- local paid MCP-style tool smoke proves SDK to mock-policy-gateway routing,
+  manifest/action intent, signer-reference redaction, approved receipt events,
+  policy denial, failed payment withholding, and local-only boundaries without
+  live network calls or paid provider access;
 - example testnet-readiness preflight validates placeholders without reading real secrets;
 - testnet digest proof confirms the documented public digest evidence is present
   without contacting IOTA RPC;

@@ -180,6 +180,36 @@ curl -i \
 
 Missing or invalid app credentials should fail before the request reaches IOTA Gas Station.
 
+## Agent-Safe Paid MCP Tool Demo
+
+The narrow agent-safe sponsored execution path is the local paid MCP-style tool
+demo:
+
+```bash
+npm run smoke:paid-mcp-tool
+```
+
+This command runs from the repo root, builds the workspace, starts an in-process
+mock policy gateway, and calls it through the SDK. It contacts no IOTA RPC,
+IOTA Gas Station, testnet, mainnet, paid API, custody provider, payment
+provider, or public A2A endpoint.
+
+The formatted output is intentionally structured for review. It shows:
+
+- `boundary.localOnly=true` and `boundary.route=SDK->mock-policy-gateway`;
+- the action intent `pay_per_call.request_call` for `premium_analysis`;
+- `manifest.signerReference.internal=true` and
+  `manifest.signerReference.exposed=false`;
+- `approved.status=completed` plus the approved receipt event chain;
+- `denied.reason=GAS_BUDGET_TOO_HIGH` for the policy denial path;
+- `failedPayment.reason=mock-payment-failed` for the non-policy failure path;
+- redaction markers for API keys, raw transaction bytes, and user signatures.
+
+The demo proves local SDK, manifest, mock policy-gateway, payment-gating,
+receipt, denial, and redaction behavior. It is not live/testnet sponsorship
+proof and does not imply production payment-provider, custody, marketplace, or
+public A2A readiness.
+
 ## Policy YAML Example
 
 The demo policy keeps sponsorship narrow: one app, one package ID, two functions, a max gas budget, per-wallet limits, and an empty denylist.
@@ -206,6 +236,8 @@ apps:
 - `examples/node-backend`: framework-neutral backend handlers with safe response projection.
 - `examples/nextjs-api-route`: Next.js-compatible route helpers with validation and tests.
 - `apps/demo-dapp`: local CLI and browser-wrapper demo flows using the public SDK.
+- `examples/paid-mcp-tool`: local agent-safe paid MCP-style tool demo with
+  approval, policy denial, failed-payment, receipt, and redaction proof.
 
 Run the maintained example tests with:
 
@@ -214,4 +246,5 @@ node --import tsx --test examples/node-backend/gaskit-backend.test.ts
 node --import tsx --test examples/nextjs-api-route/gaskit-route.test.ts
 npm run smoke:demo-dapp
 npm run smoke:demo-browser
+npm run smoke:paid-mcp-tool
 ```
