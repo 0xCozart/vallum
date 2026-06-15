@@ -39,6 +39,7 @@
     "smoke:iota-identity-live": "npm run build && tsx scripts/smoke-iota-identity-live.ts",
     "proof:live-status": "npm run build && tsx scripts/check-live-proof-status.ts",
     "live:write-proof-plan": "npm run build && tsx scripts/write-live-proof-plan.ts",
+    "live:write-identity-proof-bundle": "npm run build && tsx scripts/write-identity-proof-bundle.ts",
     "proof:product-status": "npm run build && tsx scripts/check-product-status.ts",
     "proof:launch-readiness": "npm run build && tsx scripts/check-launch-readiness.ts",
     "proof:operator-gates": "npm run build && tsx scripts/check-operator-live-gates.ts",

@@ -31,6 +31,7 @@ For a redacted command-order artifact before live work, run:
 
 ```bash
 npm run live:write-proof-plan -- --out tmp/gaskit/live-proof-plan.json
+npm run live:write-identity-proof-bundle -- --out tmp/gaskit/identity-proof-bundle.json
 ```
 
 The proof plan is also non-networked. It records command names, blocker codes,
@@ -46,6 +47,12 @@ It also includes ignored report-template commands before the testnet upstream,
 testnet digest, IOTA Names, IOTA Identity, and VC validation proof steps. Those
 templates are planning artifacts only; accepted proof still comes from the
 sanitized diagnostic, digest lookup, or live smoke reports.
+
+For the linked IOTA Names, IOTA Identity, and VC trust-policy gates, use
+`npm run live:write-identity-proof-bundle -- --out tmp/gaskit/identity-proof-bundle.json`.
+It is also non-networked: it writes the related report templates, refreshes the
+live proof plan, and summarizes the current identity blockers. The bundle does
+not run the live smoke commands or clear the gates by itself.
 
 The direct `npm run proof:live-status` output uses the same template-first
 guidance for missing testnet upstream and testnet digest reports. When
@@ -174,6 +181,7 @@ npm run gas-station:render-config
 npm run gas-station:runtime-preflight
 npm run gas-station:docker-direct -- --dry-run
 npm run live:write-proof-plan -- --out tmp/gaskit/live-proof-plan.json
+npm run live:write-identity-proof-bundle -- --out tmp/gaskit/identity-proof-bundle.json
 npm run operator:write-report-template -- --kind testnet-upstream --out tmp/gaskit/testnet-upstream-report-template.json
 npm run gas-station:docker-direct -- --status
 npm run sponsor:write-funding-request -- --out tmp/gaskit/sponsor-funding-request.json

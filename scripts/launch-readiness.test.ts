@@ -59,6 +59,7 @@ test("launch readiness maps local evidence to live and production blockers", asy
   );
   const phase2 = report.areas.find((area) => area.id === "phase-2-identity-and-vc");
   assert.equal(phase2?.status, "blocked-live");
+  assert.ok(phase2?.commands.includes("npm run live:write-identity-proof-bundle -- --out tmp/gaskit/identity-proof-bundle.json"));
   assert.ok(phase2?.commands.includes("npm run operator:write-report-template -- --kind iota-names-live --out tmp/gaskit/iota-names-live-report-template.json"));
   assert.ok(phase2?.commands.includes("npm run operator:write-report-template -- --kind iota-identity-live --out tmp/gaskit/iota-identity-live-report-template.json"));
   assert.ok(phase2?.commands.includes("npm run operator:write-report-template -- --kind vc-validation-live --out tmp/gaskit/vc-validation-live-report-template.json"));
@@ -218,6 +219,7 @@ async function writeEvidenceTree(cwd: string): Promise<void> {
     "packages/registry/src/iotaNamesAdapter.ts",
     "packages/registry/src/iotaIdentityAdapter.ts",
     "scripts/write-live-proof-plan.ts",
+    "scripts/write-identity-proof-bundle.ts",
     "scripts/smoke-iota-names-live.ts",
     "scripts/smoke-iota-identity-live.ts",
     "docs/agentic-gaskit/live-proof-status.md",

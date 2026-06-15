@@ -167,6 +167,7 @@ Live/testnet and operator gates:
 - `npm run execute:testnet-demo`
 - `npm run proof:live-status`
 - `npm run live:write-proof-plan`
+- `npm run live:write-identity-proof-bundle`
 - `npm run smoke:iota-names-live`
 - `npm run smoke:iota-identity-live`
 - `npm run proof:testnet-digest`

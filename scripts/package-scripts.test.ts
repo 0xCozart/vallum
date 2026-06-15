@@ -158,14 +158,21 @@ test("testnet digest proof has offline and opt-in live commands", () => {
   assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /npm run proof:testnet-digest:live/);
 });
 
-test("live proof plan is non-networked and opt-in", () => {
+test("live proof plan and identity proof bundle are non-networked and opt-in", () => {
   assert.equal(
     packageJson.scripts?.["live:write-proof-plan"],
     "npm run build && tsx scripts/write-live-proof-plan.ts",
   );
+  assert.equal(
+    packageJson.scripts?.["live:write-identity-proof-bundle"],
+    "npm run build && tsx scripts/write-identity-proof-bundle.ts",
+  );
   assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /write-live-proof-plan/);
   assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /write-live-proof-plan/);
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /write-live-proof-plan/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /write-identity-proof-bundle/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /write-identity-proof-bundle/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /write-identity-proof-bundle/);
 });
 
 test("A2A public readiness proof is non-networked and wired into local verification", () => {

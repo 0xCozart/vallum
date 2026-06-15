@@ -101,8 +101,9 @@ hosts, marketplace systems, or physical devices.
   execute:testnet-demo`, which requires explicit operator intent and can spend
   sponsored testnet gas.
 - Points IOTA Names, IOTA Identity, and VC live proof prep at
-  `npm run live:write-proof-plan`, a redacted local command-order artifact
-  before any live smoke command runs.
+  `npm run live:write-proof-plan`, a redacted local command-order artifact,
+  and `npm run live:write-identity-proof-bundle`, a linked template and
+  readiness summary for the identity gates before any live smoke command runs.
 - Treats `vc-validation-live` as an approval-required live-service gate because
   it depends on `npm run smoke:iota-identity-live -- --report
   <ignored-json-path>` to produce current credential evidence.
@@ -178,7 +179,10 @@ hosts, marketplace systems, or physical devices.
   templates for the remaining live identity gates. They point at the accepted
   IOTA Names and IOTA Identity report kinds, while keeping VC validation tied
   to the accepted IOTA Identity live smoke report plus trust-policy
-  configuration.
+  configuration. `npm run live:write-identity-proof-bundle` writes the linked
+  Names, Identity, and VC templates plus the live proof plan as ignored local
+  artifacts; it remains non-networked and does not prove live identity behavior
+  without the operator-owned smoke reports.
 - Lets operators write an ignored sponsor funding request artifact with
   `npm run sponsor:write-funding-request -- --out
   tmp/gaskit/sponsor-funding-request.json` when they need the public sponsor
@@ -255,6 +259,7 @@ npm run marketplace:write-production-proof-plan -- --out tmp/gaskit/marketplace-
 npm run proof:custody-readiness
 npm run custody:write-production-proof-plan -- --out tmp/gaskit/custody-production-proof-plan.json
 npm run live:write-proof-plan -- --out tmp/gaskit/live-proof-plan.json
+npm run live:write-identity-proof-bundle -- --out tmp/gaskit/identity-proof-bundle.json
 npm run proof:live-status -- --out tmp/gaskit/live-proof-status.json
 npm run package:write-publication-proof-plan -- --out tmp/gaskit/package-publication-proof-plan.json
 npm run payment:write-provider-proof-plan -- --out tmp/gaskit/payment-provider-proof-plan.json

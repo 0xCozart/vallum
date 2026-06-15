@@ -42,7 +42,7 @@ test("operator live gates report current blockers without secret values", async 
     assert.equal(findGate(report, "vc-validation-live").contactsLiveService, true);
     assert.equal(
       findGate(report, "vc-validation-live").command,
-      "npm run operator:write-report-template -- --kind vc-validation-live --out tmp/gaskit/vc-validation-live-report-template.json && npm run live:write-proof-plan && npm run smoke:iota-identity-live -- --report <ignored-json-path>",
+      "npm run live:write-identity-proof-bundle -- --out tmp/gaskit/identity-proof-bundle.json && npm run smoke:iota-identity-live -- --report <ignored-json-path>",
     );
     assert.equal(findGate(report, "testnet-readiness").status, "blocked-config");
     assert.equal(findGate(report, "gas-station-runtime").status, "blocked-config");
@@ -70,11 +70,11 @@ test("operator live gates report current blockers without secret values", async 
     );
     assert.equal(
       findGate(report, "iota-names-live").command,
-      "npm run operator:write-report-template -- --kind iota-names-live --out tmp/gaskit/iota-names-live-report-template.json && npm run live:write-proof-plan && npm run smoke:iota-names-live -- --report <ignored-json-path>",
+      "npm run live:write-identity-proof-bundle -- --out tmp/gaskit/identity-proof-bundle.json && npm run smoke:iota-names-live -- --report <ignored-json-path>",
     );
     assert.equal(
       findGate(report, "iota-identity-live").command,
-      "npm run operator:write-report-template -- --kind iota-identity-live --out tmp/gaskit/iota-identity-live-report-template.json && npm run live:write-proof-plan && npm run smoke:iota-identity-live -- --report <ignored-json-path>",
+      "npm run live:write-identity-proof-bundle -- --out tmp/gaskit/identity-proof-bundle.json && npm run smoke:iota-identity-live -- --report <ignored-json-path>",
     );
     assert.equal(findGate(report, "npm-registry-publication").status, "requires-approval");
     assert.equal(
@@ -284,7 +284,7 @@ test("operator live gate artifact reports blockers without configured values", a
   assert.ok(artifact.readyApprovalGateIds.includes("iota-names-live"));
   assert.ok(artifact.approvalRequiredGateIds.includes("iota-names-live"));
   assert.ok(artifact.liveServiceGateIds.includes("iota-names-live"));
-  assert.ok(artifact.gates.some((gate) => gate.command === "npm run operator:write-report-template -- --kind iota-names-live --out tmp/gaskit/iota-names-live-report-template.json && npm run live:write-proof-plan && npm run smoke:iota-names-live -- --report <ignored-json-path>"));
+  assert.ok(artifact.gates.some((gate) => gate.command === "npm run live:write-identity-proof-bundle -- --out tmp/gaskit/identity-proof-bundle.json && npm run smoke:iota-names-live -- --report <ignored-json-path>"));
   assert.doesNotMatch(formatted, /graphql\.testnet\.example|researcher\.demo\.iota/);
   assert.doesNotMatch(formatted, /0x1111111111111111111111111111111111111111111111111111111111111111/);
 });
