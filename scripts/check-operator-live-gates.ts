@@ -86,7 +86,7 @@ const GATE_COMMANDS: Record<string, string | undefined> = {
   "public-a2a-hosting": "npm run a2a:write-public-proof-bundle -- --out tmp/gaskit/a2a-public-proof-bundle.json && npm run proof:a2a-public-readiness && npm run smoke:a2a-public-discovery",
   "live-payment-provider": "npm run payment:write-provider-proof-bundle -- --out tmp/gaskit/payment-provider-proof-bundle.json && npm run proof:payment-provider-readiness",
   "production-marketplace": "npm run marketplace:write-production-proof-bundle -- --out tmp/gaskit/marketplace-production-proof-bundle.json && npm run proof:marketplace-readiness && dedicated production marketplace readiness slice",
-  "production-custody": "npm run operator:write-report-template -- --kind custody-production --out tmp/gaskit/custody-production-report-template.json && npm run custody:write-production-proof-plan && npm run proof:custody-readiness && dedicated custody/security design slice",
+  "production-custody": "npm run custody:write-production-proof-bundle -- --out tmp/gaskit/custody-production-proof-bundle.json && npm run proof:custody-readiness && dedicated custody/security design slice",
   "physical-device-access": "dedicated physical device safety design slice",
 };
 

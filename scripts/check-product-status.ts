@@ -139,6 +139,7 @@ const PAYMENT_PROVIDER_PROOF_BUNDLE_COMMAND = "npm run payment:write-provider-pr
 const MARKETPLACE_PRODUCTION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json";
 const MARKETPLACE_PRODUCTION_PROOF_BUNDLE_COMMAND = "npm run marketplace:write-production-proof-bundle -- --out <ignored-json-path>";
 const CUSTODY_PRODUCTION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind custody-production --out tmp/gaskit/custody-production-report-template.json";
+const CUSTODY_PRODUCTION_PROOF_BUNDLE_COMMAND = "npm run custody:write-production-proof-bundle -- --out <ignored-json-path>";
 const A2A_PUBLIC_DISCOVERY_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/gaskit/a2a-public-discovery-report-template.json";
 const A2A_PUBLIC_PUSH_DELIVERY_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/gaskit/a2a-public-push-delivery-report-template.json";
 const A2A_EXTERNAL_CONFORMANCE_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/gaskit/a2a-external-conformance-report-template.json";
@@ -601,7 +602,7 @@ function custodyCheck(readiness: CustodyReadinessReport): ProductEvidenceCheck {
     code: "PRODUCTION_CUSTODY_OUT_OF_SCOPE",
     message: `Agent wallets use signer references locally; production custody, KMS, recovery export, staking, bonding, and slashing remain blocked by ${live?.code ?? "CUSTODY_PRODUCTION_REPORT_MISSING"}.`,
     evidence: "npm run proof:custody-readiness",
-    next: `${CUSTODY_PRODUCTION_TEMPLATE_COMMAND}; run npm run custody:write-production-proof-plan, complete a dedicated operator-approved custody, KMS, recovery, legal, and incident-response review, save a redacted structured report outside tracked files, set CUSTODY_PRODUCTION_REPORT, and rerun readiness/status gates.`,
+    next: `${CUSTODY_PRODUCTION_PROOF_BUNDLE_COMMAND} to prepare the redacted custody production proof plan, readiness artifact, and report template; complete a dedicated operator-approved custody, KMS, recovery, legal, and incident-response review, save a redacted structured report outside tracked files, set CUSTODY_PRODUCTION_REPORT, and rerun readiness/status gates. The bundle includes ${CUSTODY_PRODUCTION_TEMPLATE_COMMAND}.`,
   };
 }
 

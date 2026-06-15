@@ -95,7 +95,7 @@ test("operator live gates report current blockers without secret values", async 
     );
     assert.equal(
       findGate(report, "production-custody").command,
-      "npm run operator:write-report-template -- --kind custody-production --out tmp/gaskit/custody-production-report-template.json && npm run custody:write-production-proof-plan && npm run proof:custody-readiness && dedicated custody/security design slice",
+      "npm run custody:write-production-proof-bundle -- --out tmp/gaskit/custody-production-proof-bundle.json && npm run proof:custody-readiness && dedicated custody/security design slice",
     );
     assert.equal(findGate(report, "physical-device-access").status, "deferred-safety");
     assert.doesNotMatch(formatted, /graphql\.testnet\.example|researcher\.demo\.iota|identity\.testnet\.example|profiles\/researcher\.json/);
