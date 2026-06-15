@@ -54,6 +54,7 @@
     "proof:marketplace-readiness": "npm run build && tsx scripts/check-marketplace-readiness.ts",
     "proof:custody-readiness": "npm run build && tsx scripts/check-custody-readiness.ts",
     "marketplace:write-production-proof-plan": "npm run build && tsx scripts/write-marketplace-production-proof-plan.ts",
+    "marketplace:write-production-proof-bundle": "npm run build && tsx scripts/write-marketplace-production-proof-bundle.ts",
     "custody:write-production-proof-plan": "npm run build && tsx scripts/write-custody-production-proof-plan.ts",
     "package:write-publication-proof-plan": "npm run build && tsx scripts/write-package-publication-proof-plan.ts",
     "package:write-publication-proof-bundle": "npm run build && tsx scripts/write-package-publication-proof-bundle.ts",

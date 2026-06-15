@@ -146,6 +146,9 @@ hosts, marketplace systems, or physical devices.
   lists marketplace review command order, required report fields, required
   check ids, approval boundaries, and blocker codes without contacting
   production marketplace systems.
+- The adjacent `npm run marketplace:write-production-proof-bundle` command
+  writes that plan, the marketplace readiness artifact, and the production
+  marketplace report template together as ignored local artifacts.
 - Points production custody review at the non-networked
   `npm run proof:custody-readiness` command, which validates local
   signer-reference proof plus an ignored structured custody report before
@@ -268,6 +271,7 @@ npm run proof:a2a-public-readiness
 npm run proof:package-publication-readiness
 npm run proof:payment-provider-readiness
 npm run proof:marketplace-readiness
+npm run marketplace:write-production-proof-bundle -- --out tmp/gaskit/marketplace-production-proof-bundle.json
 npm run marketplace:write-production-proof-plan -- --out tmp/gaskit/marketplace-production-proof-plan.json
 npm run proof:custody-readiness
 npm run custody:write-production-proof-plan -- --out tmp/gaskit/custody-production-proof-plan.json

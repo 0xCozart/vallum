@@ -82,8 +82,9 @@ test("product status reports local proof gates and explicit live blockers withou
     assert.match(formatted, /npm run proof:payment-provider-readiness/);
     assert.match(formatted, /PRODUCTION_MARKETPLACE_BLOCKED/);
     assert.match(formatted, /operator:write-report-template -- --kind marketplace-production/);
+    assert.match(formatted, /npm run marketplace:write-production-proof-bundle -- --out <ignored-json-path>/);
+    assert.match(formatted, /redacted marketplace production proof plan, readiness artifact, and report template/);
     assert.match(formatted, /npm run proof:marketplace-readiness/);
-    assert.match(formatted, /npm run marketplace:write-production-proof-plan/);
     assert.match(formatted, /PRODUCTION_CUSTODY_OUT_OF_SCOPE/);
     assert.match(formatted, /operator:write-report-template -- --kind custody-production/);
     assert.match(formatted, /npm run proof:custody-readiness/);

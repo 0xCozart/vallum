@@ -91,7 +91,7 @@ test("operator live gates report current blockers without secret values", async 
     );
     assert.equal(
       findGate(report, "production-marketplace").command,
-      "npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json && npm run marketplace:write-production-proof-plan && npm run proof:marketplace-readiness && dedicated production marketplace readiness slice",
+      "npm run marketplace:write-production-proof-bundle -- --out tmp/gaskit/marketplace-production-proof-bundle.json && npm run proof:marketplace-readiness && dedicated production marketplace readiness slice",
     );
     assert.equal(
       findGate(report, "production-custody").command,

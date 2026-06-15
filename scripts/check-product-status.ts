@@ -137,6 +137,7 @@ const PACKAGE_PUBLICATION_PROOF_BUNDLE_COMMAND = "npm run package:write-publicat
 const PAYMENT_PROVIDER_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind payment-provider-live --out tmp/gaskit/payment-provider-live-report-template.json";
 const PAYMENT_PROVIDER_PROOF_BUNDLE_COMMAND = "npm run payment:write-provider-proof-bundle -- --out <ignored-json-path>";
 const MARKETPLACE_PRODUCTION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json";
+const MARKETPLACE_PRODUCTION_PROOF_BUNDLE_COMMAND = "npm run marketplace:write-production-proof-bundle -- --out <ignored-json-path>";
 const CUSTODY_PRODUCTION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind custody-production --out tmp/gaskit/custody-production-report-template.json";
 const A2A_PUBLIC_DISCOVERY_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/gaskit/a2a-public-discovery-report-template.json";
 const A2A_PUBLIC_PUSH_DELIVERY_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/gaskit/a2a-public-push-delivery-report-template.json";
@@ -635,7 +636,7 @@ function marketplaceCheck(readiness: MarketplaceReadinessReport): ProductEvidenc
     code: "PRODUCTION_MARKETPLACE_BLOCKED",
     message: `Marketplace work is limited to local read-model evidence; production provider onboarding, moderation, public scoring, custody, and settlement remain blocked by ${live?.code ?? "MARKETPLACE_PRODUCTION_REPORT_MISSING"}.`,
     evidence: "npm run proof:marketplace-readiness",
-    next: `${MARKETPLACE_PRODUCTION_TEMPLATE_COMMAND}; run npm run marketplace:write-production-proof-plan, complete a dedicated operator-approved production marketplace review, save a redacted structured report outside tracked files, set MARKETPLACE_PRODUCTION_REPORT, and rerun readiness/status gates.`,
+    next: `${MARKETPLACE_PRODUCTION_PROOF_BUNDLE_COMMAND} to prepare the redacted marketplace production proof plan, readiness artifact, and report template; complete a dedicated operator-approved production marketplace review, save a redacted structured report outside tracked files, set MARKETPLACE_PRODUCTION_REPORT, and rerun readiness/status gates. The bundle includes ${MARKETPLACE_PRODUCTION_TEMPLATE_COMMAND}.`,
   };
 }
 

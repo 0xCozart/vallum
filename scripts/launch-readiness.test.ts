@@ -92,6 +92,11 @@ test("launch readiness maps local evidence to live and production blockers", asy
   const marketplace = report.areas.find((area) => area.id === "phase-5-marketplace-operator");
   assert.equal(marketplace?.status, "blocked-production");
   assert.ok(marketplace?.commands.includes("npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json"));
+  assert.ok(marketplace?.commands.includes("npm run marketplace:write-production-proof-bundle -- --out tmp/gaskit/marketplace-production-proof-bundle.json"));
+  assert.ok(
+    (marketplace?.commands.indexOf("npm run marketplace:write-production-proof-bundle -- --out tmp/gaskit/marketplace-production-proof-bundle.json") ?? -1)
+      < (marketplace?.commands.indexOf("npm run marketplace:write-production-proof-plan") ?? -1),
+  );
   const packageRelease = report.areas.find((area) => area.id === "phase-6-package-release");
   assert.equal(packageRelease?.status, "blocked-production");
   assert.ok(packageRelease?.commands.includes("npm run operator:write-report-template -- --kind package-publication --out tmp/gaskit/package-publication-report-template.json"));
@@ -253,6 +258,7 @@ async function writeEvidenceTree(cwd: string): Promise<void> {
     "scripts/smoke-marketplace-read-model.ts",
     "scripts/check-marketplace-readiness.ts",
     "scripts/write-marketplace-production-proof-plan.ts",
+    "scripts/write-marketplace-production-proof-bundle.ts",
     "docs/marketplace-readiness.md",
     "docs/agentic-gaskit/package-release-strategy.md",
     "scripts/package-publish-dry-run.ts",

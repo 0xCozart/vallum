@@ -159,6 +159,14 @@ marketplace production proof-plan writer for operators:
   secrets, private prompts, signatures, and local secret paths out of output
   and Git.
 
+`npm run marketplace:write-production-proof-bundle -- --out
+tmp/gaskit/marketplace-production-proof-bundle.json` writes the report
+template, proof plan, readiness artifact, and redacted summary together as
+ignored local artifacts. The bundle is preparation only: it contacts no
+production marketplace system, provider system, payment system, IOTA service,
+public A2A endpoint, or Gas Station endpoint, and it does not clear production
+marketplace readiness without an operator-approved structured report.
+
 The structured report must be status-only JSON with `schemaVersion=1`,
 `kind=agentic-gaskit.marketplace-production-proof`, `result=passed`, a recent
 `observedAt`, `environment=testnet` or `environment=production`, and check ids

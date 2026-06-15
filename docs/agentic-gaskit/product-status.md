@@ -56,6 +56,10 @@ surface in one machine-checkable place:
 - marketplace-production proof-plan wiring that writes a redacted non-networked
   command/report checklist before any operator-approved production marketplace
   review is attempted;
+- marketplace-production proof-bundle wiring that writes the report template,
+  proof plan, readiness artifact, and redacted summary together as ignored
+  local artifacts before any operator-approved production marketplace review is
+  attempted;
 - custody readiness wiring that checks local signer-reference account source,
   docs, tests, build coverage, and accepts only an operator-supplied redacted
   structured production custody report path before moving custody evidence to
@@ -227,6 +231,7 @@ npm run operator:write-report-template -- --kind payment-provider-live --out tmp
 npm run payment:write-provider-proof-bundle -- --out tmp/gaskit/payment-provider-proof-bundle.json
 npm run proof:payment-provider-readiness
 npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json
+npm run marketplace:write-production-proof-bundle -- --out tmp/gaskit/marketplace-production-proof-bundle.json
 npm run proof:marketplace-readiness
 npm run marketplace:write-production-proof-plan -- --out tmp/gaskit/marketplace-production-proof-plan.json
 npm run operator:write-report-template -- --kind custody-production --out tmp/gaskit/custody-production-report-template.json

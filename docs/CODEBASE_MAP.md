@@ -191,6 +191,7 @@ Readiness/product gates:
 - `npm run payment:write-provider-proof-bundle`
 - `npm run proof:marketplace-readiness`
 - `npm run marketplace:write-production-proof-plan`
+- `npm run marketplace:write-production-proof-bundle`
 - `npm run proof:custody-readiness`
 - `npm run custody:write-production-proof-plan`
 

@@ -222,18 +222,20 @@ const AREA_DEFINITIONS = [
   },
   {
     id: "phase-5-marketplace-operator",
-    claim: "Marketplace evidence is local read-only proof for labels, policy compatibility, receipt access, and dispute bundles, with a non-networked production marketplace readiness gate and redacted marketplace production proof-plan writer; production marketplace remains blocked.",
+    claim: "Marketplace evidence is local read-only proof for labels, policy compatibility, receipt access, and dispute bundles, with a non-networked production marketplace readiness gate, redacted marketplace production proof-plan writer, and redacted marketplace production proof-bundle writer; production marketplace remains blocked.",
     evidencePaths: [
       "packages/marketplace/src/index.ts",
       "scripts/smoke-marketplace-read-model.ts",
       "scripts/check-marketplace-readiness.ts",
       "scripts/write-marketplace-production-proof-plan.ts",
+      "scripts/write-marketplace-production-proof-bundle.ts",
       "docs/marketplace-readiness.md",
     ],
     commands: [
       "npm test",
       "npm run smoke:marketplace-read-model",
       "npm run operator:write-report-template -- --kind marketplace-production --out tmp/gaskit/marketplace-production-report-template.json",
+      "npm run marketplace:write-production-proof-bundle -- --out tmp/gaskit/marketplace-production-proof-bundle.json",
       "npm run marketplace:write-production-proof-plan",
       "npm run proof:marketplace-readiness",
     ],

@@ -265,9 +265,16 @@ test("marketplace production proof plan is non-networked and opt-in", () => {
     packageJson.scripts?.["marketplace:write-production-proof-plan"],
     "npm run build && tsx scripts/write-marketplace-production-proof-plan.ts",
   );
+  assert.equal(
+    packageJson.scripts?.["marketplace:write-production-proof-bundle"],
+    "npm run build && tsx scripts/write-marketplace-production-proof-bundle.ts",
+  );
   assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /write-production-proof-plan/);
   assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /write-production-proof-plan/);
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /write-production-proof-plan/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /write-production-proof-bundle/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /write-production-proof-bundle/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /write-production-proof-bundle/);
 });
 
 test("custody readiness proof is non-networked and opt-in", () => {
