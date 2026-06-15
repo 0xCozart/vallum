@@ -40,6 +40,13 @@ input names, and safety boundaries without printing configured URLs, auth
 decisions, report paths, key ids, credentials, response bodies, or report
 contents.
 
+For a single local artifact bundle before public proof work, run
+`npm run a2a:write-public-proof-bundle -- --out tmp/gaskit/a2a-public-proof-bundle.json`.
+It is non-networked and writes the public proof plan, public readiness
+artifact, discovery report template, push-delivery report template, external
+conformance template, and a redacted summary of the current blockers. It does
+not contact public endpoints or clear the public A2A gate by itself.
+
 When the public A2A structured reports are missing, generate the status-only
 templates first:
 
@@ -64,6 +71,7 @@ Run it from the repository root:
 
 ```bash
 npm run proof:a2a-public-readiness
+npm run a2a:write-public-proof-bundle -- --out tmp/gaskit/a2a-public-proof-bundle.json
 npm run proof:a2a-public-readiness -- --json
 npm run proof:a2a-public-readiness -- --out tmp/gaskit/a2a-public-readiness.json
 ```
@@ -271,6 +279,7 @@ To write the JSON artifact to a local ignored path:
 
 ```bash
 npm run a2a:write-public-proof-plan -- --out tmp/gaskit/a2a-public-proof-plan.json
+npm run a2a:write-public-proof-bundle -- --out tmp/gaskit/a2a-public-proof-bundle.json
 ```
 
 The plan writes `kind=agentic-gaskit.a2a-public-proof-plan` and includes

@@ -77,6 +77,7 @@ test("launch readiness maps local evidence to live and production blockers", asy
   assert.ok(standards?.commands.includes("npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/gaskit/a2a-public-discovery-report-template.json"));
   assert.ok(standards?.commands.includes("npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/gaskit/a2a-public-push-delivery-report-template.json"));
   assert.ok(standards?.commands.includes("npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/gaskit/a2a-external-conformance-report-template.json"));
+  assert.ok(standards?.commands.includes("npm run a2a:write-public-proof-bundle -- --out tmp/gaskit/a2a-public-proof-bundle.json"));
   assert.ok(standards?.commands.includes("npm run a2a:write-public-proof-plan"));
   assert.ok(standards?.commands.includes("npm run proof:a2a-public-readiness"));
   assert.ok(
@@ -237,6 +238,7 @@ async function writeEvidenceTree(cwd: string): Promise<void> {
     "packages/standards/src/a2aPush.ts",
     "scripts/check-payment-provider-readiness.ts",
     "scripts/check-a2a-public-readiness.ts",
+    "scripts/write-a2a-public-proof-bundle.ts",
     "scripts/smoke-a2a-static-discovery-local.ts",
     "docs/agentic-gaskit/a2a-public-readiness.md",
     "scripts/smoke-a2a-local-server.ts",

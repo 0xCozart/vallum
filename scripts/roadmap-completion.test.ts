@@ -181,7 +181,7 @@ function productStatusFixture(): ProductStatusReport {
         status: "blocked-production",
         code: "PUBLIC_A2A_HOSTING_UNPROVEN",
         message: "Public A2A hosting is unproven.",
-        next: "npm run a2a:write-public-proof-plan -- --out <ignored-json-path>.",
+        next: "npm run a2a:write-public-proof-bundle -- --out <ignored-json-path>.",
       },
       {
         id: "physical-device-access",
@@ -215,7 +215,7 @@ function launchReadinessFixture(): LaunchReadinessReport {
         evidencePaths: [],
         commands: [],
         blockerCodes: ["PUBLIC_A2A_HOSTING_UNPROVEN"],
-        next: "npm run a2a:write-public-proof-plan -- --out <ignored-json-path>.",
+        next: "npm run a2a:write-public-proof-bundle -- --out <ignored-json-path>.",
       },
       {
         id: "phase-3-contract-workflows",
@@ -268,7 +268,7 @@ function operatorGatesFixture(): OperatorLiveGateReport {
         id: "public-a2a-hosting",
         status: "requires-approval",
         code: "PUBLIC_A2A_HOSTING_UNPROVEN",
-        command: "npm run a2a:write-public-proof-plan && npm run smoke:a2a-public-discovery",
+        command: "npm run a2a:write-public-proof-bundle -- --out tmp/gaskit/a2a-public-proof-bundle.json && npm run proof:a2a-public-readiness && npm run smoke:a2a-public-discovery",
         approvalRequired: true,
         contactsLiveService: true,
         message: "Public A2A hosting is unproven.",

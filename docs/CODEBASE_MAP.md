@@ -149,6 +149,7 @@ A2A proof:
 - `npm run smoke:a2a-static-discovery-local`
 - `npm run proof:a2a-public-readiness`
 - `npm run a2a:write-public-proof-plan`
+- `npm run a2a:write-public-proof-bundle`
 - `npm run a2a:write-static-discovery-bundle`
 - `npm run a2a:check-static-discovery-bundle`
 - `npm run a2a:write-static-hosting-review`

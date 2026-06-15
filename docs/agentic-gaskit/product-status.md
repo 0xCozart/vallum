@@ -216,6 +216,7 @@ npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/
 npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/gaskit/a2a-public-push-delivery-report-template.json
 npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/gaskit/a2a-external-conformance-report-template.json
 npm run a2a:write-public-proof-plan -- --out tmp/gaskit/a2a-public-proof-plan.json
+npm run a2a:write-public-proof-bundle -- --out tmp/gaskit/a2a-public-proof-bundle.json
 npm run proof:a2a-public-readiness
 npm run operator:write-report-template -- --kind package-publication --out tmp/gaskit/package-publication-report-template.json
 npm run proof:package-publication-readiness

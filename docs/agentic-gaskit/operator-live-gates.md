@@ -122,7 +122,10 @@ hosts, marketplace systems, or physical devices.
 - Lets operators prepare public A2A hosting and conformance review with
   `npm run a2a:write-public-proof-plan`, a redacted local plan that lists
   command order, blocker codes, operator input names, and safety boundaries
-  before any public endpoint discovery smoke runs.
+  before any public endpoint discovery smoke runs. The adjacent
+  `npm run a2a:write-public-proof-bundle` command writes that plan, the public
+  readiness artifact, and the discovery, push-delivery, and external
+  conformance templates together as ignored local artifacts.
 - Points package publication review at the non-networked
   `npm run proof:package-publication-readiness` command, which validates local
   package release proof plus an ignored structured npm publication report
@@ -251,6 +254,7 @@ npm run proof:launch-readiness
 npm run proof:testnet-digest
 npm run proof:testnet-digest:live -- --report tmp/gaskit/testnet-digest-proof.json
 npm run a2a:write-public-proof-plan -- --out tmp/gaskit/a2a-public-proof-plan.json
+npm run a2a:write-public-proof-bundle -- --out tmp/gaskit/a2a-public-proof-bundle.json
 npm run proof:a2a-public-readiness
 npm run proof:package-publication-readiness
 npm run proof:payment-provider-readiness

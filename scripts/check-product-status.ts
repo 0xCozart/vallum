@@ -139,6 +139,7 @@ const CUSTODY_PRODUCTION_TEMPLATE_COMMAND = "npm run operator:write-report-templ
 const A2A_PUBLIC_DISCOVERY_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/gaskit/a2a-public-discovery-report-template.json";
 const A2A_PUBLIC_PUSH_DELIVERY_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/gaskit/a2a-public-push-delivery-report-template.json";
 const A2A_EXTERNAL_CONFORMANCE_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/gaskit/a2a-external-conformance-report-template.json";
+const A2A_PUBLIC_PROOF_BUNDLE_COMMAND = "npm run a2a:write-public-proof-bundle -- --out <ignored-json-path>";
 
 const usage = `usage: npm exec tsx -- scripts/check-product-status.ts [--json] [--out <path>]
 
@@ -562,7 +563,7 @@ function publicA2AHostingCheck(readiness: A2APublicReadinessReport): ProductEvid
     code: "PUBLIC_A2A_HOSTING_UNPROVEN",
     message: `A2A discovery, local public JWKS serving, local static discovery bundle generation, local static discovery artifact writing, local static discovery artifact validation, local static discovery loopback host smoke, local static hosting review, task routes, authenticated extended Agent Card access, SSE streaming, push notification configuration, injected push delivery, opt-in push HTTP transport, callback URL admission hardening, callback host allowlisting, local retry/attempt observability, local durable attempt evidence, local delivery queueing, and a local injected-transport worker are proven locally and over loopback/local handler or mocked paths only; public readiness is blocked by ${blocked?.code ?? "A2A_PUBLIC_READINESS_REPORT_MISSING"}.`,
     evidence: "npm run proof:a2a-public-readiness",
-    next: `${A2A_PUBLIC_DISCOVERY_TEMPLATE_COMMAND}; ${A2A_PUBLIC_PUSH_DELIVERY_TEMPLATE_COMMAND}; ${A2A_EXTERNAL_CONFORMANCE_TEMPLATE_COMMAND}; run npm run a2a:write-public-proof-plan -- --out <ignored-json-path> to prepare redacted operator steps, use npm run proof:a2a-public-readiness to inspect blockers, then run npm run smoke:a2a-public-discovery only with operator-approved public A2A config.`,
+    next: `${A2A_PUBLIC_PROOF_BUNDLE_COMMAND} to prepare the redacted public proof plan, readiness artifact, and report templates; use npm run proof:a2a-public-readiness to inspect blockers, then run npm run smoke:a2a-public-discovery only with operator-approved public A2A config. The bundle includes ${A2A_PUBLIC_DISCOVERY_TEMPLATE_COMMAND}, ${A2A_PUBLIC_PUSH_DELIVERY_TEMPLATE_COMMAND}, and ${A2A_EXTERNAL_CONFORMANCE_TEMPLATE_COMMAND}.`,
   };
 }
 

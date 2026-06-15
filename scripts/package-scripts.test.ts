@@ -281,9 +281,16 @@ test("A2A public proof plan is non-networked and opt-in", () => {
     packageJson.scripts?.["a2a:write-public-proof-plan"],
     "npm run build && tsx scripts/write-a2a-public-proof-plan.ts",
   );
+  assert.equal(
+    packageJson.scripts?.["a2a:write-public-proof-bundle"],
+    "npm run build && tsx scripts/write-a2a-public-proof-bundle.ts",
+  );
   assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /write-public-proof-plan/);
   assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /write-public-proof-plan/);
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /write-public-proof-plan/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /write-public-proof-bundle/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /write-public-proof-bundle/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /write-public-proof-bundle/);
 });
 
 test("operator live gate report writer is non-networked and opt-in", () => {
