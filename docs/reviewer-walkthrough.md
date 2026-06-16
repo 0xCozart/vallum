@@ -78,6 +78,21 @@ This is local tarball proof only. It does not prove npm registry publication,
 package-name ownership, live payment settlement, custody, marketplace
 operation, public A2A hosting, or live IOTA execution.
 
+The published-package adoption proof is opt-in because it contacts npm:
+
+```bash
+npm run smoke:npm-registry-paid-mcp-consumer
+```
+
+Expected result: the command records
+`tmp/agentrail/npm-registry-consumer-proof.json` for a fresh temporary consumer
+project that installed the published `@sacredlabs/agentrail-*` packages from
+npm with `NPM_CONFIG_MIN_RELEASE_AGE=0`, imported package root entrypoints, and
+ran the same paid MCP-style approval, policy-denial, failed-payment, receipt,
+and redaction checks. It is npm registry install/import proof plus local mock
+execution proof; it is not live IOTA, production payment, custody,
+marketplace, or public A2A proof.
+
 ## 1. Start with the thesis
 
 Read:

@@ -4,6 +4,11 @@ import {
   buildPaidMcpConsumerSmokeSource,
 } from "./smoke-package-paid-mcp-consumer.js";
 import {
+  buildNpmRegistryInstallArgs,
+  buildRegistryConsumerPackageJson,
+  buildRegistryPaidMcpConsumerSmokeSource,
+} from "./smoke-npm-registry-paid-mcp-consumer.js";
+import {
   buildConsumerPackageJson,
   buildConsumerSmokeSource,
   buildNpmInstallArgs,
@@ -80,4 +85,38 @@ test("paid MCP consumer smoke proves approval denial failed payment and redactio
   assert.match(source, /redaction\.apiKey=redacted/);
   assert.match(source, /redaction\.signerReference=redacted/);
   assert.match(source, /assert\.doesNotMatch\(output,/);
+});
+
+test("npm registry consumer smoke pins current published package versions", () => {
+  const packageJson = JSON.parse(buildRegistryConsumerPackageJson([
+    { dir: "packages/accounts", name: "@sacredlabs/agentrail-accounts" },
+    { dir: "packages/sdk", name: "@sacredlabs/agentrail-sdk" },
+  ], "0.0.0-prerelease")) as {
+    private?: boolean;
+    dependencies?: Record<string, string>;
+  };
+
+  assert.equal(packageJson.private, true);
+  assert.equal(packageJson.dependencies?.["@sacredlabs/agentrail-accounts"], "0.0.0-prerelease");
+  assert.equal(packageJson.dependencies?.["@sacredlabs/agentrail-sdk"], "0.0.0-prerelease");
+});
+
+test("npm registry consumer smoke installs from registry without lifecycle scripts", () => {
+  assert.deepEqual(buildNpmRegistryInstallArgs(), [
+    "install",
+    "--ignore-scripts",
+    "--audit=false",
+    "--fund=false",
+    "--package-lock=false",
+    "--registry=https://registry.npmjs.org/",
+  ]);
+});
+
+test("npm registry consumer smoke uses the paid MCP source with registry marker", () => {
+  const source = buildRegistryPaidMcpConsumerSmokeSource();
+
+  assert.match(source, /install=npm-registry/);
+  assert.doesNotMatch(source, /install=local-tarballs/);
+  assert.match(source, /boundary\.route=SDK->mock-policy-gateway/);
+  assert.match(source, /redaction\.apiKey=redacted/);
 });

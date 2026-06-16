@@ -39,6 +39,7 @@ Thumbs.db
 .vscode/settings.json
 
 # Local tooling
+tmp/npm_token.txt
 tmp/apex-workflow/
 tmp/agentrail/
 tmp/gaskit/

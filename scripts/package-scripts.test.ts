@@ -233,6 +233,16 @@ test("package publication readiness proof is non-networked and opt-in", () => {
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /package-publication-readiness/);
 });
 
+test("npm registry package consumer proof is networked and opt-in", () => {
+  assert.equal(
+    packageJson.scripts?.["smoke:npm-registry-paid-mcp-consumer"],
+    "tsx scripts/smoke-npm-registry-paid-mcp-consumer.ts --out tmp/agentrail/npm-registry-consumer-proof.json",
+  );
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /npm-registry-paid-mcp-consumer/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /npm-registry-paid-mcp-consumer/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /npm-registry-paid-mcp-consumer/);
+});
+
 test("package publication proof plan is non-networked and opt-in", () => {
   assert.equal(
     packageJson.scripts?.["package:write-publication-proof-plan"],

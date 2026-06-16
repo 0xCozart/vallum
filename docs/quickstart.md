@@ -1,8 +1,46 @@
 # 30-Minute Quickstart
 
-This quickstart starts with deterministic local proof paths that do not need Docker, sponsor keys, testnet funds, live IOTA RPC, or a running IOTA Gas Station. Use those checks first, then move to the live testnet path only after local configuration is ready.
+This quickstart starts with the published npm package path and deterministic
+local proof paths that do not need Docker, sponsor keys, testnet funds, live
+IOTA RPC, or a running IOTA Gas Station. Use those checks first, then move to
+the live testnet path only after local configuration is ready.
 
-Goal: a developer can clone the repo, verify the policy gateway and demo dApp locally, understand the secret boundary, and know exactly what is still required for a live sponsored testnet transaction.
+Goal: a developer can install AgentRail from npm, verify the canonical local
+agent-safe sponsored execution path, understand the secret boundary, and know
+exactly what is still required for a live sponsored testnet transaction.
+
+## Install from npm
+
+The current prerelease packages are published under
+`@sacredlabs/agentrail-*`. Install the SDK for backend integration:
+
+```bash
+mkdir agentrail-consumer
+cd agentrail-consumer
+npm init -y
+npm install @sacredlabs/agentrail-sdk@next
+```
+
+Run a minimal package import check:
+
+```bash
+node --input-type=module -e 'import("@sacredlabs/agentrail-sdk").then(({ createAgentRailClient }) => { const client = createAgentRailClient({ baseUrl: "http://127.0.0.1:8787", apiKey: "local-demo-key" }); if (typeof client.simulatePolicy !== "function" || typeof client.reserveGas !== "function" || typeof client.executeSponsoredTransaction !== "function") throw new Error("AgentRail SDK shape mismatch"); console.log("agentrail npm install ok"); })'
+```
+
+Expected result:
+
+```text
+agentrail npm install ok
+```
+
+The SDK belongs in backend code. Do not put AgentRail app keys, Gas Station
+bearer tokens, sponsor keys, raw transaction bytes, or user signatures in
+browser JavaScript.
+
+The package set was published with `tag=next`. npm also currently exposes
+`latest=0.0.0-prerelease` for this first package set after rejecting a
+`latest` dist-tag deletion. Use `@next` or the exact `@0.0.0-prerelease`
+version in docs, scripts, and demos until the first stable release exists.
 
 ## Canonical agent-safe sponsored execution path
 
@@ -18,8 +56,16 @@ MCP-style tool call. It proves the SDK-to-mock-policy-gateway route, manifest
 action intent, signer-reference redaction, approval, policy denial,
 failed-payment withholding, receipt event chains, and secret redaction markers.
 
-To prove the same adoption wedge from packed package APIs, run the opt-in local
-tarball consumer smoke:
+To prove the same adoption wedge from package APIs, use one of these consumer
+proofs:
+
+- `npm run smoke:package-paid-mcp-consumer` for local tarballs from the
+  current checkout.
+- `npm run smoke:npm-registry-paid-mcp-consumer` for a fresh temporary
+  consumer that installs the published npm packages from the registry and
+  writes `tmp/agentrail/npm-registry-consumer-proof.json`.
+
+Run the opt-in local tarball consumer smoke from the repo root:
 
 ```bash
 npm run smoke:package-paid-mcp-consumer
@@ -35,6 +81,17 @@ A2A hosting.
 `npm run smoke:package-paid-mcp-consumer` is intentionally not part of
 `verify:fast`, `verify:local`, or `grant:check`; use it when adoption
 installability matters more than iteration speed.
+
+The registry consumer proof is also opt-in because it contacts npm:
+
+```bash
+npm run smoke:npm-registry-paid-mcp-consumer
+```
+
+Expected result: the command installs all 11 published
+`@sacredlabs/agentrail-*` packages into a fresh temporary project, runs the
+same paid MCP-style approval, denial, failed-payment, receipt, and redaction
+checks, and writes a redacted mode-600 local proof packet.
 
 ## Current scaffold checks
 

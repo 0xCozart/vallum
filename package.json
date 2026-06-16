@@ -78,6 +78,7 @@
     "pack:check": "npm run build && npm pack --dry-run -w @sacredlabs/agentrail-shared-types -w @sacredlabs/agentrail-policy-gateway -w @sacredlabs/agentrail-receipts -w @sacredlabs/agentrail-standards -w @sacredlabs/agentrail-marketplace -w @sacredlabs/agentrail-sdk -w @sacredlabs/agentrail-mcp-server -w @sacredlabs/agentrail-accounts -w @sacredlabs/agentrail-manifest -w @sacredlabs/agentrail-registry -w @sacredlabs/agentrail-contracts-metadata",
     "smoke:package-install": "npm run build && tsx scripts/smoke-package-install.ts",
     "smoke:package-paid-mcp-consumer": "npm run build && tsx scripts/smoke-package-paid-mcp-consumer.ts",
+    "smoke:npm-registry-paid-mcp-consumer": "tsx scripts/smoke-npm-registry-paid-mcp-consumer.ts --out tmp/agentrail/npm-registry-consumer-proof.json",
     "publish:dry-run": "npm run build && tsx scripts/package-publish-dry-run.ts",
     "docs:build": "npm run build -w @sacredlabs/agentrail-docs-site",
     "docs:check": "npm run check -w @sacredlabs/agentrail-docs-site",

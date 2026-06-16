@@ -110,6 +110,26 @@ marketplace, public A2A hosting, or live IOTA/testnet execution. The command is
 opt-in and intentionally stays out of `verify:fast`, `verify:local`, and
 `grant:check` until its runtime cost and stability are deliberately accepted.
 
+`npm run smoke:npm-registry-paid-mcp-consumer` adds an opt-in published-package
+adoption proof:
+
+- contacts the public npm registry;
+- installs the published `@sacredlabs/agentrail-*` packages into a fresh
+  temporary consumer project;
+- uses `NPM_CONFIG_MIN_RELEASE_AGE=0` because this machine can hide newly
+  published packages behind a local release-age gate;
+- runs the same package-root paid MCP-style approval, policy-denial,
+  failed-payment, receipt, and redaction checks;
+- writes a redacted local report to
+  `tmp/agentrail/npm-registry-consumer-proof.json`.
+
+This proves the current published package set can be installed from npm and
+used by a fresh consumer for the first AgentRail adoption wedge. It is still
+local mock execution proof, not live IOTA, live payment-provider, custody,
+marketplace, or public A2A proof. The command is intentionally excluded from
+`verify:fast`, `verify:local`, and `grant:check` because it is networked and
+registry-state dependent.
+
 `npm run proof:package-publication-readiness` adds a non-networked registry
 publication readiness gate:
 
@@ -137,9 +157,10 @@ The structured report must be status-only JSON with `schemaVersion=1`,
 `kind=agentrail.package-publication-proof`, `result=passed`,
 `registry=npm`, a recent `observedAt`, every current public package name, and
 check ids for pack dry-run, local tarball install, npm publish dry-run,
-registry install, provenance review, and rollback review. It must not include
-npm tokens, OTPs, npmrc contents, credentials, authorization headers, raw
-registry responses, signatures, or local secret paths.
+npm registry paid MCP consumer proof, registry install, provenance review, and
+rollback review. It must not include npm tokens, OTPs, npmrc contents,
+credentials, authorization headers, raw registry responses, signatures, or
+local secret paths.
 
 The readiness gate can also emit a redacted local audit artifact:
 
@@ -191,11 +212,14 @@ Publication evidence for the current prerelease includes:
 - `npm run pack:check`
 - `npm run smoke:package-install`
 - `npm run smoke:package-paid-mcp-consumer`
+- `npm run smoke:npm-registry-paid-mcp-consumer`
 - `npm run publish:dry-run`
 - real `npm publish --tag next --access public`
 - registry dist-tag proof showing `next=0.0.0-prerelease` and
   `latest=0.0.0-prerelease` for all 11 public packages
 - registry install/import proof for all 11 public packages
+- redacted npm registry consumer proof at
+  `tmp/agentrail/npm-registry-consumer-proof.json`
 - an ignored local structured report accepted by
   `PACKAGE_PUBLICATION_REPORT=tmp/agentrail/package-publication-report-sacredlabs.json npm run proof:package-publication-readiness`
 
@@ -213,6 +237,17 @@ Future real `npm publish` runs require explicit operator approval, npm registry
 credentials outside the repo, and a fresh release checklist. `npm pack
 --dry-run` and `npm publish --dry-run` are safe local release checks; real
 publication remains an operator-gated release action.
+
+## Dist-Tag Decision
+
+For this first prerelease package set, keep documentation and examples pinned
+to `@next` or `@0.0.0-prerelease` even though npm currently exposes the same
+version through `latest`. Do not treat `latest` as a stable-release signal.
+
+The next package publication should use a new prerelease version and explicitly
+verify dist-tags after publish. If npm support approves the `@agentrail/*`
+scope, handle that migration as a separate compatibility release rather than
+rewriting package names inside a behavior slice.
 
 ## Future Scope Migration Path
 
