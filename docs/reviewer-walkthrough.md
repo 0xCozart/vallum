@@ -2,7 +2,7 @@
 
 Date: 2026-06-15
 
-Purpose: give grant reviewers a short, reproducible path through the AgentRail repo while clearly separating deterministic local proof and documented live testnet evidence from remaining production milestone work.
+Purpose: give grant reviewers a short, reproducible path through the Vallum repo while clearly separating deterministic local proof and documented live testnet evidence from remaining production milestone work.
 
 ## Reviewer quick verification
 
@@ -23,13 +23,13 @@ npm run execute:testnet-demo
 
 Expected result: with operator-owned local credentials and a reachable IOTA Gas Station/testnet setup, this submits a sponsored transaction. This command is intentionally excluded from the deterministic grant check because it contacts live services and consumes sponsored testnet gas.
 
-Documented public IOTA testnet evidence already in the repo: latest digest `BF7BvoqLmw3AwtYtpPNSoP8JinKbZ67NyP6f7xQMYHYX` plus earlier 2026-06-14 digests `6gA8pyrYStnHWbYrE7Edr9iKd4PFG4mf2J2u9x14JoR3`, `5qSeMePKyUWVf6e5AiQCZD4MNLe6dwTrcXzo7cXtN5Zg`, `Fc32GFCU95wUGs5iGjewJuMxxXwtRrjzLh3LUGrf85uf`, `FLdnYRUACAKQn8CwugEv1u6gYTh9jBr8rGMk2JZ2adsd`, and `6Fz2r2ARRo6fiQMUL4FkWuwU16ekEmKHvHbhLpF5DU6n` in `docs/testnet-attempts.md` and `docs/agentrail/testnet-digest-proof.md`.
+Documented public IOTA testnet evidence already in the repo: latest digest `BF7BvoqLmw3AwtYtpPNSoP8JinKbZ67NyP6f7xQMYHYX` plus earlier 2026-06-14 digests `6gA8pyrYStnHWbYrE7Edr9iKd4PFG4mf2J2u9x14JoR3`, `5qSeMePKyUWVf6e5AiQCZD4MNLe6dwTrcXzo7cXtN5Zg`, `Fc32GFCU95wUGs5iGjewJuMxxXwtRrjzLh3LUGrf85uf`, `FLdnYRUACAKQn8CwugEv1u6gYTh9jBr8rGMk2JZ2adsd`, and `6Fz2r2ARRo6fiQMUL4FkWuwU16ekEmKHvHbhLpF5DU6n` in `docs/testnet-attempts.md` and `docs/vallum/testnet-digest-proof.md`.
 
-External showcase evidence: [Gasless ProofDrop](https://proofdrop.xyz) is the separate M1 showcase dApp for the AgentRail integration pattern. It has a hosted live testnet badge-claim proof for `0xd35b2cda222b21fcc7b6c46b00a5a172023d3de1f20c94a5ac553e290cf5f032::proofdrop_badge::claim_proof_badge` with public digest [`GRVtucGZkKZXsXG8HssCPGmRkWbiBom9NGWzJDcVspnF`](https://explorer.iota.org/txblock/GRVtucGZkKZXsXG8HssCPGmRkWbiBom9NGWzJDcVspnF?network=testnet). ProofDrop remains outside this repository.
+External showcase evidence: [Gasless ProofDrop](https://proofdrop.xyz) is the separate M1 showcase dApp for the Vallum integration pattern. It has a hosted live testnet badge-claim proof for `0xd35b2cda222b21fcc7b6c46b00a5a172023d3de1f20c94a5ac553e290cf5f032::proofdrop_badge::claim_proof_badge` with public digest [`GRVtucGZkKZXsXG8HssCPGmRkWbiBom9NGWzJDcVspnF`](https://explorer.iota.org/txblock/GRVtucGZkKZXsXG8HssCPGmRkWbiBom9NGWzJDcVspnF?network=testnet). ProofDrop remains outside this repository.
 
 ## Agent-safe sponsored execution demo
 
-The first AgentRail adoption wedge is the local paid MCP-style tool demo:
+The first Vallum adoption wedge is the local paid MCP-style tool demo:
 
 ```bash
 npm run smoke:paid-mcp-tool
@@ -70,8 +70,8 @@ npm run smoke:package-paid-mcp-consumer
 
 Expected result: the command builds and packs public workspace packages,
 installs local tarballs into a fresh temporary consumer project, imports only
-`@sacredlabs/agentrail-sdk`, `@sacredlabs/agentrail-manifest`, and
-`@sacredlabs/agentrail-policy-gateway` package root entrypoints, and runs approval,
+`@vallum/sdk`, `@vallum/manifest`, and
+`@vallum/policy-gateway` package root entrypoints, and runs approval,
 policy-denial, and failed-payment paths without live network calls.
 
 This is local tarball proof only. It does not prove npm registry publication,
@@ -85,8 +85,8 @@ npm run smoke:npm-registry-paid-mcp-consumer
 ```
 
 Expected result: the command records
-`tmp/agentrail/npm-registry-consumer-proof.json` for a fresh temporary consumer
-project that installed the published `@sacredlabs/agentrail-*` packages from
+`tmp/vallum/npm-registry-consumer-proof.json` for a fresh temporary consumer
+project that installed the published `@vallum/*` packages from
 npm with `NPM_CONFIG_MIN_RELEASE_AGE=0`, imported package root entrypoints, and
 ran the same paid MCP-style approval, policy-denial, failed-payment, receipt,
 and redaction checks. It is npm registry install/import proof plus local mock
@@ -100,15 +100,15 @@ Read:
 - `README.md`
 - `docs/overview.md`
 - `docs/product-requirements.md`
-- `docs/agentrail/roadmap.md`
+- `docs/vallum/roadmap.md`
 - External showcase: [proofdrop.xyz](https://proofdrop.xyz) and [github.com/0xCozart/ProofDrop](https://github.com/0xCozart/ProofDrop)
 
 What to verify:
 
-- AgentRail is framed as an open-source toolkit around IOTA Gas Station.
+- Vallum is framed as an open-source toolkit around IOTA Gas Station.
 - The open-source core remains self-hostable and inspectable.
 - Future managed hosting/support is separated from the grant MVP.
-- ProofDrop is linked as an external showcase, not copied into AgentRail core.
+- ProofDrop is linked as an external showcase, not copied into Vallum core.
 
 ## 2. Check repository hygiene
 
@@ -133,7 +133,7 @@ What to verify:
 Read:
 
 - `docs/architecture.md`
-- `docs/assets/agentrail-architecture.svg`
+- `docs/assets/architecture.svg`
 - `docs/threat-model.md`
 - `docs/production-hardening.md`
 - `docs/security/sponsor-wallet.md`
@@ -197,12 +197,12 @@ Expected current result:
 - local package paid MCP consumer smoke proves the same adoption wedge from a
   fresh temporary consumer project using local tarballs and public package root
   entrypoints only;
-- local package MCP stdio consumer smoke proves the `agentrail-mcp` package bin
+- local package MCP stdio consumer smoke proves the `vallum-mcp` package bin
   starts from a fresh local tarball consumer, lists tools, and routes approval,
   denial, and invalid-input calls through the mock policy gateway;
 - npm registry paid MCP consumer smoke proves the same adoption wedge from a
   fresh temporary consumer project using the published
-  `@sacredlabs/agentrail-*` packages;
+  `@vallum/*` packages;
 - example testnet-readiness preflight validates placeholders without reading real secrets;
 - testnet digest proof confirms the documented public digest evidence is present
   without contacting IOTA RPC;
@@ -270,7 +270,7 @@ What to verify:
 Read:
 
 - `docs/quickstart.md`
-- `docs/agentrail/package-release-strategy.md`
+- `docs/vallum/package-release-strategy.md`
 - `docs/deployment.md`
 - `deploy/docker-compose/docker-compose.local.yml`
 - `deploy/gas-station/config.example.yaml`
@@ -293,8 +293,8 @@ What to verify:
 Read:
 
 - `docs/product-requirements.md`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
 - `docs/demo-script.md`
 - `docs/reviewer-checklist.md`
 
@@ -306,4 +306,4 @@ What to verify:
 
 ## Reviewer-safe conclusion
 
-This repo currently proves a clean, licensed, tested, security-conscious open-source AgentRail toolkit with deterministic local gateway, SDK, examples, policy simulation, observability, usage read-model, demo dApp proof paths, package dry-runs, local and npm package consumer proof, tracked-file secret scan, and documented real IOTA testnet sponsored execute evidence. It does not ask reviewers to treat the durable dashboard, production persistence, production monitoring, stable package release channel, future package namespace migration, or final video as complete. Those remain explicit grant milestone work.
+This repo currently proves a clean, licensed, tested, security-conscious open-source Vallum toolkit with deterministic local gateway, SDK, examples, policy simulation, observability, usage read-model, demo dApp proof paths, package dry-runs, local and npm package consumer proof, tracked-file secret scan, and documented real IOTA testnet sponsored execute evidence. It does not ask reviewers to treat the durable dashboard, production persistence, production monitoring, stable package release channel, future package namespace migration, or final video as complete. Those remain explicit grant milestone work.

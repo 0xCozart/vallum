@@ -1,26 +1,26 @@
-# @sacredlabs/agentrail-sdk
+# @vallum/sdk
 
-TypeScript client scaffold for applications integrating with an AgentRail policy gateway.
+TypeScript client scaffold for applications integrating with an Vallum policy gateway.
 
 ## Install
 
 For the npm prerelease, install:
 
 ```sh
-npm install @sacredlabs/agentrail-sdk@next
+npm install @vallum/sdk@next
 ```
 
 See the full package selection and configuration guide in the repository:
-https://github.com/0xCozart/agentic-gaskit/blob/main/docs/agentrail/package-integration-guide.md
+https://github.com/0xCozart/agentic-gaskit/blob/main/docs/vallum/package-integration-guide.md
 
 ## Usage
 
 ```ts
-import { createAgentRailClient, AgentRailPolicyError } from "@sacredlabs/agentrail-sdk";
+import { createVallumClient, VallumPolicyError } from "@vallum/sdk";
 
-const agentRail = createAgentRailClient({
+const agentRail = createVallumClient({
   baseUrl: "https://gateway.example.invalid",
-  apiKey: process.env.AGENTRAIL_APP_API_KEY ?? "",
+  apiKey: process.env.VALLUM_APP_API_KEY ?? "",
 });
 
 try {
@@ -34,7 +34,7 @@ try {
     console.log(decision.reasonCode, decision.message);
   }
 } catch (error) {
-  if (error instanceof AgentRailPolicyError) {
+  if (error instanceof VallumPolicyError) {
     console.error(error.reasonCode, error.message);
   }
   throw error;
@@ -43,7 +43,7 @@ try {
 
 The client calls a configured policy gateway over HTTP. It does not embed sponsor credentials and does not itself prove live/testnet transaction execution.
 
-Local AgentRail helpers such as `requestSponsoredAction`, `openEscrow`,
+Local Vallum helpers such as `requestSponsoredAction`, `openEscrow`,
 `callPaidTool`, `requestDataLicense`, and `fulfillServiceBounty` route
 sponsored/value-bearing flows through the policy gateway. They do not prove
 live settlement, custody, marketplace provider verification, or testnet

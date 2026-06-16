@@ -1,54 +1,53 @@
 # 30-Minute Quickstart
 
-This quickstart starts with the published npm package path and deterministic local proof paths
+This quickstart starts with the npm package path and deterministic local proof paths
 that do not need Docker, sponsor keys, testnet funds, live IOTA RPC, or a
 running IOTA Gas Station. Use those checks first, then move to the live testnet
 path only after local configuration is ready.
 
-Goal: a developer can install AgentRail from npm, verify the canonical local
-agent-safe sponsored execution path, understand the secret boundary, and know
-exactly what is still required for a live sponsored testnet transaction.
+Goal: a developer can install Vallum from the `@vallum/*` prerelease packages,
+verify the canonical local agent-safe sponsored execution path, understand the
+secret boundary, and know exactly what is still required for a live sponsored
+testnet transaction.
 
 ## Install from npm
 
-The current prerelease packages are published under
-`@sacredlabs/agentrail-*`. Install the SDK for backend integration:
+The current prerelease packages are published under `@vallum/*`. Install the
+SDK for backend integration:
 
 ```bash
-mkdir agentrail-consumer
-cd agentrail-consumer
+mkdir vallum-consumer
+cd vallum-consumer
 npm init -y
-npm install @sacredlabs/agentrail-sdk@next
+npm install @vallum/sdk@next
 ```
 
 Run a minimal package import check:
 
 ```bash
-node --input-type=module -e 'import("@sacredlabs/agentrail-sdk").then(({ createAgentRailClient }) => { const client = createAgentRailClient({ baseUrl: "http://127.0.0.1:8787", apiKey: "local-demo-key" }); if (typeof client.simulatePolicy !== "function" || typeof client.reserveGas !== "function" || typeof client.executeSponsoredTransaction !== "function") throw new Error("AgentRail SDK shape mismatch"); console.log("agentrail npm install ok"); })'
+node --input-type=module -e 'import("@vallum/sdk").then(({ createVallumClient }) => { const client = createVallumClient({ baseUrl: "http://127.0.0.1:8787", apiKey: "local-demo-key" }); if (typeof client.simulatePolicy !== "function" || typeof client.reserveGas !== "function" || typeof client.executeSponsoredTransaction !== "function") throw new Error("Vallum SDK shape mismatch"); console.log("vallum npm install ok"); })'
 ```
 
 Expected result:
 
 ```text
-agentrail npm install ok
+vallum npm install ok
 ```
 
-The SDK belongs in backend code. Do not put AgentRail app keys, Gas Station
+The SDK belongs in backend code. Do not put Vallum app keys, Gas Station
 bearer tokens, sponsor keys, raw transaction bytes, or user signatures in
 browser JavaScript.
 
-The package set was published with `tag=next`. npm also currently exposes
-`latest=0.0.0-prerelease` for this first package set after rejecting a
-`latest` dist-tag deletion. Use `@next` or the exact `@0.0.0-prerelease`
-version in docs, scripts, and demos until the first stable release exists.
+Use `@next` or the exact prerelease version in docs, scripts, and demos until
+the first stable release exists.
 
 For the full package map, agent-runtime guidance, configuration reference, and
 current MCP boundary, read
-[Package Integration Guide](agentrail/package-integration-guide.md).
+[Package Integration Guide](vallum/package-integration-guide.md).
 
 ## Canonical agent-safe sponsored execution path
 
-Start here when evaluating AgentRail as a developer integration:
+Start here when evaluating Vallum as a developer integration:
 
 ```bash
 npm install
@@ -66,12 +65,12 @@ proofs:
 - `npm run smoke:package-paid-mcp-consumer` for local tarballs from the
   current checkout.
 - `npm run smoke:package-mcp-stdio-consumer` for the local tarball
-  `agentrail-mcp` stdio bin.
+  `vallum-mcp` stdio bin.
 - `npm run smoke:npm-registry-paid-mcp-consumer` for a fresh temporary
   consumer that installs the published npm packages from the registry and
-  writes `tmp/agentrail/npm-registry-consumer-proof.json`.
+  writes `tmp/vallum/npm-registry-consumer-proof.json`.
 - `npm run smoke:npm-registry-mcp-stdio-consumer` to prove npm install plus
-  `agentrail-mcp` startup from `node_modules/.bin`.
+  `vallum-mcp` startup from `node_modules/.bin`.
 
 Run the opt-in local tarball consumer smoke from the repo root:
 
@@ -99,10 +98,10 @@ npm run smoke:package-mcp-stdio-consumer
 
 Expected result: the command builds the workspace, packs every public
 workspace package, installs those tarballs into a fresh temporary consumer,
-starts `node_modules/.bin/agentrail-mcp`, lists AgentRail tools, and calls
+starts `node_modules/.bin/mcp`, lists Vallum tools, and calls
 approval, denial, and invalid-input paths against a loopback mock gateway.
-This proves local package-bin behavior only. The published registry path is
-proved separately by the npm registry MCP stdio consumer smoke.
+This proves local package-bin behavior only. The published registry path must
+be proved separately by the npm registry MCP stdio consumer smoke.
 
 The registry consumer proof is also opt-in because it contacts npm:
 
@@ -111,7 +110,7 @@ npm run smoke:npm-registry-paid-mcp-consumer
 ```
 
 Expected result: the command installs all 11 published
-`@sacredlabs/agentrail-*` packages into a fresh temporary project, runs the
+`@vallum/*` packages into a fresh temporary project, runs the
 same paid MCP-style approval, denial, failed-payment, receipt, and redaction
 checks, and writes a redacted mode-600 local proof packet.
 
@@ -121,11 +120,11 @@ Prove the npm registry MCP stdio path separately:
 npm run smoke:npm-registry-mcp-stdio-consumer
 ```
 
-Expected result: the command installs the published MCP server package into a
-fresh temporary project, starts `node_modules/.bin/agentrail-mcp`, lists tools,
-and calls approval, denial, and invalid-input paths against a loopback mock
-gateway. This is registry install plus local mock MCP proof, not live IOTA or
-production gateway proof.
+Expected result: the command installs the published MCP
+server package into a fresh temporary project, starts `node_modules/.bin/mcp`,
+lists tools, and calls approval, denial, and invalid-input paths against a
+loopback mock gateway. This is registry install plus local mock MCP proof, not
+live IOTA or production gateway proof.
 
 ## Current scaffold checks
 
@@ -152,7 +151,7 @@ reviewer-facing proof.
 
 ## Local policy gateway smoke path
 
-This smoke path verifies the AgentRail gateway API shape, app-key auth, package/function allowlist rejection, SDK-compatible reserve responses, and execute proxy behavior. It can run against a local/mock upstream before a real IOTA Gas Station is configured.
+This smoke path verifies the Vallum gateway API shape, app-key auth, package/function allowlist rejection, SDK-compatible reserve responses, and execute proxy behavior. It can run against a local/mock upstream before a real IOTA Gas Station is configured.
 
 ### 1. Configure local environment
 
@@ -165,35 +164,35 @@ cp .env.example .env
 The policy gateway reads these variables from the process environment. Node does not automatically load `.env` in this package, so source the file before starting the service or pass variables inline:
 
 ```bash
-AGENTRAIL_GATEWAY_PORT=8787
-AGENTRAIL_GATEWAY_HOST=127.0.0.1
-AGENTRAIL_POLICY_PATH=examples/policies/demo-dapp.yaml
-AGENTRAIL_DEMO_APP_KEY=local-dev-demo-key
+VALLUM_GATEWAY_PORT=8787
+VALLUM_GATEWAY_HOST=127.0.0.1
+VALLUM_POLICY_PATH=examples/policies/demo-dapp.yaml
+VALLUM_DEMO_APP_KEY=local-dev-demo-key
 GAS_STATION_URL=http://127.0.0.1:9527
 GAS_STATION_BEARER_TOKEN=replace-with-local-gas-station-token
 ```
 
-`AGENTRAIL_DEMO_APP_KEY` is a local development app key only. Do not commit real API keys, sponsor keys, bearer tokens, or `.env` files.
+`VALLUM_DEMO_APP_KEY` is a local development app key only. Do not commit real API keys, sponsor keys, bearer tokens, or `.env` files.
 
 ### 2. Start the gateway
 
 ```bash
-npm run build -w @sacredlabs/agentrail-policy-gateway-service
+npm run build -w @vallum/policy-gateway-service
 set -a
 . ./.env
 set +a
-npm run start -w @sacredlabs/agentrail-policy-gateway-service
+npm run start -w @vallum/policy-gateway-service
 ```
 
 Equivalent inline start command:
 
 ```bash
-AGENTRAIL_DEMO_APP_KEY=local-dev-demo-key \
-AGENTRAIL_GATEWAY_HOST=127.0.0.1 \
-AGENTRAIL_POLICY_PATH=examples/policies/demo-dapp.yaml \
+VALLUM_DEMO_APP_KEY=local-dev-demo-key \
+VALLUM_GATEWAY_HOST=127.0.0.1 \
+VALLUM_POLICY_PATH=examples/policies/demo-dapp.yaml \
 GAS_STATION_URL=http://127.0.0.1:9527 \
 GAS_STATION_BEARER_TOKEN=replace-with-local-token \
-npm run start -w @sacredlabs/agentrail-policy-gateway-service
+npm run start -w @vallum/policy-gateway-service
 ```
 
 ### 3. Check local health
@@ -207,7 +206,7 @@ Expected shape:
 ```json
 {
   "status": "ok",
-  "service": "agentrail-policy-gateway",
+  "service": "vallum-policy-gateway",
   "upstream": {
     "configured": true
   }
@@ -230,7 +229,7 @@ Expected result: HTTP 401 with reason code `AUTH_MISSING`.
 ```bash
 curl -i \
   -X POST http://127.0.0.1:8787/v1/reserve_gas \
-  -H "authorization: Bearer ${AGENTRAIL_DEMO_APP_KEY}" \
+  -H "authorization: Bearer ${VALLUM_DEMO_APP_KEY}" \
   -H 'content-type: application/json' \
   -d '{"gas_budget":1,"package_id":"0xNOT_ALLOWED","function_name":"mint_badge"}'
 ```
@@ -244,7 +243,7 @@ Use the simulation endpoint to preflight policy decisions without touching IOTA 
 ```bash
 curl -i \
   -X POST http://127.0.0.1:8787/v1/policy/simulate \
-  -H "authorization: Bearer ${AGENTRAIL_DEMO_APP_KEY}" \
+  -H "authorization: Bearer ${VALLUM_DEMO_APP_KEY}" \
   -H 'content-type: application/json' \
   -d '{"gas_budget":1,"wallet_address":"0xWALLET","package_id":"0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0","function_name":"mint_badge"}'
 ```
@@ -262,7 +261,7 @@ npm run smoke:local
 Expected output ends with:
 
 ```text
-AgentRail local gateway smoke passed
+Vallum local gateway smoke passed
 ```
 
 The smoke covers health, missing auth, invalid auth, local policy simulation, package/function allowlist rejection, allowed reserve proxying, and execute proxying.
@@ -279,24 +278,24 @@ npm run smoke:demo-browser
 Expected output ends with one of:
 
 ```text
-AgentRail demo dApp local flow passed
-AgentRail demo dApp browser smoke passed
+Vallum demo dApp local flow passed
+Vallum demo dApp browser smoke passed
 ```
 
 If you already have a local gateway running, you can point the CLI demo dApp at it:
 
 ```bash
-AGENTRAIL_GATEWAY_URL=http://127.0.0.1:8787 \
-AGENTRAIL_DEMO_APP_KEY=local-dev-demo-key \
-npm run dev -w @sacredlabs/agentrail-demo-dapp
+VALLUM_GATEWAY_URL=http://127.0.0.1:8787 \
+VALLUM_DEMO_APP_KEY=local-dev-demo-key \
+npm run dev -w @vallum/demo-dapp
 ```
 
 Or start the browser wrapper locally:
 
 ```bash
-AGENTRAIL_GATEWAY_URL=http://127.0.0.1:8787 \
-AGENTRAIL_DEMO_APP_KEY=local-dev-demo-key \
-npm run browser -w @sacredlabs/agentrail-demo-dapp
+VALLUM_GATEWAY_URL=http://127.0.0.1:8787 \
+VALLUM_DEMO_APP_KEY=local-dev-demo-key \
+npm run browser -w @vallum/demo-dapp
 ```
 
 Then open `http://127.0.0.1:8788`. The browser wrapper binds to loopback hosts only and calls a same-origin local backend endpoint so the app key stays server-side; it is not embedded into browser HTML or JavaScript.
@@ -348,7 +347,7 @@ If you are running a local IOTA Gas Station upstream at `GAS_STATION_URL`, call:
 ```bash
 curl -i \
   -X POST http://127.0.0.1:8787/v1/reserve_gas \
-  -H "authorization: Bearer ${AGENTRAIL_DEMO_APP_KEY}" \
+  -H "authorization: Bearer ${VALLUM_DEMO_APP_KEY}" \
   -H 'content-type: application/json' \
   -d '{"gas_budget":1,"wallet_address":"0xWALLET","package_id":"0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0","function_name":"mint_badge"}'
 ```
@@ -364,13 +363,13 @@ The live flow requires operator-owned local credentials and a reachable IOTA Gas
 1. Copy `.env.example` to `.env`.
 2. Add testnet sponsor wallet values locally.
 3. Run `npm run gas-station:render-config` for the default local Docker
-   Gas Station path, or set `AGENTRAIL_GAS_STATION_RUNTIME_MODE=managed-upstream`
+   Gas Station path, or set `VALLUM_GAS_STATION_RUNTIME_MODE=managed-upstream`
    when `GAS_STATION_URL` points at an operator-managed Gas Station.
 4. Run `npm run gas-station:runtime-preflight`.
 5. Start Redis, Gas Station, policy gateway, and dashboard for the local Docker
    path, or start only the policy gateway/dashboard when using managed
    upstream.
-6. Run `npm run diagnose:gas-station -- --report tmp/agentrail/testnet-upstream-diagnostic.json`.
+6. Run `npm run diagnose:gas-station -- --report tmp/vallum/testnet-upstream-diagnostic.json`.
 7. Open dashboard health page.
 8. Open demo dApp.
 9. Execute sponsored testnet transaction.

@@ -1,10 +1,10 @@
-# IOTA and AgentRail Basics
+# IOTA and Vallum Basics
 
-This page is for readers who are new to IOTA, sponsored gas, or AgentRail. You do not need to understand every blockchain detail before using the project. The useful mental model is simple:
+This page is for readers who are new to IOTA, sponsored gas, or Vallum. You do not need to understand every blockchain detail before using the project. The useful mental model is simple:
 
-AgentRail helps an app pay IOTA network fees for its users, while giving the app
+Vallum helps an app pay IOTA network fees for its users, while giving the app
 operator controls over who gets sponsored, how much they can spend, and what can
-be executed. AgentRail extends that model to agents by adding signer
+be executed. Vallum extends that model to agents by adding signer
 references, manifests, receipts, and policy-scoped execution.
 
 ## The Problem in Plain English
@@ -18,13 +18,13 @@ Most Web3 apps ask users to do several things before the app feels useful:
 
 That is a lot of setup for a user who only wants to claim a badge, mint an item, update a record, or use an app feature.
 
-IOTA Gas Station solves the fee-payment part by letting a sponsor cover the transaction fee. AgentRail adds the app-facing safety layer around that flow, so sponsorship can be authenticated, policy-controlled, budgeted, and observable.
+IOTA Gas Station solves the fee-payment part by letting a sponsor cover the transaction fee. Vallum adds the app-facing safety layer around that flow, so sponsorship can be authenticated, policy-controlled, budgeted, and observable.
 
 ## IOTA in Plain English
 
 IOTA is a public network for applications that need shared records, digital assets, and smart contracts. A transaction changes something on the network: it may create an object, move an asset, call a smart contract, or update state.
 
-The current IOTA developer stack is based on the Rebased protocol and MoveVM. For AgentRail users, the important ideas are:
+The current IOTA developer stack is based on the Rebased protocol and MoveVM. For Vallum users, the important ideas are:
 
 - A transaction changes network state.
 - Gas is the network fee paid to execute that transaction.
@@ -35,7 +35,7 @@ The current IOTA developer stack is based on the Rebased protocol and MoveVM. Fo
 - Coin objects are the IOTA objects used to pay gas.
 - Testnet is for testing with no-value tokens; Mainnet is the live network.
 
-You can use AgentRail without becoming a Move developer, but these terms explain why the architecture is shaped the way it is.
+You can use Vallum without becoming a Move developer, but these terms explain why the architecture is shaped the way it is.
 
 ## What Sponsored Gas Means
 
@@ -49,41 +49,41 @@ There are three roles:
 
 The user does not give the sponsor custody of their assets. The user still signs the transaction. The sponsor only decides whether it is willing to pay the fee for that transaction.
 
-## Where AgentRail Fits
+## Where Vallum Fits
 
 The official IOTA Gas Station is the lower-level sponsored-transaction component. It manages sponsor gas coins, exposes reserve and execute APIs, and can be self-hosted by an app provider.
 
-AgentRail sits in front of that official service:
+Vallum sits in front of that official service:
 
 ```text
 User or dApp
   -> app backend
-  -> AgentRail SDK or Policy Gateway
+  -> Vallum SDK or Policy Gateway
   -> official IOTA Gas Station
   -> IOTA network
 ```
 
-AgentRail exists because most applications need more than a raw gas-sponsorship API. They need app keys, package allowlists, per-wallet limits, safe errors, usage events, local smoke tests, and integration examples.
+Vallum exists because most applications need more than a raw gas-sponsorship API. They need app keys, package allowlists, per-wallet limits, safe errors, usage events, local smoke tests, and integration examples.
 
 ## The Sponsored Transaction Flow
 
-The normal AgentRail flow looks like this:
+The normal Vallum flow looks like this:
 
 1. The app builds the transaction the user wants to perform.
-2. The backend asks AgentRail whether this transaction should be sponsored.
-3. AgentRail checks app credentials, wallet limits, package/function policy, and gas budget.
-4. If allowed, AgentRail asks IOTA Gas Station to reserve sponsor gas.
+2. The backend asks Vallum whether this transaction should be sponsored.
+3. Vallum checks app credentials, wallet limits, package/function policy, and gas budget.
+4. If allowed, Vallum asks IOTA Gas Station to reserve sponsor gas.
 5. The user signs the transaction.
-6. AgentRail executes through the Gas Station path with the reservation and user signature.
-7. AgentRail emits sanitized decision events so the operator can see what was allowed or rejected.
+6. Vallum executes through the Gas Station path with the reservation and user signature.
+7. Vallum emits sanitized decision events so the operator can see what was allowed or rejected.
 
-The important safety property is that the browser does not hold sponsor secrets. Browser code should call your backend, and the backend should call AgentRail.
+The important safety property is that the browser does not hold sponsor secrets. Browser code should call your backend, and the backend should call Vallum.
 
-## Why We Built AgentRail This Way
+## Why We Built Vallum This Way
 
 Gas sponsorship is useful only if the sponsor can control risk. A sponsor wallet is a funded operational asset. If a public endpoint can spend from it without policy, attackers can drain testnet quota, create mainnet costs, or abuse sponsorship for transactions the app never intended to support.
 
-AgentRail therefore separates the system into layers:
+Vallum therefore separates the system into layers:
 
 - SDK: gives app backends a typed way to call the gateway.
 - Policy Gateway: makes the allow or reject decision before touching the Gas Station.
@@ -99,12 +99,12 @@ This shape is more cautious than calling IOTA Gas Station directly from a fronte
 | --- | --- |
 | dApp | An application that uses a blockchain or public ledger as part of its backend. |
 | Wallet | The user's signing tool. It proves the user approved a transaction. |
-| Agent wallet | A wallet created for an agent workflow. AgentRail should expose it through a scoped signer reference, not raw seed material. |
+| Agent wallet | A wallet created for an agent workflow. Vallum should expose it through a scoped signer reference, not raw seed material. |
 | Signer reference | An opaque handle to a signing capability. It is not bearer authorization by itself. |
 | Gas | The network fee required to execute a transaction. |
 | Sponsor wallet | The wallet funded by the operator to pay sponsored gas. |
 | Gas Station | The service that provides sponsor-owned gas and signs the sponsorship side. |
-| AgentRail | This toolkit: SDK, gateway, docs, tests, and operator patterns around sponsored gas. |
+| Vallum | This toolkit: SDK, gateway, docs, tests, and operator patterns around sponsored gas. |
 | Policy | Rules that decide whether a sponsorship request is allowed. |
 | Package ID | The on-chain identifier for a deployed Move package. Allowlisting package IDs limits what code can be sponsored. |
 | Function name | The Move function the app expects to call. Allowlisting functions narrows sponsorship further. |
@@ -114,7 +114,7 @@ This shape is more cautious than calling IOTA Gas Station directly from a fronte
 | RPC | The network API endpoint used to talk to IOTA nodes. |
 | KMS | Key Management Service. A safer production place to hold signing keys than app memory or plain files. |
 
-## What AgentRail Is Not
+## What Vallum Is Not
 
 - It is not a replacement for the official IOTA Gas Station.
 - It is not a wallet.

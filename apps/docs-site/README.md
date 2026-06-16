@@ -1,4 +1,4 @@
-# AgentRail Docs Site
+# Vallum Docs Site
 
 This workspace builds a static documentation site from the canonical Markdown files in the repository root and `docs/`. It is a presentation layer only; edit the source Markdown files, not generated HTML.
 
@@ -28,4 +28,4 @@ Recommended settings:
 - output directory: `apps/docs-site/dist`
 - Node version: `20`
 
-Use a docs subdomain such as `docs.agentrail.dev` when a domain is available.
+Use a docs subdomain such as `docs.vallum.dev` when a domain is available.

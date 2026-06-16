@@ -1,6 +1,6 @@
-# @sacredlabs/agentrail-receipts
+# @vallum/receipts
 
-Receipt and contract workflow state machines for AgentRail.
+Receipt and contract workflow state machines for Vallum.
 
 This package models local receipt state transitions for sponsored agent actions,
 including escrow, pay-per-call, data-license, and service-bounty workflows. It

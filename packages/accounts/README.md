@@ -1,6 +1,6 @@
-# @sacredlabs/agentrail-accounts
+# @vallum/accounts
 
-Signer-reference-first account and wallet primitives for AgentRail.
+Signer-reference-first account and wallet primitives for Vallum.
 
 This package is intentionally local/mock-first. It lets tests and demos create
 agent wallet accounts while returning wallet addresses and scoped signer

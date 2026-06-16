@@ -1,6 +1,6 @@
-# @sacredlabs/agentrail-registry
+# @vallum/registry
 
-Versioned Agent Profile schema and validation helpers for AgentRail.
+Versioned Agent Profile schema and validation helpers for Vallum.
 
 Current surface:
 

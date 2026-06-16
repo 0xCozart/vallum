@@ -1,6 +1,6 @@
 # Observability
 
-AgentRail observability starts at the policy gateway boundary, where sponsorship decisions should be visible through a minimal event schema that omits known secret-bearing fields such as app API keys, bearer tokens, transaction bytes, and user signatures.
+Vallum observability starts at the policy gateway boundary, where sponsorship decisions should be visible through a minimal event schema that omits known secret-bearing fields such as app API keys, bearer tokens, transaction bytes, and user signatures.
 
 ## Local gateway decision events
 
@@ -109,15 +109,15 @@ This is still a local foundation, not the final production usage database. It do
 `GET /operator/usage` is an opt-in local operator API for reading the sanitized usage snapshot from the local JSONL event store. It is absent unless `GatewayConfig.operatorUsage` is configured, or unless `loadGatewayConfigFromEnv()` receives both a local usage store path and a separate operator token:
 
 ```bash
-AGENTRAIL_USAGE_EVENT_STORE_PATH=tmp/agentrail/usage-events.jsonl
-AGENTRAIL_OPERATOR_USAGE_TOKEN=replace-with-local-operator-token
-AGENTRAIL_OPERATOR_USAGE_MAX_RECENT_EVENTS=100
+VALLUM_USAGE_EVENT_STORE_PATH=tmp/vallum/usage-events.jsonl
+VALLUM_OPERATOR_USAGE_TOKEN=replace-with-local-operator-token
+VALLUM_OPERATOR_USAGE_MAX_RECENT_EVENTS=100
 ```
 
 Requests must send the operator token as a bearer token:
 
 ```bash
-curl -H "Authorization: Bearer $AGENTRAIL_OPERATOR_USAGE_TOKEN" \
+curl -H "Authorization: Bearer $VALLUM_OPERATOR_USAGE_TOKEN" \
   http://127.0.0.1:8787/operator/usage
 ```
 

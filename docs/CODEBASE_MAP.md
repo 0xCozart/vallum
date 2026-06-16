@@ -4,12 +4,12 @@ Status: reviewed
 Reviewed at: 2026-06-16T00:00:00.000Z
 Last updated: 2026-06-16.
 
-Purpose: fast, reviewed orientation for engineering work in AgentRail.
+Purpose: fast, reviewed orientation for engineering work in Vallum.
 Use this map before broad search. It is routing evidence, not product proof.
 
 ## High-Level Layout
 
-AgentRail is a local fork of the original IOTA GasKit sponsorship toolkit. It
+Vallum is a local fork of the original IOTA GasKit sponsorship toolkit. It
 preserves the gas sponsorship foundation and extends it with agent-safe accounts, signer
 references, manifests, receipts, contract workflows, registry/identity
 adapters, standards bridges, and readiness gates.
@@ -52,26 +52,26 @@ Read these first:
 - `docs/overview.md`
 - `docs/architecture.md`
 - `docs/product-requirements.md`
-- `docs/agentrail/migration-plan.md`
-- `docs/agentrail/account-wallet-safety.md`
-- `docs/agentrail/execution-slices.md`
-- `docs/agentrail/verification-hardening.md`
+- `docs/vallum/migration-plan.md`
+- `docs/vallum/account-wallet-safety.md`
+- `docs/vallum/execution-slices.md`
+- `docs/vallum/verification-hardening.md`
 
 Product authority:
 
 - `docs/product-requirements.md`
 - `docs/overview.md`
 - `docs/architecture.md`
-- `docs/agentrail/roadmap.md`
-- `docs/agentrail/account-wallet-safety.md`
+- `docs/vallum/roadmap.md`
+- `docs/vallum/account-wallet-safety.md`
 
 Execution evidence authority:
 
-- `docs/agentrail/execution-slices.md`
-- `docs/agentrail/launch-readiness-evidence.md`
-- `docs/agentrail/testnet-digest-proof.md`
+- `docs/vallum/execution-slices.md`
+- `docs/vallum/launch-readiness-evidence.md`
+- `docs/vallum/testnet-digest-proof.md`
 - `docs/reviewer-walkthrough.md`
-- `docs/agentrail/verification-hardening.md`
+- `docs/vallum/verification-hardening.md`
 
 Local Codex goal, handoff, raw thesis, scratch audit, and private planning docs
 are intentionally ignored or marked non-authoritative for open-source product
@@ -80,7 +80,7 @@ truth. Do not cite them as public product evidence.
 ## Core Domains And Ownership Zones
 
 - SDK and backend integration: `packages/sdk/src/`,
-  `docs/agentrail/package-integration-guide.md`, `docs/sdk.md`,
+  `docs/vallum/package-integration-guide.md`, `docs/sdk.md`,
   `docs/examples.md`, `examples/node-backend/`,
   `examples/nextjs-api-route/`.
 - Policy engine and app authorization: `packages/policy-gateway/src/`,
@@ -88,7 +88,7 @@ truth. Do not cite them as public product evidence.
 - HTTP gateway service: `apps/policy-gateway-service/src/`.
 - Shared request/response contracts: `packages/shared-types/src/`.
 - Agent accounts and signer references: `packages/accounts/src/`,
-  `docs/agentrail/account-wallet-safety.md`.
+  `docs/vallum/account-wallet-safety.md`.
 - Agent manifests: `packages/manifest/src/`.
 - Receipts: `packages/receipts/src/`.
 - Contract template metadata: `packages/contracts-metadata/src/`.
@@ -102,8 +102,8 @@ truth. Do not cite them as public product evidence.
 - Docs site: `apps/docs-site/`.
 - Testnet, Gas Station, live proof, and operator gates: `scripts/`,
   `docs/testnet-readiness.md`, `docs/testnet-attempts.md`,
-  `docs/agentrail/live-proof-status.md`,
-  `docs/agentrail/operator-live-gates.md`.
+  `docs/vallum/live-proof-status.md`,
+  `docs/vallum/operator-live-gates.md`.
 - Security and secret hygiene: `docs/security/`, `docs/threat-model.md`,
   `scripts/scan-secrets.ts`.
 
@@ -226,7 +226,7 @@ Secret and redaction invariants:
   credentials, private prompts, raw upstream bodies, raw webhook bodies, or
   local secret paths.
 - Browser/demo code must call same-origin backend routes; backend routes own
-  AgentRail app credentials.
+  Vallum app credentials.
 - Signer references are opaque scoped handles, not bearer credentials.
 - Live/testnet commands require explicit operator intent and operator-owned
   config outside committed files.
@@ -248,7 +248,7 @@ External proof boundaries:
   `scripts/product-status.test.ts`.
 - Package-script wiring: `package.json`, `scripts/package-scripts.test.ts`.
 - Public product and operator docs: `docs/overview.md`,
-  `docs/agentrail/*.md`, `docs/marketplace-readiness.md`,
+  `docs/vallum/*.md`, `docs/marketplace-readiness.md`,
   `docs/testnet-readiness.md`.
 - Standards/A2A work: `packages/standards/src/`, `examples/a2a-*`,
   `scripts/smoke-a2a-*`, `scripts/check-a2a-public-readiness.ts`.
@@ -317,7 +317,7 @@ Ignored or local-only state includes:
 - `dist/`
 - `tmp/`
 - `tmp/apex-workflow/`
-- `tmp/agentrail/`
+- `tmp/vallum/`
 - `deploy/gas-station/config.local.yaml`
 - local Gas Station rendered configs and logs
 - local proof reports and report templates

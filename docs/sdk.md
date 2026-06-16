@@ -1,15 +1,15 @@
 # TypeScript SDK
 
-The SDK helps dApp backends interact with AgentRail without hand-writing raw HTTP calls.
+The SDK helps dApp backends interact with Vallum without hand-writing raw HTTP calls.
 
 ## Backend API Example
 
 ```ts
-import { createAgentRailClient } from "@sacredlabs/agentrail-sdk";
+import { createVallumClient } from "@vallum/sdk";
 
-const client = createAgentRailClient({
+const client = createVallumClient({
   baseUrl: "https://api.example.com",
-  apiKey: process.env.AGENTRAIL_API_KEY!,
+  apiKey: process.env.VALLUM_API_KEY!,
 });
 
 const simulation = await client.simulatePolicy({
@@ -39,7 +39,7 @@ const result = await client.executeSponsoredTransaction({
 });
 ```
 
-The API key belongs on the backend, not in browser code. `simulatePolicy()` uses the same authenticated gateway boundary as `reserveGas()`, but a rejected simulation is returned as `{ allowed: false, reasonCode, message }` decision data rather than thrown as `AgentRailPolicyError`; auth and malformed transport responses still throw SDK errors.
+The API key belongs on the backend, not in browser code. `simulatePolicy()` uses the same authenticated gateway boundary as `reserveGas()`, but a rejected simulation is returned as `{ allowed: false, reasonCode, message }` decision data rather than thrown as `VallumPolicyError`; auth and malformed transport responses still throw SDK errors.
 
 ## More Examples
 

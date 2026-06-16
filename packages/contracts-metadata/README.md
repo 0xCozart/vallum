@@ -1,6 +1,6 @@
-# @sacredlabs/agentrail-contracts-metadata
+# @vallum/contracts-metadata
 
-Versioned contract template metadata registry for AgentRail policy
+Versioned contract template metadata registry for Vallum policy
 allow-lists.
 
 This package is local prerelease workspace code. It provides metadata and pure
@@ -13,6 +13,6 @@ recurring billing, or prove live package addresses.
 ## Local checks
 
 ```bash
-npm run build -w @sacredlabs/agentrail-contracts-metadata
+npm run build -w @vallum/contracts-metadata
 node --import tsx --test packages/contracts-metadata/src/*.test.ts
 ```

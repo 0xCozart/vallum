@@ -1,26 +1,26 @@
 # Code Examples
 
-These examples show the intended integration shape. The app backend owns the AgentRail API key. Browser code talks to your backend, not directly to IOTA Gas Station and not directly to a sponsor wallet.
+These examples show the intended integration shape. The app backend owns the Vallum API key. Browser code talks to your backend, not directly to IOTA Gas Station and not directly to a sponsor wallet.
 
 ## Backend SDK Setup
 
 ```ts
-import { createAgentRailClient } from "@sacredlabs/agentrail-sdk";
+import { createVallumClient } from "@vallum/sdk";
 
-const agentrail = createAgentRailClient({
-  baseUrl: process.env.AGENTRAIL_GATEWAY_URL!,
-  apiKey: process.env.AGENTRAIL_DEMO_APP_KEY!,
+const vallum = createVallumClient({
+  baseUrl: process.env.VALLUM_GATEWAY_URL!,
+  apiKey: process.env.VALLUM_DEMO_APP_KEY!,
 });
 ```
 
-Use a real secret name in your app, such as `AGENTRAIL_API_KEY`. The demo key name is used in this repo because the local example app is named `demo-dapp`.
+Use a real secret name in your app, such as `VALLUM_API_KEY`. The demo key name is used in this repo because the local example app is named `demo-dapp`.
 
 ## Preflight Policy Before Reserving Gas
 
 Use policy simulation when you want to tell the user whether sponsorship is available before creating a reservation.
 
 ```ts
-const decision = await agentrail.simulatePolicy({
+const decision = await vallum.simulatePolicy({
   gasBudget: 50_000_000,
   walletAddress: userAddress,
   packageId: "0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0",
@@ -43,7 +43,7 @@ Simulation uses app authentication and policy checks. It does not reserve sponso
 After policy passes and the user is ready to sign, reserve sponsor gas from your backend.
 
 ```ts
-const reservation = await agentrail.reserveGas({
+const reservation = await vallum.reserveGas({
   gasBudget: 50_000_000,
   reserveDurationSecs: 30,
   walletAddress: userAddress,
@@ -62,10 +62,10 @@ Return only the fields your frontend needs. Do not return Gas Station bearer tok
 
 ## Execute With the User Signature
 
-The user still signs the transaction. Your backend receives the signed transaction bytes/signature and calls AgentRail.
+The user still signs the transaction. Your backend receives the signed transaction bytes/signature and calls Vallum.
 
 ```ts
-const result = await agentrail.executeSponsoredTransaction({
+const result = await vallum.executeSponsoredTransaction({
   reservationId,
   agentRailTransactionId,
   transactionBytes,
@@ -81,21 +81,21 @@ Do not log raw `transactionBytes` or `userSignature` in the default path. If an 
 
 ## Next.js Route Shape
 
-This is the basic server route pattern. The browser calls `/api/agentrail/reserve`; the route calls AgentRail with a server-owned key.
+This is the basic server route pattern. The browser calls `/api/vallum/reserve`; the route calls Vallum with a server-owned key.
 
 ```ts
-// app/api/agentrail/reserve/route.ts
-import { createAgentRailClient } from "@sacredlabs/agentrail-sdk";
+// app/api/vallum/reserve/route.ts
+import { createVallumClient } from "@vallum/sdk";
 
-const agentrail = createAgentRailClient({
-  baseUrl: process.env.AGENTRAIL_GATEWAY_URL!,
-  apiKey: process.env.AGENTRAIL_API_KEY!,
+const vallum = createVallumClient({
+  baseUrl: process.env.VALLUM_GATEWAY_URL!,
+  apiKey: process.env.VALLUM_API_KEY!,
 });
 
 export async function POST(request: Request) {
   const body = await request.json();
 
-  const reservation = await agentrail.reserveGas({
+  const reservation = await vallum.reserveGas({
     gasBudget: body.gasBudget,
     reserveDurationSecs: 30,
     walletAddress: body.walletAddress,
@@ -115,10 +115,10 @@ The maintained example in `examples/nextjs-api-route` adds validation, method ch
 
 ## Browser Caller
 
-The browser sends user-visible metadata to your backend. It does not receive the AgentRail app key.
+The browser sends user-visible metadata to your backend. It does not receive the Vallum app key.
 
 ```ts
-const reserveResponse = await fetch("/api/agentrail/reserve", {
+const reserveResponse = await fetch("/api/vallum/reserve", {
   method: "POST",
   headers: { "content-type": "application/json" },
   body: JSON.stringify({
@@ -135,7 +135,7 @@ const reservation = await reserveResponse.json();
 After the user signs, call your execute route:
 
 ```ts
-await fetch("/api/agentrail/execute", {
+await fetch("/api/vallum/execute", {
   method: "POST",
   headers: { "content-type": "application/json" },
   body: JSON.stringify({
@@ -154,7 +154,7 @@ These commands are useful when manually checking a local gateway.
 ```bash
 curl -i \
   -X POST http://127.0.0.1:8787/v1/policy/simulate \
-  -H "authorization: Bearer ${AGENTRAIL_DEMO_APP_KEY}" \
+  -H "authorization: Bearer ${VALLUM_DEMO_APP_KEY}" \
   -H "content-type: application/json" \
   -d '{
     "gas_budget": 50000000,
@@ -167,7 +167,7 @@ curl -i \
 ```bash
 curl -i \
   -X POST http://127.0.0.1:8787/v1/reserve_gas \
-  -H "authorization: Bearer ${AGENTRAIL_DEMO_APP_KEY}" \
+  -H "authorization: Bearer ${VALLUM_DEMO_APP_KEY}" \
   -H "content-type: application/json" \
   -d '{
     "gas_budget": 50000000,
@@ -242,8 +242,8 @@ apps:
 Run the maintained example tests with:
 
 ```bash
-node --import tsx --test examples/node-backend/agentrail-backend.test.ts
-node --import tsx --test examples/nextjs-api-route/agentrail-route.test.ts
+node --import tsx --test examples/node-backend/backend.test.ts
+node --import tsx --test examples/nextjs-api-route/route.test.ts
 npm run smoke:demo-dapp
 npm run smoke:demo-browser
 npm run smoke:paid-mcp-tool

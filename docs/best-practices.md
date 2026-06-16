@@ -1,10 +1,10 @@
-# AgentRail Best Practices
+# Vallum Best Practices
 
-AgentRail protects sponsor-wallet funds by keeping sponsorship decisions server-side, bounded, observable, and easy to review. Treat these practices as the default path for dApp integrations and operator deployments.
+Vallum protects sponsor-wallet funds by keeping sponsorship decisions server-side, bounded, observable, and easy to review. Treat these practices as the default path for dApp integrations and operator deployments.
 
 ## Keep Secrets Server-side
 
-- Keep AgentRail app API keys on trusted backend routes.
+- Keep Vallum app API keys on trusted backend routes.
 - Never embed IOTA Gas Station bearer tokens in browser HTML, JavaScript, mobile bundles, or public config.
 - Never commit sponsor private keys, wallet mnemonics, exported keypairs, bearer tokens, app API keys, or local `.env` files.
 - Use separate secrets for local development, testnet proof, and production operation.
@@ -43,13 +43,13 @@ No single control is enough. The sponsor wallet is a funded operational asset, s
 
 ## Preserve User Signing Boundaries
 
-AgentRail sponsorship does not give the sponsor custody of user funds. The user still signs the transaction payload. Keep the app flow clear:
+Vallum sponsorship does not give the sponsor custody of user funds. The user still signs the transaction payload. Keep the app flow clear:
 
 1. Build the intended transaction.
 2. Preflight policy when useful.
 3. Reserve sponsor gas through the backend.
 4. Return only the safe fields needed for user signing.
-5. Execute with the reservation ID, AgentRail transaction ID, transaction bytes, and user signature.
+5. Execute with the reservation ID, Vallum transaction ID, transaction bytes, and user signature.
 
 Do not log raw transaction bytes or signatures unless an operator has explicitly chosen a secure debug path outside the default toolkit.
 
@@ -57,7 +57,7 @@ Do not log raw transaction bytes or signatures unless an operator has explicitly
 
 Browser-facing code should call your own same-origin backend route, not IOTA Gas Station directly. The backend route should own:
 
-- AgentRail API key access;
+- Vallum API key access;
 - package/function metadata selection;
 - policy simulation;
 - reserve and execute calls;
@@ -69,7 +69,7 @@ See `examples/nextjs-api-route` and `apps/demo-dapp` for the current local patte
 
 Use decision events and usage snapshots for operational visibility, but keep them secret-free.
 
-Events may include app ID, wallet address, package/function metadata, operation, outcome, reason code, HTTP status, latency, and AgentRail transaction ID. Events must not include app API keys, upstream bearer tokens, raw request bodies, transaction bytes, signatures, raw upstream error bodies, or local secret file paths.
+Events may include app ID, wallet address, package/function metadata, operation, outcome, reason code, HTTP status, latency, and Vallum transaction ID. Events must not include app API keys, upstream bearer tokens, raw request bodies, transaction bytes, signatures, raw upstream error bodies, or local secret file paths.
 
 ## Separate Local Proof From Production Readiness
 
@@ -96,9 +96,9 @@ For live testnet proof, run:
 npm run readiness:testnet
 npm run gas-station:runtime-preflight
 # Optional when GAS_STATION_URL points at an operator-managed Gas Station:
-AGENTRAIL_GAS_STATION_RUNTIME_MODE=managed-upstream npm run gas-station:runtime-preflight
-npm run operator:write-report-template -- --kind testnet-upstream --out tmp/agentrail/testnet-upstream-report-template.json
-npm run diagnose:gas-station -- --report tmp/agentrail/testnet-upstream-diagnostic.json
+VALLUM_GAS_STATION_RUNTIME_MODE=managed-upstream npm run gas-station:runtime-preflight
+npm run operator:write-report-template -- --kind testnet-upstream --out tmp/vallum/testnet-upstream-report-template.json
+npm run diagnose:gas-station -- --report tmp/vallum/testnet-upstream-diagnostic.json
 npm run execute:testnet-demo
 ```
 
