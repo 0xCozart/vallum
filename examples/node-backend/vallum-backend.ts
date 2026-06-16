@@ -1,7 +1,7 @@
 import {
-  AgentRailAuthError,
-  AgentRailError,
-  AgentRailPolicyError,
+  VallumAuthError,
+  VallumError,
+  VallumPolicyError,
   type ExecuteSponsoredTransactionRequest,
   type ExecuteSponsoredTransactionResponse,
   type ReserveGasRequest,
@@ -9,28 +9,28 @@ import {
 } from "../../packages/sdk/src/index.js";
 import { POLICY_REASON_CODES } from "../../packages/shared-types/src/policy.js";
 
-export interface AgentRailBackendClient {
+export interface VallumBackendClient {
   reserveGas(request: ReserveGasRequest): Promise<ReserveGasResponse>;
   executeSponsoredTransaction(
     request: ExecuteSponsoredTransactionRequest,
   ): Promise<ExecuteSponsoredTransactionResponse>;
 }
 
-export interface AgentRailExampleResponse<TBody extends object> {
+export interface VallumExampleResponse<TBody extends object> {
   status: number;
   body: TBody;
 }
 
-export interface AgentRailExampleErrorBody {
-  error: "AUTH_FAILED" | "POLICY_REJECTED" | "AGENTRAIL_REQUEST_FAILED" | "INTERNAL_ERROR";
+export interface VallumExampleErrorBody {
+  error: "AUTH_FAILED" | "POLICY_REJECTED" | "VALLUM_REQUEST_FAILED" | "INTERNAL_ERROR";
   message: string;
   reasonCode?: string;
 }
 
-export type AgentRailExampleResult<TBody extends object> = AgentRailExampleResponse<TBody | AgentRailExampleErrorBody>;
+export type VallumExampleResult<TBody extends object> = VallumExampleResponse<TBody | VallumExampleErrorBody>;
 
-export interface CreateAgentRailBackendHandlersOptions {
-  client: AgentRailBackendClient;
+export interface CreateVallumBackendHandlersOptions {
+  client: VallumBackendClient;
 }
 
 export interface ReserveHandlerInput {
@@ -63,36 +63,36 @@ function knownPolicyReasonCode(reasonCode: string | undefined): string | undefin
     : undefined;
 }
 
-function safeErrorResponse(error: unknown): AgentRailExampleResponse<AgentRailExampleErrorBody> {
-  if (error instanceof AgentRailAuthError) {
+function safeErrorResponse(error: unknown): VallumExampleResponse<VallumExampleErrorBody> {
+  if (error instanceof VallumAuthError) {
     return {
       status: statusOrFallback(error.status, 401),
       body: {
         error: "AUTH_FAILED",
-        message: "AgentRail authentication failed.",
+        message: "Vallum authentication failed.",
       },
     };
   }
 
-  if (error instanceof AgentRailPolicyError) {
+  if (error instanceof VallumPolicyError) {
     const reasonCode = knownPolicyReasonCode(error.reasonCode);
 
     return {
       status: statusOrFallback(error.status, 400),
       body: {
         error: "POLICY_REJECTED",
-        message: "Request rejected by AgentRail policy.",
+        message: "Request rejected by Vallum policy.",
         ...(reasonCode === undefined ? {} : { reasonCode }),
       },
     };
   }
 
-  if (error instanceof AgentRailError) {
+  if (error instanceof VallumError) {
     return {
       status: statusOrFallback(error.status, 502),
       body: {
-        error: "AGENTRAIL_REQUEST_FAILED",
-        message: "AgentRail request failed.",
+        error: "VALLUM_REQUEST_FAILED",
+        message: "Vallum request failed.",
       },
     };
   }
@@ -106,9 +106,9 @@ function safeErrorResponse(error: unknown): AgentRailExampleResponse<AgentRailEx
   };
 }
 
-export function createAgentRailBackendHandlers(options: CreateAgentRailBackendHandlersOptions) {
+export function createVallumBackendHandlers(options: CreateVallumBackendHandlersOptions) {
   return {
-    async reserve(input: ReserveHandlerInput): Promise<AgentRailExampleResult<ReserveHandlerBody>> {
+    async reserve(input: ReserveHandlerInput): Promise<VallumExampleResult<ReserveHandlerBody>> {
       try {
         const reservation = await options.client.reserveGas({
           gasBudget: input.gasBudget,
@@ -131,7 +131,7 @@ export function createAgentRailBackendHandlers(options: CreateAgentRailBackendHa
       }
     },
 
-    async execute(input: ExecuteHandlerInput): Promise<AgentRailExampleResult<ExecuteHandlerBody>> {
+    async execute(input: ExecuteHandlerInput): Promise<VallumExampleResult<ExecuteHandlerBody>> {
       try {
         const executed = await options.client.executeSponsoredTransaction({
           reservationId: input.reservationId,

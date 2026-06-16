@@ -1,57 +1,57 @@
-export const AGENTRAIL_GATEWAY_URL_ENV = "AGENTRAIL_GATEWAY_URL";
-export const AGENTRAIL_API_KEY_ENV = "AGENTRAIL_API_KEY";
-export const AGENTRAIL_MCP_SERVER_NAME_ENV = "AGENTRAIL_MCP_SERVER_NAME";
-export const AGENTRAIL_MCP_SERVER_VERSION_ENV = "AGENTRAIL_MCP_SERVER_VERSION";
-export const AGENTRAIL_MCP_LOG_LEVEL_ENV = "AGENTRAIL_MCP_LOG_LEVEL";
+export const VALLUM_GATEWAY_URL_ENV = "VALLUM_GATEWAY_URL";
+export const VALLUM_API_KEY_ENV = "VALLUM_API_KEY";
+export const VALLUM_MCP_SERVER_NAME_ENV = "VALLUM_MCP_SERVER_NAME";
+export const VALLUM_MCP_SERVER_VERSION_ENV = "VALLUM_MCP_SERVER_VERSION";
+export const VALLUM_MCP_LOG_LEVEL_ENV = "VALLUM_MCP_LOG_LEVEL";
 
-export type AgentRailMcpLogLevel = "silent" | "error" | "warn" | "info" | "debug";
+export type VallumMcpLogLevel = "silent" | "error" | "warn" | "info" | "debug";
 
-export interface AgentRailMcpConfig {
+export interface VallumMcpConfig {
   readonly gatewayBaseUrl: string;
   readonly apiKey: string;
   readonly serverName: string;
   readonly serverVersion: string;
-  readonly logLevel: AgentRailMcpLogLevel;
+  readonly logLevel: VallumMcpLogLevel;
 }
 
-export interface AgentRailMcpConfigOptions {
+export interface VallumMcpConfigOptions {
   readonly packageVersion?: string;
 }
 
-export interface RedactedAgentRailMcpConfig {
+export interface RedactedVallumMcpConfig {
   readonly gatewayUrl: "configured";
   readonly apiKey: "configured";
   readonly serverName: string;
   readonly serverVersion: string;
-  readonly logLevel: AgentRailMcpLogLevel;
+  readonly logLevel: VallumMcpLogLevel;
 }
 
-export class AgentRailMcpConfigError extends Error {
-  readonly code = "AGENTRAIL_MCP_CONFIG_ERROR";
+export class VallumMcpConfigError extends Error {
+  readonly code = "VALLUM_MCP_CONFIG_ERROR";
 
   constructor(message: string) {
     super(message);
-    this.name = "AgentRailMcpConfigError";
+    this.name = "VallumMcpConfigError";
   }
 }
 
-export function parseAgentRailMcpConfig(
+export function parseVallumMcpConfig(
   env: Record<string, string | undefined>,
-  options: AgentRailMcpConfigOptions = {},
-): AgentRailMcpConfig {
-  const gatewayBaseUrl = requiredEnv(env, AGENTRAIL_GATEWAY_URL_ENV);
-  const apiKey = requiredEnv(env, AGENTRAIL_API_KEY_ENV);
+  options: VallumMcpConfigOptions = {},
+): VallumMcpConfig {
+  const gatewayBaseUrl = requiredEnv(env, VALLUM_GATEWAY_URL_ENV);
+  const apiKey = requiredEnv(env, VALLUM_API_KEY_ENV);
 
   return {
     gatewayBaseUrl: normalizeGatewayBaseUrl(gatewayBaseUrl),
     apiKey,
-    serverName: optionalEnv(env, AGENTRAIL_MCP_SERVER_NAME_ENV) ?? "agentrail",
-    serverVersion: optionalEnv(env, AGENTRAIL_MCP_SERVER_VERSION_ENV) ?? options.packageVersion ?? "0.0.0",
-    logLevel: parseLogLevel(optionalEnv(env, AGENTRAIL_MCP_LOG_LEVEL_ENV)),
+    serverName: optionalEnv(env, VALLUM_MCP_SERVER_NAME_ENV) ?? "vallum",
+    serverVersion: optionalEnv(env, VALLUM_MCP_SERVER_VERSION_ENV) ?? options.packageVersion ?? "0.0.0",
+    logLevel: parseLogLevel(optionalEnv(env, VALLUM_MCP_LOG_LEVEL_ENV)),
   };
 }
 
-export function redactAgentRailMcpConfig(config: AgentRailMcpConfig): RedactedAgentRailMcpConfig {
+export function redactVallumMcpConfig(config: VallumMcpConfig): RedactedVallumMcpConfig {
   return {
     gatewayUrl: "configured",
     apiKey: "configured",
@@ -64,7 +64,7 @@ export function redactAgentRailMcpConfig(config: AgentRailMcpConfig): RedactedAg
 function requiredEnv(env: Record<string, string | undefined>, name: string): string {
   const value = optionalEnv(env, name);
   if (value === undefined) {
-    throw new AgentRailMcpConfigError(`${name} is required.`);
+    throw new VallumMcpConfigError(`${name} is required.`);
   }
   return value;
 }
@@ -79,11 +79,11 @@ function normalizeGatewayBaseUrl(value: string): string {
   try {
     url = new URL(value);
   } catch {
-    throw new AgentRailMcpConfigError(`${AGENTRAIL_GATEWAY_URL_ENV} must be an absolute http(s) URL.`);
+    throw new VallumMcpConfigError(`${VALLUM_GATEWAY_URL_ENV} must be an absolute http(s) URL.`);
   }
 
   if (url.protocol !== "http:" && url.protocol !== "https:") {
-    throw new AgentRailMcpConfigError(`${AGENTRAIL_GATEWAY_URL_ENV} must be an absolute http(s) URL.`);
+    throw new VallumMcpConfigError(`${VALLUM_GATEWAY_URL_ENV} must be an absolute http(s) URL.`);
   }
 
   url.hash = "";
@@ -91,10 +91,10 @@ function normalizeGatewayBaseUrl(value: string): string {
   return url.toString().replace(/\/$/, "");
 }
 
-function parseLogLevel(value: string | undefined): AgentRailMcpLogLevel {
+function parseLogLevel(value: string | undefined): VallumMcpLogLevel {
   if (value === undefined) return "error";
   if (value === "silent" || value === "error" || value === "warn" || value === "info" || value === "debug") {
     return value;
   }
-  throw new AgentRailMcpConfigError(`${AGENTRAIL_MCP_LOG_LEVEL_ENV} must be one of silent, error, warn, info, or debug.`);
+  throw new VallumMcpConfigError(`${VALLUM_MCP_LOG_LEVEL_ENV} must be one of silent, error, warn, info, or debug.`);
 }

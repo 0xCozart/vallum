@@ -48,7 +48,7 @@ test("roadmap completion artifact summarizes blockers without configured values"
   const parsed = JSON.parse(raw) as typeof artifact;
 
   assert.equal(parsed.schemaVersion, 1);
-  assert.equal(parsed.kind, "agentrail.roadmap-completion-audit");
+  assert.equal(parsed.kind, "vallum.roadmap-completion-audit");
   assert.equal(parsed.generatedAt, "2026-06-14T12:00:00.000Z");
   assert.equal(parsed.roadmapComplete, false);
   assert.deepEqual(parsed.blockedProductCheckIds, [
@@ -75,26 +75,26 @@ test("roadmap completion artifact summarizes blockers without configured values"
 });
 
 test("roadmap completion artifact writer uses restrictive local file permissions", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-roadmap-completion-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-roadmap-completion-"));
   try {
     const artifact = await writeRoadmapCompletionArtifact({
       cwd,
       now: new Date("2026-06-14T12:00:00.000Z"),
-      outFile: "tmp/agentrail/roadmap-completion-audit.json",
+      outFile: "tmp/vallum/roadmap-completion-audit.json",
       productStatus: productStatusFixture(),
       launchReadiness: launchReadinessFixture(),
       operatorLiveGates: operatorGatesFixture(),
     });
-    const outFile = join(cwd, "tmp/agentrail/roadmap-completion-audit.json");
+    const outFile = join(cwd, "tmp/vallum/roadmap-completion-audit.json");
     const raw = await readFile(outFile, "utf8");
     const written = JSON.parse(raw) as typeof artifact;
     const mode = (await stat(outFile)).mode & 0o777;
 
     assert.equal(mode, 0o600);
-    assert.equal(written.kind, "agentrail.roadmap-completion-audit");
+    assert.equal(written.kind, "vallum.roadmap-completion-audit");
     assert.equal(written.roadmapComplete, false);
     assert.deepEqual(written.blockerCodes, artifact.blockerCodes);
-    assert.doesNotMatch(raw, /tmp\/agentrail\/roadmap-completion-audit\.json/);
+    assert.doesNotMatch(raw, /tmp\/vallum\/roadmap-completion-audit\.json/);
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }
@@ -174,7 +174,7 @@ function productStatusFixture(): ProductStatusReport {
         status: "blocked-live",
         code: "IOTA_NAMES_LIVE_CONFIG_MISSING",
         message: "IOTA Names live proof requires operator config.",
-        next: "npm run operator:write-report-template -- --kind iota-names-live --out tmp/agentrail/iota-names-live-report-template.json.",
+        next: "npm run operator:write-report-template -- --kind iota-names-live --out tmp/vallum/iota-names-live-report-template.json.",
       },
       {
         id: "public-a2a-hosting",
@@ -206,7 +206,7 @@ function launchReadinessFixture(): LaunchReadinessReport {
         evidencePaths: [],
         commands: [],
         blockerCodes: ["IOTA_NAMES_LIVE_CONFIG_MISSING"],
-        next: "npm run operator:write-report-template -- --kind iota-names-live --out tmp/agentrail/iota-names-live-report-template.json.",
+        next: "npm run operator:write-report-template -- --kind iota-names-live --out tmp/vallum/iota-names-live-report-template.json.",
       },
       {
         id: "phase-4-standards-bridges",
@@ -248,7 +248,7 @@ function operatorGatesFixture(): OperatorLiveGateReport {
         id: "sponsor-funding",
         status: "ready-approval",
         code: "SPONSOR_FUNDING_REPORT_VALID",
-        command: "npm run sponsor:check-funding -- --report tmp/agentrail/sponsor-funding-report.json",
+        command: "npm run sponsor:check-funding -- --report tmp/vallum/sponsor-funding-report.json",
         approvalRequired: true,
         contactsLiveService: true,
         message: "Sponsor funding report is valid.",
@@ -258,7 +258,7 @@ function operatorGatesFixture(): OperatorLiveGateReport {
         id: "iota-names-live",
         status: "blocked-config",
         code: "IOTA_NAMES_LIVE_CONFIG_MISSING",
-        command: "npm run operator:write-report-template -- --kind iota-names-live --out tmp/agentrail/iota-names-live-report-template.json && npm run smoke:iota-names-live -- --report <ignored-json-path>",
+        command: "npm run operator:write-report-template -- --kind iota-names-live --out tmp/vallum/iota-names-live-report-template.json && npm run smoke:iota-names-live -- --report <ignored-json-path>",
         approvalRequired: true,
         contactsLiveService: true,
         message: "IOTA Names live proof requires operator config.",
@@ -268,7 +268,7 @@ function operatorGatesFixture(): OperatorLiveGateReport {
         id: "public-a2a-hosting",
         status: "requires-approval",
         code: "PUBLIC_A2A_HOSTING_UNPROVEN",
-        command: "npm run a2a:write-public-proof-bundle -- --out tmp/agentrail/a2a-public-proof-bundle.json && npm run proof:a2a-public-readiness && npm run smoke:a2a-public-discovery",
+        command: "npm run a2a:write-public-proof-bundle -- --out tmp/vallum/a2a-public-proof-bundle.json && npm run proof:a2a-public-readiness && npm run smoke:a2a-public-discovery",
         approvalRequired: true,
         contactsLiveService: true,
         message: "Public A2A hosting is unproven.",

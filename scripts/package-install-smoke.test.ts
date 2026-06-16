@@ -25,8 +25,8 @@ import {
 
 test("package install smoke packs explicit public workspaces", () => {
   assert.deepEqual(
-    buildNpmPackArgs({ dir: "packages/sdk", name: "@sacredlabs/agentrail-sdk" }, "/tmp/packs"),
-    ["pack", "--json", "--pack-destination", "/tmp/packs", "-w", "@sacredlabs/agentrail-sdk"],
+    buildNpmPackArgs({ dir: "packages/sdk", name: "@vallum/sdk" }, "/tmp/packs"),
+    ["pack", "--json", "--pack-destination", "/tmp/packs", "-w", "@vallum/sdk"],
   );
 });
 
@@ -42,8 +42,8 @@ test("package install smoke installs local tarballs without lifecycle scripts or
 
 test("package install smoke consumer package pins dependencies to local tarballs", () => {
   const tarballs: PackageTarball[] = [
-    { name: "@sacredlabs/agentrail-accounts", tarballPath: "/tmp/packs/sacredlabs-agentrail-accounts.tgz" },
-    { name: "@sacredlabs/agentrail-sdk", tarballPath: "/tmp/packs/sacredlabs-agentrail-sdk.tgz" },
+    { name: "@vallum/accounts", tarballPath: "/tmp/packs/vallum-accounts.tgz" },
+    { name: "@vallum/sdk", tarballPath: "/tmp/packs/vallum-sdk.tgz" },
   ];
 
   const packageJson = JSON.parse(buildConsumerPackageJson(tarballs)) as {
@@ -53,16 +53,16 @@ test("package install smoke consumer package pins dependencies to local tarballs
 
   assert.equal(packageJson.private, true);
   assert.equal(
-    packageJson.dependencies?.["@sacredlabs/agentrail-accounts"],
-    "file:/tmp/packs/sacredlabs-agentrail-accounts.tgz",
+    packageJson.dependencies?.["@vallum/accounts"],
+    "file:/tmp/packs/vallum-accounts.tgz",
   );
-  assert.equal(packageJson.dependencies?.["@sacredlabs/agentrail-sdk"], "file:/tmp/packs/sacredlabs-agentrail-sdk.tgz");
+  assert.equal(packageJson.dependencies?.["@vallum/sdk"], "file:/tmp/packs/vallum-sdk.tgz");
 });
 
 test("package install smoke imports package root entrypoints without secret material", () => {
   const source = buildConsumerSmokeSource([
-    { dir: "packages/accounts", name: "@sacredlabs/agentrail-accounts" },
-    { dir: "packages/sdk", name: "@sacredlabs/agentrail-sdk" },
+    { dir: "packages/accounts", name: "@vallum/accounts" },
+    { dir: "packages/sdk", name: "@vallum/sdk" },
   ]);
 
   assert.match(source, /await import\(packageName\)/);
@@ -73,10 +73,10 @@ test("package install smoke imports package root entrypoints without secret mate
 test("paid MCP consumer smoke uses package root entrypoints only", () => {
   const source = buildPaidMcpConsumerSmokeSource();
 
-  assert.match(source, /from "@sacredlabs\/agentrail-manifest"/);
-  assert.match(source, /from "@sacredlabs\/agentrail-policy-gateway"/);
-  assert.match(source, /from "@sacredlabs\/agentrail-sdk"/);
-  assert.doesNotMatch(source, /@sacredlabs\/agentrail-[^"]+\/(src|dist|contracts|server|schema|routes)/);
+  assert.match(source, /from "@vallum\/manifest"/);
+  assert.match(source, /from "@vallum\/policy-gateway"/);
+  assert.match(source, /from "@vallum\/sdk"/);
+  assert.doesNotMatch(source, /@vallum\/[^"]+\/(src|dist|contracts|server|schema|routes)/);
   assert.doesNotMatch(source, /\.\.\/|\.\/packages\/|\/src\//);
 });
 
@@ -97,11 +97,11 @@ test("paid MCP consumer smoke proves approval denial failed payment and redactio
 test("MCP stdio consumer smoke uses package bin without repo internals", () => {
   const source = buildMcpStdioConsumerSmokeSource();
 
-  assert.match(source, /node_modules.*\.bin.*agentrail-mcp/s);
+  assert.match(source, /node_modules.*\.bin.*vallum-mcp/s);
   assert.match(source, /mcp\.request\("tools\/list"/);
   assert.match(source, /mcp\.request\("tools\/call"/);
   assert.match(source, /boundary\.route=MCP-stdio->SDK->mock-policy-gateway/);
-  assert.doesNotMatch(source, /@sacredlabs\/agentrail-mcp-server\/(src|dist)/);
+  assert.doesNotMatch(source, /@vallum\/mcp-server\/(src|dist)/);
   assert.doesNotMatch(source, /\.\.\/|\.\/packages\/|\/src\//);
 });
 
@@ -119,8 +119,8 @@ test("npm registry MCP stdio consumer smoke pins the MCP package version separat
   const packageJson = JSON.parse(buildRegistryMcpStdioConsumerPackageJson({
     mcpVersion: "0.0.1-mcp.0",
     supportPackages: [
-      { name: "@sacredlabs/agentrail-manifest", version: "0.0.0-prerelease" },
-      { name: "@sacredlabs/agentrail-policy-gateway", version: "0.0.0-prerelease" },
+      { name: "@vallum/manifest", version: "0.0.0-prerelease" },
+      { name: "@vallum/policy-gateway", version: "0.0.0-prerelease" },
     ],
   })) as {
     private?: boolean;
@@ -128,15 +128,15 @@ test("npm registry MCP stdio consumer smoke pins the MCP package version separat
   };
 
   assert.equal(packageJson.private, true);
-  assert.equal(packageJson.dependencies?.["@sacredlabs/agentrail-mcp-server"], "0.0.1-mcp.0");
-  assert.equal(packageJson.dependencies?.["@sacredlabs/agentrail-manifest"], "0.0.0-prerelease");
-  assert.equal(packageJson.dependencies?.["@sacredlabs/agentrail-policy-gateway"], "0.0.0-prerelease");
+  assert.equal(packageJson.dependencies?.["@vallum/mcp-server"], "0.0.1-mcp.0");
+  assert.equal(packageJson.dependencies?.["@vallum/manifest"], "0.0.0-prerelease");
+  assert.equal(packageJson.dependencies?.["@vallum/policy-gateway"], "0.0.0-prerelease");
 });
 
 test("npm registry MCP stdio consumer smoke uses package bin and registry marker", () => {
   const source = buildRegistryMcpStdioConsumerSmokeSource();
 
-  assert.match(source, /node_modules.*\.bin.*agentrail-mcp/s);
+  assert.match(source, /node_modules.*\.bin.*vallum-mcp/s);
   assert.match(source, /install=npm-registry/);
   assert.doesNotMatch(source, /install=local-tarballs/);
   assert.match(source, /boundary\.route=MCP-stdio->SDK->mock-policy-gateway/);
@@ -145,16 +145,18 @@ test("npm registry MCP stdio consumer smoke uses package bin and registry marker
 
 test("npm registry consumer smoke pins current published package versions", () => {
   const packageJson = JSON.parse(buildRegistryConsumerPackageJson([
-    { dir: "packages/accounts", name: "@sacredlabs/agentrail-accounts" },
-    { dir: "packages/sdk", name: "@sacredlabs/agentrail-sdk" },
+    { dir: "packages/accounts", name: "@vallum/accounts", version: "0.0.0-prerelease" },
+    { dir: "packages/mcp-server", name: "@vallum/mcp-server", version: "0.0.1-mcp.0" },
+    { dir: "packages/sdk", name: "@vallum/sdk", version: "0.0.0-prerelease" },
   ], "0.0.0-prerelease")) as {
     private?: boolean;
     dependencies?: Record<string, string>;
   };
 
   assert.equal(packageJson.private, true);
-  assert.equal(packageJson.dependencies?.["@sacredlabs/agentrail-accounts"], "0.0.0-prerelease");
-  assert.equal(packageJson.dependencies?.["@sacredlabs/agentrail-sdk"], "0.0.0-prerelease");
+  assert.equal(packageJson.dependencies?.["@vallum/accounts"], "0.0.0-prerelease");
+  assert.equal(packageJson.dependencies?.["@vallum/mcp-server"], "0.0.1-mcp.0");
+  assert.equal(packageJson.dependencies?.["@vallum/sdk"], "0.0.0-prerelease");
 });
 
 test("npm registry consumer smoke installs from registry without lifecycle scripts", () => {

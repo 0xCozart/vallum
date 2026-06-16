@@ -79,8 +79,8 @@ async function main(): Promise<void> {
   try {
     const upstreamBaseUrl = await listen(upstream.server);
     const config = await loadGatewayConfigFromEnv({
-      AGENTRAIL_POLICY_PATH: "examples/policies/demo-dapp.yaml",
-      AGENTRAIL_DEMO_APP_KEY: "local-dev-demo-key",
+      VALLUM_POLICY_PATH: "examples/policies/demo-dapp.yaml",
+      VALLUM_DEMO_APP_KEY: "local-dev-demo-key",
       GAS_STATION_URL: upstreamBaseUrl,
       GAS_STATION_BEARER_TOKEN: "local-demo-smoke-token",
     });
@@ -89,11 +89,11 @@ async function main(): Promise<void> {
     const gatewayBaseUrl = await listen(gateway);
 
     const output = await runLocalDemoFromEnv({
-      AGENTRAIL_GATEWAY_URL: gatewayBaseUrl,
-      AGENTRAIL_DEMO_APP_KEY: "local-dev-demo-key",
+      VALLUM_GATEWAY_URL: gatewayBaseUrl,
+      VALLUM_DEMO_APP_KEY: "local-dev-demo-key",
     });
 
-    assert.match(output, /AgentRail demo dApp local flow passed/);
+    assert.match(output, /Vallum demo dApp local flow passed/);
     assert.match(output, /reservationId=demo-reservation-1/);
     assert.match(output, /digest=demo-digest-1/);
     assert.doesNotMatch(output, /local-dev-demo-key|local-demo-smoke-token|Bearer/i);

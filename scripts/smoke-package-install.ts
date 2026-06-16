@@ -59,7 +59,7 @@ export async function runPackageInstallSmoke(options: PackageInstallSmokeOptions
     return 1;
   }
 
-  const tempRoot = await mkdtemp(join(tmpdir(), "agentrail-package-install-"));
+  const tempRoot = await mkdtemp(join(tmpdir(), "vallum-package-install-"));
   const packDir = join(tempRoot, "packs");
   const consumerDir = join(tempRoot, "consumer");
 

@@ -21,11 +21,11 @@ test("package publication proof plan reports current blockers without registry s
   });
   const formatted = formatPackagePublicationProofPlan(plan);
 
-  assert.equal(plan.kind, "agentrail.package-publication-proof-plan");
+  assert.equal(plan.kind, "vallum.package-publication-proof-plan");
   assert.equal(plan.status, "blocked");
   assert.equal(plan.localProofOk, true);
   assert.equal(plan.liveReady, false);
-  assert.ok(plan.packageNames.includes("@sacredlabs/agentrail-sdk"));
+  assert.ok(plan.packageNames.includes("@vallum/sdk"));
   assert.ok(plan.blockerCodes.includes("PACKAGE_PUBLICATION_REPORT_MISSING"));
   assert.ok(plan.requiredOperatorInputs.includes("PACKAGE_PUBLICATION_REPORT"));
   assert.ok(plan.requiredStructuredReportFields.includes("packageNames"));
@@ -37,7 +37,7 @@ test("package publication proof plan reports current blockers without registry s
 });
 
 test("package publication proof plan can write a redacted local artifact", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-package-plan-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-package-plan-"));
   try {
     const outFile = join(cwd, "tmp", "package-publication-proof-plan.json");
     const plan = await writePackagePublicationProofPlan({
@@ -50,7 +50,7 @@ test("package publication proof plan can write a redacted local artifact", async
     const parsed = JSON.parse(await readFile(outFile, "utf8")) as typeof plan;
 
     assert.equal(mode, 0o600);
-    assert.equal(parsed.kind, "agentrail.package-publication-proof-plan");
+    assert.equal(parsed.kind, "vallum.package-publication-proof-plan");
     assert.deepEqual(parsed.blockerCodes, plan.blockerCodes);
     assert.deepEqual(parsed.packageNames, plan.packageNames);
   } finally {
@@ -59,7 +59,7 @@ test("package publication proof plan can write a redacted local artifact", async
 });
 
 test("package publication proof plan reports ready approval codes for a valid structured report", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-package-plan-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-package-plan-"));
   try {
     const baseline = await checkPackagePublicationReadiness({
       cwd: repoRoot,
@@ -69,7 +69,7 @@ test("package publication proof plan reports ready approval codes for a valid st
     const reportPath = join(cwd, "publication-report.json");
     await writeFile(reportPath, JSON.stringify({
       schemaVersion: 1,
-      kind: "agentrail.package-publication-proof",
+      kind: "vallum.package-publication-proof",
       result: "passed",
       observedAt: "2026-06-13T11:00:00.000Z",
       registry: "npm",

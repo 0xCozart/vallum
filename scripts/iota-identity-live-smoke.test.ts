@@ -111,7 +111,7 @@ test("IOTA Identity live smoke report stores only sanitized proof metadata", asy
 test("IOTA Identity live smoke report rejects unsafe profile and DID fields", async () => {
   const unsafe = {
     schemaVersion: 1,
-    kind: "agentrail.iota-identity-live-smoke-report",
+    kind: "vallum.iota-identity-live-smoke-report",
     observedAt: now.toISOString(),
     result: "passed",
     code: "IOTA_IDENTITY_LIVE_SMOKE_PASSED",
@@ -125,7 +125,7 @@ test("IOTA Identity live smoke report rejects unsafe profile and DID fields", as
     profileName: "research-agent",
     agentDid: "did:iota:agent:researcher",
   };
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-iota-identity-report-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-iota-identity-report-"));
   try {
     const path = join(cwd, "identity-report.json");
     await writeFile(path, JSON.stringify(unsafe));

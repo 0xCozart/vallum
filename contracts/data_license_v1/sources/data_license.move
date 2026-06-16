@@ -1,4 +1,4 @@
-/// Minimal AgentRail data-license state contract.
+/// Minimal Vallum data-license state contract.
 ///
 /// This MVP records license access state and proof hashes. It does not custody
 /// funds, issue private access tokens, or enforce legal terms.

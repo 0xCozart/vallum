@@ -19,25 +19,25 @@ test("package publication proof bundle writes template, plan, and blocked summar
         PACKAGE_PUBLICATION_REPORT: "missing-publication-report.json",
       },
     });
-    const bundleRaw = await readFile(join(cwd, "tmp/agentrail/package-publication-proof-bundle.json"), "utf8");
-    const planRaw = await readFile(join(cwd, "tmp/agentrail/package-publication-proof-plan.json"), "utf8");
-    const readinessRaw = await readFile(join(cwd, "tmp/agentrail/package-publication-readiness.json"), "utf8");
-    const templateRaw = await readFile(join(cwd, "tmp/agentrail/package-publication-report-template.json"), "utf8");
+    const bundleRaw = await readFile(join(cwd, "tmp/vallum/package-publication-proof-bundle.json"), "utf8");
+    const planRaw = await readFile(join(cwd, "tmp/vallum/package-publication-proof-plan.json"), "utf8");
+    const readinessRaw = await readFile(join(cwd, "tmp/vallum/package-publication-readiness.json"), "utf8");
+    const templateRaw = await readFile(join(cwd, "tmp/vallum/package-publication-report-template.json"), "utf8");
 
-    assert.equal(bundle.kind, "agentrail.package-publication-proof-bundle");
+    assert.equal(bundle.kind, "vallum.package-publication-proof-bundle");
     assert.equal(bundle.status, "blocked");
     assert.equal(bundle.localProofOk, true);
     assert.equal(bundle.liveReady, false);
-    assert.deepEqual(bundle.packageNames, ["@sacredlabs/agentrail-sdk"]);
+    assert.deepEqual(bundle.packageNames, ["@vallum/sdk"]);
     assert.deepEqual(bundle.templateArtifacts, [
       {
         id: "package-publication",
-        path: "tmp/agentrail/package-publication-report-template.json",
+        path: "tmp/vallum/package-publication-report-template.json",
         acceptedReportEnv: "PACKAGE_PUBLICATION_REPORT",
       },
     ]);
-    assert.equal(bundle.planArtifact, "tmp/agentrail/package-publication-proof-plan.json");
-    assert.equal(bundle.readinessArtifact, "tmp/agentrail/package-publication-readiness.json");
+    assert.equal(bundle.planArtifact, "tmp/vallum/package-publication-proof-plan.json");
+    assert.equal(bundle.readinessArtifact, "tmp/vallum/package-publication-readiness.json");
     assert.ok(bundle.blockerCodes.includes("PACKAGE_PUBLICATION_REPORT_NOT_FOUND"));
     assert.ok(bundle.readyApprovalCodes.length === 0);
     assert.ok(bundle.requiredOperatorInputs.includes("PACKAGE_PUBLICATION_REPORT"));
@@ -49,10 +49,10 @@ test("package publication proof bundle writes template, plan, and blocked summar
     assert.equal(bundle.steps.find((step) => step.id === "run-approved-npm-publication-proof")?.contactsNpmRegistry, true);
     assert.equal(bundle.steps.find((step) => step.id === "write-publication-template")?.contactsNpmRegistry, false);
 
-    await assertMode(join(cwd, "tmp/agentrail/package-publication-proof-bundle.json"), 0o600);
-    await assertMode(join(cwd, "tmp/agentrail/package-publication-proof-plan.json"), 0o600);
-    await assertMode(join(cwd, "tmp/agentrail/package-publication-readiness.json"), 0o600);
-    await assertMode(join(cwd, "tmp/agentrail/package-publication-report-template.json"), 0o600);
+    await assertMode(join(cwd, "tmp/vallum/package-publication-proof-bundle.json"), 0o600);
+    await assertMode(join(cwd, "tmp/vallum/package-publication-proof-plan.json"), 0o600);
+    await assertMode(join(cwd, "tmp/vallum/package-publication-readiness.json"), 0o600);
+    await assertMode(join(cwd, "tmp/vallum/package-publication-report-template.json"), 0o600);
 
     const allOutput = `${JSON.stringify(bundle)}\n${bundleRaw}\n${planRaw}\n${readinessRaw}\n${templateRaw}`;
     assert.doesNotMatch(allOutput, /missing-publication-report|npm-token-value|one-time-password|registry-response-body|_authToken/i);
@@ -66,11 +66,11 @@ test("package publication proof bundle is ready for approval when structured rep
   try {
     await writeJsonReport(join(cwd, "package-publication-report.json"), {
       schemaVersion: 1,
-      kind: "agentrail.package-publication-proof",
+      kind: "vallum.package-publication-proof",
       result: "passed",
       observedAt: NOW.toISOString(),
       registry: "npm",
-      packageNames: ["@sacredlabs/agentrail-sdk"],
+      packageNames: ["@vallum/sdk"],
       checks: [
         "npm-pack-dry-run",
         "local-tarball-install",
@@ -91,7 +91,7 @@ test("package publication proof bundle is ready for approval when structured rep
         PACKAGE_PUBLICATION_REPORT: "package-publication-report.json",
       },
     });
-    const bundleRaw = await readFile(join(cwd, "tmp/agentrail/package-publication-proof-bundle.json"), "utf8");
+    const bundleRaw = await readFile(join(cwd, "tmp/vallum/package-publication-proof-bundle.json"), "utf8");
 
     assert.equal(bundle.status, "ready-for-approval");
     assert.equal(bundle.liveReady, true);
@@ -105,9 +105,9 @@ test("package publication proof bundle is ready for approval when structured rep
 });
 
 async function writePackageEvidence(): Promise<string> {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-package-proof-bundle-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-package-proof-bundle-"));
   for (const path of [
-    "docs/agentrail/package-release-strategy.md",
+    "docs/vallum/package-release-strategy.md",
     "scripts/package-publish-dry-run.ts",
     "scripts/smoke-package-install.ts",
     "scripts/smoke-package-paid-mcp-consumer.ts",
@@ -124,7 +124,7 @@ async function writePackageEvidence(): Promise<string> {
   }
   await mkdir(join(cwd, "packages/sdk"), { recursive: true });
   await writeFile(join(cwd, "packages/sdk/package.json"), `${JSON.stringify({
-    name: "@sacredlabs/agentrail-sdk",
+    name: "@vallum/sdk",
     version: "0.0.0-prerelease",
   }, null, 2)}\n`);
   return cwd;
@@ -132,12 +132,12 @@ async function writePackageEvidence(): Promise<string> {
 
 function completeScripts(): Record<string, string | undefined> {
   return {
-    "pack:check": "npm run build && npm pack --dry-run -w @sacredlabs/agentrail-sdk",
+    "pack:check": "npm run build && npm pack --dry-run -w @vallum/sdk",
     "smoke:package-install": "npm run build && tsx scripts/smoke-package-install.ts",
     "smoke:package-paid-mcp-consumer": "npm run build && tsx scripts/smoke-package-paid-mcp-consumer.ts",
     "smoke:package-mcp-stdio-consumer": "npm run build && tsx scripts/smoke-package-mcp-stdio-consumer.ts",
-    "smoke:npm-registry-paid-mcp-consumer": "tsx scripts/smoke-npm-registry-paid-mcp-consumer.ts --out tmp/agentrail/npm-registry-consumer-proof.json",
-    "smoke:npm-registry-mcp-stdio-consumer": "tsx scripts/smoke-npm-registry-mcp-stdio-consumer.ts --out tmp/agentrail/npm-registry-mcp-stdio-consumer-proof.json",
+    "smoke:npm-registry-paid-mcp-consumer": "tsx scripts/smoke-npm-registry-paid-mcp-consumer.ts --out tmp/vallum/npm-registry-consumer-proof.json",
+    "smoke:npm-registry-mcp-stdio-consumer": "tsx scripts/smoke-npm-registry-mcp-stdio-consumer.ts --out tmp/vallum/npm-registry-mcp-stdio-consumer-proof.json",
     "publish:dry-run": "npm run build && tsx scripts/package-publish-dry-run.ts",
     "verify:fast": "npm test",
     "verify:local": "npm test",

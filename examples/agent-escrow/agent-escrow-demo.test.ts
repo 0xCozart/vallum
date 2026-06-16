@@ -23,7 +23,7 @@ test("agent escrow demo shows approved release, policy denial, and sanitized log
   ]);
   assert.deepEqual(result.gatewayEvents.map((event) => event.outcome), ["approved", "denied"]);
 
-  assert.match(output, /AgentRail agent escrow demo passed/);
+  assert.match(output, /Vallum agent escrow demo passed/);
   assert.match(output, /approved.status=released/);
   assert.match(output, /denied.reason=GAS_BUDGET_TOO_HIGH/);
   assert.match(output, /gateway.events=approved,denied/);

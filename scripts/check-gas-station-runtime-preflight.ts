@@ -49,7 +49,7 @@ export interface CheckGasStationRuntimePreflightOptions {
 
 const DEFAULT_CONFIG_PATH = "deploy/gas-station/config.local.yaml";
 const COMMAND_TIMEOUT_MS = 20_000;
-const RUNTIME_MODE_ENV = "AGENTRAIL_GAS_STATION_RUNTIME_MODE";
+const RUNTIME_MODE_ENV = "VALLUM_GAS_STATION_RUNTIME_MODE";
 
 type GasStationRuntimeMode = "local-docker" | "managed-upstream";
 
@@ -240,7 +240,7 @@ function checkManagedUpstreamUrl(value: string | undefined): GasStationRuntimePr
 
 export function formatGasStationRuntimePreflightReport(report: GasStationRuntimePreflightReport): string {
   const lines = [
-    `AgentRail Gas Station runtime preflight ${report.ready ? "ready" : "blocked"}`,
+    `Vallum Gas Station runtime preflight ${report.ready ? "ready" : "blocked"}`,
     `ready=${report.ready}`,
     `code=${report.code}`,
     `message=${report.message}`,

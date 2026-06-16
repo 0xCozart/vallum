@@ -137,7 +137,7 @@ test("A2A push delivery retries only when configured and records safe attempt me
 });
 
 test("A2A push delivery can persist sanitized attempt evidence to JSONL", async () => {
-  const dir = await mkdtemp(join(tmpdir(), "agentrail-a2a-push-"));
+  const dir = await mkdtemp(join(tmpdir(), "vallum-a2a-push-"));
   const filePath = join(dir, "attempts.jsonl");
   try {
     const store = new LocalA2APushNotificationStore();
@@ -176,7 +176,7 @@ test("A2A push delivery can persist sanitized attempt evidence to JSONL", async 
 });
 
 test("A2A push delivery queue persists sanitized local jobs without webhook secrets", async () => {
-  const dir = await mkdtemp(join(tmpdir(), "agentrail-a2a-push-"));
+  const dir = await mkdtemp(join(tmpdir(), "vallum-a2a-push-"));
   const filePath = join(dir, "queue.json");
   try {
     const store = new LocalA2APushNotificationStore();
@@ -234,7 +234,7 @@ test("A2A push delivery queue persists sanitized local jobs without webhook secr
 });
 
 test("A2A push local worker processes queued jobs with injected transport and safe attempts", async () => {
-  const dir = await mkdtemp(join(tmpdir(), "agentrail-a2a-push-"));
+  const dir = await mkdtemp(join(tmpdir(), "vallum-a2a-push-"));
   const queuePath = join(dir, "queue.json");
   const attemptsPath = join(dir, "attempts.jsonl");
   try {
@@ -277,7 +277,7 @@ test("A2A push local worker processes queued jobs with injected transport and sa
 });
 
 test("A2A push local worker marks failed jobs without leaking raw transport errors", async () => {
-  const dir = await mkdtemp(join(tmpdir(), "agentrail-a2a-push-"));
+  const dir = await mkdtemp(join(tmpdir(), "vallum-a2a-push-"));
   const queuePath = join(dir, "queue.json");
   const attemptsPath = join(dir, "attempts.jsonl");
   try {

@@ -8,8 +8,8 @@ import { fileURLToPath } from "node:url";
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
-import { validManifestFixture } from "@sacredlabs/agentrail-manifest";
-import { createAgentMockGatewayServer, type AgentActionPolicy } from "@sacredlabs/agentrail-policy-gateway";
+import { validManifestFixture } from "@vallum/manifest";
+import { createAgentMockGatewayServer, type AgentActionPolicy } from "@vallum/policy-gateway";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const fakeApiKey = "local-mcp-stdio-secret-key";
@@ -46,15 +46,15 @@ try {
   const cli = await readFile(resolve(repoRoot, "packages/mcp-server/dist/cli.js"), "utf8");
   assert.match(cli, /^#!\/usr\/bin\/env node/, "built MCP CLI must preserve the executable shebang");
 
-  const client = new Client({ name: "agentrail-stdio-smoke", version: "0.0.0-local" });
+  const client = new Client({ name: "vallum-stdio-smoke", version: "0.0.0-local" });
   const transport = new StdioClientTransport({
     command: process.execPath,
     args: ["packages/mcp-server/dist/cli.js"],
     cwd: repoRoot,
     env: {
-      AGENTRAIL_GATEWAY_URL: gatewayBaseUrl,
-      AGENTRAIL_API_KEY: fakeApiKey,
-      AGENTRAIL_MCP_LOG_LEVEL: "error",
+      VALLUM_GATEWAY_URL: gatewayBaseUrl,
+      VALLUM_API_KEY: fakeApiKey,
+      VALLUM_MCP_LOG_LEVEL: "error",
     },
     stderr: "pipe",
   });

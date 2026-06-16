@@ -1,5 +1,5 @@
-import { validManifestFixture } from "@sacredlabs/agentrail-manifest";
-import type { AgentActionPolicy } from "@sacredlabs/agentrail-policy-gateway";
+import { validManifestFixture } from "@vallum/manifest";
+import type { AgentActionPolicy } from "@vallum/policy-gateway";
 import {
   A2A_TASK_PROTOCOL_VERSION,
   LocalA2ATaskStore,

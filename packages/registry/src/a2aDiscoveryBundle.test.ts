@@ -172,7 +172,7 @@ test("A2A static discovery bundle rejects noncanonical paths and secret-like pub
 });
 
 test("A2A static discovery bundle writer creates canonical deployable artifacts", async () => {
-  const outDir = await mkdtemp(join(tmpdir(), "agentrail-a2a-static-bundle-"));
+  const outDir = await mkdtemp(join(tmpdir(), "vallum-a2a-static-bundle-"));
   try {
     const bundle = validBundle();
     const written = await writeA2APublicDiscoveryBundle({ bundle, outDir });
@@ -200,7 +200,7 @@ test("A2A static discovery bundle writer creates canonical deployable artifacts"
 
     assert.equal(card.supportedInterfaces?.[0]?.url, publicBaseUrl);
     assert.equal(jwks.keys?.[0]?.kid, "agent-card-key-1");
-    assert.equal(manifest.kind, "agentrail.a2a-static-discovery-bundle");
+    assert.equal(manifest.kind, "vallum.a2a-static-discovery-bundle");
     assert.equal(manifest.publicBaseUrl, publicBaseUrl);
     assert.equal(manifest.files?.[0]?.path, A2A_AGENT_CARD_WELL_KNOWN_PATH);
     assert.match(manifest.files?.[0]?.headers?.["content-type"] ?? "", /application\/a2a\+json/);
@@ -214,7 +214,7 @@ test("A2A static discovery bundle writer creates canonical deployable artifacts"
 });
 
 test("A2A static discovery bundle writer fails closed for unexpected or missing paths", async () => {
-  const outDir = await mkdtemp(join(tmpdir(), "agentrail-a2a-static-bundle-"));
+  const outDir = await mkdtemp(join(tmpdir(), "vallum-a2a-static-bundle-"));
   try {
     const bundle = validBundle();
 
@@ -248,7 +248,7 @@ test("A2A static discovery bundle writer fails closed for unexpected or missing 
 });
 
 test("A2A static discovery bundle artifact validator accepts canonical generated files", async () => {
-  const outDir = await mkdtemp(join(tmpdir(), "agentrail-a2a-static-bundle-"));
+  const outDir = await mkdtemp(join(tmpdir(), "vallum-a2a-static-bundle-"));
   try {
     await writeA2APublicDiscoveryBundle({ bundle: validBundle(), outDir });
 
@@ -272,7 +272,7 @@ test("A2A static discovery bundle artifact validator accepts canonical generated
 });
 
 test("A2A static discovery bundle artifact validator rejects tampered files", async () => {
-  const outDir = await mkdtemp(join(tmpdir(), "agentrail-a2a-static-bundle-"));
+  const outDir = await mkdtemp(join(tmpdir(), "vallum-a2a-static-bundle-"));
   try {
     await writeA2APublicDiscoveryBundle({ bundle: validBundle(), outDir });
     const agentCardPath = join(outDir, ".well-known", "agent-card.json");
@@ -289,7 +289,7 @@ test("A2A static discovery bundle artifact validator rejects tampered files", as
 });
 
 test("A2A static discovery bundle artifact validator rejects unsafe manifests", async () => {
-  const outDir = await mkdtemp(join(tmpdir(), "agentrail-a2a-static-bundle-"));
+  const outDir = await mkdtemp(join(tmpdir(), "vallum-a2a-static-bundle-"));
   try {
     await writeA2APublicDiscoveryBundle({ bundle: validBundle(), outDir });
     const manifestPath = join(outDir, "a2a-discovery-bundle-manifest.json");

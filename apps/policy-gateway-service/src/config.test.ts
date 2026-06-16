@@ -22,7 +22,7 @@ const validPolicy = `apps:
 `;
 
 async function writePolicy(source: string): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), "agentrail-policy-"));
+  const dir = await mkdtemp(join(tmpdir(), "vallum-policy-"));
   const path = join(dir, "policy.yaml");
   await writeFile(path, source);
   return path;
@@ -32,8 +32,8 @@ test("policy config requires an explicit demo app key by default", async () => {
   const policyPath = await writePolicy(validPolicy);
 
   await assert.rejects(
-    () => loadGatewayConfigFromEnv({ AGENTRAIL_POLICY_PATH: policyPath }),
-    /AGENTRAIL_DEMO_APP_KEY/,
+    () => loadGatewayConfigFromEnv({ VALLUM_POLICY_PATH: policyPath }),
+    /VALLUM_DEMO_APP_KEY/,
   );
 });
 
@@ -41,8 +41,8 @@ test("policy config can opt into the documented insecure local demo key", async 
   const policyPath = await writePolicy(validPolicy);
 
   const config = await loadGatewayConfigFromEnv({
-    AGENTRAIL_POLICY_PATH: policyPath,
-    AGENTRAIL_ALLOW_INSECURE_DEMO_KEY: "true",
+    VALLUM_POLICY_PATH: policyPath,
+    VALLUM_ALLOW_INSECURE_DEMO_KEY: "true",
   });
 
   assert.equal(config.apps["demo-dapp"]?.apiKey, "local-dev-demo-key");
@@ -59,7 +59,7 @@ test("policy config rejects missing package allowlists instead of allowing all p
 `);
 
   await assert.rejects(
-    () => loadGatewayConfigFromEnv({ AGENTRAIL_POLICY_PATH: policyPath, AGENTRAIL_DEMO_APP_KEY: "demo-key" }),
+    () => loadGatewayConfigFromEnv({ VALLUM_POLICY_PATH: policyPath, VALLUM_DEMO_APP_KEY: "demo-key" }),
     /allowed_packages/,
   );
 });
@@ -70,11 +70,11 @@ test("policy config rejects operator usage token without a usage store path", as
   await assert.rejects(
     () =>
       loadGatewayConfigFromEnv({
-        AGENTRAIL_POLICY_PATH: policyPath,
-        AGENTRAIL_DEMO_APP_KEY: "demo-key",
-        AGENTRAIL_OPERATOR_USAGE_TOKEN: "operator-token",
+        VALLUM_POLICY_PATH: policyPath,
+        VALLUM_DEMO_APP_KEY: "demo-key",
+        VALLUM_OPERATOR_USAGE_TOKEN: "operator-token",
       }),
-    /AGENTRAIL_USAGE_EVENT_STORE_PATH/,
+    /VALLUM_USAGE_EVENT_STORE_PATH/,
   );
 });
 
@@ -84,26 +84,26 @@ test("policy config rejects blank usage store paths when operator usage is enabl
   await assert.rejects(
     () =>
       loadGatewayConfigFromEnv({
-        AGENTRAIL_POLICY_PATH: policyPath,
-        AGENTRAIL_DEMO_APP_KEY: "demo-key",
-        AGENTRAIL_USAGE_EVENT_STORE_PATH: "   ",
-        AGENTRAIL_OPERATOR_USAGE_TOKEN: "operator-token",
+        VALLUM_POLICY_PATH: policyPath,
+        VALLUM_DEMO_APP_KEY: "demo-key",
+        VALLUM_USAGE_EVENT_STORE_PATH: "   ",
+        VALLUM_OPERATOR_USAGE_TOKEN: "operator-token",
       }),
-    /AGENTRAIL_USAGE_EVENT_STORE_PATH/,
+    /VALLUM_USAGE_EVENT_STORE_PATH/,
   );
 });
 
 test("policy config wires local usage event store and authenticated operator usage snapshot", async () => {
   const policyPath = await writePolicy(validPolicy);
-  const usageDir = await mkdtemp(join(tmpdir(), "agentrail-usage-config-"));
+  const usageDir = await mkdtemp(join(tmpdir(), "vallum-usage-config-"));
   const usagePath = join(usageDir, "usage-events.jsonl");
 
   const config = await loadGatewayConfigFromEnv({
-    AGENTRAIL_POLICY_PATH: policyPath,
-    AGENTRAIL_DEMO_APP_KEY: "demo-key",
-    AGENTRAIL_USAGE_EVENT_STORE_PATH: usagePath,
-    AGENTRAIL_OPERATOR_USAGE_TOKEN: "operator-token",
-    AGENTRAIL_OPERATOR_USAGE_MAX_RECENT_EVENTS: "0",
+    VALLUM_POLICY_PATH: policyPath,
+    VALLUM_DEMO_APP_KEY: "demo-key",
+    VALLUM_USAGE_EVENT_STORE_PATH: usagePath,
+    VALLUM_OPERATOR_USAGE_TOKEN: "operator-token",
+    VALLUM_OPERATOR_USAGE_MAX_RECENT_EVENTS: "0",
   });
 
   assert.equal(typeof config.eventSink, "function");
@@ -128,7 +128,7 @@ test("policy config rejects unknown app status values", async () => {
   const policyPath = await writePolicy(validPolicy.replace("status: active", "status: typo"));
 
   await assert.rejects(
-    () => loadGatewayConfigFromEnv({ AGENTRAIL_POLICY_PATH: policyPath, AGENTRAIL_DEMO_APP_KEY: "demo-key" }),
+    () => loadGatewayConfigFromEnv({ VALLUM_POLICY_PATH: policyPath, VALLUM_DEMO_APP_KEY: "demo-key" }),
     /status/,
   );
 });

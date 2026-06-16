@@ -2,10 +2,10 @@ import { once } from "node:events";
 import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
 
-import { AGENT_TRANSACTION_MANIFEST_VERSION, type AgentTransactionManifest } from "@sacredlabs/agentrail-manifest";
-import { createAgentMockGatewayServer, type AgentActionPolicy, type AgentGatewayEvent } from "@sacredlabs/agentrail-policy-gateway";
-import { cancelSubscriptionReceipt } from "@sacredlabs/agentrail-receipts";
-import { renewSubscription, startSubscription, type RenewSubscriptionResult, type StartSubscriptionResult } from "@sacredlabs/agentrail-sdk";
+import { AGENT_TRANSACTION_MANIFEST_VERSION, type AgentTransactionManifest } from "@vallum/manifest";
+import { createAgentMockGatewayServer, type AgentActionPolicy, type AgentGatewayEvent } from "@vallum/policy-gateway";
+import { cancelSubscriptionReceipt } from "@vallum/receipts";
+import { renewSubscription, startSubscription, type RenewSubscriptionResult, type StartSubscriptionResult } from "@vallum/sdk";
 
 const now = new Date("2026-06-10T12:00:00.000Z");
 const subscriberAgentId = "agent:subscription-buyer";

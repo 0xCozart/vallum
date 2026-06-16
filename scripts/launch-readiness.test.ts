@@ -25,72 +25,72 @@ test("launch readiness maps local evidence to live and production blockers", asy
   const phase1 = report.areas.find((area) => area.id === "phase-1-sponsored-policy-mvp");
   assert.ok(phase1?.evidencePaths.includes("scripts/write-sponsor-funding-request.ts"));
   assert.ok(phase1?.evidencePaths.includes("scripts/request-sponsor-faucet-funds.ts"));
-  assert.ok(phase1?.commands.includes("npm run operator:write-report-template -- --kind custody-production --out tmp/agentrail/custody-production-report-template.json"));
-  assert.ok(phase1?.commands.includes("npm run custody:write-production-proof-bundle -- --out tmp/agentrail/custody-production-proof-bundle.json"));
+  assert.ok(phase1?.commands.includes("npm run operator:write-report-template -- --kind custody-production --out tmp/vallum/custody-production-report-template.json"));
+  assert.ok(phase1?.commands.includes("npm run custody:write-production-proof-bundle -- --out tmp/vallum/custody-production-proof-bundle.json"));
   assert.ok(
-    (phase1?.commands.indexOf("npm run custody:write-production-proof-bundle -- --out tmp/agentrail/custody-production-proof-bundle.json") ?? -1)
+    (phase1?.commands.indexOf("npm run custody:write-production-proof-bundle -- --out tmp/vallum/custody-production-proof-bundle.json") ?? -1)
       < (phase1?.commands.indexOf("npm run custody:write-production-proof-plan") ?? -1),
   );
-  assert.ok(phase1?.commands.includes("npm run sponsor:write-funding-request -- --out tmp/agentrail/sponsor-funding-request.json"));
-  assert.ok(phase1?.commands.includes("npm run sponsor:request-faucet-funds -- --execute --out tmp/agentrail/sponsor-faucet-request.json"));
-  assert.ok(phase1?.commands.includes("npm run sponsor:write-funding-request -- --faucet-report tmp/agentrail/sponsor-faucet-request.json --out tmp/agentrail/sponsor-funding-request.json"));
-  assert.ok(phase1?.commands.includes("npm run operator:write-report-template -- --kind testnet-digest --out tmp/agentrail/testnet-digest-report-template.json"));
-  assert.ok(phase1?.commands.includes("npm run proof:testnet-digest:live -- --report tmp/agentrail/testnet-digest-proof.json"));
+  assert.ok(phase1?.commands.includes("npm run sponsor:write-funding-request -- --out tmp/vallum/sponsor-funding-request.json"));
+  assert.ok(phase1?.commands.includes("npm run sponsor:request-faucet-funds -- --execute --out tmp/vallum/sponsor-faucet-request.json"));
+  assert.ok(phase1?.commands.includes("npm run sponsor:write-funding-request -- --faucet-report tmp/vallum/sponsor-faucet-request.json --out tmp/vallum/sponsor-funding-request.json"));
+  assert.ok(phase1?.commands.includes("npm run operator:write-report-template -- --kind testnet-digest --out tmp/vallum/testnet-digest-report-template.json"));
+  assert.ok(phase1?.commands.includes("npm run proof:testnet-digest:live -- --report tmp/vallum/testnet-digest-proof.json"));
   assert.equal(phase1?.commands.includes("npm run proof:testnet-digest:live"), false);
   assert.ok(phase1?.commands.includes("npm run proof:live-status"));
-  assert.ok(phase1?.commands.includes("npm run operator:write-report-template -- --kind testnet-upstream --out tmp/agentrail/testnet-upstream-report-template.json"));
+  assert.ok(phase1?.commands.includes("npm run operator:write-report-template -- --kind testnet-upstream --out tmp/vallum/testnet-upstream-report-template.json"));
   assert.ok(
-    (phase1?.commands.indexOf("npm run sponsor:write-funding-request -- --faucet-report tmp/agentrail/sponsor-faucet-request.json --out tmp/agentrail/sponsor-funding-request.json") ?? -1)
-      < (phase1?.commands.indexOf("npm run sponsor:check-funding -- --report tmp/agentrail/sponsor-funding-report.json") ?? -1),
+    (phase1?.commands.indexOf("npm run sponsor:write-funding-request -- --faucet-report tmp/vallum/sponsor-faucet-request.json --out tmp/vallum/sponsor-funding-request.json") ?? -1)
+      < (phase1?.commands.indexOf("npm run sponsor:check-funding -- --report tmp/vallum/sponsor-funding-report.json") ?? -1),
   );
   assert.ok(
-    (phase1?.commands.indexOf("npm run sponsor:check-funding -- --report tmp/agentrail/sponsor-funding-report.json") ?? -1)
-      < (phase1?.commands.indexOf("npm run diagnose:gas-station -- --report tmp/agentrail/testnet-upstream-diagnostic.json") ?? -1),
+    (phase1?.commands.indexOf("npm run sponsor:check-funding -- --report tmp/vallum/sponsor-funding-report.json") ?? -1)
+      < (phase1?.commands.indexOf("npm run diagnose:gas-station -- --report tmp/vallum/testnet-upstream-diagnostic.json") ?? -1),
   );
   assert.match(phase1?.next ?? "", /funding request/);
-  assert.ok(phase1?.commands.includes("npm run diagnose:gas-station -- --skip-reserve --report tmp/agentrail/testnet-upstream-diagnostic.json"));
-  assert.ok(phase1?.commands.includes("npm run diagnose:gas-station -- --report tmp/agentrail/testnet-upstream-diagnostic.json"));
+  assert.ok(phase1?.commands.includes("npm run diagnose:gas-station -- --skip-reserve --report tmp/vallum/testnet-upstream-diagnostic.json"));
+  assert.ok(phase1?.commands.includes("npm run diagnose:gas-station -- --report tmp/vallum/testnet-upstream-diagnostic.json"));
   assert.ok(
-    (phase1?.commands.indexOf("npm run diagnose:gas-station -- --skip-reserve --report tmp/agentrail/testnet-upstream-diagnostic.json") ?? -1)
-      < (phase1?.commands.indexOf("npm run diagnose:gas-station -- --report tmp/agentrail/testnet-upstream-diagnostic.json") ?? -1),
+    (phase1?.commands.indexOf("npm run diagnose:gas-station -- --skip-reserve --report tmp/vallum/testnet-upstream-diagnostic.json") ?? -1)
+      < (phase1?.commands.indexOf("npm run diagnose:gas-station -- --report tmp/vallum/testnet-upstream-diagnostic.json") ?? -1),
   );
   assert.ok(
-    (phase1?.commands.indexOf("npm run operator:write-report-template -- --kind testnet-upstream --out tmp/agentrail/testnet-upstream-report-template.json") ?? -1)
-      < (phase1?.commands.indexOf("npm run diagnose:gas-station -- --skip-reserve --report tmp/agentrail/testnet-upstream-diagnostic.json") ?? -1),
+    (phase1?.commands.indexOf("npm run operator:write-report-template -- --kind testnet-upstream --out tmp/vallum/testnet-upstream-report-template.json") ?? -1)
+      < (phase1?.commands.indexOf("npm run diagnose:gas-station -- --skip-reserve --report tmp/vallum/testnet-upstream-diagnostic.json") ?? -1),
   );
   assert.ok(
-    (phase1?.commands.indexOf("npm run proof:testnet-digest:live -- --report tmp/agentrail/testnet-digest-proof.json") ?? -1)
+    (phase1?.commands.indexOf("npm run proof:testnet-digest:live -- --report tmp/vallum/testnet-digest-proof.json") ?? -1)
       < (phase1?.commands.indexOf("npm run execute:testnet-demo") ?? -1),
   );
   const phase2 = report.areas.find((area) => area.id === "phase-2-identity-and-vc");
   assert.equal(phase2?.status, "blocked-live");
-  assert.ok(phase2?.commands.includes("npm run live:write-identity-proof-bundle -- --out tmp/agentrail/identity-proof-bundle.json"));
+  assert.ok(phase2?.commands.includes("npm run live:write-identity-proof-bundle -- --out tmp/vallum/identity-proof-bundle.json"));
   assert.match(phase2?.next ?? "", /live:write-identity-proof-bundle/);
-  assert.ok(phase2?.commands.includes("npm run operator:write-report-template -- --kind iota-names-live --out tmp/agentrail/iota-names-live-report-template.json"));
-  assert.ok(phase2?.commands.includes("npm run operator:write-report-template -- --kind iota-identity-live --out tmp/agentrail/iota-identity-live-report-template.json"));
-  assert.ok(phase2?.commands.includes("npm run operator:write-report-template -- --kind vc-validation-live --out tmp/agentrail/vc-validation-live-report-template.json"));
+  assert.ok(phase2?.commands.includes("npm run operator:write-report-template -- --kind iota-names-live --out tmp/vallum/iota-names-live-report-template.json"));
+  assert.ok(phase2?.commands.includes("npm run operator:write-report-template -- --kind iota-identity-live --out tmp/vallum/iota-identity-live-report-template.json"));
+  assert.ok(phase2?.commands.includes("npm run operator:write-report-template -- --kind vc-validation-live --out tmp/vallum/vc-validation-live-report-template.json"));
   assert.ok(
-    (phase2?.commands.indexOf("npm run operator:write-report-template -- --kind iota-names-live --out tmp/agentrail/iota-names-live-report-template.json") ?? -1)
-      < (phase2?.commands.indexOf("npm run smoke:iota-names-live -- --report tmp/agentrail/iota-names-live-report.json") ?? -1),
+    (phase2?.commands.indexOf("npm run operator:write-report-template -- --kind iota-names-live --out tmp/vallum/iota-names-live-report-template.json") ?? -1)
+      < (phase2?.commands.indexOf("npm run smoke:iota-names-live -- --report tmp/vallum/iota-names-live-report.json") ?? -1),
   );
   assert.ok(
-    (phase2?.commands.indexOf("npm run operator:write-report-template -- --kind iota-identity-live --out tmp/agentrail/iota-identity-live-report-template.json") ?? -1)
-      < (phase2?.commands.indexOf("npm run smoke:iota-identity-live -- --report tmp/agentrail/iota-identity-live-report.json") ?? -1),
+    (phase2?.commands.indexOf("npm run operator:write-report-template -- --kind iota-identity-live --out tmp/vallum/iota-identity-live-report-template.json") ?? -1)
+      < (phase2?.commands.indexOf("npm run smoke:iota-identity-live -- --report tmp/vallum/iota-identity-live-report.json") ?? -1),
   );
   const standards = report.areas.find((area) => area.id === "phase-4-standards-bridges");
   assert.equal(standards?.status, "blocked-production");
-  assert.ok(standards?.commands.includes("npm run operator:write-report-template -- --kind payment-provider-live --out tmp/agentrail/payment-provider-live-report-template.json"));
-  assert.ok(standards?.commands.includes("npm run payment:write-provider-proof-bundle -- --out tmp/agentrail/payment-provider-proof-bundle.json"));
-  assert.ok(standards?.commands.includes("npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/agentrail/a2a-public-discovery-report-template.json"));
-  assert.ok(standards?.commands.includes("npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/agentrail/a2a-public-push-delivery-report-template.json"));
-  assert.ok(standards?.commands.includes("npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/agentrail/a2a-external-conformance-report-template.json"));
-  assert.ok(standards?.commands.includes("npm run a2a:write-public-proof-bundle -- --out tmp/agentrail/a2a-public-proof-bundle.json"));
+  assert.ok(standards?.commands.includes("npm run operator:write-report-template -- --kind payment-provider-live --out tmp/vallum/payment-provider-live-report-template.json"));
+  assert.ok(standards?.commands.includes("npm run payment:write-provider-proof-bundle -- --out tmp/vallum/payment-provider-proof-bundle.json"));
+  assert.ok(standards?.commands.includes("npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/vallum/a2a-public-discovery-report-template.json"));
+  assert.ok(standards?.commands.includes("npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/vallum/a2a-public-push-delivery-report-template.json"));
+  assert.ok(standards?.commands.includes("npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/vallum/a2a-external-conformance-report-template.json"));
+  assert.ok(standards?.commands.includes("npm run a2a:write-public-proof-bundle -- --out tmp/vallum/a2a-public-proof-bundle.json"));
   assert.match(standards?.next ?? "", /a2a:write-public-proof-bundle/);
   assert.match(standards?.next ?? "", /payment:write-provider-proof-bundle/);
   assert.ok(standards?.commands.includes("npm run a2a:write-public-proof-plan"));
   assert.ok(standards?.commands.includes("npm run proof:a2a-public-readiness"));
   assert.ok(
-    (standards?.commands.indexOf("npm run payment:write-provider-proof-bundle -- --out tmp/agentrail/payment-provider-proof-bundle.json") ?? -1)
+    (standards?.commands.indexOf("npm run payment:write-provider-proof-bundle -- --out tmp/vallum/payment-provider-proof-bundle.json") ?? -1)
       < (standards?.commands.indexOf("npm run payment:write-provider-proof-plan") ?? -1),
   );
   assert.ok(
@@ -99,21 +99,21 @@ test("launch readiness maps local evidence to live and production blockers", asy
   );
   const marketplace = report.areas.find((area) => area.id === "phase-5-marketplace-operator");
   assert.equal(marketplace?.status, "blocked-production");
-  assert.ok(marketplace?.commands.includes("npm run operator:write-report-template -- --kind marketplace-production --out tmp/agentrail/marketplace-production-report-template.json"));
-  assert.ok(marketplace?.commands.includes("npm run marketplace:write-production-proof-bundle -- --out tmp/agentrail/marketplace-production-proof-bundle.json"));
+  assert.ok(marketplace?.commands.includes("npm run operator:write-report-template -- --kind marketplace-production --out tmp/vallum/marketplace-production-report-template.json"));
+  assert.ok(marketplace?.commands.includes("npm run marketplace:write-production-proof-bundle -- --out tmp/vallum/marketplace-production-proof-bundle.json"));
   assert.match(marketplace?.next ?? "", /marketplace:write-production-proof-bundle/);
   assert.ok(
-    (marketplace?.commands.indexOf("npm run marketplace:write-production-proof-bundle -- --out tmp/agentrail/marketplace-production-proof-bundle.json") ?? -1)
+    (marketplace?.commands.indexOf("npm run marketplace:write-production-proof-bundle -- --out tmp/vallum/marketplace-production-proof-bundle.json") ?? -1)
       < (marketplace?.commands.indexOf("npm run marketplace:write-production-proof-plan") ?? -1),
   );
   const packageRelease = report.areas.find((area) => area.id === "phase-6-package-release");
   assert.equal(packageRelease?.status, "blocked-production");
-  assert.ok(packageRelease?.commands.includes("npm run operator:write-report-template -- --kind package-publication --out tmp/agentrail/package-publication-report-template.json"));
-  assert.ok(packageRelease?.commands.includes("npm run package:write-publication-proof-bundle -- --out tmp/agentrail/package-publication-proof-bundle.json"));
+  assert.ok(packageRelease?.commands.includes("npm run operator:write-report-template -- --kind package-publication --out tmp/vallum/package-publication-report-template.json"));
+  assert.ok(packageRelease?.commands.includes("npm run package:write-publication-proof-bundle -- --out tmp/vallum/package-publication-proof-bundle.json"));
   assert.match(packageRelease?.next ?? "", /package:write-publication-proof-bundle/);
   assert.equal(report.areas.find((area) => area.id === "phase-3-contract-workflows")?.status, "deferred-safety");
   assert.ok(
-    (packageRelease?.commands.indexOf("npm run package:write-publication-proof-bundle -- --out tmp/agentrail/package-publication-proof-bundle.json") ?? -1)
+    (packageRelease?.commands.indexOf("npm run package:write-publication-proof-bundle -- --out tmp/vallum/package-publication-proof-bundle.json") ?? -1)
       < (packageRelease?.commands.indexOf("npm run proof:package-publication-readiness") ?? -1),
   );
   assert.ok(
@@ -134,7 +134,7 @@ test("launch readiness maps local evidence to live and production blockers", asy
   assert.ok(
     report.areas
       .find((area) => area.id === "packet-h-final-product-status")
-      ?.commands.includes("npm run roadmap:write-execution-proof-bundle -- --out tmp/agentrail/roadmap-execution-proof-bundle.json"),
+      ?.commands.includes("npm run roadmap:write-execution-proof-bundle -- --out tmp/vallum/roadmap-execution-proof-bundle.json"),
   );
   assert.match(formatted, /TESTNET_ENV_FILE_MISSING/);
   assert.match(formatted, /GAS_STATION_DOCKER_DAEMON_UNAVAILABLE/);
@@ -152,7 +152,7 @@ test("launch readiness artifact summarizes areas without secret values", async (
   const json = formatLaunchReadinessArtifact(artifact);
   const parsed = JSON.parse(json) as typeof artifact;
 
-  assert.equal(parsed.kind, "agentrail.launch-readiness-report");
+  assert.equal(parsed.kind, "vallum.launch-readiness-report");
   assert.equal(parsed.launchReady, false);
   assert.equal(parsed.localEvidenceOk, true);
   assert.equal(parsed.blockedLiveAreaIds.includes("phase-1-sponsored-policy-mvp"), true);
@@ -166,10 +166,10 @@ test("launch readiness artifact summarizes areas without secret values", async (
 });
 
 test("launch readiness artifact writer uses restrictive local file permissions", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-launch-artifact-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-launch-artifact-"));
   try {
     await writeEvidenceTree(cwd);
-    const outFile = "tmp/agentrail/launch-readiness.json";
+    const outFile = "tmp/vallum/launch-readiness.json";
     const artifact = await writeLaunchReadinessArtifact({
       cwd,
       productStatus: productStatusWithLiveBlockers(),
@@ -179,8 +179,8 @@ test("launch readiness artifact writer uses restrictive local file permissions",
     const written = await readFile(join(cwd, outFile), "utf8");
     const mode = (await stat(join(cwd, outFile))).mode & 0o777;
 
-    assert.equal(artifact.kind, "agentrail.launch-readiness-report");
-    assert.equal(JSON.parse(written).kind, "agentrail.launch-readiness-report");
+    assert.equal(artifact.kind, "vallum.launch-readiness-report");
+    assert.equal(JSON.parse(written).kind, "vallum.launch-readiness-report");
     assert.equal(mode, 0o600);
   } finally {
     await rm(cwd, { recursive: true, force: true });
@@ -188,7 +188,7 @@ test("launch readiness artifact writer uses restrictive local file permissions",
 });
 
 test("launch readiness can become ready only when product status is complete and evidence exists", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-launch-ready-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-launch-ready-"));
   try {
     await writeEvidenceTree(cwd);
     const report = await checkLaunchReadiness({
@@ -210,7 +210,7 @@ test("launch readiness can become ready only when product status is complete and
 });
 
 test("launch readiness fails local evidence when required source paths are missing", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-launch-missing-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-launch-missing-"));
   try {
     const report = await checkLaunchReadiness({
       cwd,
@@ -242,7 +242,7 @@ async function writeEvidenceTree(cwd: string): Promise<void> {
     "contracts/receipt_v1/Move.toml",
     "examples/agent-escrow/agent-escrow-demo.ts",
     "docs/testnet-attempts.md",
-    "docs/agentrail/live-proof-status.md",
+    "docs/vallum/live-proof-status.md",
     "scripts/check-gas-station-runtime-preflight.ts",
     "scripts/write-sponsor-funding-request.ts",
     "scripts/request-sponsor-faucet-funds.ts",
@@ -255,13 +255,13 @@ async function writeEvidenceTree(cwd: string): Promise<void> {
     "scripts/write-identity-proof-bundle.ts",
     "scripts/smoke-iota-names-live.ts",
     "scripts/smoke-iota-identity-live.ts",
-    "docs/agentrail/live-proof-status.md",
+    "docs/vallum/live-proof-status.md",
     "contracts/pay_per_call_v1/Move.toml",
     "contracts/data_license_v1/Move.toml",
     "contracts/service_bounty_v1/Move.toml",
     "contracts/reputation_receipt_v1/Move.toml",
     "contracts/subscription_v1/Move.toml",
-    "docs/agentrail/device-access-safety-gate.md",
+    "docs/vallum/device-access-safety-gate.md",
     "packages/standards/src/x402.ts",
     "packages/standards/src/ap2.ts",
     "packages/standards/src/a2a.ts",
@@ -273,7 +273,7 @@ async function writeEvidenceTree(cwd: string): Promise<void> {
     "scripts/check-a2a-public-readiness.ts",
     "scripts/write-a2a-public-proof-bundle.ts",
     "scripts/smoke-a2a-static-discovery-local.ts",
-    "docs/agentrail/a2a-public-readiness.md",
+    "docs/vallum/a2a-public-readiness.md",
     "scripts/smoke-a2a-local-server.ts",
     "packages/marketplace/src/index.ts",
     "scripts/smoke-marketplace-read-model.ts",
@@ -281,7 +281,7 @@ async function writeEvidenceTree(cwd: string): Promise<void> {
     "scripts/write-marketplace-production-proof-plan.ts",
     "scripts/write-marketplace-production-proof-bundle.ts",
     "docs/marketplace-readiness.md",
-    "docs/agentrail/package-release-strategy.md",
+    "docs/vallum/package-release-strategy.md",
     "scripts/package-publish-dry-run.ts",
     "scripts/smoke-package-install.ts",
     "scripts/check-package-publication-readiness.ts",
@@ -289,16 +289,16 @@ async function writeEvidenceTree(cwd: string): Promise<void> {
     "scripts/write-package-publication-proof-bundle.ts",
     "scripts/package-publish.test.ts",
     "scripts/package-install-smoke.test.ts",
-    "docs/agentrail/product-status.md",
+    "docs/vallum/product-status.md",
     "scripts/check-product-status.ts",
-    "docs/agentrail/operator-live-gates.md",
+    "docs/vallum/operator-live-gates.md",
     "scripts/check-operator-live-gates.ts",
     "scripts/write-operator-report-template.ts",
-    "docs/agentrail/verification-profiles.md",
+    "docs/vallum/verification-profiles.md",
     "scripts/check-verification-profiles.ts",
     "scripts/check-roadmap-completion.ts",
     "scripts/write-roadmap-execution-proof-bundle.ts",
-    "docs/agentrail/execution-slices.md",
+    "docs/vallum/execution-slices.md",
     "docs/CODEBASE_MAP.md",
   ];
   for (const path of paths) {

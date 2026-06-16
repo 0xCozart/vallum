@@ -27,7 +27,7 @@ export interface A2APublicReadinessReport {
 
 export interface A2APublicReadinessArtifact {
   readonly schemaVersion: 1;
-  readonly kind: "agentrail.a2a-public-readiness-report";
+  readonly kind: "vallum.a2a-public-readiness-report";
   readonly generatedAt: string;
   readonly publicReady: boolean;
   readonly localProofOk: boolean;
@@ -81,9 +81,9 @@ const REQUIRED_SOURCE_PATHS = [
 ] as const;
 
 const ALLOWED_TASK_AUTH_DECISIONS = new Set(["bearer", "oauth2", "mtls"]);
-const A2A_PUBLIC_DISCOVERY_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/agentrail/a2a-public-discovery-report-template.json";
-const A2A_PUBLIC_PUSH_DELIVERY_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/agentrail/a2a-public-push-delivery-report-template.json";
-const A2A_EXTERNAL_CONFORMANCE_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/agentrail/a2a-external-conformance-report-template.json";
+const A2A_PUBLIC_DISCOVERY_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/vallum/a2a-public-discovery-report-template.json";
+const A2A_PUBLIC_PUSH_DELIVERY_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/vallum/a2a-public-push-delivery-report-template.json";
+const A2A_EXTERNAL_CONFORMANCE_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/vallum/a2a-external-conformance-report-template.json";
 
 const ARTIFACT_BOUNDARIES = [
   "This report is non-networked and does not contact public A2A endpoints.",
@@ -94,7 +94,7 @@ const ARTIFACT_BOUNDARIES = [
 
 const usage = `usage: npm exec tsx -- scripts/check-a2a-public-readiness.ts [--json] [--out <path>]
 
-Reports current AgentRail public A2A readiness without contacting public endpoints.
+Reports current Vallum public A2A readiness without contacting public endpoints.
 
 Options:
   --json        Print a redacted machine-readable artifact.
@@ -178,7 +178,7 @@ export async function checkA2APublicReadiness(
 
 export function formatA2APublicReadinessReport(report: A2APublicReadinessReport): string {
   const lines = [
-    `AgentRail A2A public readiness ${report.publicReady ? "ready-for-approval" : "blocked"}`,
+    `Vallum A2A public readiness ${report.publicReady ? "ready-for-approval" : "blocked"}`,
     `localProofOk=${report.localProofOk}`,
     `publicReady=${report.publicReady}`,
   ];
@@ -203,7 +203,7 @@ export function buildA2APublicReadinessArtifact(
 
   return {
     schemaVersion: 1,
-    kind: "agentrail.a2a-public-readiness-report",
+    kind: "vallum.a2a-public-readiness-report",
     generatedAt: now.toISOString(),
     publicReady: report.publicReady,
     localProofOk: report.localProofOk,

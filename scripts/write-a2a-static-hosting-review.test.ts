@@ -23,7 +23,7 @@ const publicBaseUrl = "https://agents.example/a2a";
 const publicJwksUrl = "https://agents.example/.well-known/jwks.json";
 
 test("A2A static hosting review validates artifacts and redacts deployment details", async () => {
-  const outDir = await mkdtemp(join(tmpdir(), "agentrail-a2a-hosting-review-"));
+  const outDir = await mkdtemp(join(tmpdir(), "vallum-a2a-hosting-review-"));
   try {
     await writeA2APublicDiscoveryBundle({ bundle: validBundle(), outDir });
 
@@ -38,7 +38,7 @@ test("A2A static hosting review validates artifacts and redacts deployment detai
     const written = await readFile(join(outDir, "hosting-review.json"), "utf8");
 
     assert.equal(review.schemaVersion, 1);
-    assert.equal(review.kind, "agentrail.a2a-static-hosting-review");
+    assert.equal(review.kind, "vallum.a2a-static-hosting-review");
     assert.equal(review.status, "ready-for-public-hosting-review");
     assert.equal(review.localArtifactsValid, true);
     assert.equal(review.publicHostingProven, false);
@@ -55,7 +55,7 @@ test("A2A static hosting review validates artifacts and redacts deployment detai
     assert.deepEqual(JSON.parse(written), review);
     assert.doesNotMatch(
       formatted,
-      /agents\.example|agent-card-key-1|secret-value|mnemonic-value|seed-value|signer_ref|wallet_|payment-secret|agentrail-a2a-hosting-review/i,
+      /agents\.example|agent-card-key-1|secret-value|mnemonic-value|seed-value|signer_ref|wallet_|payment-secret|vallum-a2a-hosting-review/i,
     );
   } finally {
     await rm(outDir, { recursive: true, force: true });
@@ -63,7 +63,7 @@ test("A2A static hosting review validates artifacts and redacts deployment detai
 });
 
 test("A2A static hosting review rejects invalid static artifacts", async () => {
-  const outDir = await mkdtemp(join(tmpdir(), "agentrail-a2a-hosting-review-"));
+  const outDir = await mkdtemp(join(tmpdir(), "vallum-a2a-hosting-review-"));
   try {
     await writeA2APublicDiscoveryBundle({ bundle: validBundle(), outDir });
     const manifestPath = join(outDir, "a2a-discovery-bundle-manifest.json");

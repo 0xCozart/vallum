@@ -35,7 +35,7 @@ export interface PackagePublicationProofBundleCheck {
 
 export interface PackagePublicationProofBundle {
   readonly schemaVersion: 1;
-  readonly kind: "agentrail.package-publication-proof-bundle";
+  readonly kind: "vallum.package-publication-proof-bundle";
   readonly generatedAt: string;
   readonly status: "blocked" | "ready-for-approval";
   readonly localProofOk: boolean;
@@ -75,10 +75,10 @@ type MutableCliOptions = {
   -readonly [Key in keyof CliOptions]: CliOptions[Key];
 };
 
-const DEFAULT_OUT_FILE = "tmp/agentrail/package-publication-proof-bundle.json";
-const DEFAULT_PLAN_OUT_FILE = "tmp/agentrail/package-publication-proof-plan.json";
-const DEFAULT_READINESS_OUT_FILE = "tmp/agentrail/package-publication-readiness.json";
-const DEFAULT_TEMPLATE_OUT_FILE = "tmp/agentrail/package-publication-report-template.json";
+const DEFAULT_OUT_FILE = "tmp/vallum/package-publication-proof-bundle.json";
+const DEFAULT_PLAN_OUT_FILE = "tmp/vallum/package-publication-proof-plan.json";
+const DEFAULT_READINESS_OUT_FILE = "tmp/vallum/package-publication-readiness.json";
+const DEFAULT_TEMPLATE_OUT_FILE = "tmp/vallum/package-publication-report-template.json";
 
 const REQUIRED_OPERATOR_INPUTS = [
   "PACKAGE_PUBLICATION_REPORT",
@@ -165,7 +165,7 @@ export async function writePackagePublicationProofBundle(
 
   const bundle: PackagePublicationProofBundle = {
     schemaVersion: 1,
-    kind: "agentrail.package-publication-proof-bundle",
+    kind: "vallum.package-publication-proof-bundle",
     generatedAt: now.toISOString(),
     status: readiness.liveReady ? "ready-for-approval" : "blocked",
     localProofOk: readiness.localProofOk,

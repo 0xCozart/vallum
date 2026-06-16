@@ -1,12 +1,12 @@
-import { POLICY_REASON_CODES } from "@sacredlabs/agentrail-shared-types";
-import type { PolicyReasonCode } from "@sacredlabs/agentrail-shared-types";
+import { POLICY_REASON_CODES } from "@vallum/shared-types";
+import type { PolicyReasonCode } from "@vallum/shared-types";
 
-import { AgentRailAuthError, AgentRailError, AgentRailPolicyError } from "./errors.js";
+import { VallumAuthError, VallumError, VallumPolicyError } from "./errors.js";
 import { requestSponsoredAction as requestSponsoredActionThroughGateway } from "./requestSponsoredAction.js";
 import type {
   ExecuteSponsoredTransactionRequest,
   ExecuteSponsoredTransactionResponse,
-  AgentRailClientOptions,
+  VallumClientOptions,
   PolicySimulationRequest,
   PolicySimulationResponse,
   ReserveGasRequest,
@@ -32,7 +32,7 @@ function asRecord(value: unknown): JsonRecord {
 function requireString(value: unknown, fieldPath: string, raw: unknown): string {
   if (typeof value === "string" && value.length > 0) return value;
   if (typeof value === "number" && Number.isFinite(value)) return String(value);
-  throw new AgentRailError(`Malformed AgentRail response: missing ${fieldPath}.`, undefined, raw);
+  throw new VallumError(`Malformed Vallum response: missing ${fieldPath}.`, undefined, raw);
 }
 
 function isPolicyReasonCode(value: unknown): value is PolicyReasonCode {
@@ -49,27 +49,27 @@ function parsePolicySimulationDecision(value: unknown): PolicySimulationResponse
       message: record["message"],
     };
   }
-  throw new AgentRailError("Malformed AgentRail response: missing policy simulation decision.", undefined, value);
+  throw new VallumError("Malformed Vallum response: missing policy simulation decision.", undefined, value);
 }
 
-function buildError(status: number, body: unknown): AgentRailError {
+function buildError(status: number, body: unknown): VallumError {
   const record = asRecord(body);
   const message =
     typeof record["message"] === "string"
       ? record["message"]
       : typeof record["error"] === "string"
         ? record["error"]
-        : `AgentRail request failed with HTTP ${status}`;
+        : `Vallum request failed with HTTP ${status}`;
   const reasonCode = typeof record["reasonCode"] === "string" ? record["reasonCode"] : undefined;
 
-  if (status === 401 || status === 403) return new AgentRailAuthError(message, status, body);
+  if (status === 401 || status === 403) return new VallumAuthError(message, status, body);
   if (status === 400 || status === 409 || status === 429) {
-    return new AgentRailPolicyError(message, reasonCode, status, body);
+    return new VallumPolicyError(message, reasonCode, status, body);
   }
-  return new AgentRailError(message, status, body);
+  return new VallumError(message, status, body);
 }
 
-export function createAgentRailClient(options: AgentRailClientOptions) {
+export function createVallumClient(options: VallumClientOptions) {
   const baseUrl = normalizeBaseUrl(options.baseUrl);
   const fetchImpl = options.fetchImpl ?? fetch;
 

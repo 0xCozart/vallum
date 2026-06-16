@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 
 import type { TestnetDigestProofReport } from "./check-testnet-digest-proof.js";
 
-export const TESTNET_DIGEST_REPORT_KIND = "agentrail.testnet-digest-proof-report" as const;
+export const TESTNET_DIGEST_REPORT_KIND = "vallum.testnet-digest-proof-report" as const;
 export const TESTNET_DIGEST_REPORT_SCHEMA_VERSION = 1 as const;
 
 export interface TestnetDigestEvidenceReport extends TestnetDigestProofReport {

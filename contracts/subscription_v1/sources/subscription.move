@@ -1,4 +1,4 @@
-/// Minimal AgentRail subscription state contract.
+/// Minimal Vallum subscription state contract.
 ///
 /// This MVP records local entitlement evidence for subscription activation,
 /// renewal, cancellation, and failed proof. It does not operate recurring

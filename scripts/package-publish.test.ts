@@ -26,12 +26,12 @@ interface PackageJson {
 const publicPackages = await publicPackageDirs();
 const repoPrereleaseVersion = "0.0.0-prerelease";
 const mcpServerVersion = "0.0.1-mcp.0";
-const mcpServerPackageName = "@sacredlabs/agentrail-mcp-server";
+const mcpServerPackageName = "@vallum/mcp-server";
 
 test("workspace root is private and keeps publishable packages out of root publication", async () => {
   const root = JSON.parse(await readFile("package.json", "utf8")) as PackageJson;
 
-  assert.equal(root.name, "agentrail");
+  assert.equal(root.name, "vallum");
   assert.equal(root.private, true);
   assert.equal(root.version, repoPrereleaseVersion);
   assert.equal(root.license, "Apache-2.0");
@@ -45,8 +45,8 @@ test("public package metadata pins safe prerelease publish settings", async () =
 
     assert.match(
       packageJson.name,
-      /^@sacredlabs\/agentrail-[a-z0-9-]+$/,
-      `${packageJson.name} must stay in the Sacred Labs AgentRail namespace`,
+      /^@vallum\/[a-z0-9-]+$/,
+      `${packageJson.name} must stay in the Vallum namespace`,
     );
     assert.equal(packageJson.version, expectedPackageVersion(packageJson.name), `${packageJson.name} must use the reviewed prerelease version`);
     assert.equal(packageJson.private, undefined, `${packageJson.name} must not be private if pack:check publishes it`);
@@ -69,7 +69,7 @@ test("public package metadata pins safe prerelease publish settings", async () =
     if (packageJson.name === mcpServerPackageName) {
       assert.deepEqual(
         packageJson.bin,
-        { "agentrail-mcp": "dist/cli.js" },
+        { "vallum-mcp": "dist/cli.js" },
         "MCP package must publish the reviewed stdio CLI bin",
       );
     } else {
@@ -154,7 +154,7 @@ function internalDependencies(packageJson: PackageJson): [string, string][] {
   return Object.entries({
     ...packageJson.dependencies,
     ...packageJson.devDependencies,
-  }).filter(([name]) => name.startsWith("@sacredlabs/agentrail-"));
+  }).filter(([name]) => name.startsWith("@vallum/"));
 }
 
 function expectedPackageVersion(packageName: string): string {

@@ -37,7 +37,7 @@ test("custody readiness reports local signer-reference proof and missing product
 
   assert.equal(report.localProofOk, true);
   assert.equal(report.productionReady, false);
-  assert.equal(artifact.kind, "agentrail.custody-readiness-report");
+  assert.equal(artifact.kind, "vallum.custody-readiness-report");
   assert.equal(artifact.localProofOk, true);
   assert.equal(artifact.productionReady, false);
   assert.ok(artifact.provenLocalCheckIds.includes("local-signer-reference-proof"));
@@ -61,9 +61,9 @@ test("custody readiness reports local signer-reference proof and missing product
 });
 
 test("custody readiness artifact writer uses restrictive local file permissions", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-custody-artifact-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-custody-artifact-"));
   try {
-    const outFile = "tmp/agentrail/custody-readiness.json";
+    const outFile = "tmp/vallum/custody-readiness.json";
     const artifact = await writeCustodyReadinessArtifact({
       cwd: repoRoot,
       env: {},
@@ -73,8 +73,8 @@ test("custody readiness artifact writer uses restrictive local file permissions"
     const written = JSON.parse(await readFile(join(cwd, outFile), "utf8")) as typeof artifact;
     const mode = (await stat(join(cwd, outFile))).mode & 0o777;
 
-    assert.equal(artifact.kind, "agentrail.custody-readiness-report");
-    assert.equal(written.kind, "agentrail.custody-readiness-report");
+    assert.equal(artifact.kind, "vallum.custody-readiness-report");
+    assert.equal(written.kind, "vallum.custody-readiness-report");
     assert.equal(written.productionReady, false);
     assert.equal(written.blockerCodes.includes("CUSTODY_PRODUCTION_REPORT_MISSING"), true);
     assert.equal(mode, 0o600);
@@ -84,12 +84,12 @@ test("custody readiness artifact writer uses restrictive local file permissions"
 });
 
 test("custody readiness accepts a recent redacted production report", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-custody-readiness-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-custody-readiness-"));
   try {
     const reportPath = join(cwd, "custody-report.json");
     await writeFile(reportPath, JSON.stringify({
       schemaVersion: 1,
-      kind: "agentrail.custody-production-proof",
+      kind: "vallum.custody-production-proof",
       result: "passed",
       observedAt: "2026-06-11T11:00:00.000Z",
       custodyMode: "external-signer",
@@ -116,12 +116,12 @@ test("custody readiness accepts a recent redacted production report", async () =
 });
 
 test("custody readiness rejects unsafe report fields and stale reports", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-custody-readiness-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-custody-readiness-"));
   try {
     const unsafePath = join(cwd, "unsafe.json");
     await writeFile(unsafePath, JSON.stringify({
       schemaVersion: 1,
-      kind: "agentrail.custody-production-proof",
+      kind: "vallum.custody-production-proof",
       result: "passed",
       observedAt: "2026-06-11T11:00:00.000Z",
       custodyMode: "kms",
@@ -131,7 +131,7 @@ test("custody readiness rejects unsafe report fields and stale reports", async (
     const stalePath = join(cwd, "stale.json");
     await writeFile(stalePath, JSON.stringify({
       schemaVersion: 1,
-      kind: "agentrail.custody-production-proof",
+      kind: "vallum.custody-production-proof",
       result: "passed",
       observedAt: "2026-04-01T00:00:00.000Z",
       custodyMode: "kms",
@@ -140,7 +140,7 @@ test("custody readiness rejects unsafe report fields and stale reports", async (
     const unsafeValuePath = join(cwd, "unsafe-value.json");
     await writeFile(unsafeValuePath, JSON.stringify({
       schemaVersion: 1,
-      kind: "agentrail.custody-production-proof",
+      kind: "vallum.custody-production-proof",
       result: "passed",
       observedAt: "2026-06-11T11:00:00.000Z",
       custodyMode: "kms",
@@ -182,13 +182,13 @@ test("custody readiness rejects unsafe report fields and stale reports", async (
 });
 
 test("custody readiness blocks incomplete local script wiring", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-custody-readiness-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-custody-readiness-"));
   try {
     const report = await checkCustodyReadiness({
       cwd,
       env: {},
       scripts: {
-        build: "npm run build -w @sacredlabs/agentrail-accounts",
+        build: "npm run build -w @vallum/accounts",
         "verify:local": "npm run proof:custody-readiness",
       },
     });

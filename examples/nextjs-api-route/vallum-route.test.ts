@@ -1,14 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { AgentRailPolicyError } from "../../packages/sdk/src/index.js";
+import { VallumPolicyError } from "../../packages/sdk/src/index.js";
 import type {
   ExecuteSponsoredTransactionRequest,
   ExecuteSponsoredTransactionResponse,
   ReserveGasRequest,
   ReserveGasResponse,
 } from "../../packages/sdk/src/index.js";
-import { createAgentRailNextApiRoutes } from "./agentrail-route.js";
+import { createVallumNextApiRoutes } from "./vallum-route.js";
 
 async function readJson(response: Response): Promise<unknown> {
   return response.json() as Promise<unknown>;
@@ -24,13 +24,13 @@ function postJson(path: string, body: unknown): Request {
 
 test("reserve route forwards safe request fields to the server-owned SDK client", async () => {
   const reserveCalls: ReserveGasRequest[] = [];
-  const routes = createAgentRailNextApiRoutes({
+  const routes = createVallumNextApiRoutes({
     client: {
       async reserveGas(request: ReserveGasRequest): Promise<ReserveGasResponse> {
         reserveCalls.push(request);
         return {
           reservationId: "reservation-1",
-          agentRailTransactionId: "agentrail-1",
+          agentRailTransactionId: "vallum-1",
           sponsorAddress: "0xSPONSOR",
           gasCoins: [{ objectId: "coin-hidden-from-frontend" }],
           raw: { upstreamDebug: "do-not-return" },
@@ -43,7 +43,7 @@ test("reserve route forwards safe request fields to the server-owned SDK client"
   });
 
   const response = await routes.reserve(
-    postJson("/api/agentrail/reserve", {
+    postJson("/api/vallum/reserve", {
       walletAddress: "0xUSER",
       packageId: "0xDEMO_PACKAGE",
       functionName: "mint_badge",
@@ -68,7 +68,7 @@ test("reserve route forwards safe request fields to the server-owned SDK client"
   const body = await readJson(response);
   assert.deepEqual(body, {
     reservationId: "reservation-1",
-    agentRailTransactionId: "agentrail-1",
+    agentRailTransactionId: "vallum-1",
     sponsorAddress: "0xSPONSOR",
   });
   assert.doesNotMatch(JSON.stringify(body), /coin-hidden|do-not-return|browser-supplied|apiKey|bearer/i);
@@ -76,7 +76,7 @@ test("reserve route forwards safe request fields to the server-owned SDK client"
 
 test("execute route returns only safe execution fields", async () => {
   const executeCalls: ExecuteSponsoredTransactionRequest[] = [];
-  const routes = createAgentRailNextApiRoutes({
+  const routes = createVallumNextApiRoutes({
     client: {
       async reserveGas(): Promise<ReserveGasResponse> {
         throw new Error("reserve should not be called by execute route");
@@ -97,9 +97,9 @@ test("execute route returns only safe execution fields", async () => {
   });
 
   const response = await routes.execute(
-    postJson("/api/agentrail/execute", {
+    postJson("/api/vallum/execute", {
       reservationId: "reservation-1",
-      agentRailTransactionId: "agentrail-1",
+      agentRailTransactionId: "vallum-1",
       transactionBytes: "client-transaction-bytes",
       userSignature: "client-user-signature",
       raw: "browser-raw-field-must-be-ignored",
@@ -110,7 +110,7 @@ test("execute route returns only safe execution fields", async () => {
   assert.deepEqual(executeCalls, [
     {
       reservationId: "reservation-1",
-      agentRailTransactionId: "agentrail-1",
+      agentRailTransactionId: "vallum-1",
       transactionBytes: "client-transaction-bytes",
       userSignature: "client-user-signature",
     },
@@ -125,7 +125,7 @@ test("execute route returns only safe execution fields", async () => {
 
 test("routes fail closed on malformed bodies before calling the SDK client", async () => {
   let calls = 0;
-  const routes = createAgentRailNextApiRoutes({
+  const routes = createVallumNextApiRoutes({
     client: {
       async reserveGas(): Promise<ReserveGasResponse> {
         calls += 1;
@@ -139,16 +139,16 @@ test("routes fail closed on malformed bodies before calling the SDK client", asy
   });
 
   const invalidJson = await routes.reserve(
-    new Request("http://localhost/api/agentrail/reserve", {
+    new Request("http://localhost/api/vallum/reserve", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: "{not valid json",
     }),
   );
-  const arrayBody = await routes.execute(postJson("/api/agentrail/execute", []));
-  const wrongMethod = await routes.reserve(new Request("http://localhost/api/agentrail/reserve", { method: "GET" }));
+  const arrayBody = await routes.execute(postJson("/api/vallum/execute", []));
+  const wrongMethod = await routes.reserve(new Request("http://localhost/api/vallum/reserve", { method: "GET" }));
   const wrongContentType = await routes.reserve(
-    new Request("http://localhost/api/agentrail/reserve", {
+    new Request("http://localhost/api/vallum/reserve", {
       method: "POST",
       headers: { "content-type": "text/plain" },
       body: JSON.stringify({ gasBudget: 1 }),
@@ -165,7 +165,7 @@ test("routes fail closed on malformed bodies before calling the SDK client", asy
 
 test("routes reject invalid SDK request field shapes before calling the SDK client", async () => {
   let calls = 0;
-  const routes = createAgentRailNextApiRoutes({
+  const routes = createVallumNextApiRoutes({
     client: {
       async reserveGas(): Promise<ReserveGasResponse> {
         calls += 1;
@@ -178,24 +178,24 @@ test("routes reject invalid SDK request field shapes before calling the SDK clie
     },
   });
 
-  const zeroGas = await routes.reserve(postJson("/api/agentrail/reserve", { gasBudget: 0 }));
-  const fractionalGas = await routes.reserve(postJson("/api/agentrail/reserve", { gasBudget: 1.5 }));
-  const wrongPackageType = await routes.reserve(postJson("/api/agentrail/reserve", { gasBudget: 1, packageId: 123 }));
+  const zeroGas = await routes.reserve(postJson("/api/vallum/reserve", { gasBudget: 0 }));
+  const fractionalGas = await routes.reserve(postJson("/api/vallum/reserve", { gasBudget: 1.5 }));
+  const wrongPackageType = await routes.reserve(postJson("/api/vallum/reserve", { gasBudget: 1, packageId: 123 }));
   const wrongDurationType = await routes.reserve(
-    postJson("/api/agentrail/reserve", { gasBudget: 1, reserveDurationSecs: "30" }),
+    postJson("/api/vallum/reserve", { gasBudget: 1, reserveDurationSecs: "30" }),
   );
   const emptyExecuteId = await routes.execute(
-    postJson("/api/agentrail/execute", {
+    postJson("/api/vallum/execute", {
       reservationId: "",
-      agentRailTransactionId: "agentrail-1",
+      agentRailTransactionId: "vallum-1",
       transactionBytes: "client-transaction-bytes",
       userSignature: "client-user-signature",
     }),
   );
   const blankSignature = await routes.execute(
-    postJson("/api/agentrail/execute", {
+    postJson("/api/vallum/execute", {
       reservationId: "reservation-1",
-      agentRailTransactionId: "agentrail-1",
+      agentRailTransactionId: "vallum-1",
       transactionBytes: "client-transaction-bytes",
       userSignature: "   ",
     }),
@@ -208,10 +208,10 @@ test("routes reject invalid SDK request field shapes before calling the SDK clie
 });
 
 test("routes map SDK errors without exposing raw upstream bodies", async () => {
-  const routes = createAgentRailNextApiRoutes({
+  const routes = createVallumNextApiRoutes({
     client: {
       async reserveGas(): Promise<ReserveGasResponse> {
-        throw new AgentRailPolicyError("raw upstream policy body leaked", "PACKAGE_NOT_ALLOWED", 400, {
+        throw new VallumPolicyError("raw upstream policy body leaked", "PACKAGE_NOT_ALLOWED", 400, {
           apiKey: "secret-app-key",
           raw: "raw-upstream-error-body",
         });
@@ -222,13 +222,13 @@ test("routes map SDK errors without exposing raw upstream bodies", async () => {
     },
   });
 
-  const response = await routes.reserve(postJson("/api/agentrail/reserve", { gasBudget: 1 }));
+  const response = await routes.reserve(postJson("/api/vallum/reserve", { gasBudget: 1 }));
 
   assert.equal(response.status, 400);
   const body = await readJson(response);
   assert.deepEqual(body, {
     error: "POLICY_REJECTED",
-    message: "Request rejected by AgentRail policy.",
+    message: "Request rejected by Vallum policy.",
     reasonCode: "PACKAGE_NOT_ALLOWED",
   });
   assert.doesNotMatch(JSON.stringify(body), /secret|raw upstream|raw-upstream|apiKey/i);

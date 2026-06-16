@@ -4,19 +4,19 @@ import {
   type X402ManifestMappingContext,
   type X402PaymentRequired,
   type X402PaymentRequirements,
-} from "@sacredlabs/agentrail-manifest";
+} from "@vallum/manifest";
 import {
   evaluateAgentActionPolicy,
   type AgentActionPolicy,
   type AgentPolicyDecision,
-} from "@sacredlabs/agentrail-policy-gateway";
+} from "@vallum/policy-gateway";
 import {
   createX402ExternalPaymentReceiptState,
   redactX402PaymentMetadata,
   type X402ExternalPaymentReceiptState,
   type X402SettleEvidence,
   type X402VerifyEvidence,
-} from "@sacredlabs/agentrail-receipts";
+} from "@vallum/receipts";
 
 export type { X402ManifestMappingContext, X402PaymentRequired, X402PaymentRequirements };
 

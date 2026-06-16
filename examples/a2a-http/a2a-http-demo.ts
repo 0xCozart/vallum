@@ -1,6 +1,6 @@
-import { validManifestFixture } from "@sacredlabs/agentrail-manifest";
-import type { AgentActionPolicy } from "@sacredlabs/agentrail-policy-gateway";
-import { validAgentProfileFixture } from "@sacredlabs/agentrail-registry";
+import { validManifestFixture } from "@vallum/manifest";
+import type { AgentActionPolicy } from "@vallum/policy-gateway";
+import { validAgentProfileFixture } from "@vallum/registry";
 import {
   A2A_AGENT_CARD_WELL_KNOWN_PATH,
   A2A_HTTP_EXTENDED_AGENT_CARD_PATH,

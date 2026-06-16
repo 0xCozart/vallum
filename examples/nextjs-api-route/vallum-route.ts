@@ -3,15 +3,15 @@ import type {
   ReserveGasRequest,
 } from "../../packages/sdk/src/index.js";
 import {
-  createAgentRailBackendHandlers,
-  type CreateAgentRailBackendHandlersOptions,
-  type AgentRailExampleErrorBody,
-  type AgentRailExampleResult,
-} from "../node-backend/agentrail-backend.js";
+  createVallumBackendHandlers,
+  type CreateVallumBackendHandlersOptions,
+  type VallumExampleErrorBody,
+  type VallumExampleResult,
+} from "../node-backend/vallum-backend.js";
 
-export type CreateAgentRailNextApiRoutesOptions = CreateAgentRailBackendHandlersOptions;
+export type CreateVallumNextApiRoutesOptions = CreateVallumBackendHandlersOptions;
 
-export interface AgentRailNextApiRoutes {
+export interface VallumNextApiRoutes {
   reserve(request: Request): Promise<Response>;
   execute(request: Request): Promise<Response>;
 }
@@ -21,7 +21,7 @@ interface BadRequestBody {
   message: string;
 }
 
-type RouteResponseBody<TBody extends object> = TBody | AgentRailExampleErrorBody | BadRequestBody;
+type RouteResponseBody<TBody extends object> = TBody | VallumExampleErrorBody | BadRequestBody;
 
 function jsonResponse<TBody extends object>(status: number, body: TBody, headers: HeadersInit = {}): Response {
   return Response.json(body, {
@@ -35,7 +35,7 @@ function methodNotAllowed(): Response {
     405,
     {
       error: "METHOD_NOT_ALLOWED",
-      message: "Use POST for this AgentRail endpoint.",
+      message: "Use POST for this Vallum endpoint.",
     },
     { allow: "POST" },
   );
@@ -107,7 +107,7 @@ function requiredPositiveInteger(body: Record<string, unknown>, key: string): nu
   return value === undefined ? badRequest(`${key} must be a positive safe integer.`) : value;
 }
 
-function asResponse<TBody extends object>(result: AgentRailExampleResult<TBody>): Response {
+function asResponse<TBody extends object>(result: VallumExampleResult<TBody>): Response {
   return jsonResponse<RouteResponseBody<TBody>>(result.status, result.body);
 }
 
@@ -172,8 +172,8 @@ function executeInputFromBody(body: Record<string, unknown>): ExecuteSponsoredTr
   };
 }
 
-export function createAgentRailNextApiRoutes(options: CreateAgentRailNextApiRoutesOptions): AgentRailNextApiRoutes {
-  const backend = createAgentRailBackendHandlers(options);
+export function createVallumNextApiRoutes(options: CreateVallumNextApiRoutesOptions): VallumNextApiRoutes {
+  const backend = createVallumBackendHandlers(options);
 
   return {
     async reserve(request: Request): Promise<Response> {

@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import type { AgentTransactionManifest } from "@sacredlabs/agentrail-manifest";
+import type { AgentTransactionManifest } from "@vallum/manifest";
 import type { AgentPolicyDecision } from "./policySchema.js";
 
 export interface MockSponsorshipReservation {

@@ -2,7 +2,7 @@ import type {
   PolicyDecision,
   SponsorshipPolicy,
   SponsorshipRequestContext,
-} from "@sacredlabs/agentrail-shared-types";
+} from "@vallum/shared-types";
 
 function reject(reasonCode: Exclude<PolicyDecision, { allowed: true }>["reasonCode"], message: string): PolicyDecision {
   return { allowed: false, reasonCode, message };

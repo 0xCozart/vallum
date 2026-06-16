@@ -24,18 +24,18 @@ test("A2A Agent Card generation maps an active Agent Profile to current discover
 
   const card = createA2AAgentCardFromProfile(profile, {
     now: new Date("2026-06-10T12:00:00.000Z"),
-    description: "Research agent exposed through AgentRail.",
+    description: "Research agent exposed through Vallum.",
     agentVersion: "2026.6.10",
     provider: {
-      organization: "AgentRail",
-      url: "https://agentrail.example.test",
+      organization: "Vallum",
+      url: "https://vallum.example.test",
     },
-    documentationUrl: "https://agentrail.example.test/docs/researcher",
+    documentationUrl: "https://vallum.example.test/docs/researcher",
   });
 
   assert.equal(A2A_AGENT_CARD_WELL_KNOWN_PATH, "/.well-known/agent-card.json");
   assert.equal(card.name, "researcher.demo.iota");
-  assert.equal(card.description, "Research agent exposed through AgentRail.");
+  assert.equal(card.description, "Research agent exposed through Vallum.");
   assert.equal(card.version, "2026.6.10");
   assert.deepEqual(card.supportedInterfaces, [{
     url: "https://agent.example.test/a2a",
@@ -43,29 +43,29 @@ test("A2A Agent Card generation maps an active Agent Profile to current discover
     protocolVersion: A2A_AGENT_CARD_PROTOCOL_VERSION,
   }]);
   assert.deepEqual(card.provider, {
-    organization: "AgentRail",
-    url: "https://agentrail.example.test",
+    organization: "Vallum",
+    url: "https://vallum.example.test",
   });
-  assert.equal(card.documentationUrl, "https://agentrail.example.test/docs/researcher");
+  assert.equal(card.documentationUrl, "https://vallum.example.test/docs/researcher");
   assert.deepEqual(card.defaultInputModes, ["text/plain", "application/json"]);
   assert.deepEqual(card.defaultOutputModes, ["text/plain", "application/json"]);
   assert.deepEqual(card.securitySchemes, {
-    agentrailBearer: {
+    vallumBearer: {
       httpAuthSecurityScheme: {
         scheme: "Bearer",
         bearerFormat: "JWT",
-        description: "Bearer token accepted by the AgentRail A2A endpoint.",
+        description: "Bearer token accepted by the Vallum A2A endpoint.",
       },
     },
   });
-  assert.deepEqual(card.securityRequirements, [{ schemes: { agentrailBearer: [] } }]);
+  assert.deepEqual(card.securityRequirements, [{ schemes: { vallumBearer: [] } }]);
   assert.deepEqual(card.capabilities, {
     streaming: false,
     pushNotifications: false,
     extendedAgentCard: false,
     extensions: [{
-      uri: "https://agentrail.dev/a2a/extensions/profile/v1",
-      description: "Public AgentRail profile context.",
+      uri: "https://vallum.dev/a2a/extensions/profile/v1",
+      description: "Public Vallum profile context.",
       required: false,
       params: {
         profileVersion: "agent-profile/v1",
@@ -79,11 +79,11 @@ test("A2A Agent Card generation maps an active Agent Profile to current discover
   assert.deepEqual(card.skills, [{
     id: "research.summary",
     name: "Research summary",
-    description: "AgentRail capability research.summary.",
-    tags: ["agentrail", "contract:escrow", "action:open_escrow", "escrow:v1"],
+    description: "Vallum capability research.summary.",
+    tags: ["vallum", "contract:escrow", "action:open_escrow", "escrow:v1"],
     inputModes: ["text/plain", "application/json"],
     outputModes: ["text/plain", "application/json"],
-    securityRequirements: [{ schemes: { agentrailBearer: [] } }],
+    securityRequirements: [{ schemes: { vallumBearer: [] } }],
   }]);
 });
 

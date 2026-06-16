@@ -229,11 +229,11 @@ export async function buildOperatorReportTemplate(
     case "testnet-upstream":
       return {
         ...base,
-        kind: "agentrail.testnet-upstream-proof-template",
-        diagnosticReportKind: "agentrail.testnet-upstream-diagnostic",
-        acceptedReportEnv: "AGENTRAIL_TESTNET_UPSTREAM_REPORT",
-        sponsorFundingReportEnv: "AGENTRAIL_SPONSOR_FUNDING_REPORT",
-        runtimeModeEnv: "AGENTRAIL_GAS_STATION_RUNTIME_MODE",
+        kind: "vallum.testnet-upstream-proof-template",
+        diagnosticReportKind: "vallum.testnet-upstream-diagnostic",
+        acceptedReportEnv: "VALLUM_TESTNET_UPSTREAM_REPORT",
+        sponsorFundingReportEnv: "VALLUM_SPONSOR_FUNDING_REPORT",
+        runtimeModeEnv: "VALLUM_GAS_STATION_RUNTIME_MODE",
         supportedRuntimeModes: ["local-docker", "managed-upstream"],
         requiredEnv: [
           "IOTA_RPC_URL",
@@ -243,9 +243,9 @@ export async function buildOperatorReportTemplate(
         commands: [
           "npm run gas-station:runtime-preflight",
           "npm run gas-station:docker-direct -- --status",
-          "npm run sponsor:write-funding-request -- --out tmp/agentrail/sponsor-funding-request.json",
-          "npm run sponsor:request-faucet-funds -- --execute --out tmp/agentrail/sponsor-faucet-request.json",
-          "npm run sponsor:check-funding -- --report tmp/agentrail/sponsor-funding-report.json",
+          "npm run sponsor:write-funding-request -- --out tmp/vallum/sponsor-funding-request.json",
+          "npm run sponsor:request-faucet-funds -- --execute --out tmp/vallum/sponsor-faucet-request.json",
+          "npm run sponsor:check-funding -- --report tmp/vallum/sponsor-funding-report.json",
           "npm run diagnose:gas-station -- --skip-reserve --report <ignored-json-path>",
           "npm run diagnose:gas-station -- --report <ignored-json-path>",
           "npm run proof:live-status",
@@ -257,15 +257,15 @@ export async function buildOperatorReportTemplate(
     case "testnet-digest":
       return {
         ...base,
-        kind: "agentrail.testnet-digest-proof-template",
-        acceptedReportKind: "agentrail.testnet-digest-proof-report",
-        acceptedReportEnv: "AGENTRAIL_TESTNET_DIGEST_REPORT",
+        kind: "vallum.testnet-digest-proof-template",
+        acceptedReportKind: "vallum.testnet-digest-proof-report",
+        acceptedReportEnv: "VALLUM_TESTNET_DIGEST_REPORT",
         requiredEnv: [
           "IOTA_RPC_URL",
         ],
         commands: [
           "npm run proof:testnet-digest",
-          "npm run proof:testnet-digest:live -- --report tmp/agentrail/testnet-digest-proof.json",
+          "npm run proof:testnet-digest:live -- --report tmp/vallum/testnet-digest-proof.json",
           "npm run proof:live-status",
           "npm run proof:product-status",
           "npm run proof:operator-gates",
@@ -276,8 +276,8 @@ export async function buildOperatorReportTemplate(
     case "iota-names-live":
       return {
         ...base,
-        kind: "agentrail.iota-names-live-smoke-template",
-        acceptedReportKind: "agentrail.iota-names-live-smoke-report",
+        kind: "vallum.iota-names-live-smoke-template",
+        acceptedReportKind: "vallum.iota-names-live-smoke-report",
         acceptedReportEnv: "IOTA_NAMES_LIVE_REPORT",
         requiredEnv: [
           "IOTA_NAMES_GRAPHQL_URL",
@@ -286,7 +286,7 @@ export async function buildOperatorReportTemplate(
         ],
         commands: [
           "npm run live:write-proof-plan",
-          "npm run smoke:iota-names-live -- --report tmp/agentrail/iota-names-live-report.json",
+          "npm run smoke:iota-names-live -- --report tmp/vallum/iota-names-live-report.json",
           "npm run proof:live-status",
           "npm run proof:product-status",
           "npm run proof:operator-gates",
@@ -297,8 +297,8 @@ export async function buildOperatorReportTemplate(
     case "iota-identity-live":
       return {
         ...base,
-        kind: "agentrail.iota-identity-live-smoke-template",
-        acceptedReportKind: "agentrail.iota-identity-live-smoke-report",
+        kind: "vallum.iota-identity-live-smoke-template",
+        acceptedReportKind: "vallum.iota-identity-live-smoke-report",
         acceptedReportEnv: "IOTA_IDENTITY_LIVE_REPORT",
         requiredEnv: [
           "IOTA_IDENTITY_PROOF_ENDPOINT",
@@ -311,7 +311,7 @@ export async function buildOperatorReportTemplate(
         ],
         commands: [
           "npm run live:write-proof-plan",
-          "npm run smoke:iota-identity-live -- --report tmp/agentrail/iota-identity-live-report.json",
+          "npm run smoke:iota-identity-live -- --report tmp/vallum/iota-identity-live-report.json",
           "npm run proof:live-status",
           "npm run proof:product-status",
           "npm run proof:operator-gates",
@@ -322,8 +322,8 @@ export async function buildOperatorReportTemplate(
     case "vc-validation-live":
       return {
         ...base,
-        kind: "agentrail.vc-validation-live-template",
-        acceptedReportKind: "agentrail.iota-identity-live-smoke-report",
+        kind: "vallum.vc-validation-live-template",
+        acceptedReportKind: "vallum.iota-identity-live-smoke-report",
         acceptedReportEnv: "IOTA_IDENTITY_LIVE_REPORT",
         requiredEnv: [
           "IOTA_IDENTITY_TRUSTED_ISSUER_DIDS",
@@ -336,7 +336,7 @@ export async function buildOperatorReportTemplate(
         ],
         commands: [
           "npm run live:write-proof-plan",
-          "npm run smoke:iota-identity-live -- --report tmp/agentrail/iota-identity-live-report.json",
+          "npm run smoke:iota-identity-live -- --report tmp/vallum/iota-identity-live-report.json",
           "npm run proof:live-status",
           "npm run proof:product-status",
           "npm run proof:operator-gates",
@@ -369,14 +369,14 @@ export async function buildOperatorReportTemplate(
     case "payment-provider-live":
       return {
         ...base,
-        kind: "agentrail.payment-provider-live-proof",
+        kind: "vallum.payment-provider-live-proof",
         providerKinds: ["x402", "ap2"],
         checks: PAYMENT_CHECKS,
       };
     case "package-publication":
       return {
         ...base,
-        kind: "agentrail.package-publication-proof",
+        kind: "vallum.package-publication-proof",
         registry: "npm",
         packageNames: (await collectPublishablePackages(cwd)).map((packageInfo) => packageInfo.name),
         checks: PACKAGE_CHECKS,
@@ -384,14 +384,14 @@ export async function buildOperatorReportTemplate(
     case "marketplace-production":
       return {
         ...base,
-        kind: "agentrail.marketplace-production-proof",
+        kind: "vallum.marketplace-production-proof",
         environment: options.environment ?? "testnet",
         checks: MARKETPLACE_CHECKS,
       };
     case "custody-production":
       return {
         ...base,
-        kind: "agentrail.custody-production-proof",
+        kind: "vallum.custody-production-proof",
         custodyMode: options.custodyMode ?? "external-signer",
         checks: CUSTODY_CHECKS,
       };

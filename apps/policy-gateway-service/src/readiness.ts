@@ -26,9 +26,9 @@ const SECRET_KEYS = new Set([
   "GAS_STATION_KEYPAIR",
   "GAS_STATION_AUTH",
   "JWT_SECRET",
-  "AGENTRAIL_DEMO_APP_KEY",
+  "VALLUM_DEMO_APP_KEY",
   "GAS_STATION_BEARER_TOKEN",
-  "AGENTRAIL_OPERATOR_USAGE_TOKEN",
+  "VALLUM_OPERATOR_USAGE_TOKEN",
 ]);
 
 const REQUIRED_KEYS = [
@@ -37,10 +37,10 @@ const REQUIRED_KEYS = [
   "GAS_STATION_AUTH",
   "JWT_SECRET",
   "DATABASE_URL",
-  "AGENTRAIL_GATEWAY_HOST",
-  "AGENTRAIL_GATEWAY_PORT",
-  "AGENTRAIL_POLICY_PATH",
-  "AGENTRAIL_DEMO_APP_KEY",
+  "VALLUM_GATEWAY_HOST",
+  "VALLUM_GATEWAY_PORT",
+  "VALLUM_POLICY_PATH",
+  "VALLUM_DEMO_APP_KEY",
   "GAS_STATION_URL",
   "GAS_STATION_BEARER_TOKEN",
 ] as const;
@@ -178,11 +178,11 @@ function validatePort(checks: ReadinessCheck[], value: string | undefined): void
   const port = Number(value);
   addCheck(
     checks,
-    "AGENTRAIL_GATEWAY_PORT.range",
+    "VALLUM_GATEWAY_PORT.range",
     Number.isInteger(port) && port > 0 && port <= 65_535 ? "pass" : "fail",
     Number.isInteger(port) && port > 0 && port <= 65_535
-      ? "AGENTRAIL_GATEWAY_PORT is a valid TCP port."
-      : "AGENTRAIL_GATEWAY_PORT must be an integer from 1 to 65535.",
+      ? "VALLUM_GATEWAY_PORT is a valid TCP port."
+      : "VALLUM_GATEWAY_PORT must be an integer from 1 to 65535.",
   );
 }
 
@@ -194,11 +194,11 @@ function validateGatewayHost(checks: ReadinessCheck[], value: string | undefined
   if (!hasValue(value)) return;
   addCheck(
     checks,
-    "AGENTRAIL_GATEWAY_HOST.loopback",
+    "VALLUM_GATEWAY_HOST.loopback",
     isLoopbackHost(value) ? "pass" : "fail",
     isLoopbackHost(value)
-      ? "AGENTRAIL_GATEWAY_HOST is loopback-only for the first testnet demo boundary."
-      : "AGENTRAIL_GATEWAY_HOST must stay loopback-only before deployment hardening is complete.",
+      ? "VALLUM_GATEWAY_HOST is loopback-only for the first testnet demo boundary."
+      : "VALLUM_GATEWAY_HOST must stay loopback-only before deployment hardening is complete.",
   );
 }
 
@@ -208,7 +208,7 @@ async function validatePolicy(
   expectPlaceholders: boolean,
   cwd?: string,
 ): Promise<void> {
-  if (!hasValue(env.AGENTRAIL_POLICY_PATH) || !hasValue(env.AGENTRAIL_DEMO_APP_KEY)) return;
+  if (!hasValue(env.VALLUM_POLICY_PATH) || !hasValue(env.VALLUM_DEMO_APP_KEY)) return;
   try {
     const config = await loadGatewayConfigFromEnv(cwd ? { ...env, INIT_CWD: cwd } : env);
     const policies = Object.values(config.apps).map((app) => app.policy);
@@ -217,7 +217,7 @@ async function validatePolicy(
       checks,
       "policy.load",
       "pass",
-      "AGENTRAIL_POLICY_PATH loads through the gateway config parser.",
+      "VALLUM_POLICY_PATH loads through the gateway config parser.",
     );
     addCheck(
       checks,
@@ -252,8 +252,8 @@ export async function checkTestnetReadiness(options: CheckReadinessOptions): Pro
   validateSecretPlaceholders(checks, env, expectPlaceholders);
   validateUrl(checks, "IOTA_RPC_URL", env.IOTA_RPC_URL, { requireHttps: true, requireTestnet: true });
   validateUrl(checks, "GAS_STATION_URL", env.GAS_STATION_URL);
-  validateGatewayHost(checks, env.AGENTRAIL_GATEWAY_HOST);
-  validatePort(checks, env.AGENTRAIL_GATEWAY_PORT);
+  validateGatewayHost(checks, env.VALLUM_GATEWAY_HOST);
+  validatePort(checks, env.VALLUM_GATEWAY_PORT);
   await validatePolicy(checks, env, expectPlaceholders, options.cwd);
 
   const failures = checks.filter((check) => check.status === "fail");
@@ -270,7 +270,7 @@ function secretKeyForCheckId(id: string): string | undefined {
 }
 
 export function formatReadinessReport(report: ReadinessReport): string {
-  const lines = [`AgentRail ${report.mode} readiness ${report.ok ? "passed" : "failed"}`];
+  const lines = [`Vallum ${report.mode} readiness ${report.ok ? "passed" : "failed"}`];
   for (const check of report.checks) {
     const prefix = check.status === "pass" ? "ok" : "fail";
     const sensitiveSuffix = secretKeyForCheckId(check.id) ? " [value hidden]" : "";

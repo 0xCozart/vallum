@@ -31,7 +31,7 @@ test("A2A public proof plan reports current blockers without configured values",
     const formatted = formatA2APublicProofPlan(plan);
 
     assert.equal(plan.schemaVersion, 1);
-    assert.equal(plan.kind, "agentrail.a2a-public-proof-plan");
+    assert.equal(plan.kind, "vallum.a2a-public-proof-plan");
     assert.equal(plan.status, "blocked");
     assert.equal(plan.localProofOk, true);
     assert.equal(plan.publicReady, false);
@@ -54,14 +54,14 @@ test("A2A public proof plan can write a redacted local JSON artifact", async () 
     const plan = await writeA2APublicProofPlan({
       cwd,
       now: NOW,
-      outFile: "tmp/agentrail/a2a-public-proof-plan.json",
+      outFile: "tmp/vallum/a2a-public-proof-plan.json",
       scripts: completeScripts(),
       env: {},
     });
-    const raw = await readFile(join(cwd, "tmp/agentrail/a2a-public-proof-plan.json"), "utf8");
+    const raw = await readFile(join(cwd, "tmp/vallum/a2a-public-proof-plan.json"), "utf8");
     const written = JSON.parse(raw) as typeof plan;
 
-    assert.equal(written.kind, "agentrail.a2a-public-proof-plan");
+    assert.equal(written.kind, "vallum.a2a-public-proof-plan");
     assert.equal(written.status, "blocked");
     assert.deepEqual(written.blockerCodes, plan.blockerCodes);
     assert.ok(written.blockerCodes.includes("A2A_PUBLIC_AGENT_CARD_URL_MISSING"));
@@ -72,7 +72,7 @@ test("A2A public proof plan can write a redacted local JSON artifact", async () 
 });
 
 async function writeA2AEvidence(): Promise<string> {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-a2a-proof-plan-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-a2a-proof-plan-"));
   for (const path of [
     "packages/registry/src/a2aCard.ts",
     "packages/registry/src/a2aWellKnown.ts",

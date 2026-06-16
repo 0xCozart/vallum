@@ -1,8 +1,8 @@
 import { randomUUID, timingSafeEqual } from "node:crypto";
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 
-import { evaluateSponsorshipPolicy } from "@sacredlabs/agentrail-policy-gateway";
-import type { PolicyDecision, PolicyReasonCode, SponsorshipPolicy, SponsorshipRequestContext } from "@sacredlabs/agentrail-shared-types";
+import { evaluateSponsorshipPolicy } from "@vallum/policy-gateway";
+import type { PolicyDecision, PolicyReasonCode, SponsorshipPolicy, SponsorshipRequestContext } from "@vallum/shared-types";
 
 import type { GatewayUsageSnapshot } from "./usage.js";
 
@@ -410,7 +410,7 @@ export function createGatewayServer(config: GatewayConfig): Server {
   async function handleHealth(response: ServerResponse): Promise<void> {
     writeJson(response, 200, {
       status: "ok",
-      service: "agentrail-policy-gateway",
+      service: "vallum-policy-gateway",
       upstream: { configured: Boolean(config.upstreamBaseUrl) },
     });
   }
@@ -519,7 +519,7 @@ export function createGatewayServer(config: GatewayConfig): Server {
       return rejectDecision(response, decision);
     }
 
-    const agentRailTransactionId = `agentrail_${randomUUID()}`;
+    const agentRailTransactionId = `vallum_${randomUUID()}`;
     reservations.set(agentRailTransactionId, {
       id: agentRailTransactionId,
       upstreamReservationId,
@@ -559,9 +559,9 @@ export function createGatewayServer(config: GatewayConfig): Server {
     }
 
     const body = requestRecord(await readJson(request));
-    const legacyAgentRailTransactionId = stringField(body, "_saas_tx_id");
-    const publicAgentRailTransactionId = stringField(body, "agentRailTransactionId");
-    if (legacyAgentRailTransactionId && publicAgentRailTransactionId && legacyAgentRailTransactionId !== publicAgentRailTransactionId) {
+    const legacyVallumTransactionId = stringField(body, "_saas_tx_id");
+    const publicVallumTransactionId = stringField(body, "agentRailTransactionId");
+    if (legacyVallumTransactionId && publicVallumTransactionId && legacyVallumTransactionId !== publicVallumTransactionId) {
       emitGatewayEvent(config, {
         operation: "execute",
         outcome: "rejected",
@@ -569,10 +569,10 @@ export function createGatewayServer(config: GatewayConfig): Server {
         appId: appMatch.appId,
         reasonCode: "EXECUTION_FAILED",
       });
-      writeJson(response, 409, rejectionBody("EXECUTION_FAILED", "Conflicting AgentRail transaction id aliases."));
+      writeJson(response, 409, rejectionBody("EXECUTION_FAILED", "Conflicting Vallum transaction id aliases."));
       return;
     }
-    const agentRailTransactionId = publicAgentRailTransactionId ?? legacyAgentRailTransactionId;
+    const agentRailTransactionId = publicVallumTransactionId ?? legacyVallumTransactionId;
     const reservationId = stringField(body, "reservation_id");
     const reservation = agentRailTransactionId ? reservations.get(agentRailTransactionId) : undefined;
 
@@ -584,7 +584,7 @@ export function createGatewayServer(config: GatewayConfig): Server {
         appId: appMatch.appId,
         reasonCode: "EXECUTION_FAILED",
       });
-      writeJson(response, 409, rejectionBody("EXECUTION_FAILED", "Unknown or mismatched AgentRail reservation."));
+      writeJson(response, 409, rejectionBody("EXECUTION_FAILED", "Unknown or mismatched Vallum reservation."));
       return;
     }
 
@@ -606,7 +606,7 @@ export function createGatewayServer(config: GatewayConfig): Server {
         reasonCode: "EXECUTION_FAILED",
         ...eventContext,
       });
-      writeJson(response, 409, rejectionBody("EXECUTION_FAILED", "This AgentRail reservation is not executable."));
+      writeJson(response, 409, rejectionBody("EXECUTION_FAILED", "This Vallum reservation is not executable."));
       return;
     }
 

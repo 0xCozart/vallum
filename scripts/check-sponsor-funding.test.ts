@@ -109,7 +109,7 @@ test("sponsor address derivation matches the SDK keypair address", () => {
 });
 
 test("sponsor funding evidence report validates readiness without full address", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-sponsor-funding-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-sponsor-funding-"));
   try {
     const report = await checkSponsorFunding({
       client: fundingClientFixture({
@@ -130,7 +130,7 @@ test("sponsor funding evidence report validates readiness without full address",
     const loaded = await loadSponsorFundingReport(join(cwd, "sponsor-funding-report.json"));
     const validation = validateSponsorFundingReport(loaded, new Date("2026-06-14T00:01:00.000Z"));
 
-    assert.equal(loaded.kind, "agentrail.sponsor-funding-report");
+    assert.equal(loaded.kind, "vallum.sponsor-funding-report");
     assert.equal(validation.ok, true);
     assert.equal(validation.code, "SPONSOR_FUNDING_REPORT_VALID");
     assert.doesNotMatch(raw, new RegExp(escapeRegExp(sponsorAddress)));
@@ -160,11 +160,11 @@ test("sponsor funding evidence report preserves insufficient funding as a gate b
 });
 
 test("sponsor funding evidence report rejects unsafe full-address fields", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-sponsor-funding-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-sponsor-funding-"));
   try {
     await writeFile(join(cwd, "unsafe-report.json"), JSON.stringify({
       schemaVersion: 1,
-      kind: "agentrail.sponsor-funding-report",
+      kind: "vallum.sponsor-funding-report",
       observedAt: new Date().toISOString(),
       ready: true,
       code: "SPONSOR_FUNDING_READY",

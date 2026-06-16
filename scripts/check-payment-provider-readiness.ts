@@ -27,7 +27,7 @@ export interface PaymentProviderReadinessReport {
 
 export interface PaymentProviderReadinessArtifact {
   readonly schemaVersion: 1;
-  readonly kind: "agentrail.payment-provider-readiness-report";
+  readonly kind: "vallum.payment-provider-readiness-report";
   readonly generatedAt: string;
   readonly localProofOk: boolean;
   readonly liveReady: boolean;
@@ -66,7 +66,7 @@ interface StructuredPaymentProviderReport {
 
 const MAX_REPORT_BYTES = 64 * 1024;
 const MAX_REPORT_AGE_MS = 30 * 24 * 60 * 60 * 1000;
-const PAYMENT_PROVIDER_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind payment-provider-live --out tmp/agentrail/payment-provider-live-report-template.json";
+const PAYMENT_PROVIDER_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind payment-provider-live --out tmp/vallum/payment-provider-live-report-template.json";
 const REQUIRED_SOURCE_PATHS = [
   "packages/manifest/src/x402Mapping.ts",
   "packages/manifest/src/x402Mapping.test.ts",
@@ -102,7 +102,7 @@ const ARTIFACT_BOUNDARIES = [
 
 const usage = `usage: npm exec tsx -- scripts/check-payment-provider-readiness.ts [--json] [--out <path>]
 
-Reports current AgentRail payment-provider readiness without contacting live providers or settlement systems.
+Reports current Vallum payment-provider readiness without contacting live providers or settlement systems.
 
 Options:
   --json        Print a redacted machine-readable artifact.
@@ -130,7 +130,7 @@ export async function checkPaymentProviderReadiness(
 
 export function formatPaymentProviderReadinessReport(report: PaymentProviderReadinessReport): string {
   const lines = [
-    `AgentRail payment provider readiness ${report.liveReady ? "ready-for-approval" : "blocked"}`,
+    `Vallum payment provider readiness ${report.liveReady ? "ready-for-approval" : "blocked"}`,
     `localProofOk=${report.localProofOk}`,
     `liveReady=${report.liveReady}`,
   ];
@@ -153,7 +153,7 @@ export function buildPaymentProviderReadinessArtifact(
 
   return {
     schemaVersion: 1,
-    kind: "agentrail.payment-provider-readiness-report",
+    kind: "vallum.payment-provider-readiness-report",
     generatedAt: now.toISOString(),
     localProofOk: report.localProofOk,
     liveReady: report.liveReady,
@@ -289,8 +289,8 @@ function validateStructuredReport(
   if (report.schemaVersion !== 1) {
     return invalidReport("PAYMENT_PROVIDER_LIVE_REPORT_UNSUPPORTED_SCHEMA", "Live payment-provider proof report schema is unsupported.", "configured-report-unsupported-schema", "Provide a structured evidence report with schemaVersion=1.");
   }
-  if (report.kind !== "agentrail.payment-provider-live-proof") {
-    return invalidReport("PAYMENT_PROVIDER_LIVE_REPORT_KIND_MISMATCH", "Live payment-provider proof report has the wrong kind.", "configured-report-kind-mismatch", "Provide an agentrail.payment-provider-live-proof structured report.");
+  if (report.kind !== "vallum.payment-provider-live-proof") {
+    return invalidReport("PAYMENT_PROVIDER_LIVE_REPORT_KIND_MISMATCH", "Live payment-provider proof report has the wrong kind.", "configured-report-kind-mismatch", "Provide an vallum.payment-provider-live-proof structured report.");
   }
   if (report.result !== "passed") {
     return invalidReport("PAYMENT_PROVIDER_LIVE_REPORT_NOT_PASSED", "Live payment-provider proof report did not pass.", "configured-report-not-passed", "Rerun the approved proof after resolving payment-provider failures.");

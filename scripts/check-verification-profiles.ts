@@ -22,7 +22,7 @@ export interface VerificationProfileReport {
 
 export interface VerificationProfileArtifact {
   readonly schemaVersion: 1;
-  readonly kind: "agentrail.verification-profile-report";
+  readonly kind: "vallum.verification-profile-report";
   readonly generatedAt: string;
   readonly profilesOk: boolean;
   readonly fastProfileOk: boolean;
@@ -53,7 +53,7 @@ const ARTIFACT_BOUNDARIES = [
 
 const usage = `usage: npm exec tsx -- scripts/check-verification-profiles.ts [--json] [--out <path>]
 
-Reports current AgentRail verification profile wiring without contacting live proof services.
+Reports current Vallum verification profile wiring without contacting live proof services.
 
 Options:
   --json        Print a redacted machine-readable artifact.
@@ -158,7 +158,7 @@ export async function checkVerificationProfiles(
 
 export function formatVerificationProfileReport(report: VerificationProfileReport): string {
   const lines = [
-    `AgentRail verification profiles ${report.profilesOk ? "configured" : "blocked"}`,
+    `Vallum verification profiles ${report.profilesOk ? "configured" : "blocked"}`,
     `fastProfileOk=${report.fastProfileOk}`,
     `fullGatePreserved=${report.fullGatePreserved}`,
   ];
@@ -181,7 +181,7 @@ export function buildVerificationProfileArtifact(
 
   return {
     schemaVersion: 1,
-    kind: "agentrail.verification-profile-report",
+    kind: "vallum.verification-profile-report",
     generatedAt: now.toISOString(),
     profilesOk: report.profilesOk,
     fastProfileOk: report.fastProfileOk,

@@ -18,7 +18,7 @@ export interface NpmRegistryPaidMcpConsumerSmokeOptions {
 
 interface RegistryConsumerProof {
   readonly schemaVersion: 1;
-  readonly kind: "agentrail.npm-registry-consumer-proof";
+  readonly kind: "vallum.npm-registry-consumer-proof";
   readonly result: "passed" | "failed";
   readonly observedAt: string;
   readonly registry: "npm";
@@ -40,7 +40,7 @@ interface CliOptions {
   readonly outFile?: string;
 }
 
-const DEFAULT_OUT_FILE = "tmp/agentrail/npm-registry-consumer-proof.json";
+const DEFAULT_OUT_FILE = "tmp/vallum/npm-registry-consumer-proof.json";
 const REQUIRED_MARKERS = [
   "Package paid MCP consumer smoke passed",
   "install=npm-registry",
@@ -61,7 +61,7 @@ const SECRET_OUTPUT_RE = /consumer-demo-api-key|signer_ref_package_consumer_paid
 
 const usage = `usage: npm exec tsx -- scripts/smoke-npm-registry-paid-mcp-consumer.ts [--out <path>]
 
-Installs published AgentRail packages from npm into a fresh temporary consumer,
+Installs published Vallum packages from npm into a fresh temporary consumer,
 runs the canonical paid MCP-style local mock flow, and writes a redacted proof
 packet. Uses NPM_CONFIG_MIN_RELEASE_AGE=0 because this machine can hide newly
 published packages behind a local release-age gate.
@@ -75,9 +75,9 @@ export function buildRegistryConsumerPackageJson(
   packages: readonly PublishablePackage[],
   version: string,
 ): string {
-  const dependencies = Object.fromEntries(packages.map((packageInfo) => [packageInfo.name, version]));
+  const dependencies = Object.fromEntries(packages.map((packageInfo) => [packageInfo.name, packageInfo.version ?? version]));
   return `${JSON.stringify({
-    name: "agentrail-npm-registry-consumer-proof",
+    name: "vallum-npm-registry-consumer-proof",
     private: true,
     type: "module",
     dependencies,
@@ -109,7 +109,7 @@ export async function runNpmRegistryPaidMcpConsumerSmoke(
   const packages = await collectPublishablePackages(cwd);
   const packageNames = packages.map((packageInfo) => packageInfo.name);
   const observedAt = now.toISOString();
-  const tempRoot = await mkdtemp(join(tmpdir(), "agentrail-npm-registry-consumer-"));
+  const tempRoot = await mkdtemp(join(tmpdir(), "vallum-npm-registry-consumer-"));
   const consumerDir = join(tempRoot, "consumer");
   const run =
     options.run ??
@@ -179,7 +179,7 @@ function passedReport(input: {
 }): RegistryConsumerProof {
   return {
     schemaVersion: 1,
-    kind: "agentrail.npm-registry-consumer-proof",
+    kind: "vallum.npm-registry-consumer-proof",
     result: "passed",
     observedAt: input.observedAt,
     registry: "npm",
@@ -219,7 +219,7 @@ function failedReport(input: {
 }): RegistryConsumerProof {
   return {
     schemaVersion: 1,
-    kind: "agentrail.npm-registry-consumer-proof",
+    kind: "vallum.npm-registry-consumer-proof",
     result: "failed",
     observedAt: input.observedAt,
     registry: "npm",

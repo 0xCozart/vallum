@@ -32,7 +32,7 @@ export interface LaunchReadinessReport {
 
 export interface LaunchReadinessArtifact {
   readonly schemaVersion: 1;
-  readonly kind: "agentrail.launch-readiness-report";
+  readonly kind: "vallum.launch-readiness-report";
   readonly generatedAt: string;
   readonly launchReady: boolean;
   readonly localEvidenceOk: boolean;
@@ -64,7 +64,7 @@ const ARTIFACT_BOUNDARIES = [
 
 const usage = `usage: npm exec tsx -- scripts/check-launch-readiness.ts [--json] [--out <path>]
 
-Reports current AgentRail launch readiness without contacting live proof services.
+Reports current Vallum launch readiness without contacting live proof services.
 
 Options:
   --json        Print a redacted machine-readable artifact.
@@ -90,7 +90,7 @@ const AREA_DEFINITIONS = [
       "contracts/receipt_v1/Move.toml",
       "examples/agent-escrow/agent-escrow-demo.ts",
       "docs/testnet-attempts.md",
-      "docs/agentrail/live-proof-status.md",
+      "docs/vallum/live-proof-status.md",
       "scripts/check-gas-station-runtime-preflight.ts",
       "scripts/write-sponsor-funding-request.ts",
       "scripts/request-sponsor-faucet-funds.ts",
@@ -99,24 +99,24 @@ const AREA_DEFINITIONS = [
     ],
     commands: [
       "npm test",
-      "npm run operator:write-report-template -- --kind custody-production --out tmp/agentrail/custody-production-report-template.json",
-      "npm run custody:write-production-proof-bundle -- --out tmp/agentrail/custody-production-proof-bundle.json",
+      "npm run operator:write-report-template -- --kind custody-production --out tmp/vallum/custody-production-report-template.json",
+      "npm run custody:write-production-proof-bundle -- --out tmp/vallum/custody-production-proof-bundle.json",
       "npm run custody:write-production-proof-plan",
       "npm run proof:custody-readiness",
       "npm run contracts:test",
       "npm run smoke:agent-escrow",
       "npm run proof:testnet-digest",
-      "npm run operator:write-report-template -- --kind testnet-digest --out tmp/agentrail/testnet-digest-report-template.json",
-      "npm run proof:testnet-digest:live -- --report tmp/agentrail/testnet-digest-proof.json",
+      "npm run operator:write-report-template -- --kind testnet-digest --out tmp/vallum/testnet-digest-report-template.json",
+      "npm run proof:testnet-digest:live -- --report tmp/vallum/testnet-digest-proof.json",
       "npm run gas-station:runtime-preflight",
-      "npm run sponsor:write-funding-request -- --out tmp/agentrail/sponsor-funding-request.json",
-      "npm run sponsor:request-faucet-funds -- --execute --out tmp/agentrail/sponsor-faucet-request.json",
-      "npm run sponsor:write-funding-request -- --faucet-report tmp/agentrail/sponsor-faucet-request.json --out tmp/agentrail/sponsor-funding-request.json",
+      "npm run sponsor:write-funding-request -- --out tmp/vallum/sponsor-funding-request.json",
+      "npm run sponsor:request-faucet-funds -- --execute --out tmp/vallum/sponsor-faucet-request.json",
+      "npm run sponsor:write-funding-request -- --faucet-report tmp/vallum/sponsor-faucet-request.json --out tmp/vallum/sponsor-funding-request.json",
       "npm run proof:live-status",
-      "npm run sponsor:check-funding -- --report tmp/agentrail/sponsor-funding-report.json",
-      "npm run operator:write-report-template -- --kind testnet-upstream --out tmp/agentrail/testnet-upstream-report-template.json",
-      "npm run diagnose:gas-station -- --skip-reserve --report tmp/agentrail/testnet-upstream-diagnostic.json",
-      "npm run diagnose:gas-station -- --report tmp/agentrail/testnet-upstream-diagnostic.json",
+      "npm run sponsor:check-funding -- --report tmp/vallum/sponsor-funding-report.json",
+      "npm run operator:write-report-template -- --kind testnet-upstream --out tmp/vallum/testnet-upstream-report-template.json",
+      "npm run diagnose:gas-station -- --skip-reserve --report tmp/vallum/testnet-upstream-diagnostic.json",
+      "npm run diagnose:gas-station -- --report tmp/vallum/testnet-upstream-diagnostic.json",
       "npm run execute:testnet-demo",
       "npm run verify:local",
     ],
@@ -136,18 +136,18 @@ const AREA_DEFINITIONS = [
       "scripts/write-identity-proof-bundle.ts",
       "scripts/smoke-iota-names-live.ts",
       "scripts/smoke-iota-identity-live.ts",
-      "docs/agentrail/live-proof-status.md",
+      "docs/vallum/live-proof-status.md",
     ],
     commands: [
       "npm test",
       "npm run proof:live-status",
       "npm run live:write-proof-plan",
-      "npm run live:write-identity-proof-bundle -- --out tmp/agentrail/identity-proof-bundle.json",
-      "npm run operator:write-report-template -- --kind iota-names-live --out tmp/agentrail/iota-names-live-report-template.json",
-      "npm run smoke:iota-names-live -- --report tmp/agentrail/iota-names-live-report.json",
-      "npm run operator:write-report-template -- --kind iota-identity-live --out tmp/agentrail/iota-identity-live-report-template.json",
-      "npm run smoke:iota-identity-live -- --report tmp/agentrail/iota-identity-live-report.json",
-      "npm run operator:write-report-template -- --kind vc-validation-live --out tmp/agentrail/vc-validation-live-report-template.json",
+      "npm run live:write-identity-proof-bundle -- --out tmp/vallum/identity-proof-bundle.json",
+      "npm run operator:write-report-template -- --kind iota-names-live --out tmp/vallum/iota-names-live-report-template.json",
+      "npm run smoke:iota-names-live -- --report tmp/vallum/iota-names-live-report.json",
+      "npm run operator:write-report-template -- --kind iota-identity-live --out tmp/vallum/iota-identity-live-report-template.json",
+      "npm run smoke:iota-identity-live -- --report tmp/vallum/iota-identity-live-report.json",
+      "npm run operator:write-report-template -- --kind vc-validation-live --out tmp/vallum/vc-validation-live-report-template.json",
     ],
     productCheckIds: [
       "testnet-readiness",
@@ -156,7 +156,7 @@ const AREA_DEFINITIONS = [
       "vc-validation-live",
     ],
     fallbackStatus: "proven-local",
-    next: "Run npm run live:write-identity-proof-bundle -- --out tmp/agentrail/identity-proof-bundle.json, provide remaining operator-owned Names, Identity, and VC trust-policy configuration outside committed files, then run the opt-in live proof commands.",
+    next: "Run npm run live:write-identity-proof-bundle -- --out tmp/vallum/identity-proof-bundle.json, provide remaining operator-owned Names, Identity, and VC trust-policy configuration outside committed files, then run the opt-in live proof commands.",
   },
   {
     id: "phase-3-contract-workflows",
@@ -167,7 +167,7 @@ const AREA_DEFINITIONS = [
       "contracts/service_bounty_v1/Move.toml",
       "contracts/reputation_receipt_v1/Move.toml",
       "contracts/subscription_v1/Move.toml",
-      "docs/agentrail/device-access-safety-gate.md",
+      "docs/vallum/device-access-safety-gate.md",
     ],
     commands: [
       "npm run contracts:test",
@@ -195,7 +195,7 @@ const AREA_DEFINITIONS = [
       "scripts/check-a2a-public-readiness.ts",
       "scripts/write-a2a-public-proof-bundle.ts",
       "scripts/smoke-a2a-static-discovery-local.ts",
-      "docs/agentrail/a2a-public-readiness.md",
+      "docs/vallum/a2a-public-readiness.md",
       "scripts/smoke-a2a-local-server.ts",
       "scripts/write-payment-provider-proof-bundle.ts",
     ],
@@ -207,14 +207,14 @@ const AREA_DEFINITIONS = [
       "npm run smoke:a2a-http",
       "npm run smoke:a2a-local-server",
       "npm run smoke:a2a-static-discovery-local",
-      "npm run operator:write-report-template -- --kind payment-provider-live --out tmp/agentrail/payment-provider-live-report-template.json",
-      "npm run payment:write-provider-proof-bundle -- --out tmp/agentrail/payment-provider-proof-bundle.json",
+      "npm run operator:write-report-template -- --kind payment-provider-live --out tmp/vallum/payment-provider-live-report-template.json",
+      "npm run payment:write-provider-proof-bundle -- --out tmp/vallum/payment-provider-proof-bundle.json",
       "npm run payment:write-provider-proof-plan",
       "npm run proof:payment-provider-readiness",
-      "npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/agentrail/a2a-public-discovery-report-template.json",
-      "npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/agentrail/a2a-public-push-delivery-report-template.json",
-      "npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/agentrail/a2a-external-conformance-report-template.json",
-      "npm run a2a:write-public-proof-bundle -- --out tmp/agentrail/a2a-public-proof-bundle.json",
+      "npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/vallum/a2a-public-discovery-report-template.json",
+      "npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/vallum/a2a-public-push-delivery-report-template.json",
+      "npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/vallum/a2a-external-conformance-report-template.json",
+      "npm run a2a:write-public-proof-bundle -- --out tmp/vallum/a2a-public-proof-bundle.json",
       "npm run a2a:write-public-proof-plan",
       "npm run proof:a2a-public-readiness",
     ],
@@ -236,8 +236,8 @@ const AREA_DEFINITIONS = [
     commands: [
       "npm test",
       "npm run smoke:marketplace-read-model",
-      "npm run operator:write-report-template -- --kind marketplace-production --out tmp/agentrail/marketplace-production-report-template.json",
-      "npm run marketplace:write-production-proof-bundle -- --out tmp/agentrail/marketplace-production-proof-bundle.json",
+      "npm run operator:write-report-template -- --kind marketplace-production --out tmp/vallum/marketplace-production-report-template.json",
+      "npm run marketplace:write-production-proof-bundle -- --out tmp/vallum/marketplace-production-proof-bundle.json",
       "npm run marketplace:write-production-proof-plan",
       "npm run proof:marketplace-readiness",
     ],
@@ -249,7 +249,7 @@ const AREA_DEFINITIONS = [
     id: "phase-6-package-release",
     claim: "Packages are locally packable, installable from tarballs, dry-run publishable, and checked by a non-networked publication-readiness gate; registry publication remains operator-gated.",
     evidencePaths: [
-      "docs/agentrail/package-release-strategy.md",
+      "docs/vallum/package-release-strategy.md",
       "scripts/package-publish-dry-run.ts",
       "scripts/smoke-package-install.ts",
       "scripts/check-package-publication-readiness.ts",
@@ -262,8 +262,8 @@ const AREA_DEFINITIONS = [
       "npm run pack:check",
       "npm run smoke:package-install",
       "npm run publish:dry-run",
-      "npm run operator:write-report-template -- --kind package-publication --out tmp/agentrail/package-publication-report-template.json",
-      "npm run package:write-publication-proof-bundle -- --out tmp/agentrail/package-publication-proof-bundle.json",
+      "npm run operator:write-report-template -- --kind package-publication --out tmp/vallum/package-publication-report-template.json",
+      "npm run package:write-publication-proof-bundle -- --out tmp/vallum/package-publication-proof-bundle.json",
       "npm run package:write-publication-proof-plan",
       "npm run proof:package-publication-readiness",
     ],
@@ -275,16 +275,16 @@ const AREA_DEFINITIONS = [
     id: "packet-h-final-product-status",
     claim: "Final product launch readiness is not complete while product-status reports live, production, publication, custody, payment, A2A, marketplace, or safety blockers.",
     evidencePaths: [
-      "docs/agentrail/product-status.md",
+      "docs/vallum/product-status.md",
       "scripts/check-product-status.ts",
-      "docs/agentrail/operator-live-gates.md",
+      "docs/vallum/operator-live-gates.md",
       "scripts/check-operator-live-gates.ts",
       "scripts/write-operator-report-template.ts",
-      "docs/agentrail/verification-profiles.md",
+      "docs/vallum/verification-profiles.md",
       "scripts/check-verification-profiles.ts",
       "scripts/check-roadmap-completion.ts",
       "scripts/write-roadmap-execution-proof-bundle.ts",
-      "docs/agentrail/execution-slices.md",
+      "docs/vallum/execution-slices.md",
       "docs/CODEBASE_MAP.md",
     ],
     commands: [
@@ -294,7 +294,7 @@ const AREA_DEFINITIONS = [
       "npm run proof:launch-readiness",
       "npm run proof:operator-gates",
       "npm run proof:roadmap-completion",
-      "npm run roadmap:write-execution-proof-bundle -- --out tmp/agentrail/roadmap-execution-proof-bundle.json",
+      "npm run roadmap:write-execution-proof-bundle -- --out tmp/vallum/roadmap-execution-proof-bundle.json",
       "npm run operator:write-report-template -- --kind <kind> --out <ignored-report-template.json>",
       "npm run verify:local",
     ],
@@ -334,7 +334,7 @@ export async function checkLaunchReadiness(
 
 export function formatLaunchReadinessReport(report: LaunchReadinessReport): string {
   const lines = [
-    `AgentRail launch readiness ${report.launchReady ? "ready" : "not-ready"}`,
+    `Vallum launch readiness ${report.launchReady ? "ready" : "not-ready"}`,
     `localEvidenceOk=${report.localEvidenceOk}`,
     `launchReady=${report.launchReady}`,
   ];
@@ -355,7 +355,7 @@ export function buildLaunchReadinessArtifact(
 ): LaunchReadinessArtifact {
   return {
     schemaVersion: 1,
-    kind: "agentrail.launch-readiness-report",
+    kind: "vallum.launch-readiness-report",
     generatedAt: now.toISOString(),
     launchReady: report.launchReady,
     localEvidenceOk: report.localEvidenceOk,

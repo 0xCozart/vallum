@@ -1,17 +1,17 @@
 # Node Backend Example
 
-This example shows a minimal server-side integration using `@sacredlabs/agentrail-sdk` without exposing the app credential to browser code.
+This example shows a minimal server-side integration using `@vallum/sdk` without exposing the app credential to browser code.
 
-The example exports framework-neutral handlers from `agentrail-backend.ts` so it can be adapted to Express, Fastify, Hono, Next.js route handlers, or another backend. Your real backend owns the SDK client and app API key; frontend callers only provide transaction metadata and user signatures.
+The example exports framework-neutral handlers from `vallum-backend.ts` so it can be adapted to Express, Fastify, Hono, Next.js route handlers, or another backend. Your real backend owns the SDK client and app API key; frontend callers only provide transaction metadata and user signatures.
 
 ```ts
-import { createAgentRailClient } from "@sacredlabs/agentrail-sdk";
-import { createAgentRailBackendHandlers } from "./agentrail-backend.js";
+import { createVallumClient } from "@vallum/sdk";
+import { createVallumBackendHandlers } from "./backend.js";
 
-const handlers = createAgentRailBackendHandlers({
-  client: createAgentRailClient({
-    baseUrl: process.env.AGENTRAIL_GATEWAY_URL!,
-    apiKey: process.env.AGENTRAIL_DEMO_APP_KEY!,
+const handlers = createVallumBackendHandlers({
+  client: createVallumClient({
+    baseUrl: process.env.VALLUM_GATEWAY_URL!,
+    apiKey: process.env.VALLUM_DEMO_APP_KEY!,
   }),
 });
 
@@ -31,7 +31,7 @@ const executed = await handlers.execute({
 });
 ```
 
-The safe response bodies include only the reservation identifiers, optional sponsor address, execution digest, and sanitized error codes/messages. The handlers map SDK policy/auth/gateway failures to frontend-safe error responses without returning thrown SDK messages or raw upstream error bodies. Policy error responses forward only known AgentRail policy reason codes and omit unknown upstream-provided reason strings. They intentionally omit:
+The safe response bodies include only the reservation identifiers, optional sponsor address, execution digest, and sanitized error codes/messages. The handlers map SDK policy/auth/gateway failures to frontend-safe error responses without returning thrown SDK messages or raw upstream error bodies. Policy error responses forward only known Vallum policy reason codes and omit unknown upstream-provided reason strings. They intentionally omit:
 
 - app API keys and bearer tokens;
 - raw upstream bodies;
@@ -42,7 +42,7 @@ The safe response bodies include only the reservation identifiers, optional spon
 Run the example regression tests from the repo root:
 
 ```bash
-node --import tsx --test examples/node-backend/agentrail-backend.test.ts
+node --import tsx --test examples/node-backend/backend.test.ts
 ```
 
 The root `npm test` command also includes checked example tests, and `npm run typecheck` includes `examples/**/*.ts`.

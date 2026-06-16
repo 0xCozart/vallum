@@ -6,11 +6,11 @@ import { test } from "node:test";
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
-import { validManifestFixture } from "@sacredlabs/agentrail-manifest";
-import { createAgentMockGatewayServer, type AgentActionPolicy } from "@sacredlabs/agentrail-policy-gateway";
+import { validManifestFixture } from "@vallum/manifest";
+import { createAgentMockGatewayServer, type AgentActionPolicy } from "@vallum/policy-gateway";
 import {
-  createAgentRailMcpProtocolServer,
-  startAgentRailMcpStdioServer,
+  createVallumMcpProtocolServer,
+  startVallumMcpStdioServer,
   toMcpToolResult,
 } from "./stdio.js";
 
@@ -34,7 +34,7 @@ const agentActionPolicy: AgentActionPolicy = {
   requireSimulation: true,
 };
 
-test("MCP protocol server lists existing AgentRail tool descriptors", async () => {
+test("MCP protocol server lists existing Vallum tool descriptors", async () => {
   await withMcpClient({
     gatewayBaseUrl: "http://127.0.0.1:1",
     apiKey: "test-key",
@@ -162,10 +162,10 @@ test("MCP result mapper preserves content, structured content, and error flag", 
 });
 
 test("MCP stdio session close is idempotent for signal races", async () => {
-  const session = await startAgentRailMcpStdioServer({
+  const session = await startVallumMcpStdioServer({
     gatewayBaseUrl: "http://127.0.0.1:1",
     apiKey: "test-key",
-    serverName: "agentrail-test",
+    serverName: "vallum-test",
     serverVersion: "0.0.0-test",
     logLevel: "silent",
   }, {
@@ -188,17 +188,17 @@ async function withMcpClient(
     readonly fetchImpl?: typeof fetch;
   } = {},
 ): Promise<void> {
-  const server = createAgentRailMcpProtocolServer({
+  const server = createVallumMcpProtocolServer({
     gatewayBaseUrl: config.gatewayBaseUrl,
     apiKey: config.apiKey,
-    serverName: "agentrail-test",
+    serverName: "vallum-test",
     serverVersion: "0.0.0-test",
     logLevel: "silent",
   }, {
     fetchImpl: options.fetchImpl,
     now: () => now,
   });
-  const client = new Client({ name: "agentrail-test-client", version: "0.0.0-test" });
+  const client = new Client({ name: "vallum-test-client", version: "0.0.0-test" });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
 
   try {

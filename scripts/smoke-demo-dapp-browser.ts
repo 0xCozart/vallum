@@ -80,8 +80,8 @@ async function main(): Promise<void> {
   try {
     const upstreamBaseUrl = await listen(upstream.server);
     const config = await loadGatewayConfigFromEnv({
-      AGENTRAIL_POLICY_PATH: "examples/policies/demo-dapp.yaml",
-      AGENTRAIL_DEMO_APP_KEY: "local-dev-demo-key",
+      VALLUM_POLICY_PATH: "examples/policies/demo-dapp.yaml",
+      VALLUM_DEMO_APP_KEY: "local-dev-demo-key",
       GAS_STATION_URL: upstreamBaseUrl,
       GAS_STATION_BEARER_TOKEN: "local-browser-smoke-token",
     });
@@ -98,14 +98,14 @@ async function main(): Promise<void> {
     const page = await fetch(`${browserBaseUrl}/`);
     assert.equal(page.status, 200);
     const html = await page.text();
-    assert.match(html, /AgentRail Local Demo/);
+    assert.match(html, /Vallum Local Demo/);
     assert.match(html, /data-testid="run-demo"/);
     assert.doesNotMatch(html, /local-dev-demo-key|local-browser-smoke-token|Bearer/i);
     console.log("ok: browser wrapper page hides credentials");
 
     const health = await fetch(`${browserBaseUrl}/health`);
     assert.equal(health.status, 200);
-    assert.deepEqual(await health.json(), { status: "ok", service: "agentrail-demo-dapp" });
+    assert.deepEqual(await health.json(), { status: "ok", service: "vallum-demo-dapp" });
     console.log("ok: browser wrapper health");
 
     const rejectedOrigin = await fetch(`${browserBaseUrl}/api/run-demo`, {
@@ -137,7 +137,7 @@ async function main(): Promise<void> {
         digest: "browser-digest-1",
       },
     });
-    assert.match(apiBody.result.agentRailTransactionId, /^agentrail_/);
+    assert.match(apiBody.result.agentRailTransactionId, /^vallum_/);
     assert.doesNotMatch(JSON.stringify(apiBody), /local-dev-demo-key|local-browser-smoke-token|Bearer/i);
     console.log("ok: browser wrapper runs same-origin demo API");
 
@@ -161,7 +161,7 @@ async function main(): Promise<void> {
     });
     console.log("ok: browser wrapper reaches gateway without exposing app credentials");
 
-    console.log("AgentRail demo dApp browser smoke passed");
+    console.log("Vallum demo dApp browser smoke passed");
   } finally {
     await Promise.all([
       browser ? close(browser) : Promise.resolve(),

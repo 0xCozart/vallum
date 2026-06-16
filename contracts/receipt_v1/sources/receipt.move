@@ -1,4 +1,4 @@
-/// Minimal AgentRail receipt lifecycle contract.
+/// Minimal Vallum receipt lifecycle contract.
 module receipt_v1::receipt {
     const EInvalidStatus: u64 = 1;
 

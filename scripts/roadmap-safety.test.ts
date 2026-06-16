@@ -10,8 +10,8 @@ const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const packageJson = JSON.parse(await readFile(resolve(repoRoot, "package.json"), "utf8")) as {
   scripts?: Record<string, string>;
 };
-const executionSlices = await readFile(resolve(repoRoot, "docs/agentrail/execution-slices.md"), "utf8");
-const deviceGate = await readFile(resolve(repoRoot, "docs/agentrail/device-access-safety-gate.md"), "utf8");
+const executionSlices = await readFile(resolve(repoRoot, "docs/vallum/execution-slices.md"), "utf8");
+const deviceGate = await readFile(resolve(repoRoot, "docs/vallum/device-access-safety-gate.md"), "utf8");
 const marketplaceReadiness = await readFile(resolve(repoRoot, "docs/marketplace-readiness.md"), "utf8");
 
 test("device access lease remains explicitly safety gated", () => {

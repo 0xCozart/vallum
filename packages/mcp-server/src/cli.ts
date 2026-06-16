@@ -3,21 +3,21 @@ import { realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import packageJson from "../package.json" with { type: "json" };
 import {
-  AgentRailMcpConfigError,
-  parseAgentRailMcpConfig,
-  redactAgentRailMcpConfig,
+  VallumMcpConfigError,
+  parseVallumMcpConfig,
+  redactVallumMcpConfig,
 } from "./config.js";
-import { startAgentRailMcpStdioServer } from "./stdio.js";
+import { startVallumMcpStdioServer } from "./stdio.js";
 
-export interface AgentRailMcpCliIo {
+export interface VallumMcpCliIo {
   readonly stdout: Pick<NodeJS.WriteStream, "write">;
   readonly stderr: Pick<NodeJS.WriteStream, "write">;
 }
 
-export async function runAgentRailMcpCli(
+export async function runVallumMcpCli(
   args: readonly string[],
   env: Record<string, string | undefined>,
-  io: AgentRailMcpCliIo,
+  io: VallumMcpCliIo,
 ): Promise<number> {
   if (args.includes("--help") || args.includes("-h")) {
     io.stdout.write(usage());
@@ -30,18 +30,18 @@ export async function runAgentRailMcpCli(
   }
 
   if (args.some((arg) => arg.startsWith("--") && arg !== "--check-config")) {
-    io.stderr.write("Unknown option. Run agentrail-mcp --help for usage.\n");
+    io.stderr.write("Unknown option. Run vallum-mcp --help for usage.\n");
     return 1;
   }
 
   try {
-    const config = parseAgentRailMcpConfig(env, { packageVersion: packageJson.version });
+    const config = parseVallumMcpConfig(env, { packageVersion: packageJson.version });
     if (args.includes("--check-config")) {
-      io.stdout.write(`${JSON.stringify(redactAgentRailMcpConfig(config), null, 2)}\n`);
+      io.stdout.write(`${JSON.stringify(redactVallumMcpConfig(config), null, 2)}\n`);
       return 0;
     }
 
-    const session = await startAgentRailMcpStdioServer(config);
+    const session = await startVallumMcpStdioServer(config);
     installShutdownHandlers(session.close);
     await session.closed;
     return 0;
@@ -60,18 +60,18 @@ function installShutdownHandlers(close: () => Promise<void>): void {
 }
 
 function usage(): string {
-  return `Usage: agentrail-mcp [--help] [--version] [--check-config]
+  return `Usage: vallum-mcp [--help] [--version] [--check-config]
 
-Runs the AgentRail MCP server. Configuration is read from the MCP server process environment.
+Runs the Vallum MCP server. Configuration is read from the MCP server process environment.
 
 Required environment:
-  AGENTRAIL_GATEWAY_URL    AgentRail-compatible policy gateway base URL.
-  AGENTRAIL_API_KEY        Gateway app credential.
+  VALLUM_GATEWAY_URL    Vallum-compatible policy gateway base URL.
+  VALLUM_API_KEY        Gateway app credential.
 
 Optional environment:
-  AGENTRAIL_MCP_SERVER_NAME       MCP server name, defaults to agentrail.
-  AGENTRAIL_MCP_SERVER_VERSION    MCP server version, defaults to package version.
-  AGENTRAIL_MCP_LOG_LEVEL         silent, error, warn, info, or debug. Defaults to error.
+  VALLUM_MCP_SERVER_NAME       MCP server name, defaults to vallum.
+  VALLUM_MCP_SERVER_VERSION    MCP server version, defaults to package version.
+  VALLUM_MCP_LOG_LEVEL         silent, error, warn, info, or debug. Defaults to error.
 
 Flags:
   --help          Print this help text without reading configuration.
@@ -81,14 +81,14 @@ Flags:
 }
 
 function formatCliError(error: unknown): string {
-  if (error instanceof AgentRailMcpConfigError) {
+  if (error instanceof VallumMcpConfigError) {
     return `Configuration error: ${error.message}`;
   }
-  return "AgentRail MCP failed before startup.";
+  return "Vallum MCP failed before startup.";
 }
 
 if (isDirectCliExecution()) {
-  const exitCode = await runAgentRailMcpCli(process.argv.slice(2), process.env, {
+  const exitCode = await runVallumMcpCli(process.argv.slice(2), process.env, {
     stdout: process.stdout,
     stderr: process.stderr,
   });

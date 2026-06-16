@@ -2,8 +2,8 @@ import {
   defaultContractTemplateRegistry,
   evaluateContractTemplateAction,
   type ContractTemplateRegistry,
-} from "@sacredlabs/agentrail-contracts-metadata";
-import type { AgentTransactionManifest } from "@sacredlabs/agentrail-manifest";
+} from "@vallum/contracts-metadata";
+import type { AgentTransactionManifest } from "@vallum/manifest";
 import type { AgentPolicyContract } from "./policySchema.js";
 
 export function contractActionAllowed(

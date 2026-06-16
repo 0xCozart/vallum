@@ -3,8 +3,8 @@ import { once } from "node:events";
 import type { AddressInfo } from "node:net";
 import { test } from "node:test";
 
-import { validManifestFixture } from "@sacredlabs/agentrail-manifest";
-import { createAgentMockGatewayServer, type AgentActionPolicy } from "@sacredlabs/agentrail-policy-gateway";
+import { validManifestFixture } from "@vallum/manifest";
+import { createAgentMockGatewayServer, type AgentActionPolicy } from "@vallum/policy-gateway";
 import { createIotaMcpServer } from "./index.js";
 
 const now = new Date("2026-06-10T12:00:00.000Z");

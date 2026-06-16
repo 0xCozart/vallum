@@ -25,7 +25,7 @@ test("payment provider proof plan reports current blockers without configured va
     const formatted = formatPaymentProviderProofPlan(plan);
 
     assert.equal(plan.schemaVersion, 1);
-    assert.equal(plan.kind, "agentrail.payment-provider-proof-plan");
+    assert.equal(plan.kind, "vallum.payment-provider-proof-plan");
     assert.equal(plan.status, "ready-for-approval");
     assert.equal(plan.localProofOk, true);
     assert.equal(plan.liveReady, true);
@@ -52,13 +52,13 @@ test("payment provider proof plan can write a redacted local JSON artifact", asy
     const plan = await writePaymentProviderProofPlan({
       cwd,
       now: NOW,
-      outFile: "tmp/agentrail/payment-provider-proof-plan.json",
+      outFile: "tmp/vallum/payment-provider-proof-plan.json",
       env: {},
     });
-    const raw = await readFile(join(cwd, "tmp/agentrail/payment-provider-proof-plan.json"), "utf8");
+    const raw = await readFile(join(cwd, "tmp/vallum/payment-provider-proof-plan.json"), "utf8");
     const written = JSON.parse(raw) as typeof plan;
 
-    assert.equal(written.kind, "agentrail.payment-provider-proof-plan");
+    assert.equal(written.kind, "vallum.payment-provider-proof-plan");
     assert.equal(written.status, "blocked");
     assert.deepEqual(written.blockerCodes, plan.blockerCodes);
     assert.ok(written.blockerCodes.includes("PAYMENT_PROVIDER_LIVE_REPORT_MISSING"));
@@ -70,7 +70,7 @@ test("payment provider proof plan can write a redacted local JSON artifact", asy
 });
 
 test("payment provider proof plan reports local proof blockers without live contact", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-payment-provider-proof-plan-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-payment-provider-proof-plan-"));
   try {
     const plan = await writePaymentProviderProofPlan({
       cwd,
@@ -93,7 +93,7 @@ test("payment provider proof plan reports local proof blockers without live cont
 });
 
 async function writePaymentProviderEvidence(): Promise<string> {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-payment-provider-proof-plan-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-payment-provider-proof-plan-"));
   for (const path of [
     "packages/manifest/src/x402Mapping.ts",
     "packages/manifest/src/x402Mapping.test.ts",
@@ -125,7 +125,7 @@ async function writeFileWithParents(path: string, content: string): Promise<void
 function validLiveReport() {
   return {
     schemaVersion: 1,
-    kind: "agentrail.payment-provider-live-proof",
+    kind: "vallum.payment-provider-live-proof",
     result: "passed",
     observedAt: NOW.toISOString(),
     providerKinds: ["x402", "ap2"],

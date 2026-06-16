@@ -1,4 +1,4 @@
-/// Minimal AgentRail service-bounty state contract.
+/// Minimal Vallum service-bounty state contract.
 ///
 /// This MVP records bounty completion and release proof hashes. It does not
 /// custody funds, implement marketplace listing, verify providers, or enforce

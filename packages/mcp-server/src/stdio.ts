@@ -7,27 +7,27 @@ import {
   type CallToolResult,
   type Tool,
 } from "@modelcontextprotocol/sdk/types.js";
-import { type AgentRailMcpConfig } from "./config.js";
+import { type VallumMcpConfig } from "./config.js";
 import { createIotaMcpServer, type IotaMcpServerOptions } from "./server.js";
 import { type IotaMcpToolCallResult, type IotaMcpToolDescriptor } from "./tools.js";
 
-export interface AgentRailMcpProtocolServerOptions {
+export interface VallumMcpProtocolServerOptions {
   readonly fetchImpl?: IotaMcpServerOptions["fetchImpl"];
   readonly now?: IotaMcpServerOptions["now"];
   readonly stdin?: Readable;
   readonly stdout?: Writable;
 }
 
-export interface AgentRailMcpStdioSession {
+export interface VallumMcpStdioSession {
   readonly server: Server;
   readonly transport: StdioServerTransport;
   readonly closed: Promise<void>;
   readonly close: () => Promise<void>;
 }
 
-export function createAgentRailMcpProtocolServer(
-  config: AgentRailMcpConfig,
-  options: AgentRailMcpProtocolServerOptions = {},
+export function createVallumMcpProtocolServer(
+  config: VallumMcpConfig,
+  options: VallumMcpProtocolServerOptions = {},
 ): Server {
   const facade = createIotaMcpServer({
     gatewayBaseUrl: config.gatewayBaseUrl,
@@ -57,11 +57,11 @@ export function createAgentRailMcpProtocolServer(
   return server;
 }
 
-export async function startAgentRailMcpStdioServer(
-  config: AgentRailMcpConfig,
-  options: AgentRailMcpProtocolServerOptions = {},
-): Promise<AgentRailMcpStdioSession> {
-  const server = createAgentRailMcpProtocolServer(config, options);
+export async function startVallumMcpStdioServer(
+  config: VallumMcpConfig,
+  options: VallumMcpProtocolServerOptions = {},
+): Promise<VallumMcpStdioSession> {
+  const server = createVallumMcpProtocolServer(config, options);
   const transport = new StdioServerTransport(options.stdin, options.stdout);
   let closeStarted = false;
   let resolveClosed!: () => void;

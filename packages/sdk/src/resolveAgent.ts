@@ -2,7 +2,7 @@ import {
   resolveAgent as resolveRegistryAgent,
   type AgentResolver,
   type ResolveAgentResult,
-} from "@sacredlabs/agentrail-registry";
+} from "@vallum/registry";
 
 export interface ResolveAgentOptions {
   readonly resolver: AgentResolver;

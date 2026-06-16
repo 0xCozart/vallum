@@ -24,7 +24,7 @@ export interface A2APublicProofPlanCheck {
 
 export interface A2APublicProofPlan {
   readonly schemaVersion: 1;
-  readonly kind: "agentrail.a2a-public-proof-plan";
+  readonly kind: "vallum.a2a-public-proof-plan";
   readonly generatedAt: string;
   readonly localProofOk: boolean;
   readonly publicReady: boolean;
@@ -145,7 +145,7 @@ export function buildA2APublicProofPlan(
 
   return {
     schemaVersion: 1,
-    kind: "agentrail.a2a-public-proof-plan",
+    kind: "vallum.a2a-public-proof-plan",
     generatedAt: now.toISOString(),
     localProofOk: report.localProofOk,
     publicReady: report.publicReady,

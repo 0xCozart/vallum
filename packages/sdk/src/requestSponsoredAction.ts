@@ -1,4 +1,4 @@
-import { AgentRailAuthError, AgentRailError, AgentRailPolicyError } from "./errors.js";
+import { VallumAuthError, VallumError, VallumPolicyError } from "./errors.js";
 import type {
   RequestSponsoredActionOptions,
   SponsoredActionRequest,
@@ -23,7 +23,7 @@ export async function requestSponsoredAction(
   const result = parseSponsoredActionResult(json);
   if (result) return result;
   if (!response.ok) throw buildError(response.status, json);
-  throw new AgentRailError("Malformed AgentRail response: missing sponsored action result.", undefined, json);
+  throw new VallumError("Malformed Vallum response: missing sponsored action result.", undefined, json);
 }
 
 function normalizeBaseUrl(baseUrl: string): string {
@@ -76,21 +76,21 @@ function parseSponsoredActionResult(value: unknown): SponsoredActionResult | und
   return undefined;
 }
 
-function buildError(status: number, body: unknown): AgentRailError {
+function buildError(status: number, body: unknown): VallumError {
   const record = asRecord(body);
   const message =
     typeof record.message === "string"
       ? record.message
       : typeof record.error === "string"
         ? record.error
-        : `AgentRail request failed with HTTP ${status}`;
+        : `Vallum request failed with HTTP ${status}`;
   const reasonCode = typeof record.reasonCode === "string" ? record.reasonCode : undefined;
 
-  if (status === 401) return new AgentRailAuthError(message, status, body);
+  if (status === 401) return new VallumAuthError(message, status, body);
   if (status === 400 || status === 403 || status === 409 || status === 429) {
-    return new AgentRailPolicyError(message, reasonCode, status, body);
+    return new VallumPolicyError(message, reasonCode, status, body);
   }
-  return new AgentRailError(message, status, body);
+  return new VallumError(message, status, body);
 }
 
 function asRecord(value: unknown): JsonRecord {

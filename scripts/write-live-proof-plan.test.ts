@@ -10,7 +10,7 @@ import {
 } from "./write-live-proof-plan.js";
 
 test("live proof plan reports current blockers without configured values", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-live-proof-plan-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-live-proof-plan-"));
   try {
     const plan = await writeLiveProofPlan({
       cwd,
@@ -31,7 +31,7 @@ test("live proof plan reports current blockers without configured values", async
     });
     const formatted = formatLiveProofPlan(plan);
 
-    assert.equal(plan.kind, "agentrail.live-proof-plan");
+    assert.equal(plan.kind, "vallum.live-proof-plan");
     assert.equal(plan.status, "blocked");
     assert.equal(plan.liveProofReady, false);
     assert.ok(plan.blockerCodes.includes("TESTNET_ENV_FILE_MISSING"));
@@ -42,9 +42,9 @@ test("live proof plan reports current blockers without configured values", async
     assert.ok(plan.blockerCodes.includes("IOTA_NAMES_LIVE_REPORT_MISSING"));
     assert.ok(plan.blockerCodes.includes("IOTA_IDENTITY_LIVE_REPORT_MISSING"));
     assert.ok(plan.blockerCodes.includes("VC_VALIDATION_LIVE_REPORT_MISSING"));
-    assert.ok(plan.requiredOperatorInputs.includes("AGENTRAIL_SPONSOR_FUNDING_REPORT"));
-    assert.ok(plan.requiredOperatorInputs.includes("AGENTRAIL_TESTNET_DIGEST_REPORT"));
-    assert.ok(plan.optionalOperatorInputs.includes("AGENTRAIL_SPONSOR_FAUCET_REPORT"));
+    assert.ok(plan.requiredOperatorInputs.includes("VALLUM_SPONSOR_FUNDING_REPORT"));
+    assert.ok(plan.requiredOperatorInputs.includes("VALLUM_TESTNET_DIGEST_REPORT"));
+    assert.ok(plan.optionalOperatorInputs.includes("VALLUM_SPONSOR_FAUCET_REPORT"));
     assert.ok(plan.requiredEvidenceArtifacts.includes("sanitized sponsor funding report"));
     assert.ok(plan.requiredEvidenceArtifacts.includes("sanitized testnet sponsored execute digest proof report"));
     assert.ok(plan.requiredOperatorInputs.includes("IOTA_NAMES_GRAPHQL_URL"));
@@ -96,7 +96,7 @@ test("live proof plan reports current blockers without configured values", async
     );
     assert.equal(
       plan.checks.find((check) => check.id === "sponsor-funding")?.evidence,
-      "missing=AGENTRAIL_SPONSOR_FUNDING_REPORT",
+      "missing=VALLUM_SPONSOR_FUNDING_REPORT",
     );
     assert.ok(plan.boundaries.some((boundary) => boundary.includes("only a passing sponsor funding report")));
     assert.ok(plan.boundaries.some((boundary) => boundary.includes("testnet digest report is a read-only IOTA RPC lookup")));
@@ -110,7 +110,7 @@ test("live proof plan reports current blockers without configured values", async
 });
 
 test("live proof plan can write a redacted local artifact", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-live-proof-plan-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-live-proof-plan-"));
   try {
     const outFile = join(cwd, "tmp", "live-proof-plan.json");
     const plan = await writeLiveProofPlan({
@@ -124,7 +124,7 @@ test("live proof plan can write a redacted local artifact", async () => {
     const parsed = JSON.parse(await readFile(outFile, "utf8")) as typeof plan;
 
     assert.equal(mode, 0o600);
-    assert.equal(parsed.kind, "agentrail.live-proof-plan");
+    assert.equal(parsed.kind, "vallum.live-proof-plan");
     assert.deepEqual(parsed.blockerCodes, plan.blockerCodes);
     assert.ok(parsed.boundaries.some((boundary) => boundary.includes("non-networked")));
   } finally {

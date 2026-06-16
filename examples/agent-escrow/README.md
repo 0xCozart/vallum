@@ -1,6 +1,6 @@
 # Agent Escrow Demo
 
-This local demo shows one agent hiring another agent through the AgentRail
+This local demo shows one agent hiring another agent through the Vallum
 mock sponsorship gateway. It proves:
 
 - approved escrow opens through the SDK and gateway;

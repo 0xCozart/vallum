@@ -1,6 +1,6 @@
 # Data License Demo
 
-This local demo shows an AgentRail data-license workflow using policy
+This local demo shows an Vallum data-license workflow using policy
 approval, template metadata, access proof evidence, and receipt state before a
 license is considered granted.
 

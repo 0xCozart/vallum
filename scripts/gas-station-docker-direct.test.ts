@@ -42,10 +42,10 @@ test("direct Docker Gas Station plan starts Redis and Gas Station on an isolated
     "start-redis",
     "start-gas-station",
   ]);
-  assert.equal(plan.networkName, "agentrail-local");
+  assert.equal(plan.networkName, "vallum-local");
   assert.equal(plan.redisNetworkAlias, "redis");
-  assert.equal(plan.redisContainer, "agentrail-redis");
-  assert.equal(plan.gasStationContainer, "agentrail-gas-station");
+  assert.equal(plan.redisContainer, "vallum-redis");
+  assert.equal(plan.gasStationContainer, "vallum-gas-station");
   assert.ok(startRedis);
   assert.match(startRedis.args.join(" "), /--network-alias redis/);
 });
@@ -53,9 +53,9 @@ test("direct Docker Gas Station plan starts Redis and Gas Station on an isolated
 test("direct Docker Gas Station status reports running local stack without contacting live services", async () => {
   const report = await checkGasStationDockerDirectStatus({
     runner: inspectRunnerFixture({
-      "docker network inspect agentrail-local --format {{.Name}}": { ok: true, output: "agentrail-local\n" },
-      "docker inspect agentrail-redis --format {{.State.Status}}": { ok: true, output: "running\n" },
-      "docker inspect agentrail-gas-station --format {{.State.Status}}": { ok: true, output: "running\n" },
+      "docker network inspect vallum-local --format {{.Name}}": { ok: true, output: "vallum-local\n" },
+      "docker inspect vallum-redis --format {{.State.Status}}": { ok: true, output: "running\n" },
+      "docker inspect vallum-gas-station --format {{.State.Status}}": { ok: true, output: "running\n" },
     }),
   });
   const formatted = formatGasStationDockerDirectStatus(report);
@@ -71,9 +71,9 @@ test("direct Docker Gas Station status reports running local stack without conta
 test("direct Docker Gas Station status blocks missing or stopped local containers without leaking output", async () => {
   const report = await checkGasStationDockerDirectStatus({
     runner: inspectRunnerFixture({
-      "docker network inspect agentrail-local --format {{.Name}}": { ok: true, output: "agentrail-local\n" },
-      "docker inspect agentrail-redis --format {{.State.Status}}": { ok: true, output: "exited\nsecret-looking-token" },
-      "docker inspect agentrail-gas-station --format {{.State.Status}}": { ok: false, output: "raw docker error with bearer token" },
+      "docker network inspect vallum-local --format {{.Name}}": { ok: true, output: "vallum-local\n" },
+      "docker inspect vallum-redis --format {{.State.Status}}": { ok: true, output: "exited\nsecret-looking-token" },
+      "docker inspect vallum-gas-station --format {{.State.Status}}": { ok: false, output: "raw docker error with bearer token" },
     }),
   });
   const formatted = formatGasStationDockerDirectStatus(report);

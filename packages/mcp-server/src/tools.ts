@@ -1,5 +1,5 @@
-import type { IotaAgent, SponsoredActionResult } from "@sacredlabs/agentrail-sdk";
-import { validateAgentTransactionManifest, type AgentTransactionManifest } from "@sacredlabs/agentrail-manifest";
+import type { IotaAgent, SponsoredActionResult } from "@vallum/sdk";
+import { validateAgentTransactionManifest, type AgentTransactionManifest } from "@vallum/manifest";
 
 export const REQUEST_SPONSORED_TRANSACTION_TOOL = "iota.request_sponsored_transaction";
 export const OPEN_ESCROW_TOOL = "iota.open_escrow";
@@ -50,13 +50,13 @@ export const IOTA_MCP_TOOLS: readonly IotaMcpToolDescriptor[] = [
   {
     name: REQUEST_SPONSORED_TRANSACTION_TOOL,
     title: "Request sponsored IOTA transaction",
-    description: "Submit an Agent Transaction Manifest through the AgentRail SDK and policy gateway.",
+    description: "Submit an Agent Transaction Manifest through the Vallum SDK and policy gateway.",
     inputSchema: manifestToolInputSchema(),
   },
   {
     name: OPEN_ESCROW_TOOL,
     title: "Open sponsored escrow",
-    description: "Submit an escrow Agent Transaction Manifest through the AgentRail SDK and policy gateway.",
+    description: "Submit an escrow Agent Transaction Manifest through the Vallum SDK and policy gateway.",
     inputSchema: manifestToolInputSchema(),
   },
 ];

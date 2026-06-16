@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 
 import type { SponsorFundingCode, SponsorFundingReport } from "./check-sponsor-funding.js";
 
-export const SPONSOR_FUNDING_REPORT_KIND = "agentrail.sponsor-funding-report" as const;
+export const SPONSOR_FUNDING_REPORT_KIND = "vallum.sponsor-funding-report" as const;
 export const SPONSOR_FUNDING_REPORT_SCHEMA_VERSION = 1 as const;
 
 export interface SponsorFundingEvidenceReport extends SponsorFundingReport {

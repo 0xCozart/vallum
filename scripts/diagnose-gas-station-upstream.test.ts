@@ -125,7 +125,7 @@ test("reserve gas classification uses bounded sponsor funding blocker codes", ()
 test("testnet upstream validation surfaces sanitized reserve failure messages", () => {
   const validation = validateTestnetUpstreamReport({
     schemaVersion: 1,
-    kind: "agentrail.testnet-upstream-diagnostic",
+    kind: "vallum.testnet-upstream-diagnostic",
     observedAt: new Date().toISOString(),
     gasStationRoot: { configured: true, ok: true, status: 200 },
     gasStationV1Health: { configured: true, ok: false, status: 404 },
@@ -152,7 +152,7 @@ test("testnet upstream validation surfaces sanitized reserve failure messages", 
 test("testnet upstream validation accepts root reachability without wrapper health", () => {
   const validation = validateTestnetUpstreamReport({
     schemaVersion: 1,
-    kind: "agentrail.testnet-upstream-diagnostic",
+    kind: "vallum.testnet-upstream-diagnostic",
     observedAt: new Date().toISOString(),
     gasStationRoot: { configured: true, ok: true, status: 200 },
     gasStationV1Health: { configured: true, ok: false, status: 404 },

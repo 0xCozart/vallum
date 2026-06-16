@@ -26,7 +26,7 @@ test("sponsor funding request includes public address only in the artifact", asy
   const artifact = formatSponsorFundingRequest(request);
   const summary = formatSponsorFundingRequestSummary(request);
 
-  assert.equal(request.kind, "agentrail.sponsor-funding-request");
+  assert.equal(request.kind, "vallum.sponsor-funding-request");
   assert.equal(request.result, "pending-funding");
   assert.equal(request.contactsLiveService, false);
   assert.equal(request.spendsGas, false);
@@ -44,8 +44,8 @@ test("sponsor funding request includes public address only in the artifact", asy
 });
 
 test("sponsor funding request writes an ignored local artifact with restrictive permissions", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-sponsor-funding-request-"));
-  const outFile = "tmp/agentrail/sponsor-funding-request.json";
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-sponsor-funding-request-"));
+  const outFile = "tmp/vallum/sponsor-funding-request.json";
   const request = await writeSponsorFundingRequest({
     cwd,
     env: { GAS_STATION_KEYPAIR: sponsorKey },
@@ -62,12 +62,12 @@ test("sponsor funding request writes an ignored local artifact with restrictive 
 });
 
 test("sponsor funding request includes sanitized faucet attempt context", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-sponsor-funding-request-"));
-  const faucetReportPath = "tmp/agentrail/sponsor-faucet-request.json";
-  await mkdir(join(cwd, "tmp/agentrail"), { recursive: true });
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-sponsor-funding-request-"));
+  const faucetReportPath = "tmp/vallum/sponsor-faucet-request.json";
+  await mkdir(join(cwd, "tmp/vallum"), { recursive: true });
   await writeFile(join(cwd, faucetReportPath), JSON.stringify({
     schemaVersion: 1,
-    kind: "agentrail.sponsor-faucet-request",
+    kind: "vallum.sponsor-faucet-request",
     result: "failed",
     code: "SPONSOR_FAUCET_FAILED",
     observedAt: "2026-06-14T08:00:00.000Z",
@@ -83,7 +83,7 @@ test("sponsor funding request includes sanitized faucet attempt context", async 
     faucetHttpStatus: 405,
     faucetFailureKind: "http-status",
     faucetErrorCode: "REQUEST_UNSUPPORTED",
-    nextCommands: ["npm run sponsor:check-funding -- --report tmp/agentrail/sponsor-funding-report.json"],
+    nextCommands: ["npm run sponsor:check-funding -- --report tmp/vallum/sponsor-funding-report.json"],
   }));
 
   const request = await buildSponsorFundingRequest({
@@ -114,12 +114,12 @@ test("sponsor funding request includes sanitized faucet attempt context", async 
 });
 
 test("sponsor funding request rejects unsafe faucet report context", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-sponsor-funding-request-"));
-  const faucetReportPath = "tmp/agentrail/sponsor-faucet-request.json";
-  await mkdir(join(cwd, "tmp/agentrail"), { recursive: true });
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-sponsor-funding-request-"));
+  const faucetReportPath = "tmp/vallum/sponsor-faucet-request.json";
+  await mkdir(join(cwd, "tmp/vallum"), { recursive: true });
   await writeFile(join(cwd, faucetReportPath), JSON.stringify({
     schemaVersion: 1,
-    kind: "agentrail.sponsor-faucet-request",
+    kind: "vallum.sponsor-faucet-request",
     result: "failed",
     code: "SPONSOR_FAUCET_FAILED",
     observedAt: "2026-06-14T08:00:00.000Z",
@@ -134,7 +134,7 @@ test("sponsor funding request rejects unsafe faucet report context", async () =>
     faucetApiVersion: "v0-documented",
     faucetHttpStatus: 405,
     faucetFailureKind: "http-status",
-    nextCommands: ["npm run sponsor:check-funding -- --report tmp/agentrail/sponsor-funding-report.json"],
+    nextCommands: ["npm run sponsor:check-funding -- --report tmp/vallum/sponsor-funding-report.json"],
   }));
 
   const request = await buildSponsorFundingRequest({
@@ -151,12 +151,12 @@ test("sponsor funding request rejects unsafe faucet report context", async () =>
 });
 
 test("sponsor funding request can read faucet context from env", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-sponsor-funding-request-"));
-  const faucetReportPath = "tmp/agentrail/sponsor-faucet-request.json";
-  await mkdir(join(cwd, "tmp/agentrail"), { recursive: true });
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-sponsor-funding-request-"));
+  const faucetReportPath = "tmp/vallum/sponsor-faucet-request.json";
+  await mkdir(join(cwd, "tmp/vallum"), { recursive: true });
   await writeFile(join(cwd, faucetReportPath), JSON.stringify({
     schemaVersion: 1,
-    kind: "agentrail.sponsor-faucet-request",
+    kind: "vallum.sponsor-faucet-request",
     result: "blocked",
     code: "SPONSOR_FAUCET_APPROVAL_REQUIRED",
     observedAt: "2026-06-14T08:00:00.000Z",
@@ -168,14 +168,14 @@ test("sponsor funding request can read faucet context from env", async () => {
     signsTransactions: false,
     sponsorAddressRedacted: "0x12345678...90abcdef",
     faucetUrlConfigured: true,
-    nextCommands: ["npm run sponsor:check-funding -- --report tmp/agentrail/sponsor-funding-report.json"],
+    nextCommands: ["npm run sponsor:check-funding -- --report tmp/vallum/sponsor-funding-report.json"],
   }));
 
   const request = await buildSponsorFundingRequest({
     cwd,
     env: {
       GAS_STATION_KEYPAIR: sponsorKey,
-      AGENTRAIL_SPONSOR_FAUCET_REPORT: faucetReportPath,
+      VALLUM_SPONSOR_FAUCET_REPORT: faucetReportPath,
     },
     now: new Date("2026-06-14T08:00:00.000Z"),
   });

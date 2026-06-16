@@ -1,6 +1,6 @@
 # A2A Signed Agent Card Demo
 
-This example signs an AgentRail A2A Agent Card with an ephemeral local
+This example signs an Vallum A2A Agent Card with an ephemeral local
 Ed25519 key and verifies the resulting JWS-style `signatures` entry.
 
 It is deterministic local proof only. It does not publish a public A2A server,

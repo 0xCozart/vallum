@@ -18,12 +18,12 @@ export interface NpmRegistryMcpStdioConsumerSmokeOptions {
 
 interface RegistryMcpStdioConsumerProof {
   readonly schemaVersion: 1;
-  readonly kind: "agentrail.npm-registry-mcp-stdio-consumer-proof";
+  readonly kind: "vallum.npm-registry-mcp-stdio-consumer-proof";
   readonly result: "passed" | "failed";
   readonly observedAt: string;
   readonly registry: "npm";
   readonly installSource: "npm-registry";
-  readonly mcpPackageName: "@sacredlabs/agentrail-mcp-server";
+  readonly mcpPackageName: "@vallum/mcp-server";
   readonly mcpVersion: string;
   readonly packageNames: readonly string[];
   readonly npmConfig?: {
@@ -41,8 +41,8 @@ interface CliOptions {
   readonly outFile?: string;
 }
 
-const DEFAULT_OUT_FILE = "tmp/agentrail/npm-registry-mcp-stdio-consumer-proof.json";
-const MCP_PACKAGE_NAME = "@sacredlabs/agentrail-mcp-server";
+const DEFAULT_OUT_FILE = "tmp/vallum/npm-registry-mcp-stdio-consumer-proof.json";
+const MCP_PACKAGE_NAME = "@vallum/mcp-server";
 const SUPPORT_PACKAGE_DIRS = [
   "packages/manifest",
   "packages/policy-gateway",
@@ -52,7 +52,7 @@ const REQUIRED_MARKERS = [
   "Package MCP stdio consumer smoke passed",
   "mode=package-consumer",
   "install=npm-registry",
-  "bin=node_modules/.bin/agentrail-mcp",
+  "bin=node_modules/.bin/mcp",
   "boundary.liveNetwork=false",
   "boundary.route=MCP-stdio->SDK->mock-policy-gateway",
   "approval.approved=true",
@@ -65,8 +65,8 @@ const SECRET_OUTPUT_RE = /local-package-mcp-stdio-secret-key|signerRef|transacti
 
 const usage = `usage: npm exec tsx -- scripts/smoke-npm-registry-mcp-stdio-consumer.ts [--out <path>]
 
-Installs the published AgentRail MCP server package from npm into a fresh
-temporary consumer, starts node_modules/.bin/agentrail-mcp, calls the stdio MCP
+Installs the published Vallum MCP server package from npm into a fresh
+temporary consumer, starts node_modules/.bin/mcp, calls the stdio MCP
 tools against a loopback mock policy gateway, and writes a redacted proof
 packet. Uses NPM_CONFIG_MIN_RELEASE_AGE=0 because this machine can hide newly
 published packages behind a local release-age gate.
@@ -85,7 +85,7 @@ export function buildRegistryMcpStdioConsumerPackageJson(input: {
     ...input.supportPackages.map((packageInfo) => [packageInfo.name, packageInfo.version] as const),
   ]);
   return `${JSON.stringify({
-    name: "agentrail-npm-registry-mcp-stdio-consumer-proof",
+    name: "vallum-npm-registry-mcp-stdio-consumer-proof",
     private: true,
     type: "module",
     dependencies,
@@ -106,7 +106,7 @@ export async function runNpmRegistryMcpStdioConsumerSmoke(
   const supportPackages = await Promise.all(SUPPORT_PACKAGE_DIRS.map((dir) => readPackage(cwd, dir)));
   const packageNames = [mcpPackage.name, ...supportPackages.map((packageInfo) => packageInfo.name)];
   const observedAt = now.toISOString();
-  const tempRoot = await mkdtemp(join(tmpdir(), "agentrail-npm-registry-mcp-stdio-consumer-"));
+  const tempRoot = await mkdtemp(join(tmpdir(), "vallum-npm-registry-mcp-stdio-consumer-"));
   const consumerDir = join(tempRoot, "consumer");
   const run =
     options.run ??
@@ -183,7 +183,7 @@ function passedReport(input: {
 }): RegistryMcpStdioConsumerProof {
   return {
     schemaVersion: 1,
-    kind: "agentrail.npm-registry-mcp-stdio-consumer-proof",
+    kind: "vallum.npm-registry-mcp-stdio-consumer-proof",
     result: "passed",
     observedAt: input.observedAt,
     registry: "npm",
@@ -226,7 +226,7 @@ function failedReport(input: {
 }): RegistryMcpStdioConsumerProof {
   return {
     schemaVersion: 1,
-    kind: "agentrail.npm-registry-mcp-stdio-consumer-proof",
+    kind: "vallum.npm-registry-mcp-stdio-consumer-proof",
     result: "failed",
     observedAt: input.observedAt,
     registry: "npm",

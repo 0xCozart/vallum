@@ -13,7 +13,7 @@ import {
 } from "./execute-testnet-sponsored-demo.js";
 
 test("sponsored testnet execute prerequisites block missing upstream report without leaking env values", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-execute-prereq-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-execute-prereq-"));
   try {
     await writePolicy(cwd);
     const report = await checkSponsoredExecutePrerequisites({
@@ -37,14 +37,14 @@ test("sponsored testnet execute prerequisites block missing upstream report with
 });
 
 test("sponsored testnet execute prerequisites block failed runtime before live execute", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-execute-prereq-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-execute-prereq-"));
   try {
     await writePolicy(cwd);
     const report = await checkSponsoredExecutePrerequisites({
       cwd,
       env: {
         ...completeEnv(),
-        AGENTRAIL_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
+        VALLUM_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
       },
       gasStationRuntimeReport: blockedGasStationRuntime(),
       policyGatewayHealthReport: readyPolicyGateway(),
@@ -60,14 +60,14 @@ test("sponsored testnet execute prerequisites block failed runtime before live e
 });
 
 test("sponsored testnet execute prerequisites require passing reserve compatibility report", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-execute-prereq-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-execute-prereq-"));
   try {
     await writePolicy(cwd);
     const report = await checkSponsoredExecutePrerequisites({
       cwd,
       env: {
         ...completeEnv(),
-        AGENTRAIL_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
+        VALLUM_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
       },
       gasStationRuntimeReport: readyGasStationRuntime(),
       policyGatewayHealthReport: readyPolicyGateway(),
@@ -85,14 +85,14 @@ test("sponsored testnet execute prerequisites require passing reserve compatibil
 });
 
 test("sponsored testnet execute prerequisites pass only after readiness runtime and upstream proof", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-execute-prereq-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-execute-prereq-"));
   try {
     await writePolicy(cwd);
     const report = await checkSponsoredExecutePrerequisites({
       cwd,
       env: {
         ...completeEnv(),
-        AGENTRAIL_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
+        VALLUM_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
       },
       gasStationRuntimeReport: readyGasStationRuntime(),
       policyGatewayHealthReport: readyPolicyGateway(),
@@ -112,16 +112,16 @@ test("sponsored testnet execute prerequisites pass only after readiness runtime 
 });
 
 test("sponsored testnet execute prerequisites accept explicit managed upstream runtime only with upstream proof", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-execute-prereq-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-execute-prereq-"));
   try {
     await writePolicy(cwd);
     const report = await checkSponsoredExecutePrerequisites({
       cwd,
       env: {
         ...completeEnv(),
-        AGENTRAIL_GAS_STATION_RUNTIME_MODE: "managed-upstream",
+        VALLUM_GAS_STATION_RUNTIME_MODE: "managed-upstream",
         GAS_STATION_URL: "https://gas-station.testnet.example",
-        AGENTRAIL_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
+        VALLUM_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
       },
       gasStationRuntimeRunner: async () => {
         throw new Error("managed-upstream prerequisite check must not inspect Docker");
@@ -139,14 +139,14 @@ test("sponsored testnet execute prerequisites accept explicit managed upstream r
 });
 
 test("sponsored testnet execute prerequisites block unreachable local policy gateway before live execute", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-execute-prereq-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-execute-prereq-"));
   try {
     await writePolicy(cwd);
     const report = await checkSponsoredExecutePrerequisites({
       cwd,
       env: {
         ...completeEnv(),
-        AGENTRAIL_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
+        VALLUM_TESTNET_UPSTREAM_REPORT: "upstream-report.json",
       },
       gasStationRuntimeReport: readyGasStationRuntime(),
       policyGatewayHealthReport: blockedPolicyGateway(),
@@ -181,7 +181,7 @@ test("sponsored testnet execute live output redacts addresses and opaque reserva
 });
 
 test("sponsored testnet execute report writes sanitized ignored evidence", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-execute-report-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-execute-report-"));
   try {
     const fullAddress = "0x1111111111111111111111111111111111111111111111111111111111111111";
     const userAddress = "0x2222222222222222222222222222222222222222222222222222222222222222";
@@ -196,7 +196,7 @@ test("sponsored testnet execute report writes sanitized ignored evidence", async
       sponsorAddress: fullAddress,
       transactionDigest: digest,
     }, new Date("2026-06-14T00:00:00.000Z"));
-    const outFile = join(cwd, "tmp/agentrail/sponsored-execute-report.json");
+    const outFile = join(cwd, "tmp/vallum/sponsored-execute-report.json");
 
     await writeSponsoredExecuteReportFile(outFile, report);
 
@@ -205,7 +205,7 @@ test("sponsored testnet execute report writes sanitized ignored evidence", async
     const parsed = JSON.parse(raw) as typeof report;
 
     assert.equal(mode, 0o600);
-    assert.equal(parsed.kind, "agentrail.sponsored-testnet-execute-report");
+    assert.equal(parsed.kind, "vallum.sponsored-testnet-execute-report");
     assert.equal(parsed.result, "passed");
     assert.equal(parsed.transactionDigest, digest);
     assert.equal(parsed.contactsLiveService, true);
@@ -261,11 +261,11 @@ function completeEnv(): Record<string, string> {
     GAS_STATION_KEYPAIR: "sponsor-key-fixture-for-readiness-only",
     GAS_STATION_AUTH: "auth-value-for-testnet-demo",
     JWT_SECRET: "jwt-value-for-testnet-demo-1234567890",
-    DATABASE_URL: "file:./data/agentrail.sqlite3",
-    AGENTRAIL_GATEWAY_HOST: "127.0.0.1",
-    AGENTRAIL_GATEWAY_PORT: "8787",
-    AGENTRAIL_POLICY_PATH: "policy.yaml",
-    AGENTRAIL_DEMO_APP_KEY: "demo-app-key-for-testnet",
+    DATABASE_URL: "file:./data/vallum.sqlite3",
+    VALLUM_GATEWAY_HOST: "127.0.0.1",
+    VALLUM_GATEWAY_PORT: "8787",
+    VALLUM_POLICY_PATH: "policy.yaml",
+    VALLUM_DEMO_APP_KEY: "demo-app-key-for-testnet",
     GAS_STATION_URL: "http://127.0.0.1:9527",
     GAS_STATION_BEARER_TOKEN: "bearer-value-for-testnet-demo",
   };
@@ -309,7 +309,7 @@ function blockedPolicyGateway() {
 function validUpstreamReport() {
   return {
     schemaVersion: 1 as const,
-    kind: "agentrail.testnet-upstream-diagnostic" as const,
+    kind: "vallum.testnet-upstream-diagnostic" as const,
     observedAt: new Date().toISOString(),
     gasStationRoot: { configured: true, ok: true, status: 200 },
     gasStationV1Health: { configured: true, ok: false, status: 404 },

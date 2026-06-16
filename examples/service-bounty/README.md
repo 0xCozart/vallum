@@ -1,6 +1,6 @@
 # Service Bounty Demo
 
-This local demo shows an AgentRail service-bounty workflow using policy
+This local demo shows an Vallum service-bounty workflow using policy
 approval, template metadata, provider completion proof, and receipt state before
 a bounty is released.
 

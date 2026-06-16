@@ -1,9 +1,9 @@
 # A2A HTTP Demo
 
-Deterministic local proof for the AgentRail A2A HTTP boundary.
+Deterministic local proof for the Vallum A2A HTTP boundary.
 
 This demo does not start a public server or contact live A2A clients. It uses
-the pure local handler from `@sacredlabs/agentrail-standards` to prove:
+the pure local handler from `@vallum/standards` to prove:
 
 - public Agent Card discovery at `/.well-known/agent-card.json`;
 - bearer-authenticated extended Agent Card access at `/extendedAgentCard`;

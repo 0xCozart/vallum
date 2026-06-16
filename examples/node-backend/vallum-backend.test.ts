@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createAgentRailBackendHandlers } from "./agentrail-backend.js";
-import { AgentRailAuthError, AgentRailError, AgentRailPolicyError } from "../../packages/sdk/src/index.js";
+import { createVallumBackendHandlers } from "./vallum-backend.js";
+import { VallumAuthError, VallumError, VallumPolicyError } from "../../packages/sdk/src/index.js";
 import type {
   ExecuteSponsoredTransactionRequest,
   ExecuteSponsoredTransactionResponse,
@@ -16,13 +16,13 @@ function asJson(value: unknown): string {
 
 test("reserve handler uses the server-owned SDK client and returns only safe reservation fields", async () => {
   const reserveCalls: ReserveGasRequest[] = [];
-  const handlers = createAgentRailBackendHandlers({
+  const handlers = createVallumBackendHandlers({
     client: {
       async reserveGas(request: ReserveGasRequest): Promise<ReserveGasResponse> {
         reserveCalls.push(request);
         return {
           reservationId: "reservation-1",
-          agentRailTransactionId: "agentrail-1",
+          agentRailTransactionId: "vallum-1",
           sponsorAddress: "0xSPONSOR",
           gasCoins: [{ objectId: "coin-that-should-stay-server-side" }],
           raw: { upstreamDebug: "do-not-return" },
@@ -54,7 +54,7 @@ test("reserve handler uses the server-owned SDK client and returns only safe res
   assert.equal(response.status, 200);
   assert.deepEqual(response.body, {
     reservationId: "reservation-1",
-    agentRailTransactionId: "agentrail-1",
+    agentRailTransactionId: "vallum-1",
     sponsorAddress: "0xSPONSOR",
   });
   assert.doesNotMatch(asJson(response.body), /do-not-return|coin-that-should-stay-server-side|apiKey|Bearer/i);
@@ -62,7 +62,7 @@ test("reserve handler uses the server-owned SDK client and returns only safe res
 
 test("execute handler omits transaction bytes, user signatures, and raw upstream bodies", async () => {
   const executeCalls: ExecuteSponsoredTransactionRequest[] = [];
-  const handlers = createAgentRailBackendHandlers({
+  const handlers = createVallumBackendHandlers({
     client: {
       async reserveGas(): Promise<ReserveGasResponse> {
         throw new Error("reserve should not be called by execute handler");
@@ -84,7 +84,7 @@ test("execute handler omits transaction bytes, user signatures, and raw upstream
 
   const response = await handlers.execute({
     reservationId: "reservation-1",
-    agentRailTransactionId: "agentrail-1",
+    agentRailTransactionId: "vallum-1",
     transactionBytes: "client-transaction-bytes",
     userSignature: "client-user-signature",
   });
@@ -92,7 +92,7 @@ test("execute handler omits transaction bytes, user signatures, and raw upstream
   assert.deepEqual(executeCalls, [
     {
       reservationId: "reservation-1",
-      agentRailTransactionId: "agentrail-1",
+      agentRailTransactionId: "vallum-1",
       transactionBytes: "client-transaction-bytes",
       userSignature: "client-user-signature",
     },
@@ -106,17 +106,17 @@ test("execute handler omits transaction bytes, user signatures, and raw upstream
 });
 
 test("handlers map SDK errors to safe frontend responses without raw upstream bodies", async () => {
-  const handlers = createAgentRailBackendHandlers({
+  const handlers = createVallumBackendHandlers({
     client: {
       async reserveGas(): Promise<ReserveGasResponse> {
-        throw new AgentRailPolicyError("raw upstream policy body leaked", "PACKAGE_NOT_ALLOWED", 400, {
+        throw new VallumPolicyError("raw upstream policy body leaked", "PACKAGE_NOT_ALLOWED", 400, {
           apiKey: "secret-app-key",
           bearerToken: "secret-bearer-token",
           raw: "raw-upstream-error-body",
         });
       },
       async executeSponsoredTransaction(): Promise<ExecuteSponsoredTransactionResponse> {
-        throw new AgentRailAuthError("raw upstream auth body leaked", 401, {
+        throw new VallumAuthError("raw upstream auth body leaked", 401, {
           apiKey: "secret-app-key",
           bearerToken: "secret-bearer-token",
         });
@@ -127,20 +127,20 @@ test("handlers map SDK errors to safe frontend responses without raw upstream bo
   const reserve = await handlers.reserve({ gasBudget: 1, packageId: "0xNOT_ALLOWED", functionName: "mint_badge" });
   const execute = await handlers.execute({
     reservationId: "reservation-1",
-    agentRailTransactionId: "agentrail-1",
+    agentRailTransactionId: "vallum-1",
     transactionBytes: "client-transaction-bytes",
     userSignature: "client-user-signature",
   });
 
   assert.deepEqual(reserve.body, {
     error: "POLICY_REJECTED",
-    message: "Request rejected by AgentRail policy.",
+    message: "Request rejected by Vallum policy.",
     reasonCode: "PACKAGE_NOT_ALLOWED",
   });
   assert.equal(reserve.status, 400);
   assert.deepEqual(execute.body, {
     error: "AUTH_FAILED",
-    message: "AgentRail authentication failed.",
+    message: "Vallum authentication failed.",
   });
   assert.equal(execute.status, 401);
   assert.doesNotMatch(
@@ -150,10 +150,10 @@ test("handlers map SDK errors to safe frontend responses without raw upstream bo
 });
 
 test("handlers map non-policy SDK errors to generic safe frontend responses", async () => {
-  const handlers = createAgentRailBackendHandlers({
+  const handlers = createVallumBackendHandlers({
     client: {
       async reserveGas(): Promise<ReserveGasResponse> {
-        throw new AgentRailError("raw upstream gateway body leaked", 502, {
+        throw new VallumError("raw upstream gateway body leaked", 502, {
           transactionBytes: "secret-transaction-bytes",
           userSignature: "secret-user-signature",
         });
@@ -168,17 +168,17 @@ test("handlers map non-policy SDK errors to generic safe frontend responses", as
 
   assert.equal(response.status, 502);
   assert.deepEqual(response.body, {
-    error: "AGENTRAIL_REQUEST_FAILED",
-    message: "AgentRail request failed.",
+    error: "VALLUM_REQUEST_FAILED",
+    message: "Vallum request failed.",
   });
   assert.doesNotMatch(asJson(response.body), /secret|raw upstream|transaction-bytes|user-signature/i);
 });
 
 test("handlers omit unknown policy reason codes from safe frontend responses", async () => {
-  const handlers = createAgentRailBackendHandlers({
+  const handlers = createVallumBackendHandlers({
     client: {
       async reserveGas(): Promise<ReserveGasResponse> {
-        throw new AgentRailPolicyError("raw upstream policy body leaked", "secret-app-key-raw-body", 400, {
+        throw new VallumPolicyError("raw upstream policy body leaked", "secret-app-key-raw-body", 400, {
           raw: "raw-upstream-error-body",
         });
       },
@@ -193,7 +193,7 @@ test("handlers omit unknown policy reason codes from safe frontend responses", a
   assert.equal(response.status, 400);
   assert.deepEqual(response.body, {
     error: "POLICY_REJECTED",
-    message: "Request rejected by AgentRail policy.",
+    message: "Request rejected by Vallum policy.",
   });
   assert.doesNotMatch(asJson(response.body), /secret|raw-upstream|raw upstream/i);
 });

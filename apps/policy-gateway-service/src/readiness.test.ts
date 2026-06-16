@@ -24,7 +24,7 @@ const validPolicy = `apps:
 const placeholderPolicy = validPolicy.replace("0x1234567890abcdef", "0xYOUR_DEMO_PACKAGE_ID");
 
 async function writePolicy(source: string): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), "agentrail-readiness-policy-"));
+  const dir = await mkdtemp(join(tmpdir(), "vallum-readiness-policy-"));
   const path = join(dir, "policy.yaml");
   await writeFile(path, source);
   return path;
@@ -37,11 +37,11 @@ async function validEnv(overrides: Record<string, string | undefined> = {}): Pro
     GAS_STATION_KEYPAIR: "fake-testnet-sponsor-key-with-enough-entropy-for-preflight",
     GAS_STATION_AUTH: "fake-gas-station-auth-value-with-enough-entropy",
     JWT_SECRET: "jwt-secret-with-at-least-thirty-two-characters",
-    DATABASE_URL: "file:./data/agentrail.sqlite3",
-    AGENTRAIL_GATEWAY_HOST: "127.0.0.1",
-    AGENTRAIL_GATEWAY_PORT: "8787",
-    AGENTRAIL_POLICY_PATH: policyPath,
-    AGENTRAIL_DEMO_APP_KEY: "demo-app-key-with-enough-entropy",
+    DATABASE_URL: "file:./data/vallum.sqlite3",
+    VALLUM_GATEWAY_HOST: "127.0.0.1",
+    VALLUM_GATEWAY_PORT: "8787",
+    VALLUM_POLICY_PATH: policyPath,
+    VALLUM_DEMO_APP_KEY: "demo-app-key-with-enough-entropy",
     GAS_STATION_URL: "http://127.0.0.1:9527",
     GAS_STATION_BEARER_TOKEN: "fake-upstream-bearer-value-with-enough-entropy",
     ...overrides,
@@ -52,12 +52,12 @@ test("parseDotEnv handles comments, quoted values, and inline comments without s
   const parsed = parseDotEnv(`# comment
 IOTA_RPC_URL="https://api.testnet.iota.cafe"
 JWT_SECRET='secret#kept'
-DATABASE_URL=file:./data/agentrail.sqlite3 # local db
+DATABASE_URL=file:./data/vallum.sqlite3 # local db
 `);
 
   assert.equal(parsed.IOTA_RPC_URL, "https://api.testnet.iota.cafe");
   assert.equal(parsed.JWT_SECRET, "secret#kept");
-  assert.equal(parsed.DATABASE_URL, "file:./data/agentrail.sqlite3");
+  assert.equal(parsed.DATABASE_URL, "file:./data/vallum.sqlite3");
 });
 
 test("testnet readiness passes with explicit non-placeholder local testnet values", async () => {
@@ -72,11 +72,11 @@ test("testnet readiness fails closed on placeholders, missing secrets, and place
   const policyPath = await writePolicy(placeholderPolicy);
   const report = await checkTestnetReadiness({
     env: await validEnv({
-      AGENTRAIL_POLICY_PATH: policyPath,
+      VALLUM_POLICY_PATH: policyPath,
       GAS_STATION_KEYPAIR: "replace-with-local-testnet-sponsor-key",
       GAS_STATION_AUTH: undefined,
       JWT_SECRET: "replac...cret",
-      AGENTRAIL_DEMO_APP_KEY: "local-dev-demo-key",
+      VALLUM_DEMO_APP_KEY: "local-dev-demo-key",
     }),
   });
 
@@ -84,7 +84,7 @@ test("testnet readiness fails closed on placeholders, missing secrets, and place
   assert.ok(report.failures.some((failure) => failure.id === "GAS_STATION_KEYPAIR.value"));
   assert.ok(report.failures.some((failure) => failure.id === "GAS_STATION_AUTH.required"));
   assert.ok(report.failures.some((failure) => failure.id === "JWT_SECRET.value"));
-  assert.ok(report.failures.some((failure) => failure.id === "AGENTRAIL_DEMO_APP_KEY.value"));
+  assert.ok(report.failures.some((failure) => failure.id === "VALLUM_DEMO_APP_KEY.value"));
   assert.ok(report.failures.some((failure) => failure.id === "policy.packageAllowlist.placeholders"));
 });
 
@@ -93,16 +93,16 @@ test("testnet readiness validates URLs and loopback host boundaries", async () =
     env: await validEnv({
       IOTA_RPC_URL: "http://api.testnet.iota.cafe",
       GAS_STATION_URL: "not-a-url",
-      AGENTRAIL_GATEWAY_HOST: "0.0.0.0",
-      AGENTRAIL_GATEWAY_PORT: "99999",
+      VALLUM_GATEWAY_HOST: "0.0.0.0",
+      VALLUM_GATEWAY_PORT: "99999",
     }),
   });
 
   assert.equal(report.ok, false);
   assert.ok(report.failures.some((failure) => failure.id === "IOTA_RPC_URL.url"));
   assert.ok(report.failures.some((failure) => failure.id === "GAS_STATION_URL.url"));
-  assert.ok(report.failures.some((failure) => failure.id === "AGENTRAIL_GATEWAY_HOST.loopback"));
-  assert.ok(report.failures.some((failure) => failure.id === "AGENTRAIL_GATEWAY_PORT.range"));
+  assert.ok(report.failures.some((failure) => failure.id === "VALLUM_GATEWAY_HOST.loopback"));
+  assert.ok(report.failures.some((failure) => failure.id === "VALLUM_GATEWAY_PORT.range"));
 });
 
 test("example readiness mode requires documented placeholders but still checks required keys", async () => {
@@ -113,11 +113,11 @@ test("example readiness mode requires documented placeholders but still checks r
       GAS_STATION_KEYPAIR: "replace-with-local-testnet-sponsor-key",
       GAS_STATION_AUTH: "replac...oken",
       JWT_SECRET: "replac...cret",
-      DATABASE_URL: "file:./data/agentrail.sqlite3",
-      AGENTRAIL_GATEWAY_HOST: "127.0.0.1",
-      AGENTRAIL_GATEWAY_PORT: "8787",
-      AGENTRAIL_POLICY_PATH: policyPath,
-      AGENTRAIL_DEMO_APP_KEY: "local-dev-demo-key",
+      DATABASE_URL: "file:./data/vallum.sqlite3",
+      VALLUM_GATEWAY_HOST: "127.0.0.1",
+      VALLUM_GATEWAY_PORT: "8787",
+      VALLUM_POLICY_PATH: policyPath,
+      VALLUM_DEMO_APP_KEY: "local-dev-demo-key",
       GAS_STATION_URL: "http://127.0.0.1:9527",
       GAS_STATION_BEARER_TOKEN: "replac...oken",
     },
@@ -129,10 +129,10 @@ test("example readiness mode requires documented placeholders but still checks r
 });
 
 test("readiness resolves relative policy paths from the provided cwd", async () => {
-  const dir = await mkdtemp(join(tmpdir(), "agentrail-readiness-cwd-"));
+  const dir = await mkdtemp(join(tmpdir(), "vallum-readiness-cwd-"));
   await writeFile(join(dir, "policy.yaml"), validPolicy);
   const report = await checkTestnetReadiness({
-    env: await validEnv({ AGENTRAIL_POLICY_PATH: "policy.yaml" }),
+    env: await validEnv({ VALLUM_POLICY_PATH: "policy.yaml" }),
     cwd: dir,
   });
 
@@ -143,16 +143,16 @@ test("readiness resolves relative policy paths from the provided cwd", async () 
 test("readiness treats optional operator usage token as a secret when configured", async () => {
   const report = await checkTestnetReadiness({
     env: await validEnv({
-      AGENTRAIL_USAGE_EVENT_STORE_PATH: "tmp/usage.jsonl",
-      AGENTRAIL_OPERATOR_USAGE_TOKEN: "replace-with-local-operator-token",
+      VALLUM_USAGE_EVENT_STORE_PATH: "tmp/usage.jsonl",
+      VALLUM_OPERATOR_USAGE_TOKEN: "replace-with-local-operator-token",
     }),
   });
 
   assert.equal(report.ok, false);
-  assert.ok(report.failures.some((failure) => failure.id === "AGENTRAIL_OPERATOR_USAGE_TOKEN.value"));
+  assert.ok(report.failures.some((failure) => failure.id === "VALLUM_OPERATOR_USAGE_TOKEN.value"));
   const formatted = formatReadinessReport(report);
   assert.ok(!formatted.includes("replace-with-local-operator-token"));
-  assert.ok(formatted.includes("AGENTRAIL_OPERATOR_USAGE_TOKEN"));
+  assert.ok(formatted.includes("VALLUM_OPERATOR_USAGE_TOKEN"));
 });
 
 test("readiness report formatting never prints secret values", async () => {

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { SponsorshipPolicy } from "@sacredlabs/agentrail-shared-types";
+import type { SponsorshipPolicy } from "@vallum/shared-types";
 import { evaluateSponsorshipPolicy } from "./policy.js";
 
 const basePolicy: SponsorshipPolicy = {

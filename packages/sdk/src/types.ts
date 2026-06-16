@@ -1,7 +1,7 @@
-import type { PolicyDecision } from "@sacredlabs/agentrail-shared-types";
-import type { AgentTransactionManifest } from "@sacredlabs/agentrail-manifest";
+import type { PolicyDecision } from "@vallum/shared-types";
+import type { AgentTransactionManifest } from "@vallum/manifest";
 
-export interface AgentRailClientOptions {
+export interface VallumClientOptions {
   baseUrl: string;
   apiKey: string;
   fetchImpl?: typeof fetch;

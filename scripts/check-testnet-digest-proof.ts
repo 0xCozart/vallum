@@ -46,7 +46,7 @@ interface CliOptions {
 
 const REQUIRED_DOCS = [
   "docs/testnet-attempts.md",
-  "docs/agentrail/testnet-digest-proof.md",
+  "docs/vallum/testnet-digest-proof.md",
   "docs/reviewer-walkthrough.md",
 ] as const;
 
@@ -134,7 +134,7 @@ export async function checkTestnetDigestProof(
 
 export function formatTestnetDigestProofReport(report: TestnetDigestProofReport): string {
   const lines = [
-    `AgentRail testnet digest proof ${report.status}`,
+    `Vallum testnet digest proof ${report.status}`,
     `digest=${report.digest}`,
     `rpcUrl=${report.rpcUrl}`,
     `documented=${report.documented}`,

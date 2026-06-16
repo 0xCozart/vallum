@@ -150,7 +150,7 @@ export async function writeA2APublicDiscoveryBundle(
     manifestPath,
     `${JSON.stringify({
       schemaVersion: 1,
-      kind: "agentrail.a2a-static-discovery-bundle",
+      kind: "vallum.a2a-static-discovery-bundle",
       publicBaseUrl: options.bundle.publicBaseUrl,
       publicJwksUrl: options.bundle.publicJwksUrl,
       files: writtenFiles.map((file) => ({
@@ -178,7 +178,7 @@ export async function validateA2APublicDiscoveryBundleArtifacts(
 
   const manifestPath = join(outDir, options.manifestFileName ?? "a2a-discovery-bundle-manifest.json");
   const manifest = parseManifest(await readFile(manifestPath, "utf8"));
-  if (manifest.schemaVersion !== 1 || manifest.kind !== "agentrail.a2a-static-discovery-bundle") {
+  if (manifest.schemaVersion !== 1 || manifest.kind !== "vallum.a2a-static-discovery-bundle") {
     throw new Error("A2A public discovery bundle manifest is invalid.");
   }
   if (typeof manifest.publicBaseUrl !== "string" || typeof manifest.publicJwksUrl !== "string") {

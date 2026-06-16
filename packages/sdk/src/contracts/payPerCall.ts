@@ -1,4 +1,4 @@
-import type { AgentTransactionManifest } from "@sacredlabs/agentrail-manifest";
+import type { AgentTransactionManifest } from "@vallum/manifest";
 import {
   approvePayPerCallReceipt,
   completePayPerCallReceipt,
@@ -9,7 +9,7 @@ import {
   submitPayPerCallReceipt,
   type PayPerCallReceipt,
   type ReceiptAmount,
-} from "@sacredlabs/agentrail-receipts";
+} from "@vallum/receipts";
 
 import { requestSponsoredAction } from "../requestSponsoredAction.js";
 import type { SponsoredActionResult } from "../types.js";

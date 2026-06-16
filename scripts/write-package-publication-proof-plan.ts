@@ -24,7 +24,7 @@ export interface PackagePublicationProofPlanCheck {
 
 export interface PackagePublicationProofPlan {
   readonly schemaVersion: 1;
-  readonly kind: "agentrail.package-publication-proof-plan";
+  readonly kind: "vallum.package-publication-proof-plan";
   readonly generatedAt: string;
   readonly localProofOk: boolean;
   readonly liveReady: boolean;
@@ -167,7 +167,7 @@ export function buildPackagePublicationProofPlan(
 
   return {
     schemaVersion: 1,
-    kind: "agentrail.package-publication-proof-plan",
+    kind: "vallum.package-publication-proof-plan",
     generatedAt: now.toISOString(),
     localProofOk: report.localProofOk,
     liveReady: report.liveReady,

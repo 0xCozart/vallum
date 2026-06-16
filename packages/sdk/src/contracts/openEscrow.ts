@@ -1,4 +1,4 @@
-import type { AgentTransactionManifest } from "@sacredlabs/agentrail-manifest";
+import type { AgentTransactionManifest } from "@vallum/manifest";
 import {
   approveReceipt,
   createEscrowReceipt,
@@ -6,7 +6,7 @@ import {
   sponsorReceipt,
   type EscrowReceipt,
   type ReceiptAmount,
-} from "@sacredlabs/agentrail-receipts";
+} from "@vallum/receipts";
 
 import { requestSponsoredAction } from "../requestSponsoredAction.js";
 import type { SponsoredActionResult } from "../types.js";

@@ -4,12 +4,14 @@ import { join } from "node:path";
 
 interface PackageJson {
   readonly name: string;
+  readonly version?: string;
   readonly private?: boolean;
 }
 
 export interface PublishablePackage {
   readonly dir: string;
   readonly name: string;
+  readonly version?: string;
 }
 
 export interface PublishDryRunOptions {
@@ -28,7 +30,7 @@ export async function collectPublishablePackages(cwd = process.cwd()): Promise<P
     const packageJson = JSON.parse(await readFile(join(cwd, dir, "package.json"), "utf8")) as PackageJson;
     if (packageJson.private) continue;
 
-    packages.push({ dir, name: packageJson.name });
+    packages.push({ dir, name: packageJson.name, version: packageJson.version });
   }
 
   return packages.sort((left, right) => left.name.localeCompare(right.name));
@@ -53,7 +55,7 @@ export async function runPackagePublishDryRun(options: PublishDryRunOptions = {}
     return 1;
   }
 
-  console.log("AgentRail package publish dry-run");
+  console.log("Vallum package publish dry-run");
   console.log(`packages=${packages.map((packageInfo) => packageInfo.name).join(",")}`);
   console.log("mode=dry-run");
   console.log("realPublish=false");

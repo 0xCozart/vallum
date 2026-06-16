@@ -40,7 +40,7 @@ export interface OperatorLiveGateReport {
 
 export interface OperatorLiveGateArtifact {
   readonly schemaVersion: 1;
-  readonly kind: "agentrail.operator-live-gate-report";
+  readonly kind: "vallum.operator-live-gate-report";
   readonly generatedAt: string;
   readonly allGatesClear: boolean;
   readonly localOnly: boolean;
@@ -77,16 +77,16 @@ const GATE_COMMANDS: Record<string, string | undefined> = {
   "operator-report-template": "npm run operator:write-report-template -- --kind <kind> --out <ignored-report-template.json>",
   "testnet-readiness": "npm run readiness:testnet",
   "gas-station-runtime": "npm run gas-station:runtime-preflight",
-  "sponsor-funding": "npm run sponsor:check-funding -- --report tmp/agentrail/sponsor-funding-report.json",
-  "testnet-upstream": "npm run operator:write-report-template -- --kind testnet-upstream --out tmp/agentrail/testnet-upstream-report-template.json && npm run live:write-proof-plan && npm run diagnose:gas-station -- --report <ignored-json-path>",
-  "iota-names-live": "npm run live:write-identity-proof-bundle -- --out tmp/agentrail/identity-proof-bundle.json && npm run smoke:iota-names-live -- --report <ignored-json-path>",
-  "iota-identity-live": "npm run live:write-identity-proof-bundle -- --out tmp/agentrail/identity-proof-bundle.json && npm run smoke:iota-identity-live -- --report <ignored-json-path>",
-  "vc-validation-live": "npm run live:write-identity-proof-bundle -- --out tmp/agentrail/identity-proof-bundle.json && npm run smoke:iota-identity-live -- --report <ignored-json-path>",
-  "npm-registry-publication": "npm run package:write-publication-proof-bundle -- --out tmp/agentrail/package-publication-proof-bundle.json && npm run proof:package-publication-readiness && operator-approved npm publish workflow",
-  "public-a2a-hosting": "npm run a2a:write-public-proof-bundle -- --out tmp/agentrail/a2a-public-proof-bundle.json && npm run proof:a2a-public-readiness && npm run smoke:a2a-public-discovery",
-  "live-payment-provider": "npm run payment:write-provider-proof-bundle -- --out tmp/agentrail/payment-provider-proof-bundle.json && npm run proof:payment-provider-readiness",
-  "production-marketplace": "npm run marketplace:write-production-proof-bundle -- --out tmp/agentrail/marketplace-production-proof-bundle.json && npm run proof:marketplace-readiness && dedicated production marketplace readiness slice",
-  "production-custody": "npm run custody:write-production-proof-bundle -- --out tmp/agentrail/custody-production-proof-bundle.json && npm run proof:custody-readiness && dedicated custody/security design slice",
+  "sponsor-funding": "npm run sponsor:check-funding -- --report tmp/vallum/sponsor-funding-report.json",
+  "testnet-upstream": "npm run operator:write-report-template -- --kind testnet-upstream --out tmp/vallum/testnet-upstream-report-template.json && npm run live:write-proof-plan && npm run diagnose:gas-station -- --report <ignored-json-path>",
+  "iota-names-live": "npm run live:write-identity-proof-bundle -- --out tmp/vallum/identity-proof-bundle.json && npm run smoke:iota-names-live -- --report <ignored-json-path>",
+  "iota-identity-live": "npm run live:write-identity-proof-bundle -- --out tmp/vallum/identity-proof-bundle.json && npm run smoke:iota-identity-live -- --report <ignored-json-path>",
+  "vc-validation-live": "npm run live:write-identity-proof-bundle -- --out tmp/vallum/identity-proof-bundle.json && npm run smoke:iota-identity-live -- --report <ignored-json-path>",
+  "npm-registry-publication": "npm run package:write-publication-proof-bundle -- --out tmp/vallum/package-publication-proof-bundle.json && npm run proof:package-publication-readiness && operator-approved npm publish workflow",
+  "public-a2a-hosting": "npm run a2a:write-public-proof-bundle -- --out tmp/vallum/a2a-public-proof-bundle.json && npm run proof:a2a-public-readiness && npm run smoke:a2a-public-discovery",
+  "live-payment-provider": "npm run payment:write-provider-proof-bundle -- --out tmp/vallum/payment-provider-proof-bundle.json && npm run proof:payment-provider-readiness",
+  "production-marketplace": "npm run marketplace:write-production-proof-bundle -- --out tmp/vallum/marketplace-production-proof-bundle.json && npm run proof:marketplace-readiness && dedicated production marketplace readiness slice",
+  "production-custody": "npm run custody:write-production-proof-bundle -- --out tmp/vallum/custody-production-proof-bundle.json && npm run proof:custody-readiness && dedicated custody/security design slice",
   "physical-device-access": "dedicated physical device safety design slice",
 };
 
@@ -172,7 +172,7 @@ export function buildOperatorLiveGateArtifact(
 
   return {
     schemaVersion: 1,
-    kind: "agentrail.operator-live-gate-report",
+    kind: "vallum.operator-live-gate-report",
     generatedAt: now.toISOString(),
     allGatesClear: report.allGatesClear,
     localOnly: report.localOnly,
@@ -191,7 +191,7 @@ export function formatOperatorLiveGateArtifact(artifact: OperatorLiveGateArtifac
 
 export function formatOperatorLiveGateReport(report: OperatorLiveGateReport): string {
   const lines = [
-    `AgentRail operator live gates ${report.allGatesClear ? "clear" : "blocked"}`,
+    `Vallum operator live gates ${report.allGatesClear ? "clear" : "blocked"}`,
     `allGatesClear=${report.allGatesClear}`,
     `localOnly=${report.localOnly}`,
   ];
@@ -224,8 +224,8 @@ function mapProductCheckToGate(check: ProductEvidenceCheck): OperatorLiveGate {
 function commandForGate(check: ProductEvidenceCheck): string | undefined {
   if (check.id === "testnet-sponsored-execute") {
     return check.status === "blocked-live"
-      ? "npm run operator:write-report-template -- --kind testnet-digest --out tmp/agentrail/testnet-digest-report-template.json && npm run execute:testnet-demo"
-      : "npm run operator:write-report-template -- --kind testnet-digest --out tmp/agentrail/testnet-digest-report-template.json && npm run proof:testnet-digest:live -- --report tmp/agentrail/testnet-digest-proof.json";
+      ? "npm run operator:write-report-template -- --kind testnet-digest --out tmp/vallum/testnet-digest-report-template.json && npm run execute:testnet-demo"
+      : "npm run operator:write-report-template -- --kind testnet-digest --out tmp/vallum/testnet-digest-report-template.json && npm run proof:testnet-digest:live -- --report tmp/vallum/testnet-digest-proof.json";
   }
   return GATE_COMMANDS[check.id];
 }

@@ -10,7 +10,7 @@ import {
   checkTestnetReadiness,
   loadEnvFile,
 } from "../apps/policy-gateway-service/src/readiness.js";
-import { createAgentRailClient } from "../packages/sdk/src/index.js";
+import { createVallumClient } from "../packages/sdk/src/index.js";
 import {
   checkGasStationRuntimePreflight,
   type GasStationRuntimeCommandRunner,
@@ -44,7 +44,7 @@ export interface SponsoredExecuteReportInput {
 
 export interface SponsoredExecuteReport {
   readonly schemaVersion: 1;
-  readonly kind: "agentrail.sponsored-testnet-execute-report";
+  readonly kind: "vallum.sponsored-testnet-execute-report";
   readonly result: "passed";
   readonly observedAt: string;
   readonly network: "iota-testnet";
@@ -140,8 +140,8 @@ function readEnv(env: Record<string, string | undefined>, key: string): string |
 }
 
 function gatewayBaseUrl(env: Record<string, string>): string {
-  const host = env.AGENTRAIL_GATEWAY_HOST || "127.0.0.1";
-  const port = env.AGENTRAIL_GATEWAY_PORT || "8787";
+  const host = env.VALLUM_GATEWAY_HOST || "127.0.0.1";
+  const port = env.VALLUM_GATEWAY_PORT || "8787";
   return `http://${host}:${port}`;
 }
 
@@ -233,7 +233,7 @@ export async function checkSponsoredExecutePrerequisites(
       : "Start the local policy gateway with the operator-owned env, then rerun npm run execute:testnet-demo.",
   });
 
-  const reportPath = readEnv(env, "AGENTRAIL_TESTNET_UPSTREAM_REPORT");
+  const reportPath = readEnv(env, "VALLUM_TESTNET_UPSTREAM_REPORT");
   if (!reportPath) {
     checks.push({
       id: "testnet-upstream",
@@ -275,7 +275,7 @@ export async function checkSponsoredExecutePrerequisites(
 export function formatSponsoredExecutePrerequisiteReport(
   report: SponsoredExecutePrerequisiteReport,
 ): string {
-  const lines = [`AgentRail sponsored testnet execute prerequisites ${report.ready ? "ready" : "blocked"}`];
+  const lines = [`Vallum sponsored testnet execute prerequisites ${report.ready ? "ready" : "blocked"}`];
   for (const check of report.checks) {
     lines.push(`${check.ok ? "ok" : "blocked"}: ${check.id}: code=${check.code}`);
     lines.push(`message=${check.message}`);
@@ -297,7 +297,7 @@ export function buildSponsoredExecuteReport(
 ): SponsoredExecuteReport {
   return {
     schemaVersion: 1,
-    kind: "agentrail.sponsored-testnet-execute-report",
+    kind: "vallum.sponsored-testnet-execute-report",
     result: "passed",
     observedAt: now.toISOString(),
     network: "iota-testnet",
@@ -348,12 +348,12 @@ async function main(): Promise<number> {
     }
 
     const rpcUrl = requireEnv(env, "IOTA_RPC_URL");
-    const appKey = requireEnv(env, "AGENTRAIL_DEMO_APP_KEY");
+    const appKey = requireEnv(env, "VALLUM_DEMO_APP_KEY");
     const baseUrl = gatewayBaseUrl(env);
     const iota = new IotaClient({ url: rpcUrl });
     const user = Ed25519Keypair.generate();
     const userAddress = user.toIotaAddress();
-    const agentRail = createAgentRailClient({ baseUrl, apiKey: appKey });
+    const agentRail = createVallumClient({ baseUrl, apiKey: appKey });
 
     console.log("gatewayConfigured=true");
     console.log("iotaRpcConfigured=true");

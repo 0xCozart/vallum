@@ -19,24 +19,24 @@ test("marketplace production proof bundle writes template, plan, and blocked sum
         MARKETPLACE_PRODUCTION_REPORT: "missing-marketplace-report.json",
       },
     });
-    const bundleRaw = await readFile(join(cwd, "tmp/agentrail/marketplace-production-proof-bundle.json"), "utf8");
-    const planRaw = await readFile(join(cwd, "tmp/agentrail/marketplace-production-proof-plan.json"), "utf8");
-    const readinessRaw = await readFile(join(cwd, "tmp/agentrail/marketplace-readiness.json"), "utf8");
-    const templateRaw = await readFile(join(cwd, "tmp/agentrail/marketplace-production-report-template.json"), "utf8");
+    const bundleRaw = await readFile(join(cwd, "tmp/vallum/marketplace-production-proof-bundle.json"), "utf8");
+    const planRaw = await readFile(join(cwd, "tmp/vallum/marketplace-production-proof-plan.json"), "utf8");
+    const readinessRaw = await readFile(join(cwd, "tmp/vallum/marketplace-readiness.json"), "utf8");
+    const templateRaw = await readFile(join(cwd, "tmp/vallum/marketplace-production-report-template.json"), "utf8");
 
-    assert.equal(bundle.kind, "agentrail.marketplace-production-proof-bundle");
+    assert.equal(bundle.kind, "vallum.marketplace-production-proof-bundle");
     assert.equal(bundle.status, "blocked");
     assert.equal(bundle.localProofOk, true);
     assert.equal(bundle.productionReady, false);
     assert.deepEqual(bundle.templateArtifacts, [
       {
         id: "marketplace-production",
-        path: "tmp/agentrail/marketplace-production-report-template.json",
+        path: "tmp/vallum/marketplace-production-report-template.json",
         acceptedReportEnv: "MARKETPLACE_PRODUCTION_REPORT",
       },
     ]);
-    assert.equal(bundle.planArtifact, "tmp/agentrail/marketplace-production-proof-plan.json");
-    assert.equal(bundle.readinessArtifact, "tmp/agentrail/marketplace-readiness.json");
+    assert.equal(bundle.planArtifact, "tmp/vallum/marketplace-production-proof-plan.json");
+    assert.equal(bundle.readinessArtifact, "tmp/vallum/marketplace-readiness.json");
     assert.ok(bundle.blockerCodes.includes("MARKETPLACE_PRODUCTION_REPORT_NOT_FOUND"));
     assert.equal(bundle.readyApprovalCodes.length, 0);
     assert.ok(bundle.requiredOperatorInputs.includes("MARKETPLACE_PRODUCTION_REPORT"));
@@ -46,10 +46,10 @@ test("marketplace production proof bundle writes template, plan, and blocked sum
     assert.equal(bundle.steps.find((step) => step.id === "run-approved-production-marketplace-review")?.contactsMarketplaceSystem, true);
     assert.equal(bundle.steps.find((step) => step.id === "write-marketplace-template")?.contactsMarketplaceSystem, false);
 
-    await assertMode(join(cwd, "tmp/agentrail/marketplace-production-proof-bundle.json"), 0o600);
-    await assertMode(join(cwd, "tmp/agentrail/marketplace-production-proof-plan.json"), 0o600);
-    await assertMode(join(cwd, "tmp/agentrail/marketplace-readiness.json"), 0o600);
-    await assertMode(join(cwd, "tmp/agentrail/marketplace-production-report-template.json"), 0o600);
+    await assertMode(join(cwd, "tmp/vallum/marketplace-production-proof-bundle.json"), 0o600);
+    await assertMode(join(cwd, "tmp/vallum/marketplace-production-proof-plan.json"), 0o600);
+    await assertMode(join(cwd, "tmp/vallum/marketplace-readiness.json"), 0o600);
+    await assertMode(join(cwd, "tmp/vallum/marketplace-production-report-template.json"), 0o600);
 
     const allOutput = `${JSON.stringify(bundle)}\n${bundleRaw}\n${planRaw}\n${readinessRaw}\n${templateRaw}`;
     assert.doesNotMatch(
@@ -74,7 +74,7 @@ test("marketplace production proof bundle is ready for approval when structured 
         MARKETPLACE_PRODUCTION_REPORT: "marketplace-production-report.json",
       },
     });
-    const bundleRaw = await readFile(join(cwd, "tmp/agentrail/marketplace-production-proof-bundle.json"), "utf8");
+    const bundleRaw = await readFile(join(cwd, "tmp/vallum/marketplace-production-proof-bundle.json"), "utf8");
 
     assert.equal(bundle.status, "ready-for-approval");
     assert.equal(bundle.productionReady, true);
@@ -91,7 +91,7 @@ test("marketplace production proof bundle is ready for approval when structured 
 });
 
 async function writeMarketplaceEvidence(): Promise<string> {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-marketplace-proof-bundle-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-marketplace-proof-bundle-"));
   for (const path of [
     "packages/marketplace/src/index.ts",
     "packages/marketplace/src/marketplace.test.ts",
@@ -106,7 +106,7 @@ async function writeMarketplaceEvidence(): Promise<string> {
 
 function completeScripts(): Record<string, string | undefined> {
   return {
-    build: "npm run build -w @sacredlabs/agentrail-marketplace",
+    build: "npm run build -w @vallum/marketplace",
     "smoke:marketplace-read-model": "npm run build && tsx scripts/smoke-marketplace-read-model.ts",
     "verify:local": "npm run smoke:marketplace-read-model",
     "verify:fast": "npm test",
@@ -131,7 +131,7 @@ async function assertMode(path: string, expected: number): Promise<void> {
 function validProductionReport() {
   return {
     schemaVersion: 1,
-    kind: "agentrail.marketplace-production-proof",
+    kind: "vallum.marketplace-production-proof",
     result: "passed",
     observedAt: NOW.toISOString(),
     environment: "testnet",

@@ -2,7 +2,7 @@ import {
   validateAgentTransactionManifest,
   type AgentTransactionManifest,
   type ManifestValidationError,
-} from "@sacredlabs/agentrail-manifest";
+} from "@vallum/manifest";
 import { contractActionAllowed } from "./contractAllowList.js";
 import type { AgentActionPolicy, AgentPolicyDecision } from "./policySchema.js";
 

@@ -27,7 +27,7 @@ export interface IdentityProofBundleStep {
 
 export interface IdentityProofBundle {
   readonly schemaVersion: 1;
-  readonly kind: "agentrail.identity-proof-bundle";
+  readonly kind: "vallum.identity-proof-bundle";
   readonly generatedAt: string;
   readonly status: "blocked" | "ready";
   readonly ready: boolean;
@@ -76,12 +76,12 @@ type MutableCliOptions = {
   -readonly [Key in keyof CliOptions]: CliOptions[Key];
 };
 
-const DEFAULT_OUT_FILE = "tmp/agentrail/identity-proof-bundle.json";
-const DEFAULT_PLAN_OUT_FILE = "tmp/agentrail/live-proof-plan.json";
-const DEFAULT_LIVE_STATUS_OUT_FILE = "tmp/agentrail/live-proof-status.json";
-const DEFAULT_NAMES_TEMPLATE_OUT_FILE = "tmp/agentrail/iota-names-live-report-template.json";
-const DEFAULT_IDENTITY_TEMPLATE_OUT_FILE = "tmp/agentrail/iota-identity-live-report-template.json";
-const DEFAULT_VC_TEMPLATE_OUT_FILE = "tmp/agentrail/vc-validation-live-report-template.json";
+const DEFAULT_OUT_FILE = "tmp/vallum/identity-proof-bundle.json";
+const DEFAULT_PLAN_OUT_FILE = "tmp/vallum/live-proof-plan.json";
+const DEFAULT_LIVE_STATUS_OUT_FILE = "tmp/vallum/live-proof-status.json";
+const DEFAULT_NAMES_TEMPLATE_OUT_FILE = "tmp/vallum/iota-names-live-report-template.json";
+const DEFAULT_IDENTITY_TEMPLATE_OUT_FILE = "tmp/vallum/iota-identity-live-report-template.json";
+const DEFAULT_VC_TEMPLATE_OUT_FILE = "tmp/vallum/vc-validation-live-report-template.json";
 
 const IDENTITY_CHECK_IDS = new Set(["iota-names-live", "iota-identity-live", "vc-validation-live"]);
 
@@ -169,7 +169,7 @@ export async function writeIdentityProofBundle(
   const ready = checks.every((check) => check.status === "ready");
   const bundle: IdentityProofBundle = {
     schemaVersion: 1,
-    kind: "agentrail.identity-proof-bundle",
+    kind: "vallum.identity-proof-bundle",
     generatedAt: now.toISOString(),
     status: ready ? "ready" : "blocked",
     ready,
@@ -242,7 +242,7 @@ function buildSteps(input: {
     },
     {
       id: "run-iota-names-smoke",
-      command: "npm run smoke:iota-names-live -- --report tmp/agentrail/iota-names-live-report.json",
+      command: "npm run smoke:iota-names-live -- --report tmp/vallum/iota-names-live-report.json",
       contactsLiveService: true,
       requiresOperatorApproval: true,
       dependsOn: ["write-iota-names-template"],
@@ -255,7 +255,7 @@ function buildSteps(input: {
     },
     {
       id: "run-iota-identity-smoke",
-      command: "npm run smoke:iota-identity-live -- --report tmp/agentrail/iota-identity-live-report.json",
+      command: "npm run smoke:iota-identity-live -- --report tmp/vallum/iota-identity-live-report.json",
       contactsLiveService: true,
       requiresOperatorApproval: true,
       dependsOn: ["write-iota-identity-template"],
@@ -269,7 +269,7 @@ function buildSteps(input: {
     },
     {
       id: "check-live-proof-status",
-      command: "npm run proof:live-status -- --out tmp/agentrail/live-proof-status.json",
+      command: "npm run proof:live-status -- --out tmp/vallum/live-proof-status.json",
       contactsLiveService: false,
       requiresOperatorApproval: false,
       dependsOn: ["run-iota-names-smoke", "run-iota-identity-smoke", "write-vc-validation-template"],

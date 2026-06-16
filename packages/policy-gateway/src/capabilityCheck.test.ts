@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { validAgentProfileFixture } from "@sacredlabs/agentrail-registry";
+import { validAgentProfileFixture } from "@vallum/registry";
 
 import { evaluateProfileCapabilityPolicy, evaluateResolvedProfileCapabilityPolicy } from "./index.js";
 

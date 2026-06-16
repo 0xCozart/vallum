@@ -10,7 +10,7 @@ import {
 
 const now = new Date("2026-06-10T12:00:00.000Z");
 
-test("AP2 checkout and payment mandates map to an AgentRail manifest", () => {
+test("AP2 checkout and payment mandates map to an Vallum manifest", () => {
   const manifest = mapAP2MandatesToManifest(ap2MandateBundleFixture(), {
     agent: { id: "agent:shopping-buyer" },
     owner: { id: "owner:alice" },

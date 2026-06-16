@@ -18,7 +18,7 @@ export interface A2AStaticHostingReviewCommand {
 
 export interface A2AStaticHostingReview {
   readonly schemaVersion: 1;
-  readonly kind: "agentrail.a2a-static-hosting-review";
+  readonly kind: "vallum.a2a-static-hosting-review";
   readonly generatedAt: string;
   readonly status: "ready-for-public-hosting-review";
   readonly localArtifactsValid: true;
@@ -110,7 +110,7 @@ export async function writeA2AStaticHostingReview(
   });
   const review: A2AStaticHostingReview = {
     schemaVersion: 1,
-    kind: "agentrail.a2a-static-hosting-review",
+    kind: "vallum.a2a-static-hosting-review",
     generatedAt: (options.now ?? new Date()).toISOString(),
     status: "ready-for-public-hosting-review",
     localArtifactsValid: true,

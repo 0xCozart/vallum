@@ -24,7 +24,7 @@ export interface PaymentProviderProofPlanCheck {
 
 export interface PaymentProviderProofPlan {
   readonly schemaVersion: 1;
-  readonly kind: "agentrail.payment-provider-proof-plan";
+  readonly kind: "vallum.payment-provider-proof-plan";
   readonly generatedAt: string;
   readonly localProofOk: boolean;
   readonly liveReady: boolean;
@@ -150,7 +150,7 @@ export function buildPaymentProviderProofPlan(
 
   return {
     schemaVersion: 1,
-    kind: "agentrail.payment-provider-proof-plan",
+    kind: "vallum.payment-provider-proof-plan",
     generatedAt: now.toISOString(),
     localProofOk: report.localProofOk,
     liveReady: report.liveReady,

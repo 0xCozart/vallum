@@ -19,7 +19,7 @@ function event(overrides: Partial<GatewayEvent> = {}): GatewayEvent {
 }
 
 async function withTempDir<T>(fn: (dir: string) => Promise<T>): Promise<T> {
-  const dir = await mkdtemp(join(tmpdir(), "agentrail-usage-store-"));
+  const dir = await mkdtemp(join(tmpdir(), "vallum-usage-store-"));
   try {
     return await fn(dir);
   } finally {

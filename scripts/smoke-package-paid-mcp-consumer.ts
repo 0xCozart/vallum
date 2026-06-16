@@ -24,9 +24,9 @@ export function buildPaidMcpConsumerSmokeSource(): string {
 import assert from "node:assert/strict";
 import { once } from "node:events";
 
-import { AGENT_TRANSACTION_MANIFEST_VERSION } from "@sacredlabs/agentrail-manifest";
-import { createAgentMockGatewayServer } from "@sacredlabs/agentrail-policy-gateway";
-import { callPaidTool } from "@sacredlabs/agentrail-sdk";
+import { AGENT_TRANSACTION_MANIFEST_VERSION } from "@vallum/manifest";
+import { createAgentMockGatewayServer } from "@vallum/policy-gateway";
+import { callPaidTool } from "@vallum/sdk";
 
 const now = new Date("2026-06-15T12:00:00.000Z");
 const buyerAgentId = "agent:package-consumer-paid-tool-buyer";
@@ -243,7 +243,7 @@ export async function runPackagePaidMcpConsumerSmoke(
     return 1;
   }
 
-  const tempRoot = await mkdtemp(join(tmpdir(), "agentrail-package-paid-mcp-consumer-"));
+  const tempRoot = await mkdtemp(join(tmpdir(), "vallum-package-paid-mcp-consumer-"));
   const packDir = join(tempRoot, "packs");
   const consumerDir = join(tempRoot, "consumer");
 

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { after, test } from "node:test";
 
-import { createAgentRailClient, AgentRailPolicyError } from "../../../packages/sdk/src/index.js";
+import { createVallumClient, VallumPolicyError } from "../../../packages/sdk/src/index.js";
 import { createGatewayServer, type GatewayConfig, type GatewayEvent } from "./server.js";
 
 const demoPolicy = {
@@ -99,7 +99,7 @@ function eventText(events: GatewayEvent[]): string {
 test("gateway emits sanitized structured events for reserve and execute success", async () => {
   const fixture = await startGateway();
   after(() => fixture.close());
-  const client = createAgentRailClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+  const client = createVallumClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
 
   const reserve = await client.reserveGas({
     gasBudget: 1,
@@ -126,7 +126,7 @@ test("gateway emits sanitized structured events for reserve and execute success"
   assert.equal(fixture.events[0]?.packageId, "0xDEMO_PACKAGE");
   assert.equal(fixture.events[0]?.functionName, "mint_badge");
   assert.equal(fixture.events[0]?.gasBudget, 1);
-  assert.match(fixture.events[0]?.agentRailTransactionId ?? "", /^agentrail_/);
+  assert.match(fixture.events[0]?.agentRailTransactionId ?? "", /^vallum_/);
   assert.equal(fixture.events[1]?.agentRailTransactionId, reserve.agentRailTransactionId);
   assert.equal(fixture.events[1]?.upstreamReservationId, reserve.reservationId);
 
@@ -140,7 +140,7 @@ test("gateway emits sanitized structured events for reserve and execute success"
 test("gateway emits sanitized rejection events before upstream calls", async () => {
   const fixture = await startGateway();
   after(() => fixture.close());
-  const client = createAgentRailClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+  const client = createVallumClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
 
   await assert.rejects(
     () =>
@@ -150,7 +150,7 @@ test("gateway emits sanitized rejection events before upstream calls", async () 
         packageId: "0xNOT_ALLOWED",
         functionName: "mint_badge",
       }),
-    (error) => error instanceof AgentRailPolicyError && error.reasonCode === "PACKAGE_NOT_ALLOWED",
+    (error) => error instanceof VallumPolicyError && error.reasonCode === "PACKAGE_NOT_ALLOWED",
   );
 
   assert.equal(fixture.upstream.requests.length, 0);
@@ -208,7 +208,7 @@ test("gateway event sink failures do not affect request handling", async () => {
     },
   });
   after(() => fixture.close());
-  const client = createAgentRailClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+  const client = createVallumClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
 
   const reserve = await client.reserveGas({ gasBudget: 1, packageId: "0xDEMO_PACKAGE", functionName: "mint_badge" });
 
@@ -233,7 +233,7 @@ test("gateway event sink rejections do not create unhandled rejections", async (
   after(() => fixture.close());
 
   try {
-    const client = createAgentRailClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+    const client = createVallumClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
     const reserve = await client.reserveGas({ gasBudget: 1, packageId: "0xDEMO_PACKAGE", functionName: "mint_badge" });
     await new Promise((resolve) => setImmediate(resolve));
 
@@ -312,7 +312,7 @@ test("gateway omits unverified execute ids from rejection events", async () => {
 test("gateway sanitizes control characters, C1 controls, and long event metadata strings", async () => {
   const fixture = await startGateway();
   after(() => fixture.close());
-  const client = createAgentRailClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+  const client = createVallumClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
   const walletAddress = `0xWALLET\u0000\u001f\u007f\u0085${"x".repeat(300)}`;
 
   await client.reserveGas({ gasBudget: 1, walletAddress, packageId: "0xDEMO_PACKAGE", functionName: "mint_badge" });
@@ -327,7 +327,7 @@ test("gateway sanitizes control characters, C1 controls, and long event metadata
 test("gateway omits undefined optional event fields", async () => {
   const fixture = await startGateway();
   after(() => fixture.close());
-  const client = createAgentRailClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+  const client = createVallumClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
 
   await client.reserveGas({ gasBudget: 1, packageId: "0xDEMO_PACKAGE", functionName: "mint_badge" });
 

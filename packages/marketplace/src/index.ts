@@ -4,13 +4,13 @@ import {
   defaultContractTemplateRegistry,
   type ContractTemplateMetadata,
   type ContractTemplateRegistry,
-} from "@sacredlabs/agentrail-contracts-metadata";
-import { validManifestFixture, type AgentTransactionManifest } from "@sacredlabs/agentrail-manifest";
+} from "@vallum/contracts-metadata";
+import { validManifestFixture, type AgentTransactionManifest } from "@vallum/manifest";
 import {
   evaluateProfileCapabilityPolicy,
   type AgentCapabilityPolicyDecision,
   type AgentCapabilityRequirement,
-} from "@sacredlabs/agentrail-policy-gateway";
+} from "@vallum/policy-gateway";
 import {
   approveServiceBountyReceipt,
   completeServiceBountyReceipt,
@@ -24,13 +24,13 @@ import {
   type ReputationReceipt,
   type ServiceBountyReceipt,
   type SubscriptionReceipt,
-} from "@sacredlabs/agentrail-receipts";
+} from "@vallum/receipts";
 import {
   validateAgentProfile,
   validAgentProfileFixture,
   type AgentProfile,
   type AgentProfileStatus,
-} from "@sacredlabs/agentrail-registry";
+} from "@vallum/registry";
 
 export type MarketplaceEvidenceLevel = "mock" | "local" | "testnet" | "live";
 export type MarketplaceProfileLabel = AgentProfileStatus | "unverified";

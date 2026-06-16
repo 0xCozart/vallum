@@ -4,18 +4,18 @@ import {
   type AP2ManifestMappingContext,
   type AP2MandateBundle,
   type AgentTransactionManifest,
-} from "@sacredlabs/agentrail-manifest";
+} from "@vallum/manifest";
 import {
   evaluateAgentActionPolicy,
   type AgentActionPolicy,
   type AgentPolicyDecision,
-} from "@sacredlabs/agentrail-policy-gateway";
+} from "@vallum/policy-gateway";
 import {
   createAP2MandateReceiptState,
   redactAP2MandateMetadata,
   type AP2MandateReceiptState,
   type AP2ReceiptBundle,
-} from "@sacredlabs/agentrail-receipts";
+} from "@vallum/receipts";
 
 export type { AP2ManifestMappingContext, AP2MandateBundle, AP2ReceiptBundle };
 

@@ -2,13 +2,13 @@ import assert from "node:assert/strict";
 import { once } from "node:events";
 import type { AddressInfo } from "node:net";
 import { test } from "node:test";
-import { validManifestFixture } from "@sacredlabs/agentrail-manifest";
-import { createAgentMockGatewayServer, type AgentActionPolicy } from "@sacredlabs/agentrail-policy-gateway";
+import { validManifestFixture } from "@vallum/manifest";
+import { createAgentMockGatewayServer, type AgentActionPolicy } from "@vallum/policy-gateway";
 import {
-  createAgentRailClient,
-  AgentRailAuthError,
-  AgentRailError,
-  AgentRailPolicyError,
+  createVallumClient,
+  VallumAuthError,
+  VallumError,
+  VallumPolicyError,
   IotaAgent,
   requestSponsoredAction,
 } from "./index.js";
@@ -37,7 +37,7 @@ test("requestSponsoredAction submits a manifest to the mock gateway and returns 
   });
 
   try {
-    const client = createAgentRailClient({
+    const client = createVallumClient({
       baseUrl: await listen(server),
       apiKey: "test-key",
     });
@@ -63,7 +63,7 @@ test("requestSponsoredAction returns gateway denial as typed data", async () => 
   });
 
   try {
-    const client = createAgentRailClient({
+    const client = createVallumClient({
       baseUrl: await listen(server),
       apiKey: "test-key",
     });
@@ -147,7 +147,7 @@ test("IotaAgent exposes requestSponsoredAction through the gateway", async () =>
 
 test("reserveGas constructs the expected request", async () => {
   const calls: Array<{ url: string; init: RequestInit }> = [];
-  const client = createAgentRailClient({
+  const client = createVallumClient({
     baseUrl: "https://api.example.test///",
     apiKey: "test-key",
     fetchImpl: async (url, init) => {
@@ -185,7 +185,7 @@ test("reserveGas constructs the expected request", async () => {
 });
 
 test("reserveGas still accepts legacy transaction id responses for compatibility", async () => {
-  const client = createAgentRailClient({
+  const client = createVallumClient({
     baseUrl: "https://api.example.test",
     apiKey: "test-key",
     fetchImpl: async () => new Response(JSON.stringify({
@@ -200,7 +200,7 @@ test("reserveGas still accepts legacy transaction id responses for compatibility
 });
 
 test("reserveGas rejects malformed success responses", async () => {
-  const client = createAgentRailClient({
+  const client = createVallumClient({
     baseUrl: "https://api.example.test",
     apiKey: "test-key",
     fetchImpl: async () => new Response(JSON.stringify({ result: {} }), {
@@ -211,13 +211,13 @@ test("reserveGas rejects malformed success responses", async () => {
 
   await assert.rejects(
     () => client.reserveGas({ gasBudget: 100 }),
-    (error) => error instanceof AgentRailError && error.message.includes("result.reservation_id"),
+    (error) => error instanceof VallumError && error.message.includes("result.reservation_id"),
   );
 });
 
 test("simulatePolicy constructs a local policy preflight request", async () => {
   const calls: Array<{ url: string; init: RequestInit }> = [];
-  const client = createAgentRailClient({
+  const client = createVallumClient({
     baseUrl: "https://api.example.test///",
     apiKey: "test-key",
     fetchImpl: async (url, init) => {
@@ -245,7 +245,7 @@ test("simulatePolicy constructs a local policy preflight request", async () => {
 });
 
 test("simulatePolicy returns policy rejections as decision data", async () => {
-  const client = createAgentRailClient({
+  const client = createVallumClient({
     baseUrl: "https://api.example.test",
     apiKey: "test-key",
     fetchImpl: async () => new Response(JSON.stringify({
@@ -265,7 +265,7 @@ test("simulatePolicy returns policy rejections as decision data", async () => {
 });
 
 test("simulatePolicy keeps auth failures as transport errors", async () => {
-  const client = createAgentRailClient({
+  const client = createVallumClient({
     baseUrl: "https://api.example.test",
     apiKey: "test-key",
     fetchImpl: async () => new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -276,12 +276,12 @@ test("simulatePolicy keeps auth failures as transport errors", async () => {
 
   await assert.rejects(
     () => client.simulatePolicy({ gasBudget: 1 }),
-    (error) => error instanceof AgentRailAuthError && error.status === 401,
+    (error) => error instanceof VallumAuthError && error.status === 401,
   );
 });
 
 test("simulatePolicy rejects malformed decision responses", async () => {
-  const client = createAgentRailClient({
+  const client = createVallumClient({
     baseUrl: "https://api.example.test",
     apiKey: "test-key",
     fetchImpl: async () => new Response(JSON.stringify({}), { status: 200, headers: { "Content-Type": "application/json" } }),
@@ -289,13 +289,13 @@ test("simulatePolicy rejects malformed decision responses", async () => {
 
   await assert.rejects(
     () => client.simulatePolicy({ gasBudget: 1 }),
-    (error) => error instanceof AgentRailError && error.message.includes("policy simulation decision"),
+    (error) => error instanceof VallumError && error.message.includes("policy simulation decision"),
   );
 });
 
 test("executeSponsoredTransaction returns transaction digest", async () => {
   const calls: Array<{ url: string; init: RequestInit }> = [];
-  const client = createAgentRailClient({
+  const client = createVallumClient({
     baseUrl: "https://api.example.test",
     apiKey: "test-key",
     fetchImpl: async (url, init) => {
@@ -322,8 +322,8 @@ test("executeSponsoredTransaction returns transaction digest", async () => {
   });
 });
 
-test("auth rejection throws AgentRailAuthError", async () => {
-  const client = createAgentRailClient({
+test("auth rejection throws VallumAuthError", async () => {
+  const client = createVallumClient({
     baseUrl: "https://api.example.test",
     apiKey: "test-key",
     fetchImpl: async () => new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -334,12 +334,12 @@ test("auth rejection throws AgentRailAuthError", async () => {
 
   await assert.rejects(
     () => client.reserveGas({ gasBudget: 100 }),
-    (error) => error instanceof AgentRailAuthError && error.status === 401,
+    (error) => error instanceof VallumAuthError && error.status === 401,
   );
 });
 
-test("policy rejection throws AgentRailPolicyError", async () => {
-  const client = createAgentRailClient({
+test("policy rejection throws VallumPolicyError", async () => {
+  const client = createVallumClient({
     baseUrl: "https://api.example.test",
     apiKey: "test-key",
     fetchImpl: async () => new Response(JSON.stringify({
@@ -350,7 +350,7 @@ test("policy rejection throws AgentRailPolicyError", async () => {
 
   await assert.rejects(
     () => client.reserveGas({ gasBudget: 100 }),
-    (error) => error instanceof AgentRailPolicyError && error.reasonCode === "PACKAGE_NOT_ALLOWED",
+    (error) => error instanceof VallumPolicyError && error.reasonCode === "PACKAGE_NOT_ALLOWED",
   );
 });
 

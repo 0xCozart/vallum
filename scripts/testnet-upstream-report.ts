@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 
-export const TESTNET_UPSTREAM_REPORT_KIND = "agentrail.testnet-upstream-diagnostic" as const;
+export const TESTNET_UPSTREAM_REPORT_KIND = "vallum.testnet-upstream-diagnostic" as const;
 export const TESTNET_UPSTREAM_REPORT_SCHEMA_VERSION = 1 as const;
 
 export interface TestnetUpstreamEndpointCheck {

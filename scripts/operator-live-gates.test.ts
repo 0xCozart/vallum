@@ -14,7 +14,7 @@ import {
 import type { ProductStatusReport } from "./check-product-status.js";
 
 test("operator live gates report current blockers without secret values", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-operator-gates-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-operator-gates-"));
   try {
     await writeFile(join(cwd, "package.json"), JSON.stringify({ scripts: {} }));
     const report = await checkOperatorLiveGates({
@@ -42,7 +42,7 @@ test("operator live gates report current blockers without secret values", async 
     assert.equal(findGate(report, "vc-validation-live").contactsLiveService, true);
     assert.equal(
       findGate(report, "vc-validation-live").command,
-      "npm run live:write-identity-proof-bundle -- --out tmp/agentrail/identity-proof-bundle.json && npm run smoke:iota-identity-live -- --report <ignored-json-path>",
+      "npm run live:write-identity-proof-bundle -- --out tmp/vallum/identity-proof-bundle.json && npm run smoke:iota-identity-live -- --report <ignored-json-path>",
     );
     assert.equal(findGate(report, "testnet-readiness").status, "blocked-config");
     assert.equal(findGate(report, "gas-station-runtime").status, "blocked-config");
@@ -54,48 +54,48 @@ test("operator live gates report current blockers without secret values", async 
     assert.equal(findGate(report, "sponsor-funding").contactsLiveService, true);
     assert.equal(
       findGate(report, "sponsor-funding").command,
-      "npm run sponsor:check-funding -- --report tmp/agentrail/sponsor-funding-report.json",
+      "npm run sponsor:check-funding -- --report tmp/vallum/sponsor-funding-report.json",
     );
     assert.equal(findGate(report, "testnet-upstream").status, "blocked-config");
     assert.equal(
       findGate(report, "testnet-upstream").command,
-      "npm run operator:write-report-template -- --kind testnet-upstream --out tmp/agentrail/testnet-upstream-report-template.json && npm run live:write-proof-plan && npm run diagnose:gas-station -- --report <ignored-json-path>",
+      "npm run operator:write-report-template -- --kind testnet-upstream --out tmp/vallum/testnet-upstream-report-template.json && npm run live:write-proof-plan && npm run diagnose:gas-station -- --report <ignored-json-path>",
     );
     assert.equal(findGate(report, "testnet-sponsored-execute").status, "blocked-config");
     assert.equal(findGate(report, "testnet-sponsored-execute").approvalRequired, true);
     assert.equal(findGate(report, "testnet-sponsored-execute").contactsLiveService, true);
     assert.equal(
       findGate(report, "testnet-sponsored-execute").command,
-      "npm run operator:write-report-template -- --kind testnet-digest --out tmp/agentrail/testnet-digest-report-template.json && npm run execute:testnet-demo",
+      "npm run operator:write-report-template -- --kind testnet-digest --out tmp/vallum/testnet-digest-report-template.json && npm run execute:testnet-demo",
     );
     assert.equal(
       findGate(report, "iota-names-live").command,
-      "npm run live:write-identity-proof-bundle -- --out tmp/agentrail/identity-proof-bundle.json && npm run smoke:iota-names-live -- --report <ignored-json-path>",
+      "npm run live:write-identity-proof-bundle -- --out tmp/vallum/identity-proof-bundle.json && npm run smoke:iota-names-live -- --report <ignored-json-path>",
     );
     assert.equal(
       findGate(report, "iota-identity-live").command,
-      "npm run live:write-identity-proof-bundle -- --out tmp/agentrail/identity-proof-bundle.json && npm run smoke:iota-identity-live -- --report <ignored-json-path>",
+      "npm run live:write-identity-proof-bundle -- --out tmp/vallum/identity-proof-bundle.json && npm run smoke:iota-identity-live -- --report <ignored-json-path>",
     );
     assert.equal(findGate(report, "npm-registry-publication").status, "requires-approval");
     assert.equal(
       findGate(report, "npm-registry-publication").command,
-      "npm run package:write-publication-proof-bundle -- --out tmp/agentrail/package-publication-proof-bundle.json && npm run proof:package-publication-readiness && operator-approved npm publish workflow",
+      "npm run package:write-publication-proof-bundle -- --out tmp/vallum/package-publication-proof-bundle.json && npm run proof:package-publication-readiness && operator-approved npm publish workflow",
     );
     assert.equal(
       findGate(report, "public-a2a-hosting").command,
-      "npm run a2a:write-public-proof-bundle -- --out tmp/agentrail/a2a-public-proof-bundle.json && npm run proof:a2a-public-readiness && npm run smoke:a2a-public-discovery",
+      "npm run a2a:write-public-proof-bundle -- --out tmp/vallum/a2a-public-proof-bundle.json && npm run proof:a2a-public-readiness && npm run smoke:a2a-public-discovery",
     );
     assert.equal(
       findGate(report, "live-payment-provider").command,
-      "npm run payment:write-provider-proof-bundle -- --out tmp/agentrail/payment-provider-proof-bundle.json && npm run proof:payment-provider-readiness",
+      "npm run payment:write-provider-proof-bundle -- --out tmp/vallum/payment-provider-proof-bundle.json && npm run proof:payment-provider-readiness",
     );
     assert.equal(
       findGate(report, "production-marketplace").command,
-      "npm run marketplace:write-production-proof-bundle -- --out tmp/agentrail/marketplace-production-proof-bundle.json && npm run proof:marketplace-readiness && dedicated production marketplace readiness slice",
+      "npm run marketplace:write-production-proof-bundle -- --out tmp/vallum/marketplace-production-proof-bundle.json && npm run proof:marketplace-readiness && dedicated production marketplace readiness slice",
     );
     assert.equal(
       findGate(report, "production-custody").command,
-      "npm run custody:write-production-proof-bundle -- --out tmp/agentrail/custody-production-proof-bundle.json && npm run proof:custody-readiness && dedicated custody/security design slice",
+      "npm run custody:write-production-proof-bundle -- --out tmp/vallum/custody-production-proof-bundle.json && npm run proof:custody-readiness && dedicated custody/security design slice",
     );
     assert.equal(findGate(report, "physical-device-access").status, "deferred-safety");
     assert.doesNotMatch(formatted, /graphql\.testnet\.example|researcher\.demo\.iota|identity\.testnet\.example|profiles\/researcher\.json/);
@@ -168,7 +168,7 @@ test("operator live gates route documented sponsored execute proof to read-only 
   assert.equal(gate.status, "ready-approval");
   assert.equal(gate.approvalRequired, true);
   assert.equal(gate.contactsLiveService, true);
-  assert.equal(gate.command, "npm run operator:write-report-template -- --kind testnet-digest --out tmp/agentrail/testnet-digest-report-template.json && npm run proof:testnet-digest:live -- --report tmp/agentrail/testnet-digest-proof.json");
+  assert.equal(gate.command, "npm run operator:write-report-template -- --kind testnet-digest --out tmp/vallum/testnet-digest-report-template.json && npm run proof:testnet-digest:live -- --report tmp/vallum/testnet-digest-proof.json");
 });
 
 test("operator live gates require approval for configured live endpoint smokes", async () => {
@@ -275,7 +275,7 @@ test("operator live gate artifact reports blockers without configured values", a
   const formatted = formatOperatorLiveGateArtifact(artifact);
 
   assert.equal(artifact.schemaVersion, 1);
-  assert.equal(artifact.kind, "agentrail.operator-live-gate-report");
+  assert.equal(artifact.kind, "vallum.operator-live-gate-report");
   assert.equal(artifact.generatedAt, "2026-06-11T12:00:00.000Z");
   assert.equal(artifact.allGatesClear, false);
   assert.equal(artifact.localOnly, false);
@@ -284,18 +284,18 @@ test("operator live gate artifact reports blockers without configured values", a
   assert.ok(artifact.readyApprovalGateIds.includes("iota-names-live"));
   assert.ok(artifact.approvalRequiredGateIds.includes("iota-names-live"));
   assert.ok(artifact.liveServiceGateIds.includes("iota-names-live"));
-  assert.ok(artifact.gates.some((gate) => gate.command === "npm run live:write-identity-proof-bundle -- --out tmp/agentrail/identity-proof-bundle.json && npm run smoke:iota-names-live -- --report <ignored-json-path>"));
+  assert.ok(artifact.gates.some((gate) => gate.command === "npm run live:write-identity-proof-bundle -- --out tmp/vallum/identity-proof-bundle.json && npm run smoke:iota-names-live -- --report <ignored-json-path>"));
   assert.doesNotMatch(formatted, /graphql\.testnet\.example|researcher\.demo\.iota/);
   assert.doesNotMatch(formatted, /0x1111111111111111111111111111111111111111111111111111111111111111/);
 });
 
 test("operator live gate artifact can be written as a local redacted file", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-operator-artifact-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-operator-artifact-"));
   try {
     const artifact = await writeOperatorLiveGateArtifact({
       cwd,
       now: new Date("2026-06-11T12:00:00.000Z"),
-      outFile: "tmp/agentrail/operator-live-gates.json",
+      outFile: "tmp/vallum/operator-live-gates.json",
       productStatus: productStatusFixture([
         {
           id: "testnet-upstream",
@@ -305,16 +305,16 @@ test("operator live gate artifact can be written as a local redacted file", asyn
         },
       ]),
     });
-    const outFile = join(cwd, "tmp/agentrail/operator-live-gates.json");
+    const outFile = join(cwd, "tmp/vallum/operator-live-gates.json");
     const raw = await readFile(outFile, "utf8");
     const written = JSON.parse(raw) as typeof artifact;
     const mode = (await stat(outFile)).mode & 0o777;
 
     assert.equal(mode, 0o600);
-    assert.equal(written.kind, "agentrail.operator-live-gate-report");
+    assert.equal(written.kind, "vallum.operator-live-gate-report");
     assert.deepEqual(written.blockerCodes, artifact.blockerCodes);
     assert.ok(written.blockerCodes.includes("TESTNET_UPSTREAM_REPORT_FAILED"));
-    assert.doesNotMatch(raw, /tmp\/agentrail\/operator-live-gates\.json/);
+    assert.doesNotMatch(raw, /tmp\/vallum\/operator-live-gates\.json/);
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }

@@ -57,7 +57,7 @@ export interface RoadmapCompletionReport {
 
 export interface RoadmapCompletionArtifact extends RoadmapCompletionReport {
   readonly schemaVersion: 1;
-  readonly kind: "agentrail.roadmap-completion-audit";
+  readonly kind: "vallum.roadmap-completion-audit";
   readonly generatedAt: string;
   readonly blockerCodes: readonly string[];
   readonly blockedProductCheckIds: readonly string[];
@@ -172,7 +172,7 @@ export function buildRoadmapCompletionArtifact(
 ): RoadmapCompletionArtifact {
   return {
     schemaVersion: 1,
-    kind: "agentrail.roadmap-completion-audit",
+    kind: "vallum.roadmap-completion-audit",
     generatedAt: now.toISOString(),
     ...report,
     blockerCodes: firstUnique(report.completionBlockers.map((blocker) => blocker.code)),
@@ -216,7 +216,7 @@ export function formatRoadmapCompletionArtifact(artifact: RoadmapCompletionArtif
 
 export function formatRoadmapCompletionReport(report: RoadmapCompletionReport): string {
   const lines = [
-    `AgentRail roadmap completion ${report.roadmapComplete ? "complete" : "not-complete"}`,
+    `Vallum roadmap completion ${report.roadmapComplete ? "complete" : "not-complete"}`,
     `roadmapComplete=${report.roadmapComplete}`,
     `localProofOk=${report.localProofOk}`,
     `productComplete=${report.productComplete}`,

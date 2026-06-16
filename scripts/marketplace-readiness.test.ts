@@ -37,7 +37,7 @@ test("marketplace readiness reports local proof and missing production report wi
 
   assert.equal(report.localProofOk, true);
   assert.equal(report.productionReady, false);
-  assert.equal(artifact.kind, "agentrail.marketplace-readiness-report");
+  assert.equal(artifact.kind, "vallum.marketplace-readiness-report");
   assert.equal(artifact.localProofOk, true);
   assert.equal(artifact.productionReady, false);
   assert.ok(artifact.provenLocalCheckIds.includes("local-marketplace-read-model-proof"));
@@ -61,9 +61,9 @@ test("marketplace readiness reports local proof and missing production report wi
 });
 
 test("marketplace readiness artifact writer uses restrictive local file permissions", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-marketplace-artifact-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-marketplace-artifact-"));
   try {
-    const outFile = "tmp/agentrail/marketplace-readiness.json";
+    const outFile = "tmp/vallum/marketplace-readiness.json";
     const artifact = await writeMarketplaceReadinessArtifact({
       cwd: repoRoot,
       env: {},
@@ -73,8 +73,8 @@ test("marketplace readiness artifact writer uses restrictive local file permissi
     const written = JSON.parse(await readFile(join(cwd, outFile), "utf8")) as typeof artifact;
     const mode = (await stat(join(cwd, outFile))).mode & 0o777;
 
-    assert.equal(artifact.kind, "agentrail.marketplace-readiness-report");
-    assert.equal(written.kind, "agentrail.marketplace-readiness-report");
+    assert.equal(artifact.kind, "vallum.marketplace-readiness-report");
+    assert.equal(written.kind, "vallum.marketplace-readiness-report");
     assert.equal(written.productionReady, false);
     assert.equal(written.blockerCodes.includes("MARKETPLACE_PRODUCTION_REPORT_MISSING"), true);
     assert.equal(mode, 0o600);
@@ -84,12 +84,12 @@ test("marketplace readiness artifact writer uses restrictive local file permissi
 });
 
 test("marketplace readiness accepts a recent redacted production report", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-marketplace-readiness-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-marketplace-readiness-"));
   try {
     const reportPath = join(cwd, "marketplace-report.json");
     await writeFile(reportPath, JSON.stringify({
       schemaVersion: 1,
-      kind: "agentrail.marketplace-production-proof",
+      kind: "vallum.marketplace-production-proof",
       result: "passed",
       observedAt: "2026-06-11T11:00:00.000Z",
       environment: "testnet",
@@ -116,12 +116,12 @@ test("marketplace readiness accepts a recent redacted production report", async 
 });
 
 test("marketplace readiness rejects unsafe report fields and stale reports", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-marketplace-readiness-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-marketplace-readiness-"));
   try {
     const unsafePath = join(cwd, "unsafe.json");
     await writeFile(unsafePath, JSON.stringify({
       schemaVersion: 1,
-      kind: "agentrail.marketplace-production-proof",
+      kind: "vallum.marketplace-production-proof",
       result: "passed",
       observedAt: "2026-06-11T11:00:00.000Z",
       environment: "testnet",
@@ -131,7 +131,7 @@ test("marketplace readiness rejects unsafe report fields and stale reports", asy
     const stalePath = join(cwd, "stale.json");
     await writeFile(stalePath, JSON.stringify({
       schemaVersion: 1,
-      kind: "agentrail.marketplace-production-proof",
+      kind: "vallum.marketplace-production-proof",
       result: "passed",
       observedAt: "2026-04-01T00:00:00.000Z",
       environment: "testnet",
@@ -140,7 +140,7 @@ test("marketplace readiness rejects unsafe report fields and stale reports", asy
     const unsafeValuePath = join(cwd, "unsafe-value.json");
     await writeFile(unsafeValuePath, JSON.stringify({
       schemaVersion: 1,
-      kind: "agentrail.marketplace-production-proof",
+      kind: "vallum.marketplace-production-proof",
       result: "passed",
       observedAt: "2026-06-11T11:00:00.000Z",
       environment: "testnet",
@@ -182,13 +182,13 @@ test("marketplace readiness rejects unsafe report fields and stale reports", asy
 });
 
 test("marketplace readiness blocks incomplete local script wiring", async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "agentrail-marketplace-readiness-"));
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-marketplace-readiness-"));
   try {
     const report = await checkMarketplaceReadiness({
       cwd,
       env: {},
       scripts: {
-        build: "npm run build -w @sacredlabs/agentrail-marketplace",
+        build: "npm run build -w @vallum/marketplace",
         "smoke:marketplace-read-model": "tsx scripts/smoke-marketplace-read-model.ts",
         "verify:local": "npm run proof:marketplace-readiness",
       },

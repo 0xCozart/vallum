@@ -1,4 +1,4 @@
-/// Minimal AgentRail reputation-receipt state contract.
+/// Minimal Vallum reputation-receipt state contract.
 ///
 /// This MVP records local reputation attestation evidence for completed
 /// interactions. It does not operate a marketplace, verify providers, moderate

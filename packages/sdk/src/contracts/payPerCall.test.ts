@@ -3,8 +3,8 @@ import { once } from "node:events";
 import type { AddressInfo } from "node:net";
 import { test } from "node:test";
 
-import { AGENT_TRANSACTION_MANIFEST_VERSION, type AgentTransactionManifest } from "@sacredlabs/agentrail-manifest";
-import { createAgentMockGatewayServer, type AgentActionPolicy } from "@sacredlabs/agentrail-policy-gateway";
+import { AGENT_TRANSACTION_MANIFEST_VERSION, type AgentTransactionManifest } from "@vallum/manifest";
+import { createAgentMockGatewayServer, type AgentActionPolicy } from "@vallum/policy-gateway";
 import { callPaidTool } from "./payPerCall.js";
 
 const now = new Date("2026-06-10T12:00:00.000Z");

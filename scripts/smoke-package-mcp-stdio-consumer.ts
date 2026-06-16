@@ -15,14 +15,14 @@ import {
 type Runner = (command: string, args: readonly string[], cwd: string) => SpawnSyncReturns<string>;
 
 const REQUIRED_CONSUMER_PACKAGE_NAMES = new Set([
-  "@sacredlabs/agentrail-contracts-metadata",
-  "@sacredlabs/agentrail-manifest",
-  "@sacredlabs/agentrail-mcp-server",
-  "@sacredlabs/agentrail-policy-gateway",
-  "@sacredlabs/agentrail-receipts",
-  "@sacredlabs/agentrail-registry",
-  "@sacredlabs/agentrail-sdk",
-  "@sacredlabs/agentrail-shared-types",
+  "@vallum/contracts-metadata",
+  "@vallum/manifest",
+  "@vallum/mcp-server",
+  "@vallum/policy-gateway",
+  "@vallum/receipts",
+  "@vallum/registry",
+  "@vallum/sdk",
+  "@vallum/shared-types",
 ]);
 
 export interface PackageMcpStdioConsumerSmokeOptions {
@@ -38,14 +38,14 @@ import { once } from "node:events";
 import { access } from "node:fs/promises";
 import { join } from "node:path";
 
-import { validManifestFixture } from "@sacredlabs/agentrail-manifest";
-import { createAgentMockGatewayServer } from "@sacredlabs/agentrail-policy-gateway";
+import { validManifestFixture } from "@vallum/manifest";
+import { createAgentMockGatewayServer } from "@vallum/policy-gateway";
 
 const fakeApiKey = "local-package-mcp-stdio-secret-key";
 const now = new Date("2026-06-10T12:00:00.000Z");
 const binPath = process.platform === "win32"
-  ? join(process.cwd(), "node_modules", ".bin", "agentrail-mcp.cmd")
-  : join(process.cwd(), "node_modules", ".bin", "agentrail-mcp");
+  ? join(process.cwd(), "node_modules", ".bin", "vallum-mcp.cmd")
+  : join(process.cwd(), "node_modules", ".bin", "vallum-mcp");
 
 const gateway = createAgentMockGatewayServer({
   policy: {
@@ -77,7 +77,7 @@ try {
     protocolVersion: "2025-11-25",
     capabilities: {},
     clientInfo: {
-      name: "agentrail-package-mcp-stdio-consumer",
+      name: "vallum-package-mcp-stdio-consumer",
       version: "0.0.0-local",
     },
   });
@@ -128,7 +128,7 @@ try {
     "Package MCP stdio consumer smoke passed",
     "mode=package-consumer",
     "install=local-tarballs",
-    "bin=node_modules/.bin/agentrail-mcp",
+    "bin=node_modules/.bin/mcp",
     "boundary.liveNetwork=false",
     "boundary.route=MCP-stdio->SDK->mock-policy-gateway",
     "approval.approved=true",
@@ -152,9 +152,9 @@ async function startMcpProcess(gatewayBaseUrl) {
     cwd: process.cwd(),
     env: {
       PATH: process.env.PATH ?? "",
-      AGENTRAIL_GATEWAY_URL: gatewayBaseUrl,
-      AGENTRAIL_API_KEY: fakeApiKey,
-      AGENTRAIL_MCP_LOG_LEVEL: "error",
+      VALLUM_GATEWAY_URL: gatewayBaseUrl,
+      VALLUM_API_KEY: fakeApiKey,
+      VALLUM_MCP_LOG_LEVEL: "error",
     },
     stdio: ["pipe", "pipe", "pipe"],
   });
@@ -292,7 +292,7 @@ export async function runPackageMcpStdioConsumerSmoke(
     return 1;
   }
 
-  const tempRoot = await mkdtemp(join(tmpdir(), "agentrail-package-mcp-stdio-consumer-"));
+  const tempRoot = await mkdtemp(join(tmpdir(), "vallum-package-mcp-stdio-consumer-"));
   const packDir = join(tempRoot, "packs");
   const consumerDir = join(tempRoot, "consumer");
 

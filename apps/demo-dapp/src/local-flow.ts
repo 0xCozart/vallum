@@ -1,7 +1,7 @@
 import type {
   ExecuteSponsoredTransactionResponse,
   ReserveGasResponse,
-} from "@sacredlabs/agentrail-sdk";
+} from "@vallum/sdk";
 
 export const DEMO_PACKAGE_ID = "0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0";
 export const DEMO_FUNCTION_NAME = "mint_badge";
@@ -72,7 +72,7 @@ export async function runDemoGrantFlow(
 
 export function formatDemoGrantFlowResult(result: DemoGrantFlowResult): string {
   return [
-    "AgentRail demo dApp local flow passed",
+    "Vallum demo dApp local flow passed",
     `reservationId=${result.reservationId}`,
     `agentRailTransactionId=${result.agentRailTransactionId}`,
     result.sponsorAddress ? `sponsorAddress=${result.sponsorAddress}` : undefined,

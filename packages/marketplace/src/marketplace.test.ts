@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { defaultContractTemplateRegistry } from "@sacredlabs/agentrail-contracts-metadata";
-import { validManifestFixture } from "@sacredlabs/agentrail-manifest";
+import { defaultContractTemplateRegistry } from "@vallum/contracts-metadata";
+import { validManifestFixture } from "@vallum/manifest";
 import {
   approveServiceBountyReceipt,
   completeServiceBountyReceipt,
@@ -10,8 +10,8 @@ import {
   releaseServiceBountyReceipt,
   sponsorServiceBountyReceipt,
   submitServiceBountyReceipt,
-} from "@sacredlabs/agentrail-receipts";
-import { validAgentProfileFixture } from "@sacredlabs/agentrail-registry";
+} from "@vallum/receipts";
+import { validAgentProfileFixture } from "@vallum/registry";
 
 import {
   createDisputeEvidenceBundle,

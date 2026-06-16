@@ -2,10 +2,10 @@ import { once } from "node:events";
 import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
 
-import { AGENT_TRANSACTION_MANIFEST_VERSION, type AgentTransactionManifest } from "@sacredlabs/agentrail-manifest";
-import { createAgentMockGatewayServer, type AgentActionPolicy, type AgentGatewayEvent } from "@sacredlabs/agentrail-policy-gateway";
-import { completeEscrow, releaseEscrow, submitReceipt, type EscrowReceipt } from "@sacredlabs/agentrail-receipts";
-import { openEscrow, type OpenEscrowResult } from "@sacredlabs/agentrail-sdk";
+import { AGENT_TRANSACTION_MANIFEST_VERSION, type AgentTransactionManifest } from "@vallum/manifest";
+import { createAgentMockGatewayServer, type AgentActionPolicy, type AgentGatewayEvent } from "@vallum/policy-gateway";
+import { completeEscrow, releaseEscrow, submitReceipt, type EscrowReceipt } from "@vallum/receipts";
+import { openEscrow, type OpenEscrowResult } from "@vallum/sdk";
 
 const now = new Date("2026-06-10T12:00:00.000Z");
 const requesterAgentId = "agent:research-buyer";
@@ -107,7 +107,7 @@ export function formatAgentEscrowDemoResult(result: AgentEscrowDemoResult): stri
     : result.denied.sponsoredAction.decision.reasonCode;
 
   return [
-    "AgentRail agent escrow demo passed",
+    "Vallum agent escrow demo passed",
     `approved.agent=${result.approved.receipt.agentId}`,
     `approved.provider=${result.approved.receipt.escrow.providerId}`,
     `approved.status=${result.approved.receipt.status}`,

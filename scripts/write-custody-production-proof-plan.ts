@@ -24,7 +24,7 @@ export interface CustodyProductionProofPlanCheck {
 
 export interface CustodyProductionProofPlan {
   readonly schemaVersion: 1;
-  readonly kind: "agentrail.custody-production-proof-plan";
+  readonly kind: "vallum.custody-production-proof-plan";
   readonly generatedAt: string;
   readonly localProofOk: boolean;
   readonly productionReady: boolean;
@@ -147,7 +147,7 @@ export function buildCustodyProductionProofPlan(
 
   return {
     schemaVersion: 1,
-    kind: "agentrail.custody-production-proof-plan",
+    kind: "vallum.custody-production-proof-plan",
     generatedAt: now.toISOString(),
     localProofOk: report.localProofOk,
     productionReady: report.productionReady,

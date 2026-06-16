@@ -29,7 +29,7 @@ function literalPattern(value: string): RegExp {
 
 test("launch evidence reflects the current public local proof surface", async () => {
   const [proof, readme] = await Promise.all([
-    readDoc("docs/agentrail/launch-readiness-evidence.md"),
+    readDoc("docs/vallum/launch-readiness-evidence.md"),
     readDoc("README.md"),
   ]);
 
@@ -68,13 +68,13 @@ test("testnet attempt log reflects current runtime-ready blocker chain", async (
 test("README is product-first and avoids grant or funding framing", async () => {
   const readme = await readDoc("README.md");
 
-  assert.match(readme, /open-source AgentRail toolkit/);
+  assert.match(readme, /open-source Vallum toolkit/);
   assert.match(readme, /Roadmap/);
   assert.match(readme, /npm run verify:local/);
   assert.match(readme, /Documentation site/);
   assert.match(readme, /npm run docs:build/);
   assert.match(readme, /Agent access/);
-  assert.match(readme, /skills\/agentrail\/SKILL\.md/);
+  assert.match(readme, /skills\/vallum\/SKILL\.md/);
   assert.match(readme, /docs\/agent-guide\.md/);
   assert.doesNotMatch(readme, /\bgrant\b|\bGrant\b|\bmilestone\b|\bMilestone\b/);
   assert.doesNotMatch(readme, /\$39,000|\$49,000|Tier 2|funded|funding/);
@@ -96,12 +96,12 @@ test("docs hosting source list includes best-practices and reviewer paths", asyn
     "docs/examples.md",
     "docs/agent-guide.md",
     "docs/reviewer-walkthrough.md",
-    "docs/agentrail/testnet-digest-proof.md",
-    "docs/agentrail/a2a-public-readiness.md",
-    "docs/agentrail/verification-profiles.md",
-    "docs/agentrail/product-status.md",
-    "docs/agentrail/launch-readiness-evidence.md",
-    "docs/agentrail/operator-live-gates.md",
+    "docs/vallum/testnet-digest-proof.md",
+    "docs/vallum/a2a-public-readiness.md",
+    "docs/vallum/verification-profiles.md",
+    "docs/vallum/product-status.md",
+    "docs/vallum/launch-readiness-evidence.md",
+    "docs/vallum/operator-live-gates.md",
     "docs/security/sponsor-wallet.md",
     "docs/security/secrets.md",
   ]) {
@@ -117,7 +117,7 @@ test("docs hosting source list includes best-practices and reviewer paths", asyn
 });
 
 test("operator live-gates docs list every report template kind", async () => {
-  const docs = await readDoc("docs/agentrail/operator-live-gates.md");
+  const docs = await readDoc("docs/vallum/operator-live-gates.md");
 
   for (const kind of [
     "testnet-upstream",
@@ -137,7 +137,7 @@ test("operator live-gates docs list every report template kind", async () => {
     assert.match(docs, literalPattern(`npm run operator:write-report-template -- --kind ${kind}`));
   }
 
-  assert.match(docs, /AGENTRAIL_TESTNET_DIGEST_REPORT/);
+  assert.match(docs, /VALLUM_TESTNET_DIGEST_REPORT/);
   assert.match(docs, /IOTA Names and IOTA Identity report kinds/);
   assert.match(docs, /trust-policy configuration/);
   assert.match(docs, /result=pending-operator-proof/);
@@ -161,17 +161,17 @@ test("hosted docs exclude internal planning and handoff sources", async () => {
     "docs/**/*-goal-*.md",
     "docs/**/*-audit-*.md",
     "docs/**/*-evidence-local.md",
-    "docs/agentrail/codex-active-goal.md",
-    "docs/agentrail/codex-execution-prompt.md",
-    "docs/agentrail/end-to-end-goal.md",
-    "docs/agentrail/full-roadmap-execution-goal.md",
-    "docs/agentrail/handoff-next-product-build.md",
-    "docs/agentrail/local-dirty-work-review.md",
-    "docs/agentrail/planning-structure-audit.md",
-    "docs/agentrail/source-thesis.md",
-    "docs/agentrail/module-specs.md",
-    "docs/agentrail/external-api-notes.md",
-    "docs/agentrail/prds/",
+    "docs/vallum/codex-active-goal.md",
+    "docs/vallum/codex-execution-prompt.md",
+    "docs/vallum/end-to-end-goal.md",
+    "docs/vallum/full-roadmap-execution-goal.md",
+    "docs/vallum/handoff-next-product-build.md",
+    "docs/vallum/local-dirty-work-review.md",
+    "docs/vallum/planning-structure-audit.md",
+    "docs/vallum/source-thesis.md",
+    "docs/vallum/module-specs.md",
+    "docs/vallum/external-api-notes.md",
+    "docs/vallum/prds/",
     "docs/grant-application.md",
     "docs/grant-scope.md",
     "docs/managed-service-roadmap.md",
@@ -192,12 +192,12 @@ test("public docs include concrete integration code examples", async () => {
   const [examples, sdk] = await Promise.all([readDoc("docs/examples.md"), readDoc("docs/sdk.md")]);
 
   for (const expected of [
-    "createAgentRailClient",
+    "createVallumClient",
     "simulatePolicy",
     "reserveGas",
     "executeSponsoredTransaction",
-    "app/api/agentrail/reserve/route.ts",
-    'fetch("/api/agentrail/reserve"',
+    "app/api/vallum/reserve/route.ts",
+    'fetch("/api/vallum/reserve"',
     "curl -i",
     "allowed_packages",
     "examples/node-backend",
@@ -218,7 +218,7 @@ test("docs site shell includes a persistent dark-mode toggle", async () => {
   ]);
 
   assert.match(builder, /data-theme-toggle/);
-  assert.match(builder, /agentrail-docs-theme/);
+  assert.match(builder, /vallum-docs-theme/);
   assert.match(builder, /prefers-color-scheme: dark/);
   assert.match(builder, /localStorage\.setItem\(key, theme\)/);
   assert.match(styles, /\[data-theme="dark"\]/);
@@ -227,16 +227,16 @@ test("docs site shell includes a persistent dark-mode toggle", async () => {
   assert.match(styles, /\.theme-toggle-thumb/);
 });
 
-test("repo ships a AgentRail agent skill with safety and navigation boundaries", async () => {
+test("repo ships a Vallum agent skill with safety and navigation boundaries", async () => {
   const [skill, openai, guide, config] = await Promise.all([
-    readDoc("skills/agentrail/SKILL.md"),
-    readDoc("skills/agentrail/agents/openai.yaml"),
+    readDoc("skills/vallum/SKILL.md"),
+    readDoc("skills/vallum/agents/openai.yaml"),
     readDoc("docs/agent-guide.md"),
     readDoc("apps/docs-site/docs.config.mjs"),
   ]);
 
-  assert.match(skill, /^---\nname: agentrail\n/m);
-  assert.match(skill, /Use when working in the agentrail repo or integrating AgentRail/);
+  assert.match(skill, /^---\nname: vallum\n/m);
+  assert.match(skill, /Use when working in the vallum repo or integrating Vallum/);
   assert.match(skill, /Required Startup/);
   assert.match(skill, /Source Map/);
   assert.match(skill, /Safety Boundaries/);
@@ -246,9 +246,9 @@ test("repo ships a AgentRail agent skill with safety and navigation boundaries",
   assert.match(skill, /npm run execute:testnet-demo/);
   assert.match(skill, /Keep `GAS_STATION_AUTH` and `GAS_STATION_BEARER_TOKEN` distinct/);
   assert.match(skill, /Run live commands.*only when the user explicitly asks/s);
-  assert.match(openai, /display_name: "AgentRail"/);
-  assert.match(openai, /default_prompt: "Use \$agentrail/);
-  assert.match(guide, /skills\/agentrail\/SKILL\.md/);
+  assert.match(openai, /display_name: "Vallum"/);
+  assert.match(openai, /default_prompt: "Use \$vallum/);
+  assert.match(guide, /skills\/vallum\/SKILL\.md/);
   assert.match(guide, /The skill is not an MCP server/);
   assert.match(config, /docs\/agent-guide\.md/);
 });
@@ -263,7 +263,7 @@ test("hosted public docs avoid internal milestone framing in operator paths", as
 
   assert.match(concepts, /IOTA in Plain English/);
   assert.match(concepts, /Sponsored gas means the user still approves the action/);
-  assert.match(concepts, /Where AgentRail Fits/);
+  assert.match(concepts, /Where Vallum Fits/);
   assert.match(concepts, /Terms You Will See/);
   assert.match(concepts, /IOTA Gas Station is the lower-level sponsored-transaction component/);
   assert.match(overview, /What Exists Today/);
@@ -325,7 +325,7 @@ test("reviewer walkthrough points reviewers at runnable local proof paths", asyn
     "examples/nextjs-api-route/README.md",
     "docs/observability.md",
     "docs/testnet-readiness.md",
-    "docs/agentrail/package-release-strategy.md",
+    "docs/vallum/package-release-strategy.md",
   ]) {
     assert.match(walkthrough, literalPattern(path));
   }
