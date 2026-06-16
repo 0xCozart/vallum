@@ -26,9 +26,10 @@ and routes tool calls through the AgentRail SDK and policy gateway. It does not
 directly call IOTA, Gas Station, or transaction submission APIs.
 
 The already-published `0.0.0-prerelease` package predates this runnable bin.
-The reviewed source version for the runnable MCP package is `0.0.1-mcp.0`.
-Treat npm registry availability for `agentrail-mcp` as unproven until that
-version is published and verified from the registry.
+The runnable MCP package is published as
+`@sacredlabs/agentrail-mcp-server@0.0.1-mcp.0` on the npm `next` dist-tag.
+Registry install plus local stdio execution is covered by
+`npm run smoke:npm-registry-mcp-stdio-consumer`.
 
 ## Usage
 

@@ -70,9 +70,8 @@ proofs:
 - `npm run smoke:npm-registry-paid-mcp-consumer` for a fresh temporary
   consumer that installs the published npm packages from the registry and
   writes `tmp/agentrail/npm-registry-consumer-proof.json`.
-- `npm run smoke:npm-registry-mcp-stdio-consumer` after the runnable MCP
-  version is published, to prove npm install plus `agentrail-mcp` startup from
-  `node_modules/.bin`.
+- `npm run smoke:npm-registry-mcp-stdio-consumer` to prove npm install plus
+  `agentrail-mcp` startup from `node_modules/.bin`.
 
 Run the opt-in local tarball consumer smoke from the repo root:
 
@@ -102,9 +101,8 @@ Expected result: the command builds the workspace, packs every public
 workspace package, installs those tarballs into a fresh temporary consumer,
 starts `node_modules/.bin/agentrail-mcp`, lists AgentRail tools, and calls
 approval, denial, and invalid-input paths against a loopback mock gateway.
-This proves local package-bin behavior only; registry availability for the new
-MCP bin still requires publishing the selected MCP package version and running
-registry smoke against that published package.
+This proves local package-bin behavior only. The published registry path is
+proved separately by the npm registry MCP stdio consumer smoke.
 
 The registry consumer proof is also opt-in because it contacts npm:
 
@@ -117,8 +115,7 @@ Expected result: the command installs all 11 published
 same paid MCP-style approval, denial, failed-payment, receipt, and redaction
 checks, and writes a redacted mode-600 local proof packet.
 
-After publishing a runnable MCP server version, prove the npm registry MCP
-stdio path separately:
+Prove the npm registry MCP stdio path separately:
 
 ```bash
 npm run smoke:npm-registry-mcp-stdio-consumer

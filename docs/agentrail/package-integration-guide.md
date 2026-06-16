@@ -55,7 +55,7 @@ AgentRail dependencies automatically.
 | User | Install | Use this for |
 | --- | --- | --- |
 | App/backend developer | `@sacredlabs/agentrail-sdk@next` | Calling an AgentRail-compatible gateway from backend code. |
-| Agent runtime integrator | `@sacredlabs/agentrail-sdk@next` for backend/tool-host code; `@sacredlabs/agentrail-mcp-server@next` after the next MCP package publish for stdio MCP hosts | Building an agent integration that still routes through policy and manifests. |
+| Agent runtime integrator | `@sacredlabs/agentrail-sdk@next` for backend/tool-host code; `@sacredlabs/agentrail-mcp-server@next` for stdio MCP hosts | Building an agent integration that still routes through policy and manifests. |
 | Policy/gateway operator | `@sacredlabs/agentrail-policy-gateway@next` | Evaluating local sponsorship policy or building a gateway service. |
 | Advanced package consumer | Lower-level packages such as `manifest`, `receipts`, `registry`, `standards`, or `accounts` | Specialized integrations that need direct primitives. |
 
@@ -81,14 +81,15 @@ If you are experimenting with the MCP package:
 npm install @sacredlabs/agentrail-mcp-server@next
 ```
 
-This source tree now builds a stdio CLI bin named `agentrail-mcp` and keeps the
+The MCP package builds a stdio CLI bin named `agentrail-mcp` and keeps the
 programmatic facade. The already-published `0.0.0-prerelease` package predates
-that bin. The reviewed source version for the runnable MCP package is
-`0.0.1-mcp.0`, but registry install proof for the runnable MCP entrypoint
-remains blocked until that version is published and verified from npm.
+that bin. The runnable MCP package is published as
+`@sacredlabs/agentrail-mcp-server@0.0.1-mcp.0` on the npm `next` dist-tag, and
+registry install plus local stdio execution is covered by
+`npm run smoke:npm-registry-mcp-stdio-consumer`.
 
-After that publication, an MCP host can start the server with environment
-configuration owned by the host process:
+An MCP host can start the server with environment configuration owned by the
+host process:
 
 ```bash
 AGENTRAIL_GATEWAY_URL=https://gateway.example.test \
@@ -258,11 +259,10 @@ npm run smoke:package-mcp-stdio-consumer
 
 That command installs local tarballs into a fresh temporary consumer, starts
 `node_modules/.bin/agentrail-mcp`, lists tools, and calls approval, denial, and
-invalid-input paths against a loopback mock gateway. It does not prove registry
-availability until a new package version is published and separately checked.
+invalid-input paths against a loopback mock gateway. It proves local package
+bin behavior only.
 
-After publishing a version that contains the `agentrail-mcp` bin, prove the npm
-registry path with:
+Prove the published npm registry path with:
 
 ```bash
 npm run smoke:npm-registry-mcp-stdio-consumer
@@ -298,7 +298,6 @@ withholding, local tarball MCP stdio bin execution, and redaction markers.
 It does not claim:
 
 - stable package release status;
-- registry availability for the new MCP server binary before the next publish;
 - live IOTA sponsorship from the npm package alone;
 - production payment-provider settlement;
 - production signer custody or KMS integration;

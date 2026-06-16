@@ -15,11 +15,11 @@ monorepo root cannot be accidentally published. Publishable workspace packages
 remain public prerelease packages with `publishConfig.access=public` and
 `publishConfig.tag=next`.
 
-The runnable MCP stdio CLI is prepared as an MCP-package-only prerelease bump:
-`@sacredlabs/agentrail-mcp-server@0.0.1-mcp.0`. The rest of the public
-workspace packages remain on `0.0.0-prerelease`, and the MCP package's
-internal AgentRail dependencies intentionally continue to pin that current
-published prerelease line.
+The runnable MCP stdio CLI is published as an MCP-package-only prerelease bump:
+`@sacredlabs/agentrail-mcp-server@0.0.1-mcp.0` on the npm `next` dist-tag. The
+rest of the public workspace packages remain on `0.0.0-prerelease`, and the
+MCP package's internal AgentRail dependencies intentionally continue to pin
+that current published prerelease line.
 
 ## Why
 
@@ -233,10 +233,13 @@ structured publication report.
 ## Publication Evidence
 
 The `0.0.0-prerelease` package set is published to npm under
-`@sacredlabs/agentrail-*` with the requested `next` tag. npm also currently
-exposes `latest=0.0.0-prerelease`; an attempted `latest` deletion returned
-npm `E400`, so the registry state remains `next` plus `latest` on the
-prerelease version.
+`@sacredlabs/agentrail-*`. npm also currently exposes
+`latest=0.0.0-prerelease`; an attempted `latest` deletion returned npm `E400`,
+so the registry state remains `latest` on the prerelease package set.
+
+The MCP package additionally has a runnable-stdio prerelease:
+`@sacredlabs/agentrail-mcp-server@0.0.1-mcp.0`. Its npm `next` dist-tag points
+to `0.0.1-mcp.0`; its npm `latest` dist-tag remains `0.0.0-prerelease`.
 
 Publication evidence for the current prerelease includes:
 
@@ -247,11 +250,15 @@ Publication evidence for the current prerelease includes:
 - `npm run smoke:npm-registry-mcp-stdio-consumer`
 - `npm run publish:dry-run`
 - real `npm publish --tag next --access public`
-- registry dist-tag proof showing `next=0.0.0-prerelease` and
-  `latest=0.0.0-prerelease` for all 11 public packages
+- registry dist-tag proof showing the MCP package has
+  `next=0.0.1-mcp.0` and `latest=0.0.0-prerelease`;
+- registry dist-tag proof showing the other public packages remain on the
+  current `0.0.0-prerelease` line;
 - registry install/import proof for all 11 public packages
 - redacted npm registry consumer proof at
   `tmp/agentrail/npm-registry-consumer-proof.json`
+- redacted npm registry MCP stdio proof at
+  `tmp/agentrail/npm-registry-mcp-stdio-consumer-proof.json`
 - an ignored local structured report accepted by
   `PACKAGE_PUBLICATION_REPORT=tmp/agentrail/package-publication-report-sacredlabs.json npm run proof:package-publication-readiness`
 
@@ -265,16 +272,16 @@ payment-provider settlement, marketplace production operation, or production
 custody from this package publication. The registry-retained `latest` tag is a
 dist-tag state for the first prerelease package set, not a stable release claim.
 
-## Runnable MCP Package Publication Prep
+## Runnable MCP Package Publication
 
-The source tree now prepares
+The source tree publishes
 `@sacredlabs/agentrail-mcp-server@0.0.1-mcp.0` for the runnable stdio CLI. This
 is not a coordinated workspace version bump because the CLI/bin transport
 change is isolated to the MCP adapter package, while the SDK, gateway,
 manifest, registry, receipt, and shared-type packages keep the already
 published `0.0.0-prerelease` API line.
 
-Before claiming npm availability for `agentrail-mcp`, operators must prove the
+Before claiming npm availability for `agentrail-mcp`, operators proved the
 selected package metadata without publishing:
 
 ```bash
@@ -288,11 +295,19 @@ must not be treated as proof of npm account ownership, package-name
 availability, 2FA readiness, provenance signing, registry authorization, or
 successful real publication.
 
-Real publication of `@sacredlabs/agentrail-mcp-server@0.0.1-mcp.0` remains
-blocked until explicit owner approval, npm registry credentials outside the
-repo, and a fresh release checklist. After publication, registry proof must
-install the newly published MCP version and start `agentrail-mcp` from the npm
-package before docs can claim registry availability for the runnable MCP bin.
+Real publication of `@sacredlabs/agentrail-mcp-server@0.0.1-mcp.0` was
+operator-approved on 2026-06-16 and published to npm with `--access public`
+and `--tag next`. Post-publish registry proof installed the newly published
+MCP version and started `agentrail-mcp` from the npm package with:
+
+```bash
+npm run smoke:npm-registry-mcp-stdio-consumer
+```
+
+That proof covers registry install plus local MCP stdio execution against a
+mock policy gateway. It does not prove live IOTA, production gateway,
+payment-provider settlement, production custody, marketplace operation, or
+public A2A hosting.
 
 Future real `npm publish` runs require explicit operator approval, npm registry
 credentials outside the repo, and a fresh release checklist. `npm pack
