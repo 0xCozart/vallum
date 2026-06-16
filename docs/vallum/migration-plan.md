@@ -1,11 +1,11 @@
-# AgentRail Migration Plan
+# Vallum Migration Plan
 
 Last updated: 2026-06-14.
 
 ## Intent Read
 
 The goal is to stop splitting the product across confusing names and repos.
-IOTA GasKit is the original sponsorship toolkit. AgentRail is the new public
+IOTA GasKit is the original sponsorship toolkit. Vallum is the new public
 identity for the focused agent-safe execution product: sponsored gas plus agent
 accounts, signer references, manifests, identity, contracts, receipts, MCP/A2A
 surfaces, and standards-compatible payments.
@@ -24,9 +24,9 @@ Implementation should stay in this sponsorship toolkit fork, not remain in
 Local fork created for the new direction:
 
 - current local checkout path: `/home/sacred/code/agentic-gaskit`
-- target repo/package slug: `agentrail`
+- target repo/package slug: `vallum`
 - branch: `main`
-- target canonical GitHub repo: `https://github.com/0xCozart/agentrail`
+- target canonical GitHub repo: `https://github.com/0xCozart/vallum`
 - current `origin` before remote rename: `https://github.com/0xCozart/agentic-gaskit.git`
 - upstream source remote: `https://github.com/0xCozart/iota-gaskit`
 - local Git remote state: `upstream` fetches from the source repo and has push
@@ -46,12 +46,12 @@ IOTA GasKit remote as a shortcut.
 
 Use this framing in public docs:
 
-AgentRail is the IOTA-native toolkit for agent-safe sponsored execution:
+Vallum is the IOTA-native toolkit for agent-safe sponsored execution:
 Gas Station sponsorship, policy controls, agent-created wallets, signer
 references, transaction manifests, receipts, contract workflows, and
 standards-compatible agent integrations.
 
-Do not frame AgentRail as:
+Do not frame Vallum as:
 
 - a replacement for the official IOTA Gas Station
 - a generic wallet or custody service
@@ -70,7 +70,7 @@ Status: started in this fork.
 
 Required work:
 
-- Rename top-level docs from "GasKit/Agentic GasKit" to "AgentRail" while
+- Rename top-level docs from "GasKit/Agentic GasKit" to "Vallum" while
   preserving the existing IOTA GasKit sponsorship foundation.
 - Update README, overview, docs site title, and agent guide so the new direction
   is obvious in the first viewport/read.
@@ -80,14 +80,14 @@ Required work:
 
 ### Layer 2: Planning Docs Migration
 
-Status: migrated into `docs/agentrail/`.
+Status: migrated into `docs/vallum/`.
 
 Public product planning surfaces:
 
-- `docs/agentrail/roadmap.md`
-- `docs/agentrail/account-wallet-safety.md`
-- `docs/agentrail/execution-slices.md`
-- `docs/agentrail/verification-hardening.md`
+- `docs/vallum/roadmap.md`
+- `docs/vallum/account-wallet-safety.md`
+- `docs/vallum/execution-slices.md`
+- `docs/vallum/verification-hardening.md`
 
 Private Codex execution prompts, active goals, handoffs, scratch audits, raw
 thesis notes, phase PRDs, module specs, external API notes, grant-era funding
@@ -98,7 +98,7 @@ machine-local or business planning state.
 Required normalization:
 
 - Replace old staging paths with this fork's paths.
-- Separate "current implemented AgentRail" from "Agentic future roadmap."
+- Separate "current implemented Vallum" from "Agentic future roadmap."
 - Mark unimplemented agent packages as roadmap, not current capability.
 - Keep external API notes refreshable before implementation.
 
@@ -133,8 +133,8 @@ First code slices:
 
 Package namespace decision:
 
-- Current prerelease path: use the `@sacredlabs/agentrail-*` workspace package namespace
-  for the renamed public package set while the `@agentrail` npm org scope is
+- Current prerelease path: use the `@vallum/*` workspace package namespace
+  for the renamed public package set while the `@vallum` npm org scope is
   blocked pending support review.
 - Compatibility path: preserve intentional IOTA protocol names and legacy
   response aliases where they are contract or ecosystem terms, but do not keep
@@ -153,12 +153,12 @@ These docs are first-read surfaces and must stay current:
 - `docs/architecture.md`
 - `docs/product-requirements.md`
 - `docs/agent-guide.md`
-- `docs/agentrail/migration-plan.md`
-- `docs/agentrail/roadmap.md`
-- `docs/agentrail/account-wallet-safety.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/migration-plan.md`
+- `docs/vallum/roadmap.md`
+- `docs/vallum/account-wallet-safety.md`
+- `docs/vallum/execution-slices.md`
 - `apps/docs-site/docs.config.mjs`
-- `skills/agentrail/SKILL.md`
+- `skills/vallum/SKILL.md`
 - `AGENTS.md`
 
 Do not edit generated docs output directly. Update Markdown sources and docs
@@ -168,14 +168,14 @@ site config.
 
 - Execution entry doc exists and points first implementation work at
   `packages/accounts`.
-- Docs site title and description use AgentRail direction.
+- Docs site title and description use Vallum direction.
 - Docs site includes migration, roadmap, wallet safety, execution slices, and
   hardening pages.
 - `package.json` top-level name/description reflect the fork direction.
 - Package namespace rename has been executed in one isolated slice.
 - Current package release strategy is documented in
-  `docs/agentrail/package-release-strategy.md`.
-- `apex.workflow.json` is expanded into a reviewed AgentRail profile with
+  `docs/vallum/package-release-strategy.md`.
+- `apex.workflow.json` is expanded into a reviewed Vallum profile with
   no unresolved setup review items, confirmed authority/orientation paths,
   `tracker.provider=none`, `codeIntelligence.provider=focused-search`, no
   browser adapter, ignored local manifests under `tmp/apex-workflow`, and
@@ -184,7 +184,7 @@ site config.
 - `AGENTS.md` and `CLAUDE.md` treat the Apex profile as present but require
   profile validation plus current-slice manifest/detect evidence before any
   Apex verification claim.
-- Skill docs describe both the legacy IOTA GasKit foundation and AgentRail
+- Skill docs describe both the legacy IOTA GasKit foundation and Vallum
   work.
 - Verification commands are listed in README and agent guide.
 - Remote URL and branch policy are explicit before publishing.
@@ -230,11 +230,11 @@ compatibility.
 
 ## Acceptance Criteria
 
-- A future agent starting from this fork can identify it as the AgentRail
+- A future agent starting from this fork can identify it as the Vallum
   implementation path.
-- The migrated planning docs are present under `docs/agentrail/`.
+- The migrated planning docs are present under `docs/vallum/`.
 - The docs site links to the migration and wallet safety docs.
-- Existing AgentRail sponsorship capabilities are preserved as foundation, not
+- Existing Vallum sponsorship capabilities are preserved as foundation, not
   overwritten by unimplemented claims.
 - The migration plan names package namespace, remote publishing, Apex/profile,
   and wallet custody decisions as explicit gates.
@@ -243,7 +243,7 @@ compatibility.
 ## Remaining Decisions Before Push
 
 - Future public package namespace: whether to migrate from
-  `@sacredlabs/agentrail-*` to `@agentrail/*` after npm support approves the
+  `@vallum/*` to `@vallum/*` after npm support approves the
   org scope.
 - Whether `/home/sacred/code/agents` should be archived, left as staging, or
   updated with a hard pointer to this fork.

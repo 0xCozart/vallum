@@ -9,7 +9,7 @@ requires a small supporting change.
 Global slice rules:
 
 - Start each slice by reading the owning public roadmap/status section and
-  `docs/agentrail/verification-hardening.md`.
+  `docs/vallum/verification-hardening.md`.
 - Run `git status --short --branch` before editing and preserve unrelated work.
 - Refresh current official provider documentation before any slice that touches IOTA,
   MCP, x402, AP2, A2A, package names, adapter interfaces, or protocol fields.
@@ -97,34 +97,34 @@ Escalation triggers:
 
 - Official docs contradict phase PRD assumptions.
 
-## Slice 0.3: Existing AgentRail Integration Map
+## Slice 0.3: Existing Vallum Integration Map
 
 User-visible outcome:
-Future implementation agents know which existing AgentRail surfaces to reuse
+Future implementation agents know which existing Vallum surfaces to reuse
 instead of rebuilding sponsorship infrastructure in this repo.
 
 Likely files:
 
 - `docs/CODEBASE_MAP.md`
-- `docs/agentrail/roadmap.md`
-- `docs/agentrail/account-wallet-safety.md`
+- `docs/vallum/roadmap.md`
+- `docs/vallum/account-wallet-safety.md`
 - current official provider documentation
 
 Acceptance criteria:
 
-- The current fork documents existing AgentRail sponsorship behavior as the
+- The current fork documents existing Vallum sponsorship behavior as the
   foundation.
 - Reusable existing surfaces are named: SDK, policy gateway, Gas Station
   boundary, app credentials, quotas, observability, testnet readiness,
   sponsor-wallet safety, and secret hygiene.
-- AgentRail-specific surfaces are separated: manifests, agent wallets,
+- Vallum-specific surfaces are separated: manifests, agent wallets,
   profiles, MCP/A2A, contracts, receipts, and standards bridges.
 - Any duplicated gateway/SDK behavior requires an explicit migration or adapter
   reason.
 
 Verification:
 
-- Bounded read of existing AgentRail README, product docs, security docs, and
+- Bounded read of existing Vallum README, product docs, security docs, and
   local skill.
 - `git status --short --branch` in this fork, preserving unrelated dirty work.
 - Docs check.
@@ -138,7 +138,7 @@ Medium. Without this slice, agents may rebuild the wrong product.
 Escalation triggers:
 
 - User decides to replace this fork with a different remote or branch strategy.
-- Existing AgentRail APIs are incompatible with the agent-layer requirements.
+- Existing Vallum APIs are incompatible with the agent-layer requirements.
 
 ## Slice 1.0: Agent Account And Wallet Manager Contract
 
@@ -152,7 +152,7 @@ Likely files:
 - `packages/sdk/src/accounts/`
 - `packages/mcp-server/src/tools.ts`
 - `packages/registry/src/profileSchema.ts`
-- `docs/agentrail/account-wallet-safety.md`
+- `docs/vallum/account-wallet-safety.md`
 
 Acceptance criteria:
 
@@ -166,7 +166,7 @@ Acceptance criteria:
   default.
 - Agent-created wallets can be bound to profile metadata.
 - SDK/MCP value-bearing use still routes through policy gateway.
-- Humans/operators can fund agent wallets directly or through AgentRail-controlled
+- Humans/operators can fund agent wallets directly or through Vallum-controlled
   sponsorship without granting unrestricted signing authority.
 
 Verification:
@@ -206,10 +206,10 @@ Likely files:
 - `scripts/check-operator-live-gates.ts`
 - `scripts/package-scripts.test.ts`
 - `scripts/product-status.test.ts`
-- `docs/agentrail/account-wallet-safety.md`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
-- `docs/agentrail/operator-live-gates.md`
+- `docs/vallum/account-wallet-safety.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
+- `docs/vallum/operator-live-gates.md`
 - `docs/CODEBASE_MAP.md`
 - `docs/overview.md`
 - `package.json`
@@ -280,10 +280,10 @@ Likely files:
 - `scripts/package-scripts.test.ts`
 - `scripts/operator-live-gates.test.ts`
 - `scripts/launch-readiness.test.ts`
-- `docs/agentrail/account-wallet-safety.md`
-- `docs/agentrail/operator-live-gates.md`
-- `docs/agentrail/launch-readiness-evidence.md`
-- `docs/agentrail/product-status.md`
+- `docs/vallum/account-wallet-safety.md`
+- `docs/vallum/operator-live-gates.md`
+- `docs/vallum/launch-readiness-evidence.md`
+- `docs/vallum/product-status.md`
 - `docs/CODEBASE_MAP.md`
 - `package.json`
 
@@ -310,7 +310,7 @@ Verification:
 - Focused custody-readiness, package-script, operator-gate, product-status,
   and launch-readiness tests.
 - `npm run custody:write-production-proof-plan -- --out
-  tmp/agentrail/custody-production-proof-plan.json`.
+  tmp/vallum/custody-production-proof-plan.json`.
 - `npm run proof:custody-readiness`.
 - `npm run proof:operator-gates`.
 - `npm run proof:product-status`.
@@ -782,7 +782,7 @@ Likely files:
 - `scripts/check-live-proof-status.ts`
 - `scripts/live-proof-status.test.ts`
 - `scripts/package-scripts.test.ts`
-- `docs/agentrail/live-proof-status.md`
+- `docs/vallum/live-proof-status.md`
 - `package.json`
 
 Acceptance criteria:
@@ -835,7 +835,7 @@ Likely files:
 - `packages/registry/src/iotaIdentityAdapter.test.ts`
 - `scripts/check-live-proof-status.ts`
 - `scripts/live-proof-status.test.ts`
-- `docs/agentrail/live-proof-status.md`
+- `docs/vallum/live-proof-status.md`
 
 Acceptance criteria:
 
@@ -892,7 +892,7 @@ Likely files:
 - `scripts/check-live-proof-status.ts`
 - `scripts/live-proof-status.test.ts`
 - `scripts/package-scripts.test.ts`
-- `docs/agentrail/live-proof-status.md`
+- `docs/vallum/live-proof-status.md`
 - `package.json`
 
 Acceptance criteria:
@@ -952,9 +952,9 @@ Likely files:
 - `scripts/package-scripts.test.ts`
 - `scripts/operator-live-gates.test.ts`
 - `scripts/launch-readiness.test.ts`
-- `docs/agentrail/live-proof-status.md`
-- `docs/agentrail/operator-live-gates.md`
-- `docs/agentrail/launch-readiness-evidence.md`
+- `docs/vallum/live-proof-status.md`
+- `docs/vallum/operator-live-gates.md`
+- `docs/vallum/launch-readiness-evidence.md`
 - `docs/CODEBASE_MAP.md`
 - `package.json`
 
@@ -980,7 +980,7 @@ Verification:
 - Focused live proof plan tests.
 - Focused live proof status, package-script, operator-gate, product-status, and
   launch-readiness tests.
-- `npm run live:write-proof-plan -- --out tmp/agentrail/live-proof-plan.json`.
+- `npm run live:write-proof-plan -- --out tmp/vallum/live-proof-plan.json`.
 - `npm run proof:operator-gates`.
 - `npm run proof:product-status`.
 - `npm run proof:launch-readiness`.
@@ -1274,7 +1274,7 @@ hardware.
 
 Likely files:
 
-- `docs/agentrail/device-access-safety-gate.md`
+- `docs/vallum/device-access-safety-gate.md`
 - `docs/marketplace-readiness.md`
 - `scripts/roadmap-safety.test.ts`
 
@@ -1317,7 +1317,7 @@ Escalation triggers:
 ## Slice 4.1: x402 Mapping
 
 User-visible outcome:
-x402 payment requirements can become AgentRail manifests and receipts.
+x402 payment requirements can become Vallum manifests and receipts.
 
 Likely files:
 
@@ -1452,8 +1452,8 @@ Escalation triggers:
 ## Slice 4.5: A2A Task And Message Local Operations
 
 User-visible outcome:
-AgentRail can model local/mock A2A task and message operations using
-current A2A task semantics while binding task initiation to AgentRail
+Vallum can model local/mock A2A task and message operations using
+current A2A task semantics while binding task initiation to Vallum
 manifest and policy metadata.
 
 Likely files:
@@ -1499,7 +1499,7 @@ Escalation triggers:
 ## Slice 4.6: A2A Local HTTP Boundary
 
 User-visible outcome:
-AgentRail can expose local/mock A2A Agent Card discovery and task/message
+Vallum can expose local/mock A2A Agent Card discovery and task/message
 operations through a deterministic HTTP-shaped handler with explicit bearer
 authentication for task routes.
 
@@ -1552,7 +1552,7 @@ Escalation triggers:
 ## Slice 4.7: A2A Signed Agent Card Local Proof
 
 User-visible outcome:
-AgentRail can sign and verify local A2A Agent Cards using a current
+Vallum can sign and verify local A2A Agent Cards using a current
 A2A-shaped JWS signature envelope and canonicalized payload, without claiming
 live public discovery or production provider trust.
 
@@ -1607,7 +1607,7 @@ Escalation triggers:
 ## Slice 4.8: A2A Local Loopback Server Smoke
 
 User-visible outcome:
-AgentRail can run the local A2A discovery and task/message handler behind
+Vallum can run the local A2A discovery and task/message handler behind
 a real loopback HTTP server, proving local server semantics over network
 requests without claiming public hosting, live discovery, or external
 conformance.
@@ -1684,11 +1684,11 @@ Likely files:
 - `scripts/launch-readiness.test.ts`
 - `scripts/operator-live-gates.test.ts`
 - `scripts/reviewer-docs.test.ts`
-- `docs/agentrail/a2a-public-readiness.md`
+- `docs/vallum/a2a-public-readiness.md`
 - current official provider documentation
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
-- `docs/agentrail/operator-live-gates.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
+- `docs/vallum/operator-live-gates.md`
 - `docs/overview.md`
 - `docs/CODEBASE_MAP.md`
 - `apps/docs-site/docs.config.mjs`
@@ -1747,7 +1747,7 @@ Escalation triggers:
 ## Slice 4.10: A2A Local SSE Streaming Gate
 
 User-visible outcome:
-AgentRail's local loopback A2A server can prove SSE task events from
+Vallum's local loopback A2A server can prove SSE task events from
 `POST /message:stream` while keeping public hosting, push notifications,
 production key distribution, and external conformance explicitly blocked.
 
@@ -1760,10 +1760,10 @@ Likely files:
 - `scripts/check-a2a-public-readiness.ts`
 - `scripts/a2a-public-readiness.test.ts`
 - `scripts/check-product-status.ts`
-- `docs/agentrail/a2a-public-readiness.md`
+- `docs/vallum/a2a-public-readiness.md`
 - current official provider documentation
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
 - `docs/overview.md`
 - `docs/CODEBASE_MAP.md`
 - `README.md`
@@ -1821,7 +1821,7 @@ Escalation triggers:
 ## Slice 4.11: A2A Push Notification Config Safety Gate
 
 User-visible outcome:
-AgentRail can locally create, list, read, and delete A2A task push
+Vallum can locally create, list, read, and delete A2A task push
 notification configuration records while refusing webhook credential storage
 and unsafe callback URLs. Webhook delivery remains explicitly unsupported.
 
@@ -1836,10 +1836,10 @@ Likely files:
 - `scripts/a2a-public-readiness.test.ts`
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
-- `docs/agentrail/a2a-public-readiness.md`
+- `docs/vallum/a2a-public-readiness.md`
 - current official provider documentation
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
 - `docs/overview.md`
 - `docs/CODEBASE_MAP.md`
 - `README.md`
@@ -1897,7 +1897,7 @@ Escalation triggers:
 ## Slice 4.12: A2A Authenticated Extended Agent Card Gate
 
 User-visible outcome:
-AgentRail can locally serve an authenticated A2A extended Agent Card at
+Vallum can locally serve an authenticated A2A extended Agent Card at
 `/extendedAgentCard` when configured, while the public Agent Card advertises
 extended-card availability and public A2A hosting/auth/conformance remain
 blocked.
@@ -1912,10 +1912,10 @@ Likely files:
 - `scripts/a2a-public-readiness.test.ts`
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
-- `docs/agentrail/a2a-public-readiness.md`
+- `docs/vallum/a2a-public-readiness.md`
 - current official provider documentation
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
 - `docs/overview.md`
 - `docs/CODEBASE_MAP.md`
 - `README.md`
@@ -1974,7 +1974,7 @@ Escalation triggers:
 ## Slice 4.13: A2A Local Push Delivery Envelope Gate
 
 User-visible outcome:
-AgentRail can locally prove A2A push notification delivery envelopes
+Vallum can locally prove A2A push notification delivery envelopes
 through an injected transport, while public webhook delivery, default outbound
 network calls, production auth, public hosting, and external conformance remain
 blocked.
@@ -1991,10 +1991,10 @@ Likely files:
 - `scripts/a2a-public-readiness.test.ts`
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
-- `docs/agentrail/a2a-public-readiness.md`
+- `docs/vallum/a2a-public-readiness.md`
 - current official provider documentation
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
 - `docs/overview.md`
 - `docs/CODEBASE_MAP.md`
 - `README.md`
@@ -2052,7 +2052,7 @@ Escalation triggers:
 ## Slice 4.14: A2A Push HTTP Transport Safety Gate
 
 User-visible outcome:
-AgentRail has an opt-in A2A push notification HTTP transport helper that
+Vallum has an opt-in A2A push notification HTTP transport helper that
 can be locally tested against mocked `fetch`, while public webhook delivery,
 default outbound delivery, webhook credentials, production auth, public
 hosting, and external conformance remain blocked until operator-approved
@@ -2066,10 +2066,10 @@ Likely files:
 - `scripts/a2a-public-readiness.test.ts`
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
-- `docs/agentrail/a2a-public-readiness.md`
+- `docs/vallum/a2a-public-readiness.md`
 - current official provider documentation
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
 - `docs/overview.md`
 - `docs/CODEBASE_MAP.md`
 - `README.md`
@@ -2126,7 +2126,7 @@ Escalation triggers:
 ## Slice 4.15: A2A Push Delivery Retry Observability Gate
 
 User-visible outcome:
-AgentRail can locally prove retry and delivery-attempt observability for
+Vallum can locally prove retry and delivery-attempt observability for
 A2A push notification delivery through explicitly injected transports, while
 public webhook delivery workers, default outbound delivery, webhook
 credentials, production auth, public hosting, and external conformance remain
@@ -2140,10 +2140,10 @@ Likely files:
 - `scripts/a2a-public-readiness.test.ts`
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
-- `docs/agentrail/a2a-public-readiness.md`
+- `docs/vallum/a2a-public-readiness.md`
 - current official provider documentation
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
 - `docs/overview.md`
 - `docs/CODEBASE_MAP.md`
 - `README.md`
@@ -2195,7 +2195,7 @@ Escalation triggers:
 ## Slice 4.16: A2A Public Push Delivery Evidence Gate
 
 User-visible outcome:
-AgentRail can classify an operator-supplied local public push delivery
+Vallum can classify an operator-supplied local public push delivery
 report path after an approved public webhook proof run, while the default
 checkout remains blocked and no public endpoints are contacted by the readiness
 command.
@@ -2206,10 +2206,10 @@ Likely files:
 - `scripts/a2a-public-readiness.test.ts`
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
-- `docs/agentrail/a2a-public-readiness.md`
+- `docs/vallum/a2a-public-readiness.md`
 - current official provider documentation
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
 - `docs/overview.md`
 - `docs/CODEBASE_MAP.md`
 - `README.md`
@@ -2264,7 +2264,7 @@ Escalation triggers:
 ## Slice 4.17: A2A Public Evidence Report Schema Gate
 
 User-visible outcome:
-AgentRail validates operator-supplied public A2A evidence reports as
+Vallum validates operator-supplied public A2A evidence reports as
 structured JSON review evidence instead of accepting any existing local file.
 
 Likely files:
@@ -2273,10 +2273,10 @@ Likely files:
 - `scripts/a2a-public-readiness.test.ts`
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
-- `docs/agentrail/a2a-public-readiness.md`
+- `docs/vallum/a2a-public-readiness.md`
 - current official provider documentation
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
 - `docs/overview.md`
 - `docs/CODEBASE_MAP.md`
 - `README.md`
@@ -2338,11 +2338,11 @@ Likely files:
 - `scripts/package-scripts.test.ts`
 - `scripts/check-product-status.ts`
 - `scripts/check-operator-live-gates.ts`
-- `docs/agentrail/a2a-public-readiness.md`
+- `docs/vallum/a2a-public-readiness.md`
 - current official provider documentation
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
-- `docs/agentrail/operator-live-gates.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
+- `docs/vallum/operator-live-gates.md`
 - `docs/overview.md`
 - `docs/CODEBASE_MAP.md`
 - `README.md`
@@ -2410,10 +2410,10 @@ Likely files:
 - `scripts/a2a-public-readiness.test.ts`
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
-- `docs/agentrail/a2a-public-readiness.md`
+- `docs/vallum/a2a-public-readiness.md`
 - current official provider documentation
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
 - `docs/overview.md`
 - `docs/CODEBASE_MAP.md`
 - `README.md`
@@ -2478,10 +2478,10 @@ Likely files:
 - `scripts/a2a-public-readiness.test.ts`
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
-- `docs/agentrail/a2a-public-readiness.md`
+- `docs/vallum/a2a-public-readiness.md`
 - current official provider documentation
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
 - `docs/overview.md`
 - `docs/CODEBASE_MAP.md`
 - `README.md`
@@ -2541,10 +2541,10 @@ Likely files:
 - `scripts/a2a-public-readiness.test.ts`
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
-- `docs/agentrail/a2a-public-readiness.md`
+- `docs/vallum/a2a-public-readiness.md`
 - current official provider documentation
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
 - `docs/overview.md`
 - `docs/CODEBASE_MAP.md`
 - `README.md`
@@ -2607,10 +2607,10 @@ Likely files:
 - `scripts/a2a-public-readiness.test.ts`
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
-- `docs/agentrail/a2a-public-readiness.md`
+- `docs/vallum/a2a-public-readiness.md`
 - current official provider documentation
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
 - `docs/overview.md`
 - `docs/CODEBASE_MAP.md`
 - `README.md`
@@ -2675,10 +2675,10 @@ Likely files:
 - `scripts/a2a-public-readiness.test.ts`
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
-- `docs/agentrail/a2a-public-readiness.md`
+- `docs/vallum/a2a-public-readiness.md`
 - current official provider documentation
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
 - `docs/overview.md`
 - `docs/CODEBASE_MAP.md`
 - `README.md`
@@ -2746,10 +2746,10 @@ Likely files:
 - `scripts/a2a-public-readiness.test.ts`
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
-- `docs/agentrail/a2a-public-readiness.md`
+- `docs/vallum/a2a-public-readiness.md`
 - current official provider documentation
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
 - `docs/overview.md`
 - `docs/CODEBASE_MAP.md`
 - `README.md`
@@ -2824,10 +2824,10 @@ Likely files:
 - `scripts/a2a-public-readiness.test.ts`
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
-- `docs/agentrail/a2a-public-readiness.md`
+- `docs/vallum/a2a-public-readiness.md`
 - current official provider documentation
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
 - `docs/overview.md`
 - `docs/CODEBASE_MAP.md`
 - `README.md`
@@ -2899,10 +2899,10 @@ Likely files:
 - `scripts/a2a-public-readiness.test.ts`
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
-- `docs/agentrail/a2a-public-readiness.md`
+- `docs/vallum/a2a-public-readiness.md`
 - current official provider documentation
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
 - `docs/overview.md`
 - `docs/CODEBASE_MAP.md`
 - `README.md`
@@ -2973,9 +2973,9 @@ Likely files:
 - `scripts/a2a-public-readiness.test.ts`
 - `scripts/package-scripts.test.ts`
 - `package.json`
-- `docs/agentrail/a2a-public-readiness.md`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
+- `docs/vallum/a2a-public-readiness.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
 - `docs/overview.md`
 - `docs/CODEBASE_MAP.md`
 - `README.md`
@@ -3048,9 +3048,9 @@ Likely files:
 - `scripts/check-product-status.ts`
 - `scripts/check-launch-readiness.ts`
 - `package.json`
-- `docs/agentrail/a2a-public-readiness.md`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
+- `docs/vallum/a2a-public-readiness.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
 - `docs/overview.md`
 - `docs/CODEBASE_MAP.md`
 - `README.md`
@@ -3127,9 +3127,9 @@ Likely files:
 - `scripts/check-launch-readiness.ts`
 - `scripts/launch-readiness.test.ts`
 - `package.json`
-- `docs/agentrail/a2a-public-readiness.md`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
+- `docs/vallum/a2a-public-readiness.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
 - `docs/overview.md`
 - `docs/CODEBASE_MAP.md`
 - `README.md`
@@ -3203,8 +3203,8 @@ Likely files:
 - `scripts/a2a-public-readiness.test.ts`
 - `scripts/package-scripts.test.ts`
 - `package.json`
-- `docs/agentrail/a2a-public-readiness.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/a2a-public-readiness.md`
+- `docs/vallum/execution-slices.md`
 - `docs/CODEBASE_MAP.md`
 - `docs/overview.md`
 - `README.md`
@@ -3275,10 +3275,10 @@ Likely files:
 - `scripts/payment-provider-readiness.test.ts`
 - `scripts/package-scripts.test.ts`
 - `package.json`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/operator-live-gates.md`
-- `docs/agentrail/launch-readiness-evidence.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/operator-live-gates.md`
+- `docs/vallum/launch-readiness-evidence.md`
+- `docs/vallum/execution-slices.md`
 - `docs/CODEBASE_MAP.md`
 - `docs/overview.md`
 
@@ -3368,7 +3368,7 @@ Escalation triggers:
 ## Slice 5.2: Marketplace Access And Dispute Evidence Read Model
 
 User-visible outcome:
-AgentRail can build a read-only local marketplace evidence view from
+Vallum can build a read-only local marketplace evidence view from
 existing registry profiles, policy compatibility, contract template metadata,
 receipts, manifests, and standards evidence without duplicating those sources
 of truth or enabling production marketplace actions.
@@ -3439,9 +3439,9 @@ Likely files:
 - `scripts/package-scripts.test.ts`
 - `scripts/product-status.test.ts`
 - `docs/marketplace-readiness.md`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
-- `docs/agentrail/operator-live-gates.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
+- `docs/vallum/operator-live-gates.md`
 - `docs/CODEBASE_MAP.md`
 - `docs/overview.md`
 - `package.json`
@@ -3511,9 +3511,9 @@ Likely files:
 - `scripts/operator-live-gates.test.ts`
 - `scripts/launch-readiness.test.ts`
 - `docs/marketplace-readiness.md`
-- `docs/agentrail/operator-live-gates.md`
-- `docs/agentrail/launch-readiness-evidence.md`
-- `docs/agentrail/product-status.md`
+- `docs/vallum/operator-live-gates.md`
+- `docs/vallum/launch-readiness-evidence.md`
+- `docs/vallum/product-status.md`
 - `docs/CODEBASE_MAP.md`
 - `package.json`
 
@@ -3542,7 +3542,7 @@ Verification:
 - Focused marketplace-readiness, package-script, operator-gate,
   product-status, and launch-readiness tests.
 - `npm run marketplace:write-production-proof-plan -- --out
-  tmp/agentrail/marketplace-production-proof-plan.json`.
+  tmp/vallum/marketplace-production-proof-plan.json`.
 - `npm run proof:marketplace-readiness`.
 - `npm run proof:operator-gates`.
 - `npm run proof:product-status`.
@@ -3571,15 +3571,15 @@ Escalation triggers:
 ## Slice 6.1: Package Namespace And Release Metadata Strategy
 
 User-visible outcome:
-AgentRail has a documented package namespace decision and mechanical
+Vallum has a documented package namespace decision and mechanical
 release metadata checks so future package work is installable without mixing a
 namespace migration into security-sensitive wallet, gateway, payment, identity,
 A2A, or marketplace slices.
 
 Likely files:
 
-- `docs/agentrail/package-release-strategy.md`
-- `docs/agentrail/migration-plan.md`
+- `docs/vallum/package-release-strategy.md`
+- `docs/vallum/migration-plan.md`
 - `README.md`
 - `apps/docs-site/docs.config.mjs`
 - `scripts/package-publish.test.ts`
@@ -3587,8 +3587,8 @@ Likely files:
 
 Acceptance criteria:
 
-- The current `@sacredlabs/agentrail-*` namespace decision is documented.
-- Any future migration to `@agentrail/*` is explicitly deferred to a dedicated
+- The current `@vallum/*` namespace decision is documented.
+- Any future migration to `@vallum/*` is explicitly deferred to a dedicated
   compatibility slice after npm support approves the org scope.
 - The monorepo root remains private.
 - Publishable workspace package metadata is consistent for namespace, version,
@@ -3616,7 +3616,7 @@ lockfiles if it is mixed into product feature work.
 
 Escalation triggers:
 
-- Any request to rename packages away from `@sacredlabs/agentrail-*`.
+- Any request to rename packages away from `@vallum/*`.
 - Any request to run real `npm publish`.
 - Any package release requiring registry credentials, provenance, tags,
   changelogs, or downstream compatibility guarantees.
@@ -3634,7 +3634,7 @@ Likely files:
 - `scripts/package-publish-dry-run.test.ts`
 - `scripts/package-publish.test.ts`
 - `scripts/package-scripts.test.ts`
-- `docs/agentrail/package-release-strategy.md`
+- `docs/vallum/package-release-strategy.md`
 - `package.json`
 
 Acceptance criteria:
@@ -3689,8 +3689,8 @@ Likely files:
 - `scripts/package-install-smoke.test.ts`
 - `scripts/package-scripts.test.ts`
 - `scripts/reviewer-docs.test.ts`
-- `docs/agentrail/package-release-strategy.md`
-- `docs/agentrail/launch-readiness-evidence.md`
+- `docs/vallum/package-release-strategy.md`
+- `docs/vallum/launch-readiness-evidence.md`
 - `package.json`
 
 Acceptance criteria:
@@ -3746,10 +3746,10 @@ Likely files:
 - `scripts/check-launch-readiness.ts`
 - `scripts/check-operator-live-gates.ts`
 - `scripts/package-scripts.test.ts`
-- `docs/agentrail/package-release-strategy.md`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
-- `docs/agentrail/operator-live-gates.md`
+- `docs/vallum/package-release-strategy.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
+- `docs/vallum/operator-live-gates.md`
 - `docs/CODEBASE_MAP.md`
 - `package.json`
 
@@ -3813,9 +3813,9 @@ Likely files:
 - `scripts/package-scripts.test.ts`
 - `scripts/operator-live-gates.test.ts`
 - `scripts/launch-readiness.test.ts`
-- `docs/agentrail/package-release-strategy.md`
-- `docs/agentrail/operator-live-gates.md`
-- `docs/agentrail/launch-readiness-evidence.md`
+- `docs/vallum/package-release-strategy.md`
+- `docs/vallum/operator-live-gates.md`
+- `docs/vallum/launch-readiness-evidence.md`
 - `docs/CODEBASE_MAP.md`
 - `package.json`
 
@@ -3842,7 +3842,7 @@ Verification:
 - Focused package-publication readiness, package-script, operator-gate,
   product-status, and launch-readiness tests.
 - `npm run package:write-publication-proof-plan -- --out
-  tmp/agentrail/package-publication-proof-plan.json`.
+  tmp/vallum/package-publication-proof-plan.json`.
 - `npm run proof:package-publication-readiness`.
 - `npm run proof:operator-gates`.
 - `npm run proof:product-status`.
@@ -3872,7 +3872,7 @@ Escalation triggers:
 
 User-visible outcome:
 Operators and future agents have one non-networked command that reports the
-current AgentRail product evidence boundary: local proof gates configured,
+current Vallum product evidence boundary: local proof gates configured,
 live/testnet gates ready or blocked, and production-only claims still blocked
 or safety-gated.
 
@@ -3881,7 +3881,7 @@ Likely files:
 - `scripts/check-product-status.ts`
 - `scripts/product-status.test.ts`
 - `scripts/package-scripts.test.ts`
-- `docs/agentrail/product-status.md`
+- `docs/vallum/product-status.md`
 - `package.json`
 
 Acceptance criteria:
@@ -3942,7 +3942,7 @@ Likely files:
 - `scripts/product-status.test.ts`
 - `scripts/package-scripts.test.ts`
 - `scripts/reviewer-docs.test.ts`
-- `docs/agentrail/launch-readiness-evidence.md`
+- `docs/vallum/launch-readiness-evidence.md`
 - `package.json`
 
 Acceptance criteria:
@@ -4009,9 +4009,9 @@ Likely files:
 - `scripts/check-launch-readiness.ts`
 - `scripts/package-scripts.test.ts`
 - `scripts/reviewer-docs.test.ts`
-- `docs/agentrail/operator-live-gates.md`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
+- `docs/vallum/operator-live-gates.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
 - `package.json`
 
 Acceptance criteria:
@@ -4083,12 +4083,12 @@ Likely files:
 - `scripts/check-launch-readiness.ts`
 - `scripts/package-scripts.test.ts`
 - `scripts/reviewer-docs.test.ts`
-- `docs/agentrail/testnet-digest-proof.md`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
-- `docs/agentrail/operator-live-gates.md`
+- `docs/vallum/testnet-digest-proof.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
+- `docs/vallum/operator-live-gates.md`
 - `docs/testnet-readiness.md`
-- `docs/agentrail/launch-readiness-evidence.md`
+- `docs/vallum/launch-readiness-evidence.md`
 - `docs/reviewer-walkthrough.md`
 - `docs/quickstart.md`
 - `docs/overview.md`
@@ -4162,10 +4162,10 @@ Likely files:
 - `scripts/product-status.test.ts`
 - `scripts/launch-readiness.test.ts`
 - `scripts/reviewer-docs.test.ts`
-- `docs/agentrail/verification-profiles.md`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
-- `docs/agentrail/launch-readiness-evidence.md`
+- `docs/vallum/verification-profiles.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
+- `docs/vallum/launch-readiness-evidence.md`
 - `docs/reviewer-walkthrough.md`
 - `docs/quickstart.md`
 - `docs/overview.md`
@@ -4238,10 +4238,10 @@ Likely files:
 - `scripts/product-status.test.ts`
 - `scripts/launch-readiness.test.ts`
 - `scripts/operator-live-gates.test.ts`
-- `docs/agentrail/live-proof-status.md`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
-- `docs/agentrail/operator-live-gates.md`
+- `docs/vallum/live-proof-status.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
+- `docs/vallum/operator-live-gates.md`
 - `docs/testnet-attempts.md`
 - `docs/CODEBASE_MAP.md`
 
@@ -4270,7 +4270,7 @@ Verification:
   package-script tests.
 - `npm run build`.
 - `npm run diagnose:gas-station -- --skip-reserve --report
-  tmp/agentrail/testnet-upstream-diagnostic.json` on the current machine.
+  tmp/vallum/testnet-upstream-diagnostic.json` on the current machine.
 - `npm run proof:live-status`.
 - `npm run proof:product-status`.
 - `npm run proof:launch-readiness`.
@@ -4382,10 +4382,10 @@ Likely files:
 - `scripts/package-scripts.test.ts`
 - `package.json`
 - `docs/deployment.md`
-- `docs/agentrail/live-proof-status.md`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
-- `docs/agentrail/operator-live-gates.md`
+- `docs/vallum/live-proof-status.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
+- `docs/vallum/operator-live-gates.md`
 - `docs/CODEBASE_MAP.md`
 
 Acceptance criteria:
@@ -4453,10 +4453,10 @@ Likely files:
 - `scripts/package-scripts.test.ts`
 - `package.json`
 - `docs/deployment.md`
-- `docs/agentrail/live-proof-status.md`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/launch-readiness-evidence.md`
-- `docs/agentrail/operator-live-gates.md`
+- `docs/vallum/live-proof-status.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/launch-readiness-evidence.md`
+- `docs/vallum/operator-live-gates.md`
 - `docs/CODEBASE_MAP.md`
 - `README.md`
 
@@ -4529,8 +4529,8 @@ Likely files:
 - `scripts/check-gas-station-runtime-preflight.ts`
 - `scripts/check-gas-station-runtime-preflight.test.ts`
 - `docs/deployment.md`
-- `docs/agentrail/live-proof-status.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/live-proof-status.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -4602,9 +4602,9 @@ Likely files:
 - `.env.example`
 - `docs/testnet-readiness.md`
 - `docs/deployment.md`
-- `docs/agentrail/live-proof-status.md`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/operator-live-gates.md`
+- `docs/vallum/live-proof-status.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/operator-live-gates.md`
 - `docs/CODEBASE_MAP.md`
 - `README.md`
 
@@ -4613,14 +4613,14 @@ Acceptance criteria:
 - `npm run gas-station:runtime-preflight` defaults to `local-docker` and keeps
   the existing local config, Docker client, Docker daemon, Compose, and direct
   Docker fallback checks.
-- Setting `AGENTRAIL_GAS_STATION_RUNTIME_MODE=managed-upstream` makes the
+- Setting `VALLUM_GAS_STATION_RUNTIME_MODE=managed-upstream` makes the
   preflight skip Docker inspection and require only a configured
   `GAS_STATION_URL` without printing its value.
 - Unsupported runtime modes fail closed with an exact blocker code.
 - Managed-upstream mode does not contact the managed Gas Station endpoint,
   does not prove reachability, and does not prove reserve_gas compatibility.
 - `npm run execute:testnet-demo` still requires local testnet readiness,
-  runtime preflight, and a current passing `AGENTRAIL_TESTNET_UPSTREAM_REPORT`
+  runtime preflight, and a current passing `VALLUM_TESTNET_UPSTREAM_REPORT`
   before building/signing a transaction or reserving gas.
 - Product status, live proof status, launch readiness, and operator docs keep
   runtime readiness separate from the `testnet-upstream` gate.
@@ -4629,7 +4629,7 @@ Verification:
 
 - Focused runtime-preflight, live-proof, execute-prerequisite,
   product-status, launch-readiness, operator-gate, and package-script tests.
-- `AGENTRAIL_GAS_STATION_RUNTIME_MODE=managed-upstream npm run
+- `VALLUM_GAS_STATION_RUNTIME_MODE=managed-upstream npm run
   gas-station:runtime-preflight`.
 - `npm run readiness:testnet`.
 - `npm run typecheck`.
@@ -4671,10 +4671,10 @@ Likely files:
 - `scripts/write-operator-report-template.test.ts`
 - `docs/testnet-readiness.md`
 - `docs/deployment.md`
-- `docs/agentrail/live-proof-status.md`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/operator-live-gates.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/live-proof-status.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/operator-live-gates.md`
+- `docs/vallum/execution-slices.md`
 - `docs/CODEBASE_MAP.md`
 
 Acceptance criteria:
@@ -4685,7 +4685,7 @@ Acceptance criteria:
 - The template lists local or managed runtime selection, IOTA RPC JSON-RPC,
   Gas Station root or health, reserve_gas compatibility, and redaction review
   checks.
-- The template names `AGENTRAIL_TESTNET_UPSTREAM_REPORT` and the accepted
+- The template names `VALLUM_TESTNET_UPSTREAM_REPORT` and the accepted
   diagnostic report kind, but it does not have the accepted diagnostic report
   shape and cannot clear the upstream gate.
 - Public docs route operators to the template as planning/checklist evidence
@@ -4698,7 +4698,7 @@ Verification:
 
 - Focused operator-template and upstream-report tests.
 - `npm run operator:write-report-template -- --kind testnet-upstream --out
-  tmp/agentrail/testnet-upstream-report-template.json`.
+  tmp/vallum/testnet-upstream-report-template.json`.
 - `npm run typecheck`.
 - `npm run docs:check`.
 - `npm run secrets:scan`.
@@ -4714,7 +4714,7 @@ Slices 7.7-7.12.
 Risk:
 Low to medium. A checklist template can be mistaken for accepted live proof
 unless the accepted diagnostic report shape remains separate and tests prove
-the template cannot satisfy `AGENTRAIL_TESTNET_UPSTREAM_REPORT`.
+the template cannot satisfy `VALLUM_TESTNET_UPSTREAM_REPORT`.
 
 Escalation triggers:
 
@@ -4740,18 +4740,18 @@ Likely files:
 - `scripts/write-operator-report-template.test.ts`
 - `docs/testnet-readiness.md`
 - `docs/deployment.md`
-- `docs/agentrail/live-proof-status.md`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/operator-live-gates.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/live-proof-status.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/operator-live-gates.md`
+- `docs/vallum/execution-slices.md`
 - `docs/CODEBASE_MAP.md`
 
 Acceptance criteria:
 
 - `npm run gas-station:docker-direct -- --status` inspects only local Docker
   network and container state.
-- The status command reports whether `agentrail-local`, `agentrail-redis`, and
-  `agentrail-gas-station` are present/running.
+- The status command reports whether `vallum-local`, `vallum-redis`, and
+  `vallum-gas-station` are present/running.
 - The status command does not start containers, fetch Gas Station HTTP health,
   contact IOTA RPC, reserve gas, execute a transaction, or print raw Docker
   error output.
@@ -4808,10 +4808,10 @@ Likely files:
 - `package.json`
 - `docs/testnet-readiness.md`
 - `docs/deployment.md`
-- `docs/agentrail/live-proof-status.md`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/operator-live-gates.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/live-proof-status.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/operator-live-gates.md`
+- `docs/vallum/execution-slices.md`
 - `docs/CODEBASE_MAP.md`
 
 Acceptance criteria:
@@ -4875,16 +4875,16 @@ Likely files:
 - `package.json`
 - `docs/testnet-readiness.md`
 - `docs/deployment.md`
-- `docs/agentrail/live-proof-status.md`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/operator-live-gates.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/live-proof-status.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/operator-live-gates.md`
+- `docs/vallum/execution-slices.md`
 - `docs/CODEBASE_MAP.md`
 
 Acceptance criteria:
 
 - `npm run sponsor:write-funding-request -- --out
-  tmp/agentrail/sponsor-funding-request.json` derives the configured public
+  tmp/vallum/sponsor-funding-request.json` derives the configured public
   sponsor address from ignored signer config and writes it to the requested
   ignored artifact.
 - The command summary prints only a redacted sponsor address, not the full
@@ -4903,7 +4903,7 @@ Verification:
 
 - Focused sponsor funding request, sponsor funding, and package-script tests.
 - `npm run sponsor:write-funding-request -- --out
-  tmp/agentrail/sponsor-funding-request.json`, recording only the redacted
+  tmp/vallum/sponsor-funding-request.json`, recording only the redacted
   summary output.
 - `npm run typecheck`.
 - `npm run docs:check`.
@@ -4950,10 +4950,10 @@ Likely files:
 - `package.json`
 - `docs/testnet-readiness.md`
 - `docs/deployment.md`
-- `docs/agentrail/live-proof-status.md`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/operator-live-gates.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/live-proof-status.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/operator-live-gates.md`
+- `docs/vallum/execution-slices.md`
 - `docs/CODEBASE_MAP.md`
 
 Acceptance criteria:
@@ -4961,7 +4961,7 @@ Acceptance criteria:
 - `npm run sponsor:request-faucet-funds` without `--execute` does not contact
   the faucet and writes a blocked ignored report.
 - `npm run sponsor:request-faucet-funds -- --execute --out
-  tmp/agentrail/sponsor-faucet-request.json` requires `IOTA_FAUCET_URL` or
+  tmp/vallum/sponsor-faucet-request.json` requires `IOTA_FAUCET_URL` or
   `--faucet-url`.
 - Faucet URLs must be HTTPS or loopback HTTP.
 - The command sends only the configured public sponsor address to the faucet,
@@ -5035,22 +5035,22 @@ Likely files:
 - focused tests for those scripts
 - `docs/testnet-readiness.md`
 - `docs/deployment.md`
-- `docs/agentrail/live-proof-status.md`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/operator-live-gates.md`
+- `docs/vallum/live-proof-status.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/operator-live-gates.md`
 - `docs/CODEBASE_MAP.md`
 
 Acceptance criteria:
 
 - `npm run sponsor:check-funding -- --report
-  tmp/agentrail/sponsor-funding-report.json` writes a mode-0600 sanitized report
+  tmp/vallum/sponsor-funding-report.json` writes a mode-0600 sanitized report
   whether funding is ready or blocked.
 - The report includes only a redacted sponsor address and aggregate numeric
   funding fields; it never includes the full sponsor address, signer material,
   bearer tokens, raw RPC bodies, raw transaction bytes, or user signatures.
 - `npm run proof:live-status` reports `sponsor-funding` separately from
   `gas-station-runtime` and `testnet-upstream`, using
-  `AGENTRAIL_SPONSOR_FUNDING_REPORT`.
+  `VALLUM_SPONSOR_FUNDING_REPORT`.
 - Product status, launch readiness, and operator gates inherit the
   `sponsor-funding` blocker or readiness without contacting live services
   themselves.
@@ -5064,7 +5064,7 @@ Verification:
 - Focused sponsor funding, live proof status, product status, launch readiness,
   operator gate, operator template, and package-script tests.
 - `npm run sponsor:check-funding -- --report
-  tmp/agentrail/sponsor-funding-report.json`, recording only redacted output.
+  tmp/vallum/sponsor-funding-report.json`, recording only redacted output.
 - `npm run typecheck`.
 - `npm run docs:check`.
 - `npm run secrets:scan`.
@@ -5104,7 +5104,7 @@ Likely files:
 - `scripts/request-sponsor-faucet-funds.ts`
 - `scripts/request-sponsor-faucet-funds.test.ts`
 - `docs/CODEBASE_MAP.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -5123,9 +5123,9 @@ Verification:
 - Focused sponsor faucet and package-script tests.
 - `npm run sponsor:request-faucet-funds -- --execute --faucet-url
   https://faucet.testnet.iota.cafe --out
-  tmp/agentrail/sponsor-faucet-request.json`, recording only sanitized output.
+  tmp/vallum/sponsor-faucet-request.json`, recording only sanitized output.
 - `npm run sponsor:check-funding -- --report
-  tmp/agentrail/sponsor-funding-report.json`, recording only redacted output.
+  tmp/vallum/sponsor-funding-report.json`, recording only redacted output.
 - `npm run typecheck`.
 - `npm run docs:check`.
 - `npm run secrets:scan`.
@@ -5163,7 +5163,7 @@ Likely files:
 - `scripts/diagnose-gas-station-upstream.test.ts`
 - `docs/testnet-attempts.md`
 - `docs/CODEBASE_MAP.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -5183,11 +5183,11 @@ Verification:
 
 - Focused diagnostic and package-script tests.
 - `npm run sponsor:check-funding -- --report
-  tmp/agentrail/sponsor-funding-report.json`, recording only redacted output.
-- `AGENTRAIL_SPONSOR_FUNDING_REPORT=tmp/agentrail/sponsor-funding-report.json npm
+  tmp/vallum/sponsor-funding-report.json`, recording only redacted output.
+- `VALLUM_SPONSOR_FUNDING_REPORT=tmp/vallum/sponsor-funding-report.json npm
   run proof:live-status`.
 - `npm run diagnose:gas-station -- --report
-  tmp/agentrail/testnet-upstream-diagnostic.json`, recording only status output.
+  tmp/vallum/testnet-upstream-diagnostic.json`, recording only status output.
 - `npm run typecheck`.
 - `npm run docs:check`.
 - `npm run secrets:scan`.
@@ -5235,8 +5235,8 @@ Likely files:
 - `scripts/operator-live-gates.test.ts`
 - `scripts/write-live-proof-plan.test.ts`
 - `docs/CODEBASE_MAP.md`
-- `docs/agentrail/live-proof-status.md`
-- `docs/agentrail/operator-live-gates.md`
+- `docs/vallum/live-proof-status.md`
+- `docs/vallum/operator-live-gates.md`
 - `docs/testnet-readiness.md`
 - `README.md`
 
@@ -5298,7 +5298,7 @@ Likely files:
 - `scripts/request-sponsor-faucet-funds.test.ts`
 - `docs/CODEBASE_MAP.md`
 - `docs/testnet-readiness.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -5366,8 +5366,8 @@ Likely files:
 - `scripts/operator-live-gates.test.ts`
 - `scripts/write-live-proof-plan.test.ts`
 - `docs/CODEBASE_MAP.md`
-- `docs/agentrail/live-proof-status.md`
-- `docs/agentrail/operator-live-gates.md`
+- `docs/vallum/live-proof-status.md`
+- `docs/vallum/operator-live-gates.md`
 - `docs/testnet-readiness.md`
 
 Acceptance criteria:
@@ -5429,15 +5429,15 @@ Likely files:
 
 - `scripts/check-operator-live-gates.ts`
 - `scripts/operator-live-gates.test.ts`
-- `docs/agentrail/operator-live-gates.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/operator-live-gates.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
 - When documented sponsored execute evidence exists,
   `testnet-sponsored-execute` is `requires-approval`, has
   `contactsLiveService=true`, and points at `npm run proof:testnet-digest:live
-  -- --report tmp/agentrail/testnet-digest-proof.json`.
+  -- --report tmp/vallum/testnet-digest-proof.json`.
 - When sponsored execute evidence is missing, the gate remains blocked and
   points at `npm run execute:testnet-demo`, preserving the explicit operator
   intent boundary for gas-spending proof refreshes.
@@ -5482,7 +5482,7 @@ Likely files:
 
 - `.env.example`
 - `scripts/live-proof-env-example.test.ts`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -5490,7 +5490,7 @@ Acceptance criteria:
   diagnostics, digest proof, IOTA Names, IOTA Identity, VC trust policy, A2A
   public reports, payment-provider proof, marketplace proof, custody proof, and
   package publication proof.
-- The documented report pointers use ignored `tmp/agentrail/*.json` paths.
+- The documented report pointers use ignored `tmp/vallum/*.json` paths.
 - Regression tests fail if a current live/prod proof variable is missing from
   `.env.example` or accidentally enabled as an uncommented example.
 - `npm run readiness:testnet:example` still passes, proving the committed
@@ -5538,20 +5538,20 @@ Likely files:
 - `scripts/product-status.test.ts`
 - `scripts/write-live-proof-plan.ts`
 - `scripts/write-live-proof-plan.test.ts`
-- `docs/agentrail/live-proof-status.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/live-proof-status.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
 - Live proof status includes a `testnet-sponsored-execute` check after
   `testnet-upstream`.
-- Missing `AGENTRAIL_TESTNET_DIGEST_REPORT` is reported as
+- Missing `VALLUM_TESTNET_DIGEST_REPORT` is reported as
   `TESTNET_DIGEST_REPORT_MISSING`.
 - A current passing digest report marks the check ready as
   `TESTNET_SPONSORED_EXECUTE_DIGEST_VERIFIED` without printing the digest or
   report path.
 - Stale, invalid, or unverified digest reports fail closed.
-- The live proof plan includes `AGENTRAIL_TESTNET_DIGEST_REPORT`, a required
+- The live proof plan includes `VALLUM_TESTNET_DIGEST_REPORT`, a required
   sanitized digest report artifact, and the read-only
   `npm run proof:testnet-digest:live -- --report <ignored-json-path>` command
   after upstream diagnostics.
@@ -5566,7 +5566,7 @@ Verification:
 
 - `node --import tsx --test scripts/live-proof-status.test.ts scripts/write-live-proof-plan.test.ts scripts/product-status.test.ts`
 - `npm run proof:live-status`
-- `npm run live:write-proof-plan -- --out tmp/agentrail/live-proof-plan.json`
+- `npm run live:write-proof-plan -- --out tmp/vallum/live-proof-plan.json`
 - `npm run proof:product-status`
 - `npm run docs:check`
 - `npm run secrets:scan`
@@ -5597,18 +5597,18 @@ Likely files:
 
 - `scripts/check-launch-readiness.ts`
 - `scripts/launch-readiness.test.ts`
-- `docs/agentrail/launch-readiness-evidence.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/launch-readiness-evidence.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
 - Phase 1 launch readiness lists `npm run proof:testnet-digest:live --
-  --report tmp/agentrail/testnet-digest-proof.json`.
+  --report tmp/vallum/testnet-digest-proof.json`.
 - Phase 1 no longer lists the bare `npm run proof:testnet-digest:live`
   command.
 - Tests assert the report-writing digest lookup appears before
   `npm run execute:testnet-demo`.
-- Launch readiness docs tell operators to set `AGENTRAIL_TESTNET_DIGEST_REPORT`
+- Launch readiness docs tell operators to set `VALLUM_TESTNET_DIGEST_REPORT`
   outside committed files so product-status can consume the sanitized report.
 - No live lookup, reserve_gas probe, signing, sponsor gas spend, sponsored
   execute, npm publish, public A2A probe, payment-provider action,
@@ -5653,18 +5653,18 @@ Likely files:
 - `scripts/check-product-status.ts`
 - `scripts/product-status.test.ts`
 - `docs/testnet-readiness.md`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/operator-live-gates.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/operator-live-gates.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
 - `npm run proof:testnet-digest:live -- --report <ignored-json-path>` writes a
-  mode `0600` report with a namespaced `agentrail.*` kind, schema version,
+  mode `0600` report with a namespaced `vallum.*` kind, schema version,
   and observation timestamp.
 - The report validator accepts only current, documented,
   `verified-testnet`, `effectsStatus=success` read-only lookup evidence.
-- `npm run proof:product-status` reads `AGENTRAIL_TESTNET_DIGEST_REPORT` from
+- `npm run proof:product-status` reads `VALLUM_TESTNET_DIGEST_REPORT` from
   `.env` or process env and marks `testnet-sponsored-execute` as verified
   without contacting IOTA RPC.
 - Stale, invalid, or unverified reports fail closed with redacted blocker
@@ -5713,8 +5713,8 @@ Likely files:
 
 - `scripts/check-operator-live-gates.ts`
 - `scripts/operator-live-gates.test.ts`
-- `docs/agentrail/operator-live-gates.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/operator-live-gates.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -5767,8 +5767,8 @@ Likely files:
 
 - `scripts/check-operator-live-gates.ts`
 - `scripts/operator-live-gates.test.ts`
-- `docs/agentrail/operator-live-gates.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/operator-live-gates.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -5822,21 +5822,21 @@ Likely files:
 - `scripts/check-live-proof-status.ts`
 - `scripts/request-sponsor-faucet-funds.test.ts`
 - `scripts/live-proof-status.test.ts`
-- `docs/agentrail/live-proof-status.md`
-- `docs/agentrail/operator-live-gates.md`
+- `docs/vallum/live-proof-status.md`
+- `docs/vallum/operator-live-gates.md`
 - `docs/testnet-readiness.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
-- `AGENTRAIL_SPONSOR_FAUCET_REPORT=<ignored-json-path> npm run proof:live-status`
+- `VALLUM_SPONSOR_FAUCET_REPORT=<ignored-json-path> npm run proof:live-status`
   can include a bounded, sanitized summary of the latest faucet result in the
   `sponsor-funding` next step.
 - Faucet reports are validated before use and reject unsupported fields,
   stale reports, full sponsor addresses, gas-spend claims, signing claims,
   unsupported API versions, unsupported failure kinds, and malformed amounts.
 - A configured faucet report never clears `sponsor-funding`; only a passing
-  `AGENTRAIL_SPONSOR_FUNDING_REPORT` can do that.
+  `VALLUM_SPONSOR_FUNDING_REPORT` can do that.
 - Status output does not print faucet URLs, raw faucet response bodies, faucet
   task ids, full sponsor addresses, signer material, rendered Gas Station
   config, bearer tokens, raw transaction bytes, user signatures, or local
@@ -5862,7 +5862,7 @@ overclaims.
 
 Escalation triggers:
 
-- Any request to treat `AGENTRAIL_SPONSOR_FAUCET_REPORT` as funding,
+- Any request to treat `VALLUM_SPONSOR_FAUCET_REPORT` as funding,
   reserve_gas, or sponsored execution proof.
 - Any request to print raw faucet response bodies, faucet task ids, full
   sponsor addresses, signer material, bearer tokens, rendered Gas Station
@@ -5881,10 +5881,10 @@ Likely files:
 - `scripts/check-live-proof-status.ts`
 - `scripts/live-proof-status.test.ts`
 - `docs/CODEBASE_MAP.md`
-- `docs/agentrail/live-proof-status.md`
-- `docs/agentrail/operator-live-gates.md`
+- `docs/vallum/live-proof-status.md`
+- `docs/vallum/operator-live-gates.md`
 - `docs/testnet-readiness.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -5907,7 +5907,7 @@ Verification:
 
 - Focused live-proof status, product-status, operator-gate, and package-script
   tests.
-- `npm run proof:live-status -- --out tmp/agentrail/live-proof-status.json`.
+- `npm run proof:live-status -- --out tmp/vallum/live-proof-status.json`.
 - `npm run typecheck`.
 - `npm run docs:check`.
 - `npm run secrets:scan`.
@@ -5949,17 +5949,17 @@ Likely files:
 - `scripts/check-live-proof-status.ts`
 - `scripts/live-proof-status.test.ts`
 - `docs/CODEBASE_MAP.md`
-- `docs/agentrail/live-proof-status.md`
+- `docs/vallum/live-proof-status.md`
 - `docs/testnet-readiness.md`
 - `docs/testnet-attempts.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
 - `npm run diagnose:gas-station -- --report <ignored-json-path>` can write a
   sanitized `reserveGas.code` and message for skipped, ready, missing-auth,
   sponsor-funding-blocked, request-failed, and generic HTTP reserve outcomes.
-- A configured `AGENTRAIL_SPONSOR_FUNDING_REPORT` can classify reserve failure as
+- A configured `VALLUM_SPONSOR_FUNDING_REPORT` can classify reserve failure as
   `RESERVE_GAS_SPONSOR_FUNDING_BLOCKED` when the funding report is not ready.
 - `npm run proof:live-status` surfaces the bounded reserve message and routes
   the next step to sponsor funding when the reserve failure is funding-blocked.
@@ -5974,9 +5974,9 @@ Verification:
 - Focused diagnostic, live-status, sponsored-execute prerequisite,
   product-status, operator-gate, and package-script tests.
 - `npm run diagnose:gas-station -- --report
-  tmp/agentrail/testnet-upstream-diagnostic.json` on the current machine,
+  tmp/vallum/testnet-upstream-diagnostic.json` on the current machine,
   recording only sanitized status output.
-- `npm run proof:live-status -- --out tmp/agentrail/live-proof-status.json`.
+- `npm run proof:live-status -- --out tmp/vallum/live-proof-status.json`.
 - `npm run typecheck`.
 - `npm run docs:check`.
 - `npm run secrets:scan`.
@@ -6012,10 +6012,10 @@ Likely files:
 - `scripts/diagnose-gas-station-upstream.test.ts`
 - `scripts/testnet-upstream-report.ts`
 - `docs/CODEBASE_MAP.md`
-- `docs/agentrail/live-proof-status.md`
+- `docs/vallum/live-proof-status.md`
 - `docs/testnet-readiness.md`
 - `docs/testnet-attempts.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -6039,9 +6039,9 @@ Verification:
 
 - Focused diagnostic, live-status, and sponsored-execute prerequisite tests.
 - `npm run diagnose:gas-station -- --report
-  tmp/agentrail/testnet-upstream-diagnostic.json` on the current machine,
+  tmp/vallum/testnet-upstream-diagnostic.json` on the current machine,
   recording only sanitized status output.
-- `npm run proof:live-status -- --out tmp/agentrail/live-proof-status.json`.
+- `npm run proof:live-status -- --out tmp/vallum/live-proof-status.json`.
 - `npm run typecheck`.
 - `npm run docs:check`.
 - `npm run secrets:scan`.
@@ -6078,9 +6078,9 @@ Likely files:
 - `scripts/write-sponsor-funding-request.test.ts`
 - `docs/CODEBASE_MAP.md`
 - `docs/testnet-readiness.md`
-- `docs/agentrail/live-proof-status.md`
-- `docs/agentrail/operator-live-gates.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/live-proof-status.md`
+- `docs/vallum/operator-live-gates.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -6089,7 +6089,7 @@ Acceptance criteria:
   sponsor faucet report and copies only bounded result, code, API version,
   HTTP status, failure kind, and guidance fields into the ignored funding
   request artifact.
-- `AGENTRAIL_SPONSOR_FAUCET_REPORT=<ignored-json-path> npm run
+- `VALLUM_SPONSOR_FAUCET_REPORT=<ignored-json-path> npm run
   sponsor:write-funding-request -- --out <ignored-json-path>` uses the same
   bounded context path.
 - Invalid, stale, unreadable, or unsafe faucet reports are classified as
@@ -6107,8 +6107,8 @@ Verification:
 - Focused sponsor funding request, sponsor faucet, live-status, and
   package-script tests.
 - `npm run sponsor:write-funding-request -- --faucet-report
-  tmp/agentrail/sponsor-faucet-request-v0-latest.json --out
-  tmp/agentrail/sponsor-funding-request.json`.
+  tmp/vallum/sponsor-faucet-request-v0-latest.json --out
+  tmp/vallum/sponsor-funding-request.json`.
 - `npm run typecheck`.
 - `npm run docs:check`.
 - `npm run secrets:scan`.
@@ -6144,8 +6144,8 @@ Likely files:
 - `scripts/check-product-status.ts`
 - `scripts/product-status.test.ts`
 - `docs/CODEBASE_MAP.md`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -6169,7 +6169,7 @@ Acceptance criteria:
 Verification:
 
 - Focused product-status and package-script tests.
-- `npm run proof:product-status -- --out tmp/agentrail/product-status.json`.
+- `npm run proof:product-status -- --out tmp/vallum/product-status.json`.
 - `npm run typecheck`.
 - `npm run docs:check`.
 - `npm run secrets:scan`.
@@ -6207,8 +6207,8 @@ Likely files:
 - `scripts/check-launch-readiness.ts`
 - `scripts/launch-readiness.test.ts`
 - `docs/CODEBASE_MAP.md`
-- `docs/agentrail/launch-readiness-evidence.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/launch-readiness-evidence.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -6233,7 +6233,7 @@ Acceptance criteria:
 Verification:
 
 - Focused launch-readiness and package-script tests.
-- `npm run proof:launch-readiness -- --out tmp/agentrail/launch-readiness.json`.
+- `npm run proof:launch-readiness -- --out tmp/vallum/launch-readiness.json`.
 - `npm run typecheck`.
 - `npm run docs:check`.
 - `npm run secrets:scan`.
@@ -6270,8 +6270,8 @@ Likely files:
 - `scripts/check-verification-profiles.ts`
 - `scripts/verification-profiles.test.ts`
 - `docs/CODEBASE_MAP.md`
-- `docs/agentrail/verification-profiles.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/verification-profiles.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -6296,7 +6296,7 @@ Verification:
 
 - Focused verification-profile and package-script tests.
 - `npm run proof:verification-profiles -- --out
-  tmp/agentrail/verification-profiles.json`.
+  tmp/vallum/verification-profiles.json`.
 - `npm run typecheck`.
 - `npm run docs:check`.
 - `npm run secrets:scan`.
@@ -6333,7 +6333,7 @@ Likely files:
 - `scripts/request-sponsor-faucet-funds.test.ts`
 - `docs/CODEBASE_MAP.md`
 - `docs/testnet-readiness.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -6359,10 +6359,10 @@ Verification:
 - One operator-approved sanitized faucet attempt against the official IOTA
   testnet faucet, recorded only in ignored local artifacts.
 - `npm run sponsor:check-funding -- --report
-  tmp/agentrail/sponsor-funding-report.json`.
+  tmp/vallum/sponsor-funding-report.json`.
 - `npm run diagnose:gas-station -- --report
-  tmp/agentrail/testnet-upstream-diagnostic.json`.
-- `npm run proof:live-status -- --out tmp/agentrail/live-proof-status.json`.
+  tmp/vallum/testnet-upstream-diagnostic.json`.
+- `npm run proof:live-status -- --out tmp/vallum/live-proof-status.json`.
 - `npm run typecheck`.
 - `npm run docs:check`.
 - `npm run secrets:scan`.
@@ -6402,8 +6402,8 @@ Likely files:
 - `scripts/check-a2a-public-readiness.ts`
 - `scripts/a2a-public-readiness.test.ts`
 - `docs/CODEBASE_MAP.md`
-- `docs/agentrail/a2a-public-readiness.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/a2a-public-readiness.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -6428,7 +6428,7 @@ Verification:
 
 - Focused A2A public readiness and package-script tests.
 - `npm run proof:a2a-public-readiness -- --out
-  tmp/agentrail/a2a-public-readiness.json`.
+  tmp/vallum/a2a-public-readiness.json`.
 - `npm run typecheck`.
 - `npm run docs:check`.
 - `npm run secrets:scan`.
@@ -6465,8 +6465,8 @@ Likely files:
 - `scripts/check-package-publication-readiness.ts`
 - `scripts/package-publication-readiness.test.ts`
 - `docs/CODEBASE_MAP.md`
-- `docs/agentrail/package-release-strategy.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/package-release-strategy.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -6489,7 +6489,7 @@ Verification:
 
 - Focused package-publication readiness and package-script tests.
 - `npm run proof:package-publication-readiness -- --out
-  tmp/agentrail/package-publication-readiness.json`.
+  tmp/vallum/package-publication-readiness.json`.
 - `npm run typecheck`.
 - `npm run docs:check`.
 - `npm run secrets:scan`.
@@ -6527,8 +6527,8 @@ Likely files:
 - `scripts/payment-provider-readiness.test.ts`
 - `docs/CODEBASE_MAP.md`
 - `docs/overview.md`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -6551,7 +6551,7 @@ Verification:
 
 - Focused payment-provider readiness and package-script tests.
 - `npm run proof:payment-provider-readiness -- --out
-  tmp/agentrail/payment-provider-readiness.json`.
+  tmp/vallum/payment-provider-readiness.json`.
 - `npm run typecheck`.
 - `npm run docs:check`.
 - `npm run secrets:scan`.
@@ -6590,9 +6590,9 @@ Likely files:
 - `scripts/marketplace-readiness.test.ts`
 - `docs/overview.md`
 - `docs/marketplace-readiness.md`
-- `docs/agentrail/product-status.md`
+- `docs/vallum/product-status.md`
 - `docs/CODEBASE_MAP.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -6615,7 +6615,7 @@ Verification:
 
 - Focused marketplace readiness and package-script tests.
 - `npm run proof:marketplace-readiness -- --out
-  tmp/agentrail/marketplace-readiness.json`.
+  tmp/vallum/marketplace-readiness.json`.
 - `npm run typecheck`.
 - `npm run docs:check`.
 - `npm run secrets:scan`.
@@ -6656,10 +6656,10 @@ Likely files:
 - `scripts/check-custody-readiness.ts`
 - `scripts/custody-readiness.test.ts`
 - `docs/overview.md`
-- `docs/agentrail/account-wallet-safety.md`
-- `docs/agentrail/product-status.md`
+- `docs/vallum/account-wallet-safety.md`
+- `docs/vallum/product-status.md`
 - `docs/CODEBASE_MAP.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -6682,7 +6682,7 @@ Verification:
 
 - Focused custody readiness and package-script tests.
 - `npm run proof:custody-readiness -- --out
-  tmp/agentrail/custody-readiness.json`.
+  tmp/vallum/custody-readiness.json`.
 - `npm run typecheck`.
 - `npm run docs:check`.
 - `npm run secrets:scan`.
@@ -6723,8 +6723,8 @@ Likely files:
 - `scripts/package-scripts.test.ts`
 - `docs/overview.md`
 - `docs/CODEBASE_MAP.md`
-- `docs/agentrail/migration-plan.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/migration-plan.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -6784,7 +6784,7 @@ Likely files:
 
 - `docs/CODEBASE_MAP.md`
 - `scripts/package-scripts.test.ts`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -6846,10 +6846,10 @@ Likely files:
 - `scripts/check-product-status.ts`
 - `scripts/live-proof-status.test.ts`
 - `scripts/product-status.test.ts`
-- `docs/agentrail/live-proof-status.md`
-- `docs/agentrail/product-status.md`
+- `docs/vallum/live-proof-status.md`
+- `docs/vallum/product-status.md`
 - `docs/CODEBASE_MAP.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -6915,9 +6915,9 @@ Likely files:
 - `scripts/write-sponsor-funding-request.ts`
 - `scripts/write-sponsor-funding-request.test.ts`
 - `docs/testnet-readiness.md`
-- `docs/agentrail/live-proof-status.md`
-- `docs/agentrail/operator-live-gates.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/live-proof-status.md`
+- `docs/vallum/operator-live-gates.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -6975,16 +6975,16 @@ Likely files:
 
 - `scripts/write-live-proof-plan.ts`
 - `scripts/write-live-proof-plan.test.ts`
-- `docs/agentrail/live-proof-status.md`
-- `docs/agentrail/operator-live-gates.md`
+- `docs/vallum/live-proof-status.md`
+- `docs/vallum/operator-live-gates.md`
 - `docs/testnet-readiness.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
-- The live proof plan lists `AGENTRAIL_SPONSOR_FUNDING_REPORT` as a required
+- The live proof plan lists `VALLUM_SPONSOR_FUNDING_REPORT` as a required
   operator input.
-- The live proof plan lists `AGENTRAIL_SPONSOR_FAUCET_REPORT` as optional triage
+- The live proof plan lists `VALLUM_SPONSOR_FAUCET_REPORT` as optional triage
   input, not required proof.
 - Required evidence artifacts include a sanitized sponsor funding report.
 - Plan commands include writing the funding request, optional faucet request,
@@ -7015,7 +7015,7 @@ raw response bodies, credentials, or secret material.
 
 Escalation triggers:
 
-- Any request to treat `AGENTRAIL_SPONSOR_FAUCET_REPORT` or the funding-request
+- Any request to treat `VALLUM_SPONSOR_FAUCET_REPORT` or the funding-request
   artifact as proof of funding.
 - Any request to print full sponsor addresses, endpoint values, report paths,
   profile paths, DID values, credential refs, private keys, tokens, raw
@@ -7037,7 +7037,7 @@ Likely files:
 - `scripts/request-sponsor-faucet-funds.ts`
 - `scripts/request-sponsor-faucet-funds.test.ts`
 - `docs/testnet-readiness.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -7088,24 +7088,24 @@ Escalation triggers:
 ## Slice 7.44: A2A Public Proof Plan Kind Namespacing
 
 User-visible outcome:
-The public A2A proof-plan artifact uses the same `agentrail.*`
+The public A2A proof-plan artifact uses the same `vallum.*`
 namespacing convention as other local readiness and proof artifacts, making it
-easier for operators and future agents to distinguish an AgentRail local
+easier for operators and future agents to distinguish an Vallum local
 plan from generic A2A proof data.
 
 Likely files:
 
 - `scripts/write-a2a-public-proof-plan.ts`
 - `scripts/write-a2a-public-proof-plan.test.ts`
-- `docs/agentrail/a2a-public-readiness.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/a2a-public-readiness.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
 - `npm run a2a:write-public-proof-plan` emits
-  `kind=agentrail.a2a-public-proof-plan`.
+  `kind=vallum.a2a-public-proof-plan`.
 - Tests assert the namespaced kind for in-memory and written artifacts.
-- Docs show the ignored `tmp/agentrail/a2a-public-proof-plan.json` path and the
+- Docs show the ignored `tmp/vallum/a2a-public-proof-plan.json` path and the
   namespaced kind.
 - The change does not alter public A2A readiness acceptance, public endpoint
   probing, push delivery, external conformance, production auth, or key
@@ -7150,8 +7150,8 @@ Likely files:
 
 - `scripts/check-product-status.ts`
 - `scripts/product-status.test.ts`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -7160,7 +7160,7 @@ Acceptance criteria:
   `npm run proof:a2a-public-readiness` and the opt-in public discovery smoke.
 - Product-status tests assert the proof-plan command is surfaced.
 - The product-status runbook lists the ignored
-  `tmp/agentrail/a2a-public-proof-plan.json` artifact command with the adjacent
+  `tmp/vallum/a2a-public-proof-plan.json` artifact command with the adjacent
   A2A readiness commands.
 - The change does not alter public A2A readiness acceptance, public endpoint
   probing, push delivery, external conformance, production auth, or key
@@ -7197,22 +7197,22 @@ Escalation triggers:
 ## Slice 7.46: Payment Proof Plan Kind Namespacing
 
 User-visible outcome:
-The payment-provider proof-plan artifact uses the same `agentrail.*`
+The payment-provider proof-plan artifact uses the same `vallum.*`
 namespacing convention as other readiness and proof-plan artifacts, making it
-clear that the file is an AgentRail local planning artifact rather than
+clear that the file is an Vallum local planning artifact rather than
 generic payment-provider evidence.
 
 Likely files:
 
 - `scripts/write-payment-provider-proof-plan.ts`
 - `scripts/write-payment-provider-proof-plan.test.ts`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
 - `npm run payment:write-provider-proof-plan` emits
-  `kind=agentrail.payment-provider-proof-plan`.
+  `kind=vallum.payment-provider-proof-plan`.
 - Tests assert the namespaced kind for in-memory and written artifacts.
 - Docs describe the namespaced proof-plan kind.
 - The change does not alter payment-provider readiness acceptance, structured
@@ -7225,7 +7225,7 @@ Verification:
 - `node --import tsx --test scripts/write-payment-provider-proof-plan.test.ts
   scripts/payment-provider-readiness.test.ts`
 - `npm run payment:write-provider-proof-plan -- --out
-  tmp/agentrail/payment-provider-proof-plan.json`
+  tmp/vallum/payment-provider-proof-plan.json`
 - `npm run proof:payment-provider-readiness`
 - `npm run docs:check`
 - `npm run secrets:scan`
@@ -7260,8 +7260,8 @@ Likely files:
 
 - `scripts/check-product-status.ts`
 - `scripts/product-status.test.ts`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -7319,9 +7319,9 @@ Likely files:
 - `scripts/operator-live-gates.test.ts`
 - `scripts/check-launch-readiness.ts`
 - `scripts/launch-readiness.test.ts`
-- `docs/agentrail/operator-live-gates.md`
-- `docs/agentrail/launch-readiness-evidence.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/operator-live-gates.md`
+- `docs/vallum/launch-readiness-evidence.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -7331,7 +7331,7 @@ Acceptance criteria:
   `npm run a2a:write-public-proof-plan` before
   `npm run proof:a2a-public-readiness`.
 - Operator and launch runbooks list the ignored
-  `tmp/agentrail/a2a-public-proof-plan.json` command before A2A public readiness.
+  `tmp/vallum/a2a-public-proof-plan.json` command before A2A public readiness.
 - Tests assert the operator-gate and launch-readiness command order.
 - The change does not alter public A2A readiness acceptance, public endpoint
   probing, push delivery, external conformance, production auth, key
@@ -7369,22 +7369,22 @@ Escalation triggers:
 ## Slice 7.49: Operator Gate Report Kind Namespacing
 
 User-visible outcome:
-The operator live-gate JSON artifact uses the same `agentrail.*`
+The operator live-gate JSON artifact uses the same `vallum.*`
 namespacing convention as the other local readiness/status report artifacts,
-making it clear that the file is an AgentRail report and not generic
+making it clear that the file is an Vallum report and not generic
 operator-gate data.
 
 Likely files:
 
 - `scripts/check-operator-live-gates.ts`
 - `scripts/operator-live-gates.test.ts`
-- `docs/agentrail/operator-live-gates.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/operator-live-gates.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
 - `npm run operator:write-live-gate-report` writes an artifact with
-  `kind=agentrail.operator-live-gate-report`.
+  `kind=vallum.operator-live-gate-report`.
 - Tests assert the namespaced kind for in-memory and written artifacts.
 - Operator docs describe the namespaced kind and keep the redaction boundary.
 - The change does not alter gate classification, approval requirements,
@@ -7421,22 +7421,22 @@ Escalation triggers:
 ## Slice 7.50: A2A Static Hosting Review Kind Namespacing
 
 User-visible outcome:
-The A2A static-hosting review artifact uses the same `agentrail.*`
+The A2A static-hosting review artifact uses the same `vallum.*`
 namespacing convention as other local readiness and proof artifacts, making it
-clear that the file is an AgentRail local preparation artifact rather than
+clear that the file is an Vallum local preparation artifact rather than
 generic static-hosting review data.
 
 Likely files:
 
 - `scripts/write-a2a-static-hosting-review.ts`
 - `scripts/write-a2a-static-hosting-review.test.ts`
-- `docs/agentrail/a2a-public-readiness.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/a2a-public-readiness.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
 - `npm run a2a:write-static-hosting-review` emits
-  `kind=agentrail.a2a-static-hosting-review`.
+  `kind=vallum.a2a-static-hosting-review`.
 - Tests assert the namespaced kind for the generated review packet.
 - A2A public-readiness docs describe the namespaced static-hosting review kind.
 - The change does not alter local artifact validation, public hosting
@@ -7486,9 +7486,9 @@ Likely files:
 - `scripts/write-live-proof-plan.ts`
 - `scripts/write-live-proof-plan.test.ts`
 - `scripts/product-status.test.ts`
-- `docs/agentrail/live-proof-status.md`
+- `docs/vallum/live-proof-status.md`
 - `docs/testnet-readiness.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -7540,7 +7540,7 @@ Escalation triggers:
 
 User-visible outcome:
 Operators can generate a redacted pending template for the
-`AGENTRAIL_TESTNET_DIGEST_REPORT` artifact that now clears
+`VALLUM_TESTNET_DIGEST_REPORT` artifact that now clears
 `testnet-sponsored-execute` in live-status/product-status when replaced by a
 current passing report from the read-only live digest proof command.
 
@@ -7548,18 +7548,18 @@ Likely files:
 
 - `scripts/write-operator-report-template.ts`
 - `scripts/write-operator-report-template.test.ts`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
 - `npm run operator:write-report-template -- --kind testnet-digest --out
   <ignored-json-path>` writes a mode `0600` pending template.
-- The template records `kind=agentrail.testnet-digest-proof-template`,
-  `acceptedReportKind=agentrail.testnet-digest-proof-report`, and
-  `acceptedReportEnv=AGENTRAIL_TESTNET_DIGEST_REPORT`.
+- The template records `kind=vallum.testnet-digest-proof-template`,
+  `acceptedReportKind=vallum.testnet-digest-proof-report`, and
+  `acceptedReportEnv=VALLUM_TESTNET_DIGEST_REPORT`.
 - The template points operators at `npm run proof:testnet-digest` before
   `npm run proof:testnet-digest:live -- --report
-  tmp/agentrail/testnet-digest-proof.json`.
+  tmp/vallum/testnet-digest-proof.json`.
 - Tests prove the generated template is not accepted by the digest report
   validator as passing evidence.
 - The change does not run IOTA RPC, sign transactions, reserve gas, execute
@@ -7571,7 +7571,7 @@ Verification:
 - `node --import tsx --test scripts/write-operator-report-template.test.ts
   scripts/testnet-digest-proof.test.ts`
 - `npm run operator:write-report-template -- --kind testnet-digest --out
-  tmp/agentrail/testnet-digest-report-template.json`
+  tmp/vallum/testnet-digest-report-template.json`
 - `npm run proof:operator-gates`
 - `npm run docs:check`
 - `npm run secrets:scan`
@@ -7607,17 +7607,17 @@ Likely files:
 
 - `scripts/write-operator-report-template.ts`
 - `scripts/write-operator-report-template.test.ts`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
 - `operator:write-report-template -- --kind iota-names-live` writes a mode
   `0600` pending template with
-  `acceptedReportKind=agentrail.iota-names-live-smoke-report` and
+  `acceptedReportKind=vallum.iota-names-live-smoke-report` and
   `acceptedReportEnv=IOTA_NAMES_LIVE_REPORT`.
 - `operator:write-report-template -- --kind iota-identity-live` writes a
   pending template with
-  `acceptedReportKind=agentrail.iota-identity-live-smoke-report` and
+  `acceptedReportKind=vallum.iota-identity-live-smoke-report` and
   `acceptedReportEnv=IOTA_IDENTITY_LIVE_REPORT`.
 - `operator:write-report-template -- --kind vc-validation-live` explains that
   live VC evidence uses the accepted IOTA Identity live smoke report plus
@@ -7634,11 +7634,11 @@ Verification:
   scripts/iota-names-live-smoke.test.ts
   scripts/iota-identity-live-smoke.test.ts`
 - `npm run operator:write-report-template -- --kind iota-names-live --out
-  tmp/agentrail/iota-names-live-report-template.json`
+  tmp/vallum/iota-names-live-report-template.json`
 - `npm run operator:write-report-template -- --kind iota-identity-live --out
-  tmp/agentrail/iota-identity-live-report-template.json`
+  tmp/vallum/iota-identity-live-report-template.json`
 - `npm run operator:write-report-template -- --kind vc-validation-live --out
-  tmp/agentrail/vc-validation-live-report-template.json`
+  tmp/vallum/vc-validation-live-report-template.json`
 - `npm run proof:operator-gates`
 - `npm run docs:check`
 - `npm run secrets:scan`
@@ -7673,9 +7673,9 @@ testnet digest, IOTA Names, IOTA Identity, and VC validation templates.
 
 Likely files:
 
-- `docs/agentrail/operator-live-gates.md`
+- `docs/vallum/operator-live-gates.md`
 - `scripts/reviewer-docs.test.ts`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -7727,8 +7727,8 @@ Likely files:
 
 - `scripts/check-launch-readiness.ts`
 - `scripts/launch-readiness.test.ts`
-- `docs/agentrail/launch-readiness-evidence.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/launch-readiness-evidence.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -7791,8 +7791,8 @@ Likely files:
 
 - `scripts/check-operator-live-gates.ts`
 - `scripts/operator-live-gates.test.ts`
-- `docs/agentrail/operator-live-gates.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/operator-live-gates.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -7849,8 +7849,8 @@ Likely files:
 
 - `scripts/write-live-proof-plan.ts`
 - `scripts/write-live-proof-plan.test.ts`
-- `docs/agentrail/live-proof-status.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/live-proof-status.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -7874,7 +7874,7 @@ Acceptance criteria:
 Verification:
 
 - `node --import tsx --test scripts/write-live-proof-plan.test.ts`
-- `npm run live:write-proof-plan -- --out tmp/agentrail/live-proof-plan.json`
+- `npm run live:write-proof-plan -- --out tmp/vallum/live-proof-plan.json`
 - `npm run docs:check`
 - `npm run secrets:scan`
 - `npm run typecheck`
@@ -7910,8 +7910,8 @@ Likely files:
 - `scripts/execute-testnet-sponsored-demo.ts`
 - `scripts/execute-testnet-sponsored-demo.test.ts`
 - `docs/testnet-attempts.md`
-- `docs/agentrail/testnet-digest-proof.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/testnet-digest-proof.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -7968,8 +7968,8 @@ Likely files:
 
 - `scripts/check-live-proof-status.ts`
 - `scripts/live-proof-status.test.ts`
-- `docs/agentrail/live-proof-status.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/live-proof-status.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -8024,8 +8024,8 @@ Likely files:
 
 - `scripts/check-product-status.ts`
 - `scripts/product-status.test.ts`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -8079,8 +8079,8 @@ Likely files:
 
 - `scripts/check-package-publication-readiness.ts`
 - `scripts/package-publication-readiness.test.ts`
-- `docs/agentrail/package-release-strategy.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/package-release-strategy.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -8130,7 +8130,7 @@ Likely files:
 
 - `scripts/check-payment-provider-readiness.ts`
 - `scripts/payment-provider-readiness.test.ts`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -8184,7 +8184,7 @@ Likely files:
 - `scripts/check-marketplace-readiness.ts`
 - `scripts/marketplace-readiness.test.ts`
 - `docs/marketplace-readiness.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -8241,8 +8241,8 @@ Likely files:
 
 - `scripts/check-custody-readiness.ts`
 - `scripts/custody-readiness.test.ts`
-- `docs/agentrail/account-wallet-safety.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/account-wallet-safety.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -8298,8 +8298,8 @@ Likely files:
 
 - `scripts/check-a2a-public-readiness.ts`
 - `scripts/a2a-public-readiness.test.ts`
-- `docs/agentrail/a2a-public-readiness.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/a2a-public-readiness.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -8348,8 +8348,8 @@ Escalation triggers:
 ## Slice 7.84: Live Status Testnet Report Template Guidance
 
 User-visible outcome:
-`npm run proof:live-status` points missing `AGENTRAIL_TESTNET_UPSTREAM_REPORT` and
-`AGENTRAIL_TESTNET_DIGEST_REPORT` blockers at their matching ignored
+`npm run proof:live-status` points missing `VALLUM_TESTNET_UPSTREAM_REPORT` and
+`VALLUM_TESTNET_DIGEST_REPORT` blockers at their matching ignored
 report-template commands before instructing operators to run the approved
 diagnostic or read-only digest lookup.
 
@@ -8357,8 +8357,8 @@ Likely files:
 
 - `scripts/check-live-proof-status.ts`
 - `scripts/live-proof-status.test.ts`
-- `docs/agentrail/live-proof-status.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/live-proof-status.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -8415,23 +8415,23 @@ Likely files:
 - `scripts/check-testnet-digest-proof.ts`
 - `scripts/testnet-digest-proof.test.ts`
 - `docs/testnet-attempts.md`
-- `docs/agentrail/testnet-digest-proof.md`
+- `docs/vallum/testnet-digest-proof.md`
 - `docs/reviewer-walkthrough.md`
 - `README.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
 - `npm run execute:testnet-demo -- --report
-  tmp/agentrail/sponsored-execute-report.json` succeeds only after local
+  tmp/vallum/sponsored-execute-report.json` succeeds only after local
   readiness, runtime preflight, funded sponsor report, and upstream reserve
   compatibility are already configured.
 - The new public digest is present in `scripts/check-testnet-digest-proof.ts`,
-  `docs/testnet-attempts.md`, `docs/agentrail/testnet-digest-proof.md`,
+  `docs/testnet-attempts.md`, `docs/vallum/testnet-digest-proof.md`,
   and `docs/reviewer-walkthrough.md`.
 - `npm run proof:testnet-digest` passes without contacting live services.
 - `npm run proof:testnet-digest:live -- --digest <fresh-digest> --report
-  tmp/agentrail/testnet-digest-proof.json` verifies the fresh digest through a
+  tmp/vallum/testnet-digest-proof.json` verifies the fresh digest through a
   read-only IOTA testnet lookup and writes only an ignored sanitized report.
 - Tracked evidence does not include sponsor keys, bearer tokens, app keys, raw
   transaction bytes, raw signatures, raw upstream responses, local secret
@@ -8440,11 +8440,11 @@ Acceptance criteria:
 Verification:
 
 - `npm run execute:testnet-demo -- --report
-  tmp/agentrail/sponsored-execute-report.json`
+  tmp/vallum/sponsored-execute-report.json`
 - `node --import tsx --test scripts/testnet-digest-proof.test.ts`
 - `npm run proof:testnet-digest`
 - `npm run proof:testnet-digest:live -- --digest <fresh-digest> --report
-  tmp/agentrail/testnet-digest-proof.json`
+  tmp/vallum/testnet-digest-proof.json`
 - `npm run proof:product-status`
 - `npm run docs:check`
 - `npm run secrets:scan`
@@ -8478,7 +8478,7 @@ gateway transaction ids in sponsored execute evidence blocks.
 Likely files:
 
 - `scripts/testnet-digest-proof.test.ts`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -8530,8 +8530,8 @@ Likely files:
 - `package.json`
 - `README.md`
 - `docs/CODEBASE_MAP.md`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -8561,7 +8561,7 @@ Verification:
 - `node --import tsx --test scripts/roadmap-completion.test.ts
   scripts/package-scripts.test.ts`
 - `npm run proof:roadmap-completion -- --out
-  tmp/agentrail/roadmap-completion-audit.json`
+  tmp/vallum/roadmap-completion-audit.json`
 - `npm run docs:check`
 - `npm run secrets:scan`
 - `npm run typecheck`
@@ -8605,10 +8605,10 @@ Likely files:
 - `package.json`
 - `docs/overview.md`
 - `docs/CODEBASE_MAP.md`
-- `docs/agentrail/account-wallet-safety.md`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/operator-live-gates.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/account-wallet-safety.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/operator-live-gates.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -8640,7 +8640,7 @@ Verification:
   scripts/product-status.test.ts scripts/launch-readiness.test.ts
   scripts/operator-live-gates.test.ts`
 - `npm run custody:write-production-proof-bundle -- --out
-  tmp/agentrail/custody-production-proof-bundle.json`
+  tmp/vallum/custody-production-proof-bundle.json`
 - `npm run typecheck`
 - `npm run docs:check`
 - `npm run secrets:scan`
@@ -8676,10 +8676,10 @@ Likely files:
 
 - `scripts/write-identity-proof-bundle.ts`
 - `scripts/write-identity-proof-bundle.test.ts`
-- `docs/agentrail/live-proof-status.md`
-- `docs/agentrail/operator-live-gates.md`
+- `docs/vallum/live-proof-status.md`
+- `docs/vallum/operator-live-gates.md`
 - `docs/overview.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -8705,7 +8705,7 @@ Verification:
   scripts/operator-live-gates.test.ts scripts/launch-readiness.test.ts
   scripts/product-status.test.ts scripts/roadmap-completion.test.ts`
 - `npm run live:write-identity-proof-bundle -- --out
-  tmp/agentrail/identity-proof-bundle.json`
+  tmp/vallum/identity-proof-bundle.json`
 - `npm run typecheck`
 - `npm run docs:check`
 - `npm run secrets:scan`
@@ -8742,14 +8742,14 @@ Likely files:
 
 - `scripts/check-live-proof-status.ts`
 - `scripts/live-proof-status.test.ts`
-- `docs/agentrail/live-proof-status.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/live-proof-status.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
 - Missing IOTA Names config and report blockers start their `next` guidance
   with `npm run live:write-identity-proof-bundle -- --out
-  tmp/agentrail/identity-proof-bundle.json`.
+  tmp/vallum/identity-proof-bundle.json`.
 - Missing IOTA Identity config and report blockers start their `next` guidance
   with the same identity proof bundle command.
 - Missing VC trust-policy config and missing Identity report blockers start
@@ -8806,9 +8806,9 @@ Likely files:
 - `scripts/package-scripts.test.ts`
 - `package.json`
 - `docs/CODEBASE_MAP.md`
-- `docs/agentrail/product-status.md`
-- `docs/agentrail/operator-live-gates.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/product-status.md`
+- `docs/vallum/operator-live-gates.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 
@@ -8833,7 +8833,7 @@ Verification:
 - `node --import tsx --test scripts/write-roadmap-execution-proof-bundle.test.ts
   scripts/package-scripts.test.ts scripts/roadmap-completion.test.ts`
 - `npm run roadmap:write-execution-proof-bundle -- --out
-  tmp/agentrail/roadmap-execution-proof-bundle.json`
+  tmp/vallum/roadmap-execution-proof-bundle.json`
 - `npm run typecheck`
 - `npm run docs:check`
 - `npm run secrets:scan`
@@ -8873,8 +8873,8 @@ Likely files:
 
 - `scripts/check-launch-readiness.ts`
 - `scripts/launch-readiness.test.ts`
-- `docs/agentrail/launch-readiness-evidence.md`
-- `docs/agentrail/execution-slices.md`
+- `docs/vallum/launch-readiness-evidence.md`
+- `docs/vallum/execution-slices.md`
 
 Acceptance criteria:
 

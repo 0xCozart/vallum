@@ -27,7 +27,7 @@ No phase should be called complete because a happy-path demo works.
   addresses, not seeds, mnemonics, private keys, or raw keypairs.
 - Signer references are opaque scoped handles, not bearer credentials. Matching
   owner/agent context and policy scope are required for signing.
-- Humans/operators fund agent wallets directly or through AgentRail sponsorship;
+- Humans/operators fund agent wallets directly or through Vallum sponsorship;
   funding and value-bearing use remain auditable and policy-gated.
 - MCP tools and SDK helpers cannot bypass policy.
 - Simulation is required where configured and must be bound to the manifest.
@@ -135,23 +135,23 @@ Validation:
 Tests assert MCP tools use gateway adapter; code review searches for direct
 Gas Station calls outside gateway adapters.
 
-### Blocker: Existing AgentRail Can Be Accidentally Rebuilt
+### Blocker: Existing Vallum Can Be Accidentally Rebuilt
 
 Failure mode:
-AgentRail duplicates the existing AgentRail gateway, SDK, deployment,
+Vallum duplicates the existing Vallum gateway, SDK, deployment,
 sponsor-wallet, and testnet-readiness surfaces instead of extending them.
 
 Impact:
-The project forks its own safety boundary, loses proven AgentRail behavior, and
+The project forks its own safety boundary, loses proven Vallum behavior, and
 creates inconsistent policy, credentials, quota, and sponsor-wallet semantics.
 
 Fix:
-Start with Slice 0.3. Treat existing AgentRail as the canonical sponsorship
+Start with Slice 0.3. Treat existing Vallum as the canonical sponsorship
 foundation inside this fork unless a migration or adapter reason is explicitly
 documented.
 
 Validation:
-Docs and code identify reused existing AgentRail surfaces, and duplicated gateway
+Docs and code identify reused existing Vallum surfaces, and duplicated gateway
 or SDK behavior has a written rationale.
 
 ### Blocker: Agent Wallet Seeds Can Leak Or Become Custody
@@ -288,7 +288,7 @@ Required evidence:
 
 Required evidence:
 
-- existing AgentRail integration map exists or duplicated sponsorship
+- existing Vallum integration map exists or duplicated sponsorship
   behavior has a written reason
 - account/wallet creation returns signer references without raw secret material
 - manifest schema tests pass
@@ -355,7 +355,7 @@ Escalate to the user before proceeding if any slice requires:
 - legal/KYC/KYB provider verification
 - device access with physical safety implications
 - an external issue tracker
-- a product rename away from AgentRail
+- a product rename away from Vallum
 - a broad marketplace build before primitives pass
 
 ## Roadmap Audit Checklist
@@ -364,15 +364,15 @@ Use this checklist before marking the active goal complete:
 
 - `CLAUDE.md` exists and explains project rules.
 - `docs/CODEBASE_MAP.md` exists and orients future agents.
-- `docs/agentrail/roadmap.md` defines objective, architecture, module
+- `docs/vallum/roadmap.md` defines objective, architecture, module
   ownership, phase roadmap, and design loop.
-- `docs/agentrail/product-status.md` separates local proof from live,
+- `docs/vallum/product-status.md` separates local proof from live,
   production, publication, and safety blockers.
-- `docs/agentrail/launch-readiness-evidence.md` maps roadmap areas to
+- `docs/vallum/launch-readiness-evidence.md` maps roadmap areas to
   evidence, commands, blockers, and next gates.
-- `docs/agentrail/execution-slices.md` contains vertical work packets with dependencies,
+- `docs/vallum/execution-slices.md` contains vertical work packets with dependencies,
   acceptance criteria, verification, risk, and escalation triggers.
-- `docs/agentrail/verification-hardening.md` contains invariants, gates, risk findings,
+- `docs/vallum/verification-hardening.md` contains invariants, gates, risk findings,
   and completion audit criteria.
 - Public PRDs, module specs, execution slices, and verification gates map
   thesis needs to PRDs, slices, gates, and failure signals.

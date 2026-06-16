@@ -1,4 +1,4 @@
-# AgentRail Development Roadmap
+# Vallum Development Roadmap
 
 Last updated: 2026-06-09.
 
@@ -18,21 +18,21 @@ unclear sequencing, unsafe payment assumptions, or disconnected modules.
 
 | Raw term | Normalized product term | Confidence | Execution assumption |
 | --- | --- | --- | --- |
-| what is in the docs folder | Public AgentRail product direction | High | Treat the public roadmap as the durable source and keep raw thesis notes local-only. |
+| what is in the docs folder | Public Vallum product direction | High | Treat the public roadmap as the durable source and keep raw thesis notes local-only. |
 | Codex goal | Active planning objective and durable roadmap artifacts | High | Convert into local docs and executable slices. |
 | infra | SDK, policy gateway, MCP server, contract templates, registry, dashboard, tests | High | Build in phases, not all at once. |
-| existing AgentRail | AgentRail code inherited from `github.com/0xCozart/agentrail` | High | Reuse as the core Gas Station sponsorship toolkit inside this fork. |
+| existing Vallum | Vallum code inherited from `github.com/0xCozart/vallum` | High | Reuse as the core Gas Station sponsorship toolkit inside this fork. |
 | accounts/wallets/seeds | Account and wallet lifecycle with signer references | High | Agents can create wallets, but should receive signer refs, not raw seeds. |
 | modules | Package-level deliverables listed in the thesis | High | Map each module to a phase PRD and work packets. |
 | IOTA AgentKit | Descriptive umbrella name | Medium | Use in docs as alternate name. |
-| AgentRail | Preferred product name | High | Use as implementation/package naming unless changed. |
+| Vallum | Preferred product name | High | Use as implementation/package naming unless changed. |
 | executable end to end | A later agent can implement, test, and demo from clean repo setup through demos | High | Require acceptance criteria, verification, and escalation triggers. |
 
 ## Objective Contract
 
 Goal:
-Create an end-to-end executable development roadmap for AgentRail from the
-raw IOTA AgentKit thesis and the existing AgentRail implementation in this fork.
+Create an end-to-end executable development roadmap for Vallum from the
+raw IOTA AgentKit thesis and the existing Vallum implementation in this fork.
 
 Why:
 The project spans blockchain sponsorship, agent identity, payments, smart
@@ -40,7 +40,7 @@ contracts, MCP tooling, policy controls, dashboards, and standards bridges. It
 needs sequencing and verification before implementation or it will sprawl.
 
 Current problem:
-The staging repo previously treated AgentRail as something to build from scratch,
+The staging repo previously treated Vallum as something to build from scratch,
 but this fork already contains the core Gas Station toolkit. The agent roadmap
 needs to extend that foundation and add a safe account and wallet layer for
 agents.
@@ -68,7 +68,7 @@ In scope:
 - objective traceability from thesis need to PRD, slice, gate, and failure
   signal
 - standards compatibility plan for MCP, x402, AP2, and A2A
-- explicit integration boundary with existing AgentRail
+- explicit integration boundary with existing Vallum
 - account/wallet/signer-reference model for agent-created wallets
 
 Out of scope for this planning phase:
@@ -84,7 +84,7 @@ Out of scope for this planning phase:
 Constraints:
 
 - Build boring rails before marketplace.
-- Reuse existing AgentRail for Gas Station sponsorship, app credentials,
+- Reuse existing Vallum for Gas Station sponsorship, app credentials,
   gateway operations, SDK reserve/execute flow, testnet readiness,
   sponsor-wallet hardening, and secret hygiene.
 - Treat policy gateway as a security boundary.
@@ -140,7 +140,7 @@ before implementation:
 - A2A discovery should be treated as an evolving standard; implementation must
   verify the current Agent Card schema/path before coding.
 
-## Existing AgentRail Foundation
+## Existing Vallum Foundation
 
 This fork was created from the existing self-hostable IOTA GasKit toolkit. Its
 source remote is `https://github.com/0xCozart/iota-gaskit`.
@@ -154,7 +154,7 @@ It already owns:
 - testnet readiness and real sponsored testnet execution evidence
 - sponsor-wallet safety, secret scanning, and production hardening docs
 
-AgentRail should not rebuild those surfaces by default. It should add the
+Vallum should not rebuild those surfaces by default. It should add the
 agent-specific layer: manifests, MCP/A2A tools, agent profiles, account/wallet
 signer references, contracts, receipts, x402/AP2/A2A mappings, and agent
 workflow demos that call into or adapt the existing sponsorship foundation.
@@ -164,7 +164,7 @@ workflow demos that call into or adapt the existing sponsorship foundation.
 ```text
 Agent app / LLM / automation runtime
   -> MCP server and optional A2A adapter
-  -> AgentRail SDK
+  -> Vallum SDK
        - agent wallet/account creation
        - signer references and scoped capabilities
   -> Policy gateway
@@ -177,7 +177,7 @@ Agent app / LLM / automation runtime
        - rate limit and abuse controls
        - receipt/audit-log requirement
   -> IOTA integration layer
-       - existing AgentRail / Gas Station sponsorship
+       - existing Vallum / Gas Station sponsorship
        - IOTA Names/profile resolution
        - IOTA Identity DID/VC verification
        - Move contract block execution
@@ -197,8 +197,8 @@ Agent app / LLM / automation runtime
 | Module | Phase | Primary responsibility | Hard dependency |
 | --- | --- | --- | --- |
 | Repo foundation | Phase 0 | Monorepo, scripts, config, test harness | none |
-| Existing AgentRail integration | Phase 0 then all phases | Reuse canonical AgentRail gateway, SDK, deployment, testnet readiness, and sponsor-wallet safety | current fork |
-| Account/wallet manager | Phase 1 then expanded | Agent-created wallets, signer references, safe storage adapters, rotation/revocation | Existing AgentRail safety model |
+| Existing Vallum integration | Phase 0 then all phases | Reuse canonical Vallum gateway, SDK, deployment, testnet readiness, and sponsor-wallet safety | current fork |
+| Account/wallet manager | Phase 1 then expanded | Agent-created wallets, signer references, safe storage adapters, rotation/revocation | Existing Vallum safety model |
 | Manifest package | Phase 1 | Signed intent schema and validation | Phase 0 |
 | Policy gateway | Phase 1 | Deny/allow decisions for sponsored/value actions | Manifest package |
 | SDK | Phase 1 | Agent-native API wrapping policy and IOTA calls | Policy gateway |
@@ -274,7 +274,7 @@ Developers can deploy and use audited/tested contract templates for escrow,
 receipt, pay-per-call, data license, bounty, subscription, reputation receipt,
 and any approved virtual device access lease in localnet/testnet. Physical
 device access remains blocked by
-`docs/agentrail/device-access-safety-gate.md` until a separate owner
+`docs/vallum/device-access-safety-gate.md` until a separate owner
 approved safety design exists.
 
 Public phase summary:
@@ -295,7 +295,7 @@ metadata without bypassing policy controls.
 
 Public phase summary:
 Standards bridge work covers local x402, AP2, and A2A-compatible flows without
-bypassing AgentRail policy controls.
+bypassing Vallum policy controls.
 
 ### Phase 5: Marketplace
 
@@ -334,7 +334,7 @@ Run this loop before each phase and after each major slice:
 
 ## First Implementation Recommendation
 
-Start with Phase 0 and an integration pass against the existing AgentRail code in
+Start with Phase 0 and an integration pass against the existing Vallum code in
 this fork before choosing or rebuilding any sponsorship tooling:
 
 1. inspect the current SDK/gateway/security docs and map reusable
@@ -345,7 +345,7 @@ this fork before choosing or rebuilding any sponsorship tooling:
 4. scaffold or adapt TypeScript monorepo and Move contract test harness
 5. define transaction manifest schema
 6. implement pure policy evaluator with negative tests
-7. expose a local policy gateway API or adapter to existing AgentRail
+7. expose a local policy gateway API or adapter to existing Vallum
 8. add SDK `requestSponsoredAction`
 9. add MCP tool `iota.request_sponsored_transaction`
 10. add mocked/localnet escrow path

@@ -9,10 +9,10 @@ exists.
 ## Executive Decision
 
 Build a real runnable MCP stdio entrypoint for
-`@sacredlabs/agentrail-mcp-server`, but keep AgentRail's center of gravity
+`@vallum/mcp-server`, but keep Vallum's center of gravity
 unchanged:
 
-> AgentRail is IOTA-native infrastructure for agent-safe sponsored execution.
+> Vallum is IOTA-native infrastructure for agent-safe sponsored execution.
 > MCP is one adapter surface that lets agent runtimes call that infrastructure.
 
 The first runnable MCP version should be deliberately narrow. It should expose
@@ -27,9 +27,9 @@ gateway smokes before any new npm publication.
 - Downshift proof: planning-only durable docs slice; no runtime MCP
   implementation in this tranche.
 - Product authority read: `CLAUDE.md`, `docs/CODEBASE_MAP.md`,
-  `docs/architecture.md`, `docs/agentrail/verification-hardening.md`,
+  `docs/architecture.md`, `docs/vallum/verification-hardening.md`,
   `docs/security/secrets.md`, `docs/security/sponsor-wallet.md`, and
-  `docs/agentrail/package-integration-guide.md`.
+  `docs/vallum/package-integration-guide.md`.
 - Current package reality: `packages/mcp-server` exports a programmatic facade
   through `createIotaMcpServer()`, but has no `bin`, stdio transport, hosted
   transport, or agent-client configuration snippets yet.
@@ -39,12 +39,12 @@ gateway smokes before any new npm publication.
 Make the MCP package installable and runnable by an agent host:
 
 ```bash
-npm install @sacredlabs/agentrail-mcp-server@next
-npm exec -- agentrail-mcp
+npm install @vallum/mcp-server@next
+npm exec -- vallum-mcp
 ```
 
 The server must read gateway configuration from the MCP server process
-environment, list the AgentRail sponsored-action tools, call the existing SDK
+environment, list the Vallum sponsored-action tools, call the existing SDK
 gateway route, return structured MCP tool results, and avoid leaking secrets in
 stdout, stderr, logs, reports, package fixtures, or docs. The LLM/agent prompt
 must never receive those env values; at most, an MCP host process receives them
@@ -73,10 +73,10 @@ The existing MCP package already has the right core boundary:
   - `iota.request_sponsored_transaction`;
   - `iota.open_escrow`;
   - JSON-schema-shaped tool descriptors;
-  - manifest input validation through `@sacredlabs/agentrail-manifest`;
+  - manifest input validation through `@vallum/manifest`;
   - structured approval, denial, and invalid-input results.
 - `packages/mcp-server/src/server.ts` constructs an `IotaAgent` from
-  `@sacredlabs/agentrail-sdk` and calls the gateway sponsorship route.
+  `@vallum/sdk` and calls the gateway sponsorship route.
 - `packages/mcp-server/src/tools.test.ts` already proves:
   - happy-path gateway routing;
   - escrow tool routing;
@@ -113,7 +113,7 @@ Update `packages/mcp-server/package.json`:
 ```json
 {
   "bin": {
-    "agentrail-mcp": "./dist/cli.js"
+    "vallum-mcp": "./dist/cli.js"
   },
   "exports": {
     ".": {
@@ -158,16 +158,16 @@ Required environment:
 
 | Name | Required | Purpose | Secret |
 | --- | --- | --- | --- |
-| `AGENTRAIL_GATEWAY_URL` | Yes | AgentRail-compatible policy gateway base URL. | No, but do not print full private deployment URLs in errors when avoidable. |
-| `AGENTRAIL_API_KEY` | Yes | Gateway app credential. | Yes. Never print or return. |
+| `VALLUM_GATEWAY_URL` | Yes | Vallum-compatible policy gateway base URL. | No, but do not print full private deployment URLs in errors when avoidable. |
+| `VALLUM_API_KEY` | Yes | Gateway app credential. | Yes. Never print or return. |
 
 Optional environment:
 
 | Name | Default | Purpose |
 | --- | --- | --- |
-| `AGENTRAIL_MCP_SERVER_NAME` | `agentrail` | MCP server name reported to clients. |
-| `AGENTRAIL_MCP_SERVER_VERSION` | package version | MCP server version when available. |
-| `AGENTRAIL_MCP_LOG_LEVEL` | `error` | Stderr-only diagnostics level. |
+| `VALLUM_MCP_SERVER_NAME` | `vallum` | MCP server name reported to clients. |
+| `VALLUM_MCP_SERVER_VERSION` | package version | MCP server version when available. |
+| `VALLUM_MCP_LOG_LEVEL` | `error` | Stderr-only diagnostics level. |
 
 CLI flags:
 
@@ -181,7 +181,7 @@ Do not add `--api-key`. If a non-secret `--gateway-url` is added later, it must
 not override the rule that API keys come only from server-side env or secret
 stores.
 
-Client configuration snippets must use placeholders for `AGENTRAIL_API_KEY` and
+Client configuration snippets must use placeholders for `VALLUM_API_KEY` and
 must not encourage committing host config files that contain real secrets.
 
 ## MCP Tool Behavior
@@ -200,7 +200,7 @@ Tool requirements:
 - call only the SDK-backed gateway route for sponsored/value-bearing actions;
 - preserve policy denial reason codes in structured content;
 - return transport-level errors only for true protocol/server failures;
-- never include `AGENTRAIL_API_KEY`, raw transaction bytes, user signatures,
+- never include `VALLUM_API_KEY`, raw transaction bytes, user signatures,
   signer refs, sponsor keys, bearer tokens, private keys, mnemonics, local
   secret paths, raw upstream responses, or payment credentials in output.
 
@@ -230,8 +230,8 @@ opened.
 Add focused tests for:
 
 - config parser accepts valid env;
-- config parser rejects missing `AGENTRAIL_GATEWAY_URL`;
-- config parser rejects missing `AGENTRAIL_API_KEY`;
+- config parser rejects missing `VALLUM_GATEWAY_URL`;
+- config parser rejects missing `VALLUM_API_KEY`;
 - config parser does not include API key values in errors;
 - MCP mapping preserves approval structured content;
 - MCP mapping preserves denial structured content and `isError`;
@@ -251,7 +251,7 @@ Add `scripts/smoke-mcp-stdio.ts` and a root script:
 The smoke should:
 
 1. start `createAgentMockGatewayServer()` on loopback;
-2. build env with `AGENTRAIL_GATEWAY_URL` and a fake local API key;
+2. build env with `VALLUM_GATEWAY_URL` and a fake local API key;
 3. spawn `node packages/mcp-server/dist/cli.js`;
 4. perform MCP initialize/list-tools/call-tool exchanges over stdio using the
    official client transport when practical;
@@ -269,11 +269,11 @@ The smoke should:
 
 After the local stdio smoke passes, extend package consumer proof:
 
-- local tarball consumer installs `@sacredlabs/agentrail-mcp-server`;
+- local tarball consumer installs `@vallum/mcp-server`;
 - consumer confirms package root exports still work;
-- consumer confirms `node_modules/.bin/agentrail-mcp` exists;
+- consumer confirms `node_modules/.bin/mcp` exists;
 - the smoke starts a loopback mock gateway from the repo test harness, then
-  starts the consumer bin with `AGENTRAIL_GATEWAY_URL` pointed at that mock
+  starts the consumer bin with `VALLUM_GATEWAY_URL` pointed at that mock
   gateway;
 - consumer repeats list/call proof without importing monorepo internals.
 
@@ -329,7 +329,7 @@ Owned files:
 Acceptance:
 
 - package builds;
-- `agentrail-mcp --help` works from built output;
+- `vallum-mcp --help` works from built output;
 - missing env fails closed with variable names only;
 - API key value is never printed.
 
@@ -383,16 +383,16 @@ Owned files:
   `scripts/smoke-package-mcp-stdio-consumer.ts`
 - `scripts/package-install-smoke.test.ts`
 - `packages/mcp-server/README.md`
-- `docs/agentrail/package-integration-guide.md`
+- `docs/vallum/package-integration-guide.md`
 - `docs/quickstart.md`
 - `README.md`
 
 Acceptance:
 
-- fresh local tarball consumer can find and start `agentrail-mcp`;
+- fresh local tarball consumer can find and start `vallum-mcp`;
 - docs no longer say the MCP package lacks a standalone bin after the bin
   exists;
-- docs still say AgentRail is broader than MCP.
+- docs still say Vallum is broader than MCP.
 
 ### Slice 5: Version And Publication Prep
 
@@ -402,7 +402,7 @@ Owned files:
 
 - `packages/mcp-server/package.json`
 - `package-lock.json`
-- `docs/agentrail/package-release-strategy.md`
+- `docs/vallum/package-release-strategy.md`
 - package publication proof scripts only if they need to understand a
   package-specific version.
 
@@ -436,9 +436,9 @@ Acceptance:
 | MCP stdout polluted by logs. | Protocol-only stdout after transport start; diagnostics stderr only; smoke checks both streams. |
 | MCP tool bypasses policy gateway. | Route tests assert SDK gateway endpoint; no direct Gas Station/IOTA calls. |
 | Local smoke accidentally contacts live network. | Use loopback mock gateway and assert boundary metadata. |
-| Published package cannot be run through the package bin. | Consumer smoke checks `node_modules/.bin/agentrail-mcp` and `npm exec -- agentrail-mcp`. |
+| Published package cannot be run through the package bin. | Consumer smoke checks `node_modules/.bin/mcp` and `npm exec -- vallum-mcp`. |
 | Re-publish fails with duplicate version. | Version decision before real publish; no `0.0.0-prerelease` republish. |
-| Docs imply AgentRail is just MCP. | Keep package guide language: MCP is an adapter surface. |
+| Docs imply Vallum is just MCP. | Keep package guide language: MCP is an adapter surface. |
 
 ## Rollback And Mitigation
 
@@ -456,8 +456,8 @@ Acceptance:
 ## Definition Of Done
 
 The runnable MCP implementation is done when a clean consumer can install the
-package, start `agentrail-mcp` over stdio with server-side env config, list the
-AgentRail tools, call the sponsored-action tool through a mock policy gateway,
+package, start `vallum-mcp` over stdio with server-side env config, list the
+Vallum tools, call the sponsored-action tool through a mock policy gateway,
 observe approval and denial results, and verify that no secrets or raw signing
 material appear in protocol output, logs, docs, or reports.
 

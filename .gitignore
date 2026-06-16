@@ -40,8 +40,9 @@ Thumbs.db
 
 # Local tooling
 tmp/npm_token.txt
-tmp/apex-workflow/
 tmp/agentrail/
+tmp/apex-workflow/
+tmp/vallum/
 tmp/gaskit/
 tmp/iota-move-scaffold-check/
 tmp/tooling/
@@ -53,14 +54,14 @@ docs/audits/
 docs/evals/
 docs/evidence/
 docs/handoffs/
-docs/agentrail/local-plans/
-docs/agentrail/local-handoffs/
+docs/vallum/local-plans/
+docs/vallum/local-handoffs/
 docs/agentic-gaskit/local-plans/
 docs/agentic-gaskit/local-handoffs/
-docs/agentrail/*.local.md
-docs/agentrail/*-draft.md
-docs/agentrail/*-scratch.md
-docs/agentrail/*-handoff-local.md
+docs/vallum/*.local.md
+docs/vallum/*-draft.md
+docs/vallum/*-scratch.md
+docs/vallum/*-handoff-local.md
 
 # Internal planning docs. These patterns prevent re-adding local/private
 # planning artifacts after they are intentionally de-indexed in a dedicated
@@ -96,13 +97,13 @@ docs/**/*-planning.md
 docs/**/*-planning-*.md
 docs/**/*-plan-local.md
 docs/**/*-evidence-local.md
-docs/agentrail/codex-active-goal.md
-docs/agentrail/codex-execution-prompt.md
-docs/agentrail/end-to-end-goal.md
-docs/agentrail/full-roadmap-execution-goal.md
-docs/agentrail/handoff-next-product-build.md
-docs/agentrail/local-dirty-work-review.md
-docs/agentrail/planning-structure-audit.md
+docs/vallum/codex-active-goal.md
+docs/vallum/codex-execution-prompt.md
+docs/vallum/end-to-end-goal.md
+docs/vallum/full-roadmap-execution-goal.md
+docs/vallum/handoff-next-product-build.md
+docs/vallum/local-dirty-work-review.md
+docs/vallum/planning-structure-audit.md
 docs/agentic-gaskit/codex-active-goal.md
 docs/agentic-gaskit/codex-execution-prompt.md
 docs/agentic-gaskit/end-to-end-goal.md
@@ -120,10 +121,10 @@ docs/managed-service-roadmap.md
 docs/milestone-*-proof.md
 docs/milestone-0-proof.md
 docs/team.md
-docs/agentrail/external-api-notes.md
-docs/agentrail/module-specs.md
-docs/agentrail/source-thesis.md
-docs/agentrail/prds/
+docs/vallum/external-api-notes.md
+docs/vallum/module-specs.md
+docs/vallum/source-thesis.md
+docs/vallum/prds/
 docs/agentic-gaskit/external-api-notes.md
 docs/agentic-gaskit/module-specs.md
 docs/agentic-gaskit/source-thesis.md

@@ -1,7 +1,7 @@
 # Product Status Proof
 
 `npm run proof:product-status` is a non-networked proof-boundary command for
-AgentRail.
+Vallum.
 
 It does not contact IOTA services, publish packages, run payment providers, or
 operate public A2A endpoints. Instead, it reports the current product evidence
@@ -36,7 +36,7 @@ surface in one machine-checkable place:
   optional redacted mode-600 local readiness artifact for audit snapshots;
 - payment-provider proof-plan wiring that writes a redacted non-networked
   command/report checklist with kind
-  `agentrail.payment-provider-proof-plan` before any operator-approved
+  `vallum.payment-provider-proof-plan` before any operator-approved
   x402/AP2 provider proof is attempted;
 - payment-provider proof-bundle wiring that writes the report template, proof
   plan, readiness artifact, and redacted summary together as ignored local
@@ -91,7 +91,7 @@ For a redacted machine-readable artifact, use:
 
 ```bash
 npm run proof:product-status -- --json
-npm run proof:product-status -- --out tmp/agentrail/product-status.json
+npm run proof:product-status -- --out tmp/vallum/product-status.json
 ```
 
 The `--out` file is written with mode `600`. It is a local audit artifact, not
@@ -102,8 +102,8 @@ into a single redacted completion audit, use:
 
 ```bash
 npm run proof:roadmap-completion
-npm run proof:roadmap-completion -- --out tmp/agentrail/roadmap-completion-audit.json
-npm run roadmap:write-execution-proof-bundle -- --out tmp/agentrail/roadmap-execution-proof-bundle.json
+npm run proof:roadmap-completion -- --out tmp/vallum/roadmap-completion-audit.json
+npm run roadmap:write-execution-proof-bundle -- --out tmp/vallum/roadmap-execution-proof-bundle.json
 ```
 
 The roadmap completion audit is also non-networked. It keeps
@@ -115,13 +115,13 @@ For an operator handoff packet that writes the roadmap audit plus all existing
 identity, package publication, public A2A, payment-provider, marketplace, and
 custody proof-preparation bundles into one ignored artifact directory, use
 `npm run roadmap:write-execution-proof-bundle -- --out
-tmp/agentrail/roadmap-execution-proof-bundle.json`. The aggregate bundle is still
+tmp/vallum/roadmap-execution-proof-bundle.json`. The aggregate bundle is still
 only preparation evidence; it does not clear live or production blockers.
 
 Expected status in an unconfigured checkout:
 
 ```text
-AgentRail product status not-complete
+Vallum product status not-complete
 localProofOk=true
 complete=false
 ```
@@ -156,7 +156,7 @@ passing production evidence by themselves.
   `testnet-sponsored-execute` check that accepts only documented public digest
   evidence, with optional read-only live digest lookup kept in the separate
   `npm run proof:testnet-digest:live` command. When that lookup is written to
-  an ignored report and referenced with `AGENTRAIL_TESTNET_DIGEST_REPORT`,
+  an ignored report and referenced with `VALLUM_TESTNET_DIGEST_REPORT`,
   product status can accept the current successful lookup without contacting
   IOTA RPC itself.
 - Production and safety claims remain explicit blockers instead of implied
@@ -211,48 +211,48 @@ Use the audit output to choose the next gate:
 ```bash
 npm run verify:local
 npm run verify:fast
-npm run proof:product-status -- --out tmp/agentrail/product-status.json
-npm run roadmap:write-execution-proof-bundle -- --out tmp/agentrail/roadmap-execution-proof-bundle.json
-npm run proof:roadmap-completion -- --out tmp/agentrail/roadmap-completion-audit.json
+npm run proof:product-status -- --out tmp/vallum/product-status.json
+npm run roadmap:write-execution-proof-bundle -- --out tmp/vallum/roadmap-execution-proof-bundle.json
+npm run proof:roadmap-completion -- --out tmp/vallum/roadmap-completion-audit.json
 npm run proof:testnet-digest
-npm run proof:testnet-digest:live -- --report tmp/agentrail/testnet-digest-proof.json
+npm run proof:testnet-digest:live -- --report tmp/vallum/testnet-digest-proof.json
 npm run gas-station:render-config
 npm run gas-station:runtime-preflight
-AGENTRAIL_GAS_STATION_RUNTIME_MODE=managed-upstream npm run gas-station:runtime-preflight
+VALLUM_GAS_STATION_RUNTIME_MODE=managed-upstream npm run gas-station:runtime-preflight
 npm run gas-station:docker-direct -- --dry-run
-npm run operator:write-report-template -- --kind testnet-upstream --out tmp/agentrail/testnet-upstream-report-template.json
-npm run sponsor:check-funding -- --report tmp/agentrail/sponsor-funding-report.json
-npm run diagnose:gas-station -- --report tmp/agentrail/testnet-upstream-diagnostic.json
+npm run operator:write-report-template -- --kind testnet-upstream --out tmp/vallum/testnet-upstream-report-template.json
+npm run sponsor:check-funding -- --report tmp/vallum/sponsor-funding-report.json
+npm run diagnose:gas-station -- --report tmp/vallum/testnet-upstream-diagnostic.json
 npm run a2a:write-static-discovery-bundle -- --agent-card <signed-card.json> --jwks <jwks.json> --public-base-url <url> --public-jwks-url <url> --out-dir <dir>
 npm run a2a:check-static-discovery-bundle -- --out-dir <dir> --expected-public-base-url <url> --expected-public-jwks-url <url>
 npm run smoke:a2a-static-discovery-local -- --out-dir <dir> --expected-public-base-url <url> --expected-public-jwks-url <url>
-npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/agentrail/a2a-public-discovery-report-template.json
-npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/agentrail/a2a-public-push-delivery-report-template.json
-npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/agentrail/a2a-external-conformance-report-template.json
-npm run a2a:write-public-proof-plan -- --out tmp/agentrail/a2a-public-proof-plan.json
-npm run a2a:write-public-proof-bundle -- --out tmp/agentrail/a2a-public-proof-bundle.json
+npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/vallum/a2a-public-discovery-report-template.json
+npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/vallum/a2a-public-push-delivery-report-template.json
+npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/vallum/a2a-external-conformance-report-template.json
+npm run a2a:write-public-proof-plan -- --out tmp/vallum/a2a-public-proof-plan.json
+npm run a2a:write-public-proof-bundle -- --out tmp/vallum/a2a-public-proof-bundle.json
 npm run proof:a2a-public-readiness
-npm run operator:write-report-template -- --kind package-publication --out tmp/agentrail/package-publication-report-template.json
-npm run package:write-publication-proof-bundle -- --out tmp/agentrail/package-publication-proof-bundle.json
+npm run operator:write-report-template -- --kind package-publication --out tmp/vallum/package-publication-report-template.json
+npm run package:write-publication-proof-bundle -- --out tmp/vallum/package-publication-proof-bundle.json
 npm run proof:package-publication-readiness
-npm run package:write-publication-proof-plan -- --out tmp/agentrail/package-publication-proof-plan.json
-npm run operator:write-report-template -- --kind payment-provider-live --out tmp/agentrail/payment-provider-live-report-template.json
-npm run payment:write-provider-proof-bundle -- --out tmp/agentrail/payment-provider-proof-bundle.json
+npm run package:write-publication-proof-plan -- --out tmp/vallum/package-publication-proof-plan.json
+npm run operator:write-report-template -- --kind payment-provider-live --out tmp/vallum/payment-provider-live-report-template.json
+npm run payment:write-provider-proof-bundle -- --out tmp/vallum/payment-provider-proof-bundle.json
 npm run proof:payment-provider-readiness
-npm run operator:write-report-template -- --kind marketplace-production --out tmp/agentrail/marketplace-production-report-template.json
-npm run marketplace:write-production-proof-bundle -- --out tmp/agentrail/marketplace-production-proof-bundle.json
+npm run operator:write-report-template -- --kind marketplace-production --out tmp/vallum/marketplace-production-report-template.json
+npm run marketplace:write-production-proof-bundle -- --out tmp/vallum/marketplace-production-proof-bundle.json
 npm run proof:marketplace-readiness
-npm run marketplace:write-production-proof-plan -- --out tmp/agentrail/marketplace-production-proof-plan.json
-npm run operator:write-report-template -- --kind custody-production --out tmp/agentrail/custody-production-report-template.json
-npm run custody:write-production-proof-bundle -- --out tmp/agentrail/custody-production-proof-bundle.json
+npm run marketplace:write-production-proof-plan -- --out tmp/vallum/marketplace-production-proof-plan.json
+npm run operator:write-report-template -- --kind custody-production --out tmp/vallum/custody-production-report-template.json
+npm run custody:write-production-proof-bundle -- --out tmp/vallum/custody-production-proof-bundle.json
 npm run proof:custody-readiness
-npm run custody:write-production-proof-plan -- --out tmp/agentrail/custody-production-proof-plan.json
-npm run payment:write-provider-proof-plan -- --out tmp/agentrail/payment-provider-proof-plan.json
-npm run operator:write-report-template -- --kind testnet-upstream --out tmp/agentrail/testnet-upstream-report-template.json
+npm run custody:write-production-proof-plan -- --out tmp/vallum/custody-production-proof-plan.json
+npm run payment:write-provider-proof-plan -- --out tmp/vallum/payment-provider-proof-plan.json
+npm run operator:write-report-template -- --kind testnet-upstream --out tmp/vallum/testnet-upstream-report-template.json
 npm run gas-station:docker-direct -- --status
-npm run sponsor:write-funding-request -- --out tmp/agentrail/sponsor-funding-request.json
-npm run sponsor:request-faucet-funds -- --execute --out tmp/agentrail/sponsor-faucet-request.json
-npm run sponsor:check-funding -- --report tmp/agentrail/sponsor-funding-report.json
+npm run sponsor:write-funding-request -- --out tmp/vallum/sponsor-funding-request.json
+npm run sponsor:request-faucet-funds -- --execute --out tmp/vallum/sponsor-faucet-request.json
+npm run sponsor:check-funding -- --report tmp/vallum/sponsor-funding-report.json
 npm run proof:verification-profiles
 npm run proof:live-status
 npm run proof:launch-readiness

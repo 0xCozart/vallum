@@ -4,29 +4,29 @@ Last updated: 2026-06-09.
 
 ## Decision
 
-AgentRail should support easy account and wallet creation, including
+Vallum should support easy account and wallet creation, including
 agent-created wallets, but it must be signer-reference-first.
 
 Agents may create wallets. Humans and operators may fund those wallets directly
-or through AgentRail-controlled sponsorship. Agents must not receive raw seeds,
+or through Vallum-controlled sponsorship. Agents must not receive raw seeds,
 mnemonics, private keys, or unrestricted signing authority as their default
 interface.
 
-## Relationship To AgentRail
+## Relationship To Vallum
 
-The upstream AgentRail codebase is the canonical foundation for Gas Station
+The upstream Vallum codebase is the canonical foundation for Gas Station
 sponsorship, policy gateway behavior, app credentials, quotas, observability,
 testnet readiness, sponsor-wallet safety, and secret hygiene.
 
-This fork extends that foundation. It should not duplicate AgentRail's gateway or
-deployment layer. AgentRail adds agent wallet lifecycle, signer-reference
+This fork extends that foundation. It should not duplicate Vallum's gateway or
+deployment layer. Vallum adds agent wallet lifecycle, signer-reference
 routing, agent identity binding, and policy-scoped execution.
 
 ## Wallet Roles
 
 | Role | Created by | Holds funds | Default signing surface | Notes |
 | --- | --- | --- | --- | --- |
-| Sponsor wallet | Human/operator | Yes, operational gas funds | Gas Station or external signer | Existing AgentRail owns the operational safety boundary. |
+| Sponsor wallet | Human/operator | Yes, operational gas funds | Gas Station or external signer | Existing Vallum owns the operational safety boundary. |
 | Agent wallet | Agent through approved SDK/CLI/API | Maybe | Signer reference with scoped capabilities | Agents can create these, but should not see seeds by default. |
 | User wallet | Human/user | Maybe | User wallet or external signer | User signs their own intent where required. |
 | Provider wallet | Human/provider or organization | Yes | External signer or verified profile signer | Used for escrow/provider payouts. |
@@ -42,7 +42,7 @@ routing, agent identity binding, and policy-scoped execution.
   of the reference alone must not authorize signing.
 - Agent profiles bind to wallet address, signer reference, owner DID, agent DID,
   capability scope, creation time, rotation state, and revocation state.
-- Humans/operators can fund agent wallets directly or through AgentRail-sponsored
+- Humans/operators can fund agent wallets directly or through Vallum-sponsored
   workflows.
 - Sponsored/value-bearing actions still pass through the policy gateway.
 - Signing authority is scoped by policy: contract templates, methods, budgets,
@@ -57,8 +57,8 @@ routing, agent identity binding, and policy-scoped execution.
 | In-memory ephemeral signer | Tests and demos | None after process exit | Unit tests prove no file writes. |
 | Encrypted local keystore | Local development | Encrypted key material only | Tests cover wrong passphrase, file permissions, and redacted logs. |
 | Environment signer | Compatibility with existing local scripts | Environment-owned, not app-owned | Readiness checks only; never printed or committed. |
-| External signer/KMS | Production direction | Outside AgentRail process | Adapter contract tests and docs; real provider requires explicit scope. |
-| Gas Station sponsor signer | Sponsor gas operations | Existing AgentRail/Gas Station boundary | Keep separate from agent wallet material. |
+| External signer/KMS | Production direction | Outside Vallum process | Adapter contract tests and docs; real provider requires explicit scope. |
+| Gas Station sponsor signer | Sponsor gas operations | Existing Vallum/Gas Station boundary | Keep separate from agent wallet material. |
 
 ## Recovery Rules
 
@@ -81,7 +81,7 @@ Recovery workflows must:
 - No hidden seed export.
 - No agent-visible raw private keys.
 - No production custody service without a separate security/legal review.
-- No replacement for existing AgentRail sponsor-wallet operations.
+- No replacement for existing Vallum sponsor-wallet operations.
 - No browser exposure of app credentials, sponsor keys, mnemonics, transaction
   bytes, user signatures, or Gas Station bearer tokens.
 
@@ -118,7 +118,7 @@ slash, or custody funds.
 Production custody claims remain blocked unless `CUSTODY_PRODUCTION_REPORT`
 points to an ignored redacted structured report from an operator-approved
 custody review. The report must be status-only JSON with `schemaVersion=1`,
-`kind=agentrail.custody-production-proof`, `result=passed`, a recent
+`kind=vallum.custody-production-proof`, `result=passed`, a recent
 `observedAt`, `custodyMode=external-signer` or `custodyMode=kms`, and check ids
 for signer-reference contract review, no agent secret exposure, KMS/external
 signer review, recovery/export review, rotation/revocation review, audit
@@ -132,7 +132,7 @@ When `CUSTODY_PRODUCTION_REPORT` is missing, generate the status-only template
 first:
 
 ```bash
-npm run operator:write-report-template -- --kind custody-production --out tmp/agentrail/custody-production-report-template.json
+npm run operator:write-report-template -- --kind custody-production --out tmp/vallum/custody-production-report-template.json
 ```
 
 The generated template is preparation material only. It does not contact KMS
@@ -141,7 +141,7 @@ endpoints, or live wallet infrastructure, and it is not accepted as production
 custody proof until an operator completes the required review and sets
 `CUSTODY_PRODUCTION_REPORT` to a valid ignored structured report.
 
-`npm run proof:custody-readiness -- --out tmp/agentrail/custody-readiness.json`
+`npm run proof:custody-readiness -- --out tmp/vallum/custody-readiness.json`
 writes the same readiness state as a redacted mode-0600 local JSON artifact for
 audit snapshots. The artifact does not contact KMS providers, external
 signers, custody providers, IOTA services, Gas Station endpoints, or live
@@ -156,13 +156,13 @@ production proof-plan writer for operators:
 - emits command order, current blocker codes, required structured report
   fields, required check ids, and proof boundaries;
 - can write an ignored local JSON artifact such as
-  `tmp/agentrail/custody-production-proof-plan.json`;
+  `tmp/vallum/custody-production-proof-plan.json`;
 - keeps seeds, mnemonics, private keys, raw keypairs, signer material,
   credentials, authorization headers, payloads, signatures, exported keys, and
   local secret paths out of output and Git.
 
 `npm run custody:write-production-proof-bundle -- --out
-tmp/agentrail/custody-production-proof-bundle.json` writes the custody production
+tmp/vallum/custody-production-proof-bundle.json` writes the custody production
 report template, proof plan, readiness artifact, and redacted summary together
 as ignored local artifacts. The bundle is still a preparation artifact: it does
 not contact KMS providers, external signers, custody providers, IOTA services,

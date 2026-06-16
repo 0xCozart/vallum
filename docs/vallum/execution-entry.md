@@ -1,14 +1,14 @@
-# AgentRail Execution Entry
+# Vallum Execution Entry
 
 Last updated: 2026-06-10.
 
 ## Purpose
 
-This is the entry document for starting actual AgentRail product
+This is the entry document for starting actual Vallum product
 implementation.
 
 The repo migration is complete enough to build here. The product is not
-complete. The current codebase still implements the AgentRail sponsorship
+complete. The current codebase still implements the Vallum sponsorship
 foundation: policy gateway, SDK, local service, examples, docs, readiness, and
 safe smoke paths. Agentic accounts, manifests, MCP/A2A tools, registry,
 receipts, and contract workflows are next.
@@ -16,13 +16,13 @@ receipts, and contract workflows are next.
 ## Objective Contract
 
 Goal:
-Turn the migrated AgentRail fork into a working AgentRail MVP by adding the
-first agent-specific primitives without weakening existing AgentRail sponsorship
+Turn the migrated Vallum fork into a working Vallum MVP by adding the
+first agent-specific primitives without weakening existing Vallum sponsorship
 safety.
 
 Why:
 Agents need IOTA execution rails, but the product fails if agents receive raw
-seeds, bypass the policy gateway, or rebuild proven AgentRail sponsorship behavior
+seeds, bypass the policy gateway, or rebuild proven Vallum sponsorship behavior
 from scratch.
 
 Desired first outcome:
@@ -56,10 +56,10 @@ Non-goals for the first implementation pass:
 
    - `CLAUDE.md`
    - `docs/CODEBASE_MAP.md`
-   - `docs/agentrail/migration-plan.md`
-   - `docs/agentrail/account-wallet-safety.md`
-   - `docs/agentrail/execution-slices.md`
-   - `docs/agentrail/verification-hardening.md`
+   - `docs/vallum/migration-plan.md`
+   - `docs/vallum/account-wallet-safety.md`
+   - `docs/vallum/execution-slices.md`
+   - `docs/vallum/verification-hardening.md`
 
 3. Run baseline local proof before editing:
 
@@ -71,7 +71,7 @@ Non-goals for the first implementation pass:
    ```
 
 4. Start with Slice 1.0 from
-   `docs/agentrail/execution-slices.md`.
+   `docs/vallum/execution-slices.md`.
 
 ## First Product Slice
 
@@ -83,10 +83,10 @@ Recommended package:
 
 Recommended package name for now:
 
-- `@sacredlabs/agentrail-accounts`
+- `@vallum/accounts`
 
-The public package namespace is now `@sacredlabs/agentrail-*`. Keep any future
-move to `@agentrail/*` as a dedicated compatibility and release-planning
+The public package namespace is now `@vallum/*`. Keep any future
+move to `@vallum/*` as a dedicated compatibility and release-planning
 decision after npm support approves the org scope.
 
 Minimum public types:
@@ -134,7 +134,7 @@ missing idempotency keys.
 After Slice 1.1 passes, extend policy evaluation for agent-aware sponsored
 actions.
 
-Do not bypass existing AgentRail policy behavior. Add agent checks around the
+Do not bypass existing Vallum policy behavior. Add agent checks around the
 current foundation:
 
 - known agent/owner
@@ -186,6 +186,6 @@ Every implementation slice should end with:
 - commit hash
 
 Record local continuation notes under ignored handoff or execution-manifest
-paths, such as `docs/agentrail/local-handoffs/` or
+paths, such as `docs/vallum/local-handoffs/` or
 `tmp/apex-workflow/`, rather than adding private Codex planning state to the
 public documentation site.

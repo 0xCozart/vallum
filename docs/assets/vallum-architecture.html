@@ -1,5 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vallum Architecture</title>
+  <style>
+    body { margin: 0; background: #020617; color: #e2e8f0; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    main { max-width: 1280px; margin: 0 auto; padding: 24px; }
+    .card { border: 1px solid #1e293b; border-radius: 18px; overflow: hidden; box-shadow: 0 24px 80px rgba(0,0,0,.35); }
+    svg { display: block; width: 100%; height: auto; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="card" aria-label="Vallum architecture diagram">
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="760" viewBox="0 0 1280 760" role="img" aria-labelledby="title desc">
-  <title id="title">AgentRail Architecture</title>
+  <title id="title">Vallum Architecture</title>
   <desc id="desc">Architecture diagram showing demo app, TypeScript SDK, policy gateway, usage store, operator dashboard, IOTA Gas Station, IOTA RPC, and observability components.</desc>
   <defs>
     <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
@@ -38,7 +54,7 @@
   <rect class="bg" width="1280" height="760"/>
   <rect width="1280" height="760" fill="url(#grid)" opacity="0.75"/>
 
-  <text x="60" y="58" class="title">AgentRail Open-Source Toolkit</text>
+  <text x="60" y="58" class="title">Vallum Open-Source Toolkit</text>
   <text x="60" y="84" class="subtitle">Deployment + policy gateway + SDK + dashboard + observability around IOTA Gas Station</text>
 
   <!-- flows behind boxes -->
@@ -53,7 +69,7 @@
 
   <!-- boundary -->
   <rect x="480" y="145" width="545" height="390" rx="14" class="boundary"/>
-  <text x="500" y="172" class="tiny">AgentRail controlled infrastructure boundary</text>
+  <text x="500" y="172" class="tiny">Vallum controlled infrastructure boundary</text>
 
   <!-- components -->
   <rect x="70" y="180" width="150" height="100" rx="8" class="mask"/><rect x="70" y="180" width="150" height="100" rx="8" class="frontend"/>
@@ -106,3 +122,8 @@
   <text x="90" y="635" class="sublabel">Sponsor keys stay server-side</text>
   <text x="90" y="655" class="sublabel">Policy rejects unsafe sponsorship before Gas Station</text>
 </svg>
+
+    </div>
+  </main>
+</body>
+</html>

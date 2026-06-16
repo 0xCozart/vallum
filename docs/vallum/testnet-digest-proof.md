@@ -22,7 +22,7 @@ FLdnYRUACAKQn8CwugEv1u6gYTh9jBr8rGMk2JZ2adsd
 It verifies that the known public digest appears in:
 
 - `docs/testnet-attempts.md`
-- `docs/agentrail/testnet-digest-proof.md`
+- `docs/vallum/testnet-digest-proof.md`
 - `docs/reviewer-walkthrough.md`
 
 Run it from the repository root:
@@ -34,7 +34,7 @@ npm run proof:testnet-digest
 Expected local status:
 
 ```text
-AgentRail testnet digest proof documented-local
+Vallum testnet digest proof documented-local
 documented=true
 liveChecked=false
 verified=false
@@ -60,7 +60,7 @@ spend gas, sign transactions, reserve sponsored gas, or use sponsor secrets.
 The expected successful live status is:
 
 ```text
-AgentRail testnet digest proof verified-testnet
+Vallum testnet digest proof verified-testnet
 liveChecked=true
 verified=true
 effectsStatus=success
@@ -87,11 +87,11 @@ For fresh sponsored execute runs, capture an ignored sanitized execution report
 with:
 
 ```bash
-npm run execute:testnet-demo -- --report tmp/agentrail/sponsored-execute-report.json
+npm run execute:testnet-demo -- --report tmp/vallum/sponsored-execute-report.json
 ```
 
 That report is operational evidence only. It redacts addresses and opaque
 execution ids, and it is not accepted by readiness gates as digest proof until
 the public digest is added to tracked evidence and verified with
 `npm run proof:testnet-digest:live -- --digest <digest> --report
-tmp/agentrail/testnet-digest-proof.json`.
+tmp/vallum/testnet-digest-proof.json`.

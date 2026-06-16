@@ -4,30 +4,30 @@ Last updated: 2026-06-16.
 
 ## Decision
 
-AgentRail publishes the current prerelease line under the Sacred Labs npm org
-using `@sacredlabs/agentrail-*` workspace package names.
+Vallum publishes the current prerelease line under `@vallum/*` workspace
+package names.
 
 Consumer package selection, SDK configuration, and agent-runtime guidance live
 in [Package Integration Guide](package-integration-guide.md).
 
-The repository root remains `agentrail` and `private: true` so the
-monorepo root cannot be accidentally published. Publishable workspace packages
-remain public prerelease packages with `publishConfig.access=public` and
+The repository root remains `vallum` and `private: true` so the monorepo root
+cannot be accidentally published. Publishable workspace packages are public
+prerelease packages with `publishConfig.access=public` and
 `publishConfig.tag=next`.
 
 The runnable MCP stdio CLI is published as an MCP-package-only prerelease bump:
-`@sacredlabs/agentrail-mcp-server@0.0.1-mcp.0` on the npm `next` dist-tag. The
-rest of the public workspace packages remain on `0.0.0-prerelease`, and the
-MCP package's internal AgentRail dependencies intentionally continue to pin
-that current published prerelease line.
+`@vallum/mcp-server@0.0.1-mcp.0` on the npm `next` dist-tag. The rest of the
+public workspace packages remain on `0.0.0-prerelease`, and the MCP package's
+internal Vallum dependencies intentionally continue to pin that current
+prerelease line.
 
 ## Why
 
-The shorter `@agentrail/*` npm package scope is blocked until npm support
-approves creation of the `agentrail` organization scope. Publishing under
-`@sacredlabs/agentrail-*` keeps the product name visible, uses the organization
-the operator already controls, and avoids publishing bare `@sacredlabs/*`
-packages that could collide with future Sacred Labs projects.
+The old package namespace no longer matches the chosen product name. Moving the
+workspace to `@vallum/*` keeps the package surface aligned with the brand and
+forces any real registry publication to pass through fresh operator proof for
+scope ownership, registry authorization, dist-tags, provenance decisions, and
+rollback readiness.
 
 This namespace decision is package-distribution only. It must not change
 wallet, policy gateway, SDK, MCP, payment, identity, A2A, marketplace, or live
@@ -35,17 +35,17 @@ IOTA behavior.
 
 ## Current Publishable Packages
 
-- `@sacredlabs/agentrail-accounts`
-- `@sacredlabs/agentrail-contracts-metadata`
-- `@sacredlabs/agentrail-manifest`
-- `@sacredlabs/agentrail-marketplace`
-- `@sacredlabs/agentrail-mcp-server`
-- `@sacredlabs/agentrail-policy-gateway`
-- `@sacredlabs/agentrail-receipts`
-- `@sacredlabs/agentrail-registry`
-- `@sacredlabs/agentrail-sdk`
-- `@sacredlabs/agentrail-shared-types`
-- `@sacredlabs/agentrail-standards`
+- `@vallum/accounts`
+- `@vallum/contracts-metadata`
+- `@vallum/manifest`
+- `@vallum/marketplace`
+- `@vallum/mcp-server`
+- `@vallum/policy-gateway`
+- `@vallum/receipts`
+- `@vallum/registry`
+- `@vallum/sdk`
+- `@vallum/shared-types`
+- `@vallum/standards`
 
 Private workspaces such as the demo app, docs site, and policy gateway service
 are not publishable package surfaces.
@@ -55,14 +55,14 @@ are not publishable package surfaces.
 The release metadata tests enforce:
 
 - root package is private;
-- public package names stay in `@sacredlabs/agentrail-*`;
+- public package names stay in `@vallum/*`;
 - package versions stay aligned on `0.0.0-prerelease`, except the reviewed
   MCP-package-only runnable stdio version
-  `@sacredlabs/agentrail-mcp-server@0.0.1-mcp.0`;
+  `@vallum/mcp-server@0.0.1-mcp.0`;
 - packages publish ESM `dist/index.js` plus `dist/index.d.ts`;
 - package exports expose only reviewed built entrypoints;
 - the MCP server package is the only public package with a CLI bin, and that
-  bin is `agentrail-mcp` pointing at `dist/cli.js`;
+  bin is `vallum-mcp` pointing at `dist/cli.js`;
 - package files include built JavaScript, built types, `LICENSE`, and
   `README.md`;
 - `publishConfig` uses public access and the `next` tag;
@@ -109,14 +109,14 @@ package sets, or downstream application compatibility.
   project with lifecycle scripts, audit, funding prompts, and package-lock
   writes disabled;
 - runs a generated consumer program that imports only package root entrypoints
-  from `@sacredlabs/agentrail-sdk`, `@sacredlabs/agentrail-manifest`, and
-  `@sacredlabs/agentrail-policy-gateway`;
+  from `@vallum/sdk`, `@vallum/manifest`, and
+  `@vallum/policy-gateway`;
 - starts an in-process mock policy gateway and exercises the canonical paid
   MCP-style flow through SDK-to-gateway calls;
 - proves approval, policy denial, failed-payment withholding, receipt event
   evidence, and redaction markers without live network calls.
 
-This proves a fresh local consumer project can run the first AgentRail
+This proves a fresh local consumer project can run the first Vallum
 adoption wedge from packed package APIs. It does not prove npm registry
 installability, package-name availability, live payments, custody,
 marketplace, public A2A hosting, or live IOTA/testnet execution. The command is
@@ -127,18 +127,18 @@ opt-in and intentionally stays out of `verify:fast`, `verify:local`, and
 adoption proof:
 
 - contacts the public npm registry;
-- installs the published `@sacredlabs/agentrail-*` packages into a fresh
+- installs the published `@vallum/*` packages into a fresh
   temporary consumer project;
 - uses `NPM_CONFIG_MIN_RELEASE_AGE=0` because this machine can hide newly
   published packages behind a local release-age gate;
 - runs the same package-root paid MCP-style approval, policy-denial,
   failed-payment, receipt, and redaction checks;
 - writes a redacted local report to
-  `tmp/agentrail/npm-registry-consumer-proof.json`.
+  `tmp/vallum/npm-registry-consumer-proof.json`.
 
 This proves the current published package set can be installed from npm and
-used by a fresh consumer for the first AgentRail adoption wedge. It is still
-local mock execution proof, not live IOTA, live payment-provider, custody,
+used by a fresh consumer for the first Vallum adoption wedge. It is still local
+mock execution proof, not live IOTA, live payment-provider, custody,
 marketplace, or public A2A proof. The command is intentionally excluded from
 `verify:fast`, `verify:local`, and `grant:check` because it is networked and
 registry-state dependent.
@@ -149,11 +149,11 @@ published-package proof for the runnable MCP stdio bin:
 - contacts the public npm registry;
 - installs the published MCP server package plus required mock-gateway support
   packages into a fresh temporary consumer project;
-- starts `node_modules/.bin/agentrail-mcp`;
+- starts `node_modules/.bin/mcp`;
 - proves initialize, tool listing, approval, policy denial, invalid input,
   stdin-close shutdown, and redaction markers against a loopback mock gateway;
 - writes a redacted local report to
-  `tmp/agentrail/npm-registry-mcp-stdio-consumer-proof.json`.
+  `tmp/vallum/npm-registry-mcp-stdio-consumer-proof.json`.
 
 This proves registry install plus local MCP stdio execution only, not live
 IOTA, production gateway, payment, custody, marketplace, or public A2A
@@ -178,14 +178,14 @@ When the structured report is missing, the readiness gate points operators at
 the ignored report-template command first:
 
 ```bash
-npm run operator:write-report-template -- --kind package-publication --out tmp/agentrail/package-publication-report-template.json
+npm run operator:write-report-template -- --kind package-publication --out tmp/vallum/package-publication-report-template.json
 ```
 
 The template is preparation only. It remains `pending-operator-proof` until a
 real operator-approved publication proof fills in status-only passing evidence.
 
 The structured report must be status-only JSON with `schemaVersion=1`,
-`kind=agentrail.package-publication-proof`, `result=passed`,
+`kind=vallum.package-publication-proof`, `result=passed`,
 `registry=npm`, a recent `observedAt`, every current public package name, and
 check ids for pack dry-run, local tarball install, npm publish dry-run,
 npm registry paid MCP consumer proof, registry install, provenance review, and
@@ -197,7 +197,7 @@ The readiness gate can also emit a redacted local audit artifact:
 
 ```bash
 npm run proof:package-publication-readiness -- --json
-npm run proof:package-publication-readiness -- --out tmp/agentrail/package-publication-readiness.json
+npm run proof:package-publication-readiness -- --out tmp/vallum/package-publication-readiness.json
 ```
 
 The artifact records schema version, kind, timestamp, local proof status,
@@ -215,13 +215,13 @@ publication proof-plan writer for operators:
 - emits command order, current blocker codes, package names, required
   structured report fields, required check ids, and proof boundaries;
 - can write an ignored local JSON artifact such as
-  `tmp/agentrail/package-publication-proof-plan.json`;
+  `tmp/vallum/package-publication-proof-plan.json`;
 - keeps npm publication credentials, OTPs, npmrc contents, authorization
   headers, raw registry responses, signatures, package-owner account details,
   and local secret paths out of output and Git.
 
 `npm run package:write-publication-proof-bundle -- --out
-tmp/agentrail/package-publication-proof-bundle.json` writes the proof plan, the
+tmp/vallum/package-publication-proof-bundle.json` writes the proof plan, the
 publication readiness artifact, and the package-publication report template
 together as ignored local artifacts. It also writes a summary with package
 names, blocker codes, required report fields, required check ids, command
@@ -232,14 +232,9 @@ structured publication report.
 
 ## Publication Evidence
 
-The `0.0.0-prerelease` package set is published to npm under
-`@sacredlabs/agentrail-*`. npm also currently exposes
-`latest=0.0.0-prerelease`; an attempted `latest` deletion returned npm `E400`,
-so the registry state remains `latest` on the prerelease package set.
-
-The MCP package additionally has a runnable-stdio prerelease:
-`@sacredlabs/agentrail-mcp-server@0.0.1-mcp.0`. Its npm `next` dist-tag points
-to `0.0.1-mcp.0`; its npm `latest` dist-tag remains `0.0.0-prerelease`.
+The `0.0.0-prerelease` package set is published to npm under `@vallum/*`. The
+MCP package additionally has a runnable-stdio prerelease:
+`@vallum/mcp-server@0.0.1-mcp.0`.
 
 Publication evidence for the current prerelease includes:
 
@@ -250,38 +245,35 @@ Publication evidence for the current prerelease includes:
 - `npm run smoke:npm-registry-mcp-stdio-consumer`
 - `npm run publish:dry-run`
 - real `npm publish --tag next --access public`
-- registry dist-tag proof showing the MCP package has
-  `next=0.0.1-mcp.0` and `latest=0.0.0-prerelease`;
-- registry dist-tag proof showing the other public packages remain on the
-  current `0.0.0-prerelease` line;
-- registry install/import proof for all 11 public packages
+- registry visibility proof for all 11 public `@vallum/*` packages;
+- old package deletion proof showing the `@sacredlabs/agentrail-*` package
+  line returns npm E404;
+- registry install/import proof for all public packages;
 - redacted npm registry consumer proof at
-  `tmp/agentrail/npm-registry-consumer-proof.json`
+  `tmp/vallum/npm-registry-consumer-proof.json`
 - redacted npm registry MCP stdio proof at
-  `tmp/agentrail/npm-registry-mcp-stdio-consumer-proof.json`
+  `tmp/vallum/npm-registry-mcp-stdio-consumer-proof.json`
 - an ignored local structured report accepted by
-  `PACKAGE_PUBLICATION_REPORT=tmp/agentrail/package-publication-report-sacredlabs.json npm run proof:package-publication-readiness`
+  `PACKAGE_PUBLICATION_REPORT=tmp/vallum/package-publication-report.json npm run proof:package-publication-readiness`
 
-This machine has npm's local `min-release-age` safety gate enabled. Immediate
-post-publish registry install proof used `NPM_CONFIG_MIN_RELEASE_AGE=0` so the
-fresh prerelease could be verified before the local age window elapsed.
+This machine may have npm's local `min-release-age` safety gate enabled. If an
+operator needs immediate post-publish registry install proof, use
+`NPM_CONFIG_MIN_RELEASE_AGE=0` deliberately and record that choice in the
+ignored publication report.
 
-Do not claim the future `@agentrail/*` namespace, provenance signing,
-stable package release, production launch readiness, live IOTA execution,
-payment-provider settlement, marketplace production operation, or production
-custody from this package publication. The registry-retained `latest` tag is a
-dist-tag state for the first prerelease package set, not a stable release claim.
+Do not claim provenance signing, stable package release, production launch
+readiness, live IOTA execution, payment-provider settlement, marketplace
+production operation, or production custody from this package publication.
 
 ## Runnable MCP Package Publication
 
-The source tree publishes
-`@sacredlabs/agentrail-mcp-server@0.0.1-mcp.0` for the runnable stdio CLI. This
-is not a coordinated workspace version bump because the CLI/bin transport
-change is isolated to the MCP adapter package, while the SDK, gateway,
-manifest, registry, receipt, and shared-type packages keep the already
-published `0.0.0-prerelease` API line.
+The source tree publishes `@vallum/mcp-server@0.0.1-mcp.0` for the runnable
+stdio CLI. This is not a coordinated workspace version bump because the CLI/bin
+transport change is isolated to the MCP adapter package, while the SDK,
+gateway, manifest, registry, receipt, and shared-type packages keep the
+`0.0.0-prerelease` API line.
 
-Before claiming npm availability for `agentrail-mcp`, operators proved the
+Before claiming npm availability for `vallum-mcp`, operators proved the
 selected package metadata without publishing:
 
 ```bash
@@ -289,16 +281,16 @@ npm run pack:check
 npm run publish:dry-run
 ```
 
-The pack proof must include `@sacredlabs/agentrail-mcp-server` and its
-`agentrail-mcp` bin. The publish dry-run is still a metadata rehearsal only; it
+The pack proof must include `@vallum/mcp-server` and its
+`vallum-mcp` bin. The publish dry-run is still a metadata rehearsal only; it
 must not be treated as proof of npm account ownership, package-name
 availability, 2FA readiness, provenance signing, registry authorization, or
 successful real publication.
 
-Real publication of `@sacredlabs/agentrail-mcp-server@0.0.1-mcp.0` was
-operator-approved on 2026-06-16 and published to npm with `--access public`
-and `--tag next`. Post-publish registry proof installed the newly published
-MCP version and started `agentrail-mcp` from the npm package with:
+Real publication of `@vallum/mcp-server@0.0.1-mcp.0` was operator-approved on
+2026-06-16 and published to npm with `--access public` and `--tag next`.
+Post-publish registry proof installed the newly published MCP version and
+started `vallum-mcp` from the npm package with:
 
 ```bash
 npm run smoke:npm-registry-mcp-stdio-consumer
@@ -320,16 +312,11 @@ For this first prerelease package set, keep documentation and examples pinned
 to `@next` or `@0.0.0-prerelease` even though npm currently exposes the same
 version through `latest`. Do not treat `latest` as a stable-release signal.
 
-The next package publication should use a new prerelease version and explicitly
-verify dist-tags after publish. If npm support approves the `@agentrail/*`
-scope, handle that migration as a separate compatibility release rather than
-rewriting package names inside a behavior slice.
+The next package publication should explicitly verify dist-tags after publish.
 
-## Future Scope Migration Path
+## Scope Rename Checklist
 
-A future migration from `@sacredlabs/agentrail-*` to `@agentrail/*` remains
-possible if npm support approves the `agentrail` org scope, but it must be a
-dedicated compatibility slice that updates:
+The migration to `@vallum/*` is a dedicated compatibility slice that updates:
 
 - package names;
 - package imports and exports;
@@ -339,5 +326,5 @@ dedicated compatibility slice that updates:
 - package dry-runs and publish dry-runs;
 - migration notes for downstream consumers.
 
-Do not combine that rename with wallet, signing, policy, payment, identity,
+Do not combine this rename with wallet, signing, policy, payment, identity,
 A2A, marketplace, or live IOTA behavior changes.

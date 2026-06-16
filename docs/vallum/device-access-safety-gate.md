@@ -4,14 +4,14 @@ Last updated: 2026-06-10.
 
 ## Decision
 
-Physical device operation remains blocked. AgentRail may model device
+Physical device operation remains blocked. Vallum may model device
 access only as a future virtual or simulated workflow until safety,
 authorization, provider accountability, and audit requirements are explicit.
 
 This gate closes the current Phase 3 ambiguity around `device_access_lease_v1`.
 The template is not implemented, deployed, published, or exposed through SDK,
 MCP, A2A, marketplace, or docs examples. Any future implementation must start
-with virtual or simulated devices only and must preserve the existing AgentRail
+with virtual or simulated devices only and must preserve the existing Vallum
 policy, receipt, redaction, and signer-reference boundaries.
 
 ## Allowed Next Slice

@@ -4,7 +4,7 @@ Last updated: 2026-06-14.
 
 ## Purpose
 
-AgentRail separates local/mock proof from live or testnet proof. The live
+Vallum separates local/mock proof from live or testnet proof. The live
 proof status command gives operators and future agents a safe, non-networked
 way to see which live proof paths are ready to run and which are still blocked.
 
@@ -13,7 +13,7 @@ Run:
 ```bash
 npm run proof:live-status
 npm run proof:live-status -- --json
-npm run proof:live-status -- --out tmp/agentrail/live-proof-status.json
+npm run proof:live-status -- --out tmp/vallum/live-proof-status.json
 ```
 
 The command does not contact IOTA Names, IOTA Identity, IOTA RPC, Gas Station,
@@ -30,8 +30,8 @@ only, is written with mode 0600, and must stay ignored.
 For a redacted command-order artifact before live work, run:
 
 ```bash
-npm run live:write-proof-plan -- --out tmp/agentrail/live-proof-plan.json
-npm run live:write-identity-proof-bundle -- --out tmp/agentrail/identity-proof-bundle.json
+npm run live:write-proof-plan -- --out tmp/vallum/live-proof-plan.json
+npm run live:write-identity-proof-bundle -- --out tmp/vallum/identity-proof-bundle.json
 ```
 
 The proof plan is also non-networked. It records command names, blocker codes,
@@ -49,7 +49,7 @@ templates are planning artifacts only; accepted proof still comes from the
 sanitized diagnostic, digest lookup, or live smoke reports.
 
 For the linked IOTA Names, IOTA Identity, and VC trust-policy gates, use
-`npm run live:write-identity-proof-bundle -- --out tmp/agentrail/identity-proof-bundle.json`.
+`npm run live:write-identity-proof-bundle -- --out tmp/vallum/identity-proof-bundle.json`.
 It is also non-networked: it writes the related report templates, refreshes the
 live proof plan, writes the live-proof-status artifact, and summarizes the
 current identity blockers. The bundle does not run the live smoke commands or
@@ -57,12 +57,12 @@ clear the gates by itself.
 
 The direct `npm run proof:live-status` output uses the same template-first
 guidance for missing testnet upstream and testnet digest reports. When
-`AGENTRAIL_TESTNET_UPSTREAM_REPORT` or `AGENTRAIL_TESTNET_DIGEST_REPORT` is missing,
+`VALLUM_TESTNET_UPSTREAM_REPORT` or `VALLUM_TESTNET_DIGEST_REPORT` is missing,
 generate the matching ignored template first:
 
 ```bash
-npm run operator:write-report-template -- --kind testnet-upstream --out tmp/agentrail/testnet-upstream-report-template.json
-npm run operator:write-report-template -- --kind testnet-digest --out tmp/agentrail/testnet-digest-report-template.json
+npm run operator:write-report-template -- --kind testnet-upstream --out tmp/vallum/testnet-upstream-report-template.json
+npm run operator:write-report-template -- --kind testnet-digest --out tmp/vallum/testnet-digest-report-template.json
 ```
 
 The generated templates do not contact IOTA RPC, Gas Station, or faucet
@@ -75,7 +75,7 @@ the matching environment variable.
 
 On the current machine, `.env` is present outside Git and `npm run
 readiness:testnet` passes non-networked readiness. Docker Desktop is reachable
-from WSL, `agentrail-gas-station` and `agentrail-redis` are running, and `npm run
+from WSL, `vallum-gas-station` and `vallum-redis` are running, and `npm run
 proof:live-status` with the current ignored funding/upstream reports now
 reports:
 
@@ -97,7 +97,7 @@ a local runtime prerequisite only; it does not prove reserve_gas compatibility
 or sponsored execution.
 
 Operators who intentionally use a separately managed Gas Station can set
-`AGENTRAIL_GAS_STATION_RUNTIME_MODE=managed-upstream` outside committed files.
+`VALLUM_GAS_STATION_RUNTIME_MODE=managed-upstream` outside committed files.
 In that mode `npm run gas-station:runtime-preflight` does not inspect Docker
 and does not contact the managed endpoint; it only verifies that managed mode
 and `GAS_STATION_URL` are configured without printing the URL. The
@@ -107,9 +107,9 @@ reserve compatibility can be considered ready. The `testnet-upstream` gate
 still requires a current passing
 `npm run diagnose:gas-station -- --report <ignored-json-path>` report before a
 fresh sponsored execute is ready.
-`AGENTRAIL_SPONSOR_FAUCET_REPORT` is optional operator-triage context only. When
+`VALLUM_SPONSOR_FAUCET_REPORT` is optional operator-triage context only. When
 it points at a sanitized report from `npm run sponsor:request-faucet-funds`, or
-when the default ignored `tmp/agentrail/sponsor-faucet-request.json` report exists
+when the default ignored `tmp/vallum/sponsor-faucet-request.json` report exists
 and validates, the funding gate can explain the latest faucet failure, rate
 limit, blocked request, or completed request in its next step. It never clears
 `sponsor-funding`; only a passing sponsor funding report can do that.
@@ -120,9 +120,9 @@ of repeating that API version.
 
 The current sanitized upstream diagnostic reaches the local Gas Station root
 and IOTA testnet RPC and proves reserve_gas compatibility through the
-sanitized `AGENTRAIL_TESTNET_UPSTREAM_REPORT`. The current sanitized digest report
+sanitized `VALLUM_TESTNET_UPSTREAM_REPORT`. The current sanitized digest report
 proves the documented sponsored testnet execute digest with a read-only IOTA
-RPC lookup through `AGENTRAIL_TESTNET_DIGEST_REPORT`; it does not rerun
+RPC lookup through `VALLUM_TESTNET_DIGEST_REPORT`; it does not rerun
 `execute:testnet-demo`, reserve gas, sign, or spend sponsor gas.
 
 Blocked or ready live-proof checks include fixed evidence labels such as
@@ -181,34 +181,34 @@ npm run readiness:testnet
 npm run gas-station:render-config
 npm run gas-station:runtime-preflight
 npm run gas-station:docker-direct -- --dry-run
-npm run live:write-proof-plan -- --out tmp/agentrail/live-proof-plan.json
-npm run live:write-identity-proof-bundle -- --out tmp/agentrail/identity-proof-bundle.json
-npm run operator:write-report-template -- --kind testnet-upstream --out tmp/agentrail/testnet-upstream-report-template.json
+npm run live:write-proof-plan -- --out tmp/vallum/live-proof-plan.json
+npm run live:write-identity-proof-bundle -- --out tmp/vallum/identity-proof-bundle.json
+npm run operator:write-report-template -- --kind testnet-upstream --out tmp/vallum/testnet-upstream-report-template.json
 npm run gas-station:docker-direct -- --status
-npm run sponsor:write-funding-request -- --out tmp/agentrail/sponsor-funding-request.json
-npm run sponsor:write-funding-request -- --faucet-report tmp/agentrail/sponsor-faucet-request.json --out tmp/agentrail/sponsor-funding-request.json
-npm run sponsor:request-faucet-funds -- --execute --out tmp/agentrail/sponsor-faucet-request.json
-npm run sponsor:check-funding -- --report tmp/agentrail/sponsor-funding-report.json
+npm run sponsor:write-funding-request -- --out tmp/vallum/sponsor-funding-request.json
+npm run sponsor:write-funding-request -- --faucet-report tmp/vallum/sponsor-faucet-request.json --out tmp/vallum/sponsor-funding-request.json
+npm run sponsor:request-faucet-funds -- --execute --out tmp/vallum/sponsor-faucet-request.json
+npm run sponsor:check-funding -- --report tmp/vallum/sponsor-funding-report.json
 npm run proof:live-status
-AGENTRAIL_SPONSOR_FAUCET_REPORT=tmp/agentrail/sponsor-faucet-request.json npm run proof:live-status
-AGENTRAIL_SPONSOR_FUNDING_REPORT=tmp/agentrail/sponsor-funding-report.json npm run proof:live-status
-npm run diagnose:gas-station -- --skip-reserve --report tmp/agentrail/testnet-upstream-diagnostic.json
-npm run operator:write-report-template -- --kind testnet-upstream --out tmp/agentrail/testnet-upstream-report-template.json
-npm run diagnose:gas-station -- --report tmp/agentrail/testnet-upstream-diagnostic.json
-npm run operator:write-report-template -- --kind testnet-digest --out tmp/agentrail/testnet-digest-report-template.json
-npm run proof:testnet-digest:live -- --report tmp/agentrail/testnet-digest-proof.json
-AGENTRAIL_SPONSOR_FUNDING_REPORT=tmp/agentrail/sponsor-funding-report.json AGENTRAIL_TESTNET_UPSTREAM_REPORT=tmp/agentrail/testnet-upstream-diagnostic.json AGENTRAIL_TESTNET_DIGEST_REPORT=tmp/agentrail/testnet-digest-proof.json npm run proof:live-status -- --out tmp/agentrail/live-proof-status.json
-npm run operator:write-report-template -- --kind iota-names-live --out tmp/agentrail/iota-names-live-report-template.json
-npm run smoke:iota-names-live -- --report tmp/agentrail/iota-names-live-report.json
-npm run operator:write-report-template -- --kind iota-identity-live --out tmp/agentrail/iota-identity-live-report-template.json
-npm run smoke:iota-identity-live -- --report tmp/agentrail/iota-identity-live-report.json
-npm run operator:write-report-template -- --kind vc-validation-live --out tmp/agentrail/vc-validation-live-report-template.json
+VALLUM_SPONSOR_FAUCET_REPORT=tmp/vallum/sponsor-faucet-request.json npm run proof:live-status
+VALLUM_SPONSOR_FUNDING_REPORT=tmp/vallum/sponsor-funding-report.json npm run proof:live-status
+npm run diagnose:gas-station -- --skip-reserve --report tmp/vallum/testnet-upstream-diagnostic.json
+npm run operator:write-report-template -- --kind testnet-upstream --out tmp/vallum/testnet-upstream-report-template.json
+npm run diagnose:gas-station -- --report tmp/vallum/testnet-upstream-diagnostic.json
+npm run operator:write-report-template -- --kind testnet-digest --out tmp/vallum/testnet-digest-report-template.json
+npm run proof:testnet-digest:live -- --report tmp/vallum/testnet-digest-proof.json
+VALLUM_SPONSOR_FUNDING_REPORT=tmp/vallum/sponsor-funding-report.json VALLUM_TESTNET_UPSTREAM_REPORT=tmp/vallum/testnet-upstream-diagnostic.json VALLUM_TESTNET_DIGEST_REPORT=tmp/vallum/testnet-digest-proof.json npm run proof:live-status -- --out tmp/vallum/live-proof-status.json
+npm run operator:write-report-template -- --kind iota-names-live --out tmp/vallum/iota-names-live-report-template.json
+npm run smoke:iota-names-live -- --report tmp/vallum/iota-names-live-report.json
+npm run operator:write-report-template -- --kind iota-identity-live --out tmp/vallum/iota-identity-live-report-template.json
+npm run smoke:iota-identity-live -- --report tmp/vallum/iota-identity-live-report.json
+npm run operator:write-report-template -- --kind vc-validation-live --out tmp/vallum/vc-validation-live-report-template.json
 ```
 
 `npm run proof:live-status` now uses bundle-first command guidance for blocked
 IOTA Names, IOTA Identity, and VC validation paths:
 `npm run live:write-identity-proof-bundle -- --out
-tmp/agentrail/identity-proof-bundle.json` writes the linked templates, live proof
+tmp/vallum/identity-proof-bundle.json` writes the linked templates, live proof
 plan, live-proof-status artifact, and redacted summary together. Template files
 and bundles are only ignored planning artifacts; they do not clear live-status
 checks until the matching live smoke or accepted report gate passes.
@@ -219,7 +219,7 @@ required after sponsor funding is ready.
 
 The digest lookup command is read-only and contacts IOTA RPC. It writes a
 sanitized ignored report that can clear the `testnet-sponsored-execute`
-live-status gate when `AGENTRAIL_TESTNET_DIGEST_REPORT` points at it. It does not
+live-status gate when `VALLUM_TESTNET_DIGEST_REPORT` points at it. It does not
 refresh the digest; use `npm run execute:testnet-demo` only with explicit
 operator intent when a fresh sponsored execute proof is required.
 
@@ -228,7 +228,7 @@ Live IOTA Identity proof readiness uses these non-secret variable names:
 ```bash
 IOTA_IDENTITY_PROOF_ENDPOINT=https://...
 IOTA_IDENTITY_PROFILE_PATH=profiles/agent-profile.json
-IOTA_IDENTITY_LIVE_REPORT=tmp/agentrail/iota-identity-live-report.json
+IOTA_IDENTITY_LIVE_REPORT=tmp/vallum/iota-identity-live-report.json
 ```
 
 Live VC trust-policy readiness uses these non-secret variable names:
@@ -256,5 +256,5 @@ provider verification, production policy acceptance, or mainnet operation.
 sponsored testnet gas. Run it only with explicit operator intent and
 operator-owned local credentials. The command fails closed before reserve or
 execute unless local testnet readiness, local Gas Station runtime preflight,
-and current passing `AGENTRAIL_TESTNET_UPSTREAM_REPORT` plus
+and current passing `VALLUM_TESTNET_UPSTREAM_REPORT` plus
 `IOTA_NAMES_LIVE_REPORT` and `IOTA_IDENTITY_LIVE_REPORT` artifacts are present.

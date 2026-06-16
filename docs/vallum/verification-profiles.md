@@ -1,6 +1,6 @@
 # Verification Profiles
 
-AgentRail has two local verification profiles:
+Vallum has two local verification profiles:
 
 ```bash
 npm run verify:fast
@@ -36,7 +36,7 @@ For a redacted machine-readable artifact, use:
 
 ```bash
 npm run proof:verification-profiles -- --json
-npm run proof:verification-profiles -- --out tmp/agentrail/verification-profiles.json
+npm run proof:verification-profiles -- --out tmp/vallum/verification-profiles.json
 ```
 
 The `--out` file is written with mode `600`. It is a local audit artifact, not
