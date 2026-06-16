@@ -1,8 +1,8 @@
 {
-  "name": "@sacredlabs/agentrail-docs-site",
+  "name": "@vallum/docs-site",
   "version": "0.0.0-prerelease",
   "private": true,
-  "description": "Static documentation site for AgentRail.",
+  "description": "Static documentation site for Vallum.",
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {

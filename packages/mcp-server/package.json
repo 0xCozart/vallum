@@ -1,11 +1,11 @@
 {
-  "name": "@sacredlabs/agentrail-mcp-server",
+  "name": "@vallum/mcp-server",
   "version": "0.0.1-mcp.0",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "agentrail-mcp": "dist/cli.js"
+    "vallum-mcp": "dist/cli.js"
   },
   "exports": {
     ".": {
@@ -24,13 +24,13 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.29.0",
-    "@sacredlabs/agentrail-manifest": "0.0.0-prerelease",
-    "@sacredlabs/agentrail-sdk": "0.0.0-prerelease"
+    "@vallum/manifest": "0.0.0-prerelease",
+    "@vallum/sdk": "0.0.0-prerelease"
   },
   "devDependencies": {
-    "@sacredlabs/agentrail-policy-gateway": "0.0.0-prerelease"
+    "@vallum/policy-gateway": "0.0.0-prerelease"
   },
-  "description": "MCP tool facade for AgentRail sponsored IOTA actions.",
+  "description": "MCP tool facade for Vallum sponsored IOTA actions.",
   "files": [
     "dist/**/*.js",
     "dist/**/*.d.ts",

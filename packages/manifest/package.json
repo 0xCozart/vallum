@@ -1,5 +1,5 @@
 {
-  "name": "@sacredlabs/agentrail-manifest",
+  "name": "@vallum/manifest",
   "version": "0.0.0-prerelease",
   "type": "module",
   "main": "dist/index.js",
@@ -11,7 +11,7 @@
     }
   },
   "license": "Apache-2.0",
-  "description": "Versioned Agent Transaction Manifest schema and validator for AgentRail.",
+  "description": "Versioned Agent Transaction Manifest schema and validator for Vallum.",
   "files": [
     "dist/**/*.js",
     "dist/**/*.d.ts",

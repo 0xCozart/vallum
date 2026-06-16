@@ -1,15 +1,15 @@
 {
-  "name": "@sacredlabs/agentrail-demo-dapp",
+  "name": "@vallum/demo-dapp",
   "version": "0.0.0-prerelease",
   "private": true,
   "type": "module",
   "license": "Apache-2.0",
   "scripts": {
-    "dev": "npm run build -w @sacredlabs/agentrail-sdk && tsx src/local-demo.ts",
-    "browser": "npm run build -w @sacredlabs/agentrail-sdk && tsx src/browser.ts",
-    "smoke:local": "npm run build -w @sacredlabs/agentrail-sdk && tsx src/local-demo.ts"
+    "dev": "npm run build -w @vallum/sdk && tsx src/local-demo.ts",
+    "browser": "npm run build -w @vallum/sdk && tsx src/browser.ts",
+    "smoke:local": "npm run build -w @vallum/sdk && tsx src/local-demo.ts"
   },
   "dependencies": {
-    "@sacredlabs/agentrail-sdk": "file:../../packages/sdk"
+    "@vallum/sdk": "file:../../packages/sdk"
   }
 }

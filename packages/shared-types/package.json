@@ -1,5 +1,5 @@
 {
-  "name": "@sacredlabs/agentrail-shared-types",
+  "name": "@vallum/shared-types",
   "version": "0.0.0-prerelease",
   "type": "module",
   "main": "dist/index.js",
@@ -11,7 +11,7 @@
     }
   },
   "license": "Apache-2.0",
-  "description": "Shared policy and request/response types for AgentRail.",
+  "description": "Shared policy and request/response types for Vallum.",
   "files": [
     "dist/**/*.js",
     "dist/**/*.d.ts",
