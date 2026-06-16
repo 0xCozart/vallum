@@ -641,6 +641,19 @@ test("package MCP stdio consumer smoke builds first and stays opt-in", () => {
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /package-mcp-stdio-consumer/);
 });
 
+test("npm registry MCP stdio consumer smoke is networked and opt-in", () => {
+  const smokeNpmRegistryMcpStdio = packageJson.scripts?.["smoke:npm-registry-mcp-stdio-consumer"];
+
+  assert.equal(
+    smokeNpmRegistryMcpStdio,
+    "tsx scripts/smoke-npm-registry-mcp-stdio-consumer.ts --out tmp/agentrail/npm-registry-mcp-stdio-consumer-proof.json",
+    "npm registry MCP stdio smoke must stay explicit because it contacts npm",
+  );
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /npm-registry-mcp-stdio-consumer/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /npm-registry-mcp-stdio-consumer/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /npm-registry-mcp-stdio-consumer/);
+});
+
 test("root typecheck includes package, app, script, and example source", () => {
   assert.ok(tsconfig.include?.includes("packages/**/*.ts"));
   assert.ok(tsconfig.include?.includes("apps/**/*.ts"));

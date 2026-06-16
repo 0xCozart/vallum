@@ -18,6 +18,10 @@ import {
   buildNpmPackArgs,
   type PackageTarball,
 } from "./smoke-package-install.js";
+import {
+  buildRegistryMcpStdioConsumerPackageJson,
+  buildRegistryMcpStdioConsumerSmokeSource,
+} from "./smoke-npm-registry-mcp-stdio-consumer.js";
 
 test("package install smoke packs explicit public workspaces", () => {
   assert.deepEqual(
@@ -109,6 +113,34 @@ test("MCP stdio consumer smoke proves approval denial invalid input and redactio
   assert.match(source, /invalid\.reason=INVALID_TOOL_INPUT/);
   assert.match(source, /redaction\.apiKey=redacted/);
   assert.match(source, /assert\.doesNotMatch\(mcp\.stderr\(\),/);
+});
+
+test("npm registry MCP stdio consumer smoke pins the MCP package version separately", () => {
+  const packageJson = JSON.parse(buildRegistryMcpStdioConsumerPackageJson({
+    mcpVersion: "0.0.1-mcp.0",
+    supportPackages: [
+      { name: "@sacredlabs/agentrail-manifest", version: "0.0.0-prerelease" },
+      { name: "@sacredlabs/agentrail-policy-gateway", version: "0.0.0-prerelease" },
+    ],
+  })) as {
+    private?: boolean;
+    dependencies?: Record<string, string>;
+  };
+
+  assert.equal(packageJson.private, true);
+  assert.equal(packageJson.dependencies?.["@sacredlabs/agentrail-mcp-server"], "0.0.1-mcp.0");
+  assert.equal(packageJson.dependencies?.["@sacredlabs/agentrail-manifest"], "0.0.0-prerelease");
+  assert.equal(packageJson.dependencies?.["@sacredlabs/agentrail-policy-gateway"], "0.0.0-prerelease");
+});
+
+test("npm registry MCP stdio consumer smoke uses package bin and registry marker", () => {
+  const source = buildRegistryMcpStdioConsumerSmokeSource();
+
+  assert.match(source, /node_modules.*\.bin.*agentrail-mcp/s);
+  assert.match(source, /install=npm-registry/);
+  assert.doesNotMatch(source, /install=local-tarballs/);
+  assert.match(source, /boundary\.route=MCP-stdio->SDK->mock-policy-gateway/);
+  assert.match(source, /redaction\.apiKey=redacted/);
 });
 
 test("npm registry consumer smoke pins current published package versions", () => {

@@ -70,6 +70,9 @@ proofs:
 - `npm run smoke:npm-registry-paid-mcp-consumer` for a fresh temporary
   consumer that installs the published npm packages from the registry and
   writes `tmp/agentrail/npm-registry-consumer-proof.json`.
+- `npm run smoke:npm-registry-mcp-stdio-consumer` after the runnable MCP
+  version is published, to prove npm install plus `agentrail-mcp` startup from
+  `node_modules/.bin`.
 
 Run the opt-in local tarball consumer smoke from the repo root:
 
@@ -113,6 +116,19 @@ Expected result: the command installs all 11 published
 `@sacredlabs/agentrail-*` packages into a fresh temporary project, runs the
 same paid MCP-style approval, denial, failed-payment, receipt, and redaction
 checks, and writes a redacted mode-600 local proof packet.
+
+After publishing a runnable MCP server version, prove the npm registry MCP
+stdio path separately:
+
+```bash
+npm run smoke:npm-registry-mcp-stdio-consumer
+```
+
+Expected result: the command installs the published MCP server package into a
+fresh temporary project, starts `node_modules/.bin/agentrail-mcp`, lists tools,
+and calls approval, denial, and invalid-input paths against a loopback mock
+gateway. This is registry install plus local mock MCP proof, not live IOTA or
+production gateway proof.
 
 ## Current scaffold checks
 

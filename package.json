@@ -81,6 +81,7 @@
     "smoke:package-paid-mcp-consumer": "npm run build && tsx scripts/smoke-package-paid-mcp-consumer.ts",
     "smoke:package-mcp-stdio-consumer": "npm run build && tsx scripts/smoke-package-mcp-stdio-consumer.ts",
     "smoke:npm-registry-paid-mcp-consumer": "tsx scripts/smoke-npm-registry-paid-mcp-consumer.ts --out tmp/agentrail/npm-registry-consumer-proof.json",
+    "smoke:npm-registry-mcp-stdio-consumer": "tsx scripts/smoke-npm-registry-mcp-stdio-consumer.ts --out tmp/agentrail/npm-registry-mcp-stdio-consumer-proof.json",
     "publish:dry-run": "npm run build && tsx scripts/package-publish-dry-run.ts",
     "docs:build": "npm run build -w @sacredlabs/agentrail-docs-site",
     "docs:check": "npm run check -w @sacredlabs/agentrail-docs-site",

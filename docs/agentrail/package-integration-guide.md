@@ -261,6 +261,18 @@ That command installs local tarballs into a fresh temporary consumer, starts
 invalid-input paths against a loopback mock gateway. It does not prove registry
 availability until a new package version is published and separately checked.
 
+After publishing a version that contains the `agentrail-mcp` bin, prove the npm
+registry path with:
+
+```bash
+npm run smoke:npm-registry-mcp-stdio-consumer
+```
+
+That command installs the published MCP server package into a fresh temporary
+consumer, starts `node_modules/.bin/agentrail-mcp`, lists tools, and calls
+approval, denial, and invalid-input paths against a loopback mock gateway.
+It proves registry install plus local MCP stdio execution only.
+
 ## Package Map
 
 | Package | Role |

@@ -79,6 +79,7 @@ const REQUIRED_SOURCE_PATHS = [
   "scripts/smoke-package-paid-mcp-consumer.ts",
   "scripts/smoke-package-mcp-stdio-consumer.ts",
   "scripts/smoke-npm-registry-paid-mcp-consumer.ts",
+  "scripts/smoke-npm-registry-mcp-stdio-consumer.ts",
   "scripts/package-publish.test.ts",
   "scripts/package-publish-dry-run.test.ts",
   "scripts/package-install-smoke.test.ts",
@@ -237,6 +238,7 @@ async function checkLocalPackageProof(
   const paidMcpConsumerSmoke = scripts["smoke:package-paid-mcp-consumer"] ?? "";
   const mcpStdioConsumerSmoke = scripts["smoke:package-mcp-stdio-consumer"] ?? "";
   const npmRegistryPaidMcpConsumerSmoke = scripts["smoke:npm-registry-paid-mcp-consumer"] ?? "";
+  const npmRegistryMcpStdioConsumerSmoke = scripts["smoke:npm-registry-mcp-stdio-consumer"] ?? "";
   const publishDryRun = scripts["publish:dry-run"] ?? "";
   const verifyFast = scripts["verify:fast"] ?? "";
   const verifyLocal = scripts["verify:local"] ?? "";
@@ -252,6 +254,9 @@ async function checkLocalPackageProof(
   }
   if (!npmRegistryPaidMcpConsumerSmoke.includes("scripts/smoke-npm-registry-paid-mcp-consumer.ts")) {
     missing.push("smoke:npm-registry-paid-mcp-consumer");
+  }
+  if (!npmRegistryMcpStdioConsumerSmoke.includes("scripts/smoke-npm-registry-mcp-stdio-consumer.ts")) {
+    missing.push("smoke:npm-registry-mcp-stdio-consumer");
   }
   if (!publishDryRun.includes("scripts/package-publish-dry-run.ts")) missing.push("publish:dry-run");
   for (const packageInfo of packages) {
@@ -288,6 +293,13 @@ async function checkLocalPackageProof(
   ) {
     missing.push("npm registry paid MCP consumer smoke must stay opt-in");
   }
+  if (
+    verifyFast.includes("smoke:npm-registry-mcp-stdio-consumer")
+    || verifyLocal.includes("smoke:npm-registry-mcp-stdio-consumer")
+    || grantCheck.includes("smoke:npm-registry-mcp-stdio-consumer")
+  ) {
+    missing.push("npm registry MCP stdio consumer smoke must stay opt-in");
+  }
 
   if (missing.length > 0) {
     return {
@@ -296,7 +308,7 @@ async function checkLocalPackageProof(
       code: "PACKAGE_PUBLICATION_LOCAL_PROOF_INCOMPLETE",
       message: "Local package publication source, script, or package coverage is incomplete.",
       evidence: `missing=${missing.join(",")}`,
-      next: "Restore package release docs, pack dry-run, local tarball install smoke, paid MCP consumer tarball smoke, MCP stdio consumer tarball smoke, npm registry consumer smoke, opt-in publish dry-run, and package coverage before registry readiness review.",
+      next: "Restore package release docs, pack dry-run, local tarball install smoke, paid MCP consumer tarball smoke, MCP stdio consumer tarball smoke, npm registry paid MCP smoke, npm registry MCP stdio smoke, opt-in publish dry-run, and package coverage before registry readiness review.",
     };
   }
 
@@ -304,8 +316,8 @@ async function checkLocalPackageProof(
     id: "local-package-publication-proof",
     status: "proven-local",
     code: "PACKAGE_PUBLICATION_LOCAL_PROOF_CONFIGURED",
-    message: "Package metadata, pack dry-run, local tarball install smoke, paid MCP consumer tarball smoke, MCP stdio consumer tarball smoke, npm registry consumer smoke, and opt-in publish dry-run gates are configured.",
-    evidence: "npm run pack:check; npm run smoke:package-install; npm run smoke:package-paid-mcp-consumer; npm run smoke:package-mcp-stdio-consumer; npm run smoke:npm-registry-paid-mcp-consumer; npm run publish:dry-run",
+    message: "Package metadata, pack dry-run, local tarball install smoke, paid MCP consumer tarball smoke, MCP stdio consumer tarball smoke, npm registry paid MCP smoke, npm registry MCP stdio smoke, and opt-in publish dry-run gates are configured.",
+    evidence: "npm run pack:check; npm run smoke:package-install; npm run smoke:package-paid-mcp-consumer; npm run smoke:package-mcp-stdio-consumer; npm run smoke:npm-registry-paid-mcp-consumer; npm run smoke:npm-registry-mcp-stdio-consumer; npm run publish:dry-run",
     next: "Keep this as local release proof only until an operator-approved npm registry publication report exists.",
   };
 }

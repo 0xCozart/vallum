@@ -143,12 +143,30 @@ marketplace, or public A2A proof. The command is intentionally excluded from
 `verify:fast`, `verify:local`, and `grant:check` because it is networked and
 registry-state dependent.
 
+`npm run smoke:npm-registry-mcp-stdio-consumer` adds the matching
+published-package proof for the runnable MCP stdio bin:
+
+- contacts the public npm registry;
+- installs the published MCP server package plus required mock-gateway support
+  packages into a fresh temporary consumer project;
+- starts `node_modules/.bin/agentrail-mcp`;
+- proves initialize, tool listing, approval, policy denial, invalid input,
+  stdin-close shutdown, and redaction markers against a loopback mock gateway;
+- writes a redacted local report to
+  `tmp/agentrail/npm-registry-mcp-stdio-consumer-proof.json`.
+
+This proves registry install plus local MCP stdio execution only, not live
+IOTA, production gateway, payment, custody, marketplace, or public A2A
+behavior. The command is intentionally excluded from `verify:fast`,
+`verify:local`, and `grant:check` because it is networked and registry-state
+dependent.
+
 `npm run proof:package-publication-readiness` adds a non-networked registry
 publication readiness gate:
 
 - checks the local package release docs, dry-run helper, install smoke helper,
-  paid MCP consumer tarball smoke helper, package metadata tests, and script
-  wiring;
+  paid MCP consumer tarball smoke helper, MCP stdio tarball smoke helper,
+  npm-registry proof helpers, package metadata tests, and script wiring;
 - verifies every current public workspace is included in `pack:check`;
 - keeps `publish:dry-run` and package publication readiness out of
   `verify:fast`, `verify:local`, and `grant:check`;
@@ -226,6 +244,7 @@ Publication evidence for the current prerelease includes:
 - `npm run smoke:package-install`
 - `npm run smoke:package-paid-mcp-consumer`
 - `npm run smoke:npm-registry-paid-mcp-consumer`
+- `npm run smoke:npm-registry-mcp-stdio-consumer`
 - `npm run publish:dry-run`
 - real `npm publish --tag next --access public`
 - registry dist-tag proof showing `next=0.0.0-prerelease` and
