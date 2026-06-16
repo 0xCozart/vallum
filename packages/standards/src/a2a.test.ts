@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { validAgentProfileFixture } from "@agentrail/registry";
+import { validAgentProfileFixture } from "@sacredlabs/agentrail-registry";
 
 import {
   A2A_AGENT_CARD_MEDIA_TYPE,

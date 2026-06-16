@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { AgentRailPolicyError } from "@agentrail/sdk";
+import { AgentRailPolicyError } from "@sacredlabs/agentrail-sdk";
 
 import {
   createDemoBrowserServer,

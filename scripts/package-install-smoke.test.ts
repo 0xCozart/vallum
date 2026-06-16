@@ -13,8 +13,8 @@ import {
 
 test("package install smoke packs explicit public workspaces", () => {
   assert.deepEqual(
-    buildNpmPackArgs({ dir: "packages/sdk", name: "@agentrail/sdk" }, "/tmp/packs"),
-    ["pack", "--json", "--pack-destination", "/tmp/packs", "-w", "@agentrail/sdk"],
+    buildNpmPackArgs({ dir: "packages/sdk", name: "@sacredlabs/agentrail-sdk" }, "/tmp/packs"),
+    ["pack", "--json", "--pack-destination", "/tmp/packs", "-w", "@sacredlabs/agentrail-sdk"],
   );
 });
 
@@ -30,8 +30,8 @@ test("package install smoke installs local tarballs without lifecycle scripts or
 
 test("package install smoke consumer package pins dependencies to local tarballs", () => {
   const tarballs: PackageTarball[] = [
-    { name: "@agentrail/accounts", tarballPath: "/tmp/packs/agentrail-accounts.tgz" },
-    { name: "@agentrail/sdk", tarballPath: "/tmp/packs/agentrail-sdk.tgz" },
+    { name: "@sacredlabs/agentrail-accounts", tarballPath: "/tmp/packs/sacredlabs-agentrail-accounts.tgz" },
+    { name: "@sacredlabs/agentrail-sdk", tarballPath: "/tmp/packs/sacredlabs-agentrail-sdk.tgz" },
   ];
 
   const packageJson = JSON.parse(buildConsumerPackageJson(tarballs)) as {
@@ -40,14 +40,17 @@ test("package install smoke consumer package pins dependencies to local tarballs
   };
 
   assert.equal(packageJson.private, true);
-  assert.equal(packageJson.dependencies?.["@agentrail/accounts"], "file:/tmp/packs/agentrail-accounts.tgz");
-  assert.equal(packageJson.dependencies?.["@agentrail/sdk"], "file:/tmp/packs/agentrail-sdk.tgz");
+  assert.equal(
+    packageJson.dependencies?.["@sacredlabs/agentrail-accounts"],
+    "file:/tmp/packs/sacredlabs-agentrail-accounts.tgz",
+  );
+  assert.equal(packageJson.dependencies?.["@sacredlabs/agentrail-sdk"], "file:/tmp/packs/sacredlabs-agentrail-sdk.tgz");
 });
 
 test("package install smoke imports package root entrypoints without secret material", () => {
   const source = buildConsumerSmokeSource([
-    { dir: "packages/accounts", name: "@agentrail/accounts" },
-    { dir: "packages/sdk", name: "@agentrail/sdk" },
+    { dir: "packages/accounts", name: "@sacredlabs/agentrail-accounts" },
+    { dir: "packages/sdk", name: "@sacredlabs/agentrail-sdk" },
   ]);
 
   assert.match(source, /await import\(packageName\)/);
@@ -58,10 +61,10 @@ test("package install smoke imports package root entrypoints without secret mate
 test("paid MCP consumer smoke uses package root entrypoints only", () => {
   const source = buildPaidMcpConsumerSmokeSource();
 
-  assert.match(source, /from "@agentrail\/manifest"/);
-  assert.match(source, /from "@agentrail\/policy-gateway"/);
-  assert.match(source, /from "@agentrail\/sdk"/);
-  assert.doesNotMatch(source, /@agentrail\/[^"]+\/(src|dist|contracts|server|schema|routes)/);
+  assert.match(source, /from "@sacredlabs\/agentrail-manifest"/);
+  assert.match(source, /from "@sacredlabs\/agentrail-policy-gateway"/);
+  assert.match(source, /from "@sacredlabs\/agentrail-sdk"/);
+  assert.doesNotMatch(source, /@sacredlabs\/agentrail-[^"]+\/(src|dist|contracts|server|schema|routes)/);
   assert.doesNotMatch(source, /\.\.\/|\.\/packages\/|\/src\//);
 });
 

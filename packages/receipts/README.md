@@ -1,4 +1,4 @@
-# @agentrail/receipts
+# @sacredlabs/agentrail-receipts
 
 Receipt and contract workflow state machines for AgentRail.
 

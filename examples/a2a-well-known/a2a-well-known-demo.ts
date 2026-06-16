@@ -2,7 +2,7 @@ import {
   A2A_AGENT_CARD_WELL_KNOWN_PATH,
   handleA2AAgentCardWellKnownRequest,
   validAgentProfileFixture,
-} from "@agentrail/registry";
+} from "@sacredlabs/agentrail-registry";
 
 export interface A2AWellKnownDemoResult {
   readonly canonical: {

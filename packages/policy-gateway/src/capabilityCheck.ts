@@ -1,4 +1,4 @@
-import { validateAgentProfile, type AgentProfile, type ResolveAgentResult } from "@agentrail/registry";
+import { validateAgentProfile, type AgentProfile, type ResolveAgentResult } from "@sacredlabs/agentrail-registry";
 
 export interface AgentCapabilityRequirement {
   readonly capabilityId: string;

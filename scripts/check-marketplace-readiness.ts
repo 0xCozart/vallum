@@ -214,7 +214,7 @@ async function checkLocalMarketplaceProof(
   const verifyFast = scripts["verify:fast"] ?? "";
   const grantCheck = scripts["grant:check"] ?? "";
 
-  if (!build.includes("npm run build -w @agentrail/marketplace")) missing.push("build @agentrail/marketplace");
+  if (!build.includes("npm run build -w @sacredlabs/agentrail-marketplace")) missing.push("build @sacredlabs/agentrail-marketplace");
   if (!smoke.includes("scripts/smoke-marketplace-read-model.ts")) missing.push("smoke:marketplace-read-model");
   if (!verifyLocal.includes("npm run smoke:marketplace-read-model")) missing.push("verify:local marketplace smoke");
   if (

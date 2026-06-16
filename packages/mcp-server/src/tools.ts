@@ -1,5 +1,5 @@
-import type { IotaAgent, SponsoredActionResult } from "@agentrail/sdk";
-import { validateAgentTransactionManifest, type AgentTransactionManifest } from "@agentrail/manifest";
+import type { IotaAgent, SponsoredActionResult } from "@sacredlabs/agentrail-sdk";
+import { validateAgentTransactionManifest, type AgentTransactionManifest } from "@sacredlabs/agentrail-manifest";
 
 export const REQUEST_SPONSORED_TRANSACTION_TOOL = "iota.request_sponsored_transaction";
 export const OPEN_ESCROW_TOOL = "iota.open_escrow";

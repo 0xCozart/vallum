@@ -2,7 +2,7 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { once } from "node:events";
 import { pathToFileURL } from "node:url";
 
-import { createAgentRailClient } from "@agentrail/sdk";
+import { createAgentRailClient } from "@sacredlabs/agentrail-sdk";
 
 import { runDemoGrantFlow, type DemoGrantFlowResult } from "./local-flow.js";
 

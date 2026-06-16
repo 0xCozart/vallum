@@ -1,4 +1,4 @@
-import { IotaAgent } from "@agentrail/sdk";
+import { IotaAgent } from "@sacredlabs/agentrail-sdk";
 import { callIotaMcpTool, IOTA_MCP_TOOLS, type IotaMcpToolCallResult } from "./tools.js";
 
 export interface IotaMcpServerOptions {

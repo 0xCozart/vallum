@@ -25,7 +25,7 @@ test("package publication proof plan reports current blockers without registry s
   assert.equal(plan.status, "blocked");
   assert.equal(plan.localProofOk, true);
   assert.equal(plan.liveReady, false);
-  assert.ok(plan.packageNames.includes("@agentrail/sdk"));
+  assert.ok(plan.packageNames.includes("@sacredlabs/agentrail-sdk"));
   assert.ok(plan.blockerCodes.includes("PACKAGE_PUBLICATION_REPORT_MISSING"));
   assert.ok(plan.requiredOperatorInputs.includes("PACKAGE_PUBLICATION_REPORT"));
   assert.ok(plan.requiredStructuredReportFields.includes("packageNames"));

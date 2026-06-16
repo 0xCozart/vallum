@@ -1,19 +1,19 @@
-# @agentrail/sdk
+# @sacredlabs/agentrail-sdk
 
 TypeScript client scaffold for applications integrating with an AgentRail policy gateway.
 
 ## Install
 
-Status: this package is a workspace package today and is not claimed as published to npm yet. Use the monorepo workspace for local review. After M3 publication, install from npm:
+For the npm prerelease, install:
 
 ```sh
-npm install @agentrail/sdk
+npm install @sacredlabs/agentrail-sdk
 ```
 
 ## Usage
 
 ```ts
-import { createAgentRailClient, AgentRailPolicyError } from "@agentrail/sdk";
+import { createAgentRailClient, AgentRailPolicyError } from "@sacredlabs/agentrail-sdk";
 
 const agentRail = createAgentRailClient({
   baseUrl: "https://gateway.example.invalid",

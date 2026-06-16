@@ -28,7 +28,7 @@ test("package publication proof bundle writes template, plan, and blocked summar
     assert.equal(bundle.status, "blocked");
     assert.equal(bundle.localProofOk, true);
     assert.equal(bundle.liveReady, false);
-    assert.deepEqual(bundle.packageNames, ["@agentrail/sdk"]);
+    assert.deepEqual(bundle.packageNames, ["@sacredlabs/agentrail-sdk"]);
     assert.deepEqual(bundle.templateArtifacts, [
       {
         id: "package-publication",
@@ -68,7 +68,7 @@ test("package publication proof bundle is ready for approval when structured rep
       result: "passed",
       observedAt: NOW.toISOString(),
       registry: "npm",
-      packageNames: ["@agentrail/sdk"],
+      packageNames: ["@sacredlabs/agentrail-sdk"],
       checks: [
         "npm-pack-dry-run",
         "local-tarball-install",
@@ -117,7 +117,7 @@ async function writePackageEvidence(): Promise<string> {
   }
   await mkdir(join(cwd, "packages/sdk"), { recursive: true });
   await writeFile(join(cwd, "packages/sdk/package.json"), `${JSON.stringify({
-    name: "@agentrail/sdk",
+    name: "@sacredlabs/agentrail-sdk",
     version: "0.0.0-prerelease",
   }, null, 2)}\n`);
   return cwd;
@@ -125,7 +125,7 @@ async function writePackageEvidence(): Promise<string> {
 
 function completeScripts(): Record<string, string | undefined> {
   return {
-    "pack:check": "npm run build && npm pack --dry-run -w @agentrail/sdk",
+    "pack:check": "npm run build && npm pack --dry-run -w @sacredlabs/agentrail-sdk",
     "smoke:package-install": "npm run build && tsx scripts/smoke-package-install.ts",
     "smoke:package-paid-mcp-consumer": "npm run build && tsx scripts/smoke-package-paid-mcp-consumer.ts",
     "publish:dry-run": "npm run build && tsx scripts/package-publish-dry-run.ts",

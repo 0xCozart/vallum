@@ -1,4 +1,4 @@
-# @agentrail/mcp-server
+# @sacredlabs/agentrail-mcp-server
 
 MCP tool facade for AgentRail sponsored IOTA actions.
 

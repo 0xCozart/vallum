@@ -1,5 +1,5 @@
 {
-  "name": "@agentrail/contracts-metadata",
+  "name": "@sacredlabs/agentrail-contracts-metadata",
   "version": "0.0.0-prerelease",
   "type": "module",
   "main": "dist/index.js",

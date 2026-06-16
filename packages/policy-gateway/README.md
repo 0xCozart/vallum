@@ -1,19 +1,19 @@
-# @agentrail/policy-gateway
+# @sacredlabs/agentrail-policy-gateway
 
 Fail-closed sponsorship policy evaluation helpers for AgentRail gateways.
 
 ## Install
 
-Status: this package is a workspace package today and is not claimed as published to npm yet. Use the monorepo workspace for local review. After M3 publication, install from npm:
+For the npm prerelease, install:
 
 ```sh
-npm install @agentrail/policy-gateway @agentrail/shared-types
+npm install @sacredlabs/agentrail-policy-gateway @sacredlabs/agentrail-shared-types
 ```
 
 ## Usage
 
 ```ts
-import { evaluateSponsorshipPolicy } from "@agentrail/policy-gateway";
+import { evaluateSponsorshipPolicy } from "@sacredlabs/agentrail-policy-gateway";
 
 const decision = evaluateSponsorshipPolicy(
   {

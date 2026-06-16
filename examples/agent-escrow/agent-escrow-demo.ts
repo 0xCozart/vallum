@@ -2,10 +2,10 @@ import { once } from "node:events";
 import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
 
-import { AGENT_TRANSACTION_MANIFEST_VERSION, type AgentTransactionManifest } from "@agentrail/manifest";
-import { createAgentMockGatewayServer, type AgentActionPolicy, type AgentGatewayEvent } from "@agentrail/policy-gateway";
-import { completeEscrow, releaseEscrow, submitReceipt, type EscrowReceipt } from "@agentrail/receipts";
-import { openEscrow, type OpenEscrowResult } from "@agentrail/sdk";
+import { AGENT_TRANSACTION_MANIFEST_VERSION, type AgentTransactionManifest } from "@sacredlabs/agentrail-manifest";
+import { createAgentMockGatewayServer, type AgentActionPolicy, type AgentGatewayEvent } from "@sacredlabs/agentrail-policy-gateway";
+import { completeEscrow, releaseEscrow, submitReceipt, type EscrowReceipt } from "@sacredlabs/agentrail-receipts";
+import { openEscrow, type OpenEscrowResult } from "@sacredlabs/agentrail-sdk";
 
 const now = new Date("2026-06-10T12:00:00.000Z");
 const requesterAgentId = "agent:research-buyer";

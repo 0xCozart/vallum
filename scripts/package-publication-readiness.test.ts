@@ -30,11 +30,11 @@ test("package publication readiness reports local proof and missing registry rep
   assert.equal(artifact.kind, "agentrail.package-publication-readiness-report");
   assert.equal(artifact.localProofOk, true);
   assert.equal(artifact.liveReady, false);
-  assert.ok(artifact.packageNames.includes("@agentrail/sdk"));
+  assert.ok(artifact.packageNames.includes("@sacredlabs/agentrail-sdk"));
   assert.ok(artifact.provenLocalCheckIds.includes("local-package-publication-proof"));
   assert.ok(artifact.blockedCheckIds.includes("npm-registry-publication-report"));
   assert.ok(artifact.blockerCodes.includes("PACKAGE_PUBLICATION_REPORT_MISSING"));
-  assert.ok(report.packageNames.includes("@agentrail/sdk"));
+  assert.ok(report.packageNames.includes("@sacredlabs/agentrail-sdk"));
   assert.equal(
     report.checks.find((check) => check.id === "local-package-publication-proof")?.code,
     "PACKAGE_PUBLICATION_LOCAL_PROOF_CONFIGURED",

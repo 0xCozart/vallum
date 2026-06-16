@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { isAbsolute, resolve } from "node:path";
 
-import type { SponsorshipPolicy } from "@agentrail/shared-types";
+import type { SponsorshipPolicy } from "@sacredlabs/agentrail-shared-types";
 
 import type { GatewayConfig } from "./server.js";
 import { createFileGatewayUsageEventStore } from "./usage-store.js";

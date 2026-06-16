@@ -1,20 +1,20 @@
-# @agentrail/shared-types
+# @sacredlabs/agentrail-shared-types
 
 Shared TypeScript policy and request/decision types for AgentRail packages.
 
 ## Install
 
-Status: this package is a workspace package today and is not claimed as published to npm yet. Use the monorepo workspace for local review. After M3 publication, install from npm:
+For the npm prerelease, install:
 
 ```sh
-npm install @agentrail/shared-types
+npm install @sacredlabs/agentrail-shared-types
 ```
 
 ## Usage
 
 ```ts
-import type { SponsorshipPolicy, SponsorshipRequestContext } from "@agentrail/shared-types";
-import { POLICY_REASON_CODES } from "@agentrail/shared-types";
+import type { SponsorshipPolicy, SponsorshipRequestContext } from "@sacredlabs/agentrail-shared-types";
+import { POLICY_REASON_CODES } from "@sacredlabs/agentrail-shared-types";
 
 const policy: SponsorshipPolicy = {
   appId: "demo-app",

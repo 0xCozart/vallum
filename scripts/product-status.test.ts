@@ -336,7 +336,7 @@ test("product status can mark package publication report ready for approval with
       packagePublicationReadiness: {
         localProofOk: true,
         liveReady: true,
-        packageNames: ["@agentrail/sdk"],
+        packageNames: ["@sacredlabs/agentrail-sdk"],
         checks: [
           {
             id: "local-package-publication-proof",
@@ -667,11 +667,11 @@ function completeScripts(overrides: Record<string, string | undefined> = {}): Re
       "npm run docs:check",
       "npm run secrets:scan",
     ].join(" && "),
-    "pack:check": "npm run build && npm pack --dry-run -w @agentrail/sdk",
+    "pack:check": "npm run build && npm pack --dry-run -w @sacredlabs/agentrail-sdk",
     "smoke:package-install": "npm run build && tsx scripts/smoke-package-install.ts",
     "publish:dry-run": "npm run build && tsx scripts/package-publish-dry-run.ts",
     "operator:write-report-template": "npm run build && tsx scripts/write-operator-report-template.ts",
-    build: "npm run build -w @agentrail/marketplace",
+    build: "npm run build -w @sacredlabs/agentrail-marketplace",
     "smoke:marketplace-read-model": "npm run build && tsx scripts/smoke-marketplace-read-model.ts",
     ...overrides,
   };
@@ -777,7 +777,7 @@ function blockedPackagePublicationReadiness() {
   return {
     localProofOk: true,
     liveReady: false,
-    packageNames: ["@agentrail/sdk"],
+    packageNames: ["@sacredlabs/agentrail-sdk"],
     checks: [
       {
         id: "local-package-publication-proof",

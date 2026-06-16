@@ -1,4 +1,4 @@
-# @agentrail/marketplace
+# @sacredlabs/agentrail-marketplace
 
 Read-only local marketplace evidence views for AgentRail.
 

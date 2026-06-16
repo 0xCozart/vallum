@@ -213,7 +213,7 @@ async function checkLocalCustodyProof(
   const verifyLocal = scripts["verify:local"] ?? "";
   const grantCheck = scripts["grant:check"] ?? "";
 
-  if (!build.includes("npm run build -w @agentrail/accounts")) missing.push("build @agentrail/accounts");
+  if (!build.includes("npm run build -w @sacredlabs/agentrail-accounts")) missing.push("build @sacredlabs/agentrail-accounts");
   if (!verifyLocal.includes("npm test")) missing.push("verify:local account tests via npm test");
   if (
     verifyFast.includes("proof:custody-readiness")

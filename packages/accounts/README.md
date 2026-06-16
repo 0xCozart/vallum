@@ -1,4 +1,4 @@
-# @agentrail/accounts
+# @sacredlabs/agentrail-accounts
 
 Signer-reference-first account and wallet primitives for AgentRail.
 

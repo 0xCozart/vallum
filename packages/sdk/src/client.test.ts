@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import { once } from "node:events";
 import type { AddressInfo } from "node:net";
 import { test } from "node:test";
-import { validManifestFixture } from "@agentrail/manifest";
-import { createAgentMockGatewayServer, type AgentActionPolicy } from "@agentrail/policy-gateway";
+import { validManifestFixture } from "@sacredlabs/agentrail-manifest";
+import { createAgentMockGatewayServer, type AgentActionPolicy } from "@sacredlabs/agentrail-policy-gateway";
 import {
   createAgentRailClient,
   AgentRailAuthError,

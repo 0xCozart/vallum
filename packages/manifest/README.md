@@ -1,4 +1,4 @@
-# @agentrail/manifest
+# @sacredlabs/agentrail-manifest
 
 Versioned Agent Transaction Manifest schema and validator for AgentRail.
 

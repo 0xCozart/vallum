@@ -2,7 +2,7 @@ import {
   validateAgentTransactionManifest,
   type AgentTransactionManifest,
   type ManifestValidationError,
-} from "@agentrail/manifest";
+} from "@sacredlabs/agentrail-manifest";
 import { contractActionAllowed } from "./contractAllowList.js";
 import type { AgentActionPolicy, AgentPolicyDecision } from "./policySchema.js";
 

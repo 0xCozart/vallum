@@ -1,8 +1,8 @@
 import { randomUUID, timingSafeEqual } from "node:crypto";
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 
-import { evaluateSponsorshipPolicy } from "@agentrail/policy-gateway";
-import type { PolicyDecision, PolicyReasonCode, SponsorshipPolicy, SponsorshipRequestContext } from "@agentrail/shared-types";
+import { evaluateSponsorshipPolicy } from "@sacredlabs/agentrail-policy-gateway";
+import type { PolicyDecision, PolicyReasonCode, SponsorshipPolicy, SponsorshipRequestContext } from "@sacredlabs/agentrail-shared-types";
 
 import type { GatewayUsageSnapshot } from "./usage.js";
 

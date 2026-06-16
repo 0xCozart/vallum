@@ -40,7 +40,11 @@ test("public package metadata pins safe prerelease publish settings", async () =
   for (const packageDir of publicPackages) {
     const packageJson = await readPackageJson(packageDir);
 
-    assert.match(packageJson.name, /^@agentrail\/[a-z0-9-]+$/, `${packageJson.name} must stay in the conservative namespace`);
+    assert.match(
+      packageJson.name,
+      /^@sacredlabs\/agentrail-[a-z0-9-]+$/,
+      `${packageJson.name} must stay in the Sacred Labs AgentRail namespace`,
+    );
     assert.equal(packageJson.version, currentVersion, `${packageJson.name} must use the repo prerelease version`);
     assert.equal(packageJson.private, undefined, `${packageJson.name} must not be private if pack:check publishes it`);
     assert.equal(packageJson.type, "module", `${packageJson.name} must publish ESM`);
@@ -95,14 +99,14 @@ test("public package readmes match package names", async () => {
   }
 });
 
-test("existing install readmes keep unpublished npm status explicit", async () => {
+test("existing install readmes keep prerelease npm install guidance explicit", async () => {
   for (const packageDir of ["packages/shared-types", "packages/policy-gateway", "packages/sdk"]) {
     const packageJson = await readPackageJson(packageDir);
     const readme = await readFile(`${packageDir}/README.md`, "utf8");
 
-    assert.match(readme, /not claimed as published to npm yet/);
-    assert.match(readme, /After M3 publication/);
+    assert.match(readme, /npm prerelease/);
     assert.match(readme, /npm install/);
+    assert.match(readme, new RegExp(`npm install ${packageJson.name.replace("/", "\\/")}`));
   }
 });
 
@@ -141,5 +145,5 @@ function internalDependencies(packageJson: PackageJson): [string, string][] {
   return Object.entries({
     ...packageJson.dependencies,
     ...packageJson.devDependencies,
-  }).filter(([name]) => name.startsWith("@agentrail/"));
+  }).filter(([name]) => name.startsWith("@sacredlabs/agentrail-"));
 }

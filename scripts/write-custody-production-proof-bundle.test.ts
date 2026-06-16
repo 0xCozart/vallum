@@ -106,7 +106,7 @@ async function writeCustodyEvidence(): Promise<string> {
 
 function completeScripts(): Record<string, string | undefined> {
   return {
-    build: "npm run build -w @agentrail/accounts",
+    build: "npm run build -w @sacredlabs/agentrail-accounts",
     "verify:local": "npm test",
     "verify:fast": "npm test",
     "grant:check": "npm test",

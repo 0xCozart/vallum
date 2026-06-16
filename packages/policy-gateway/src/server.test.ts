@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { once } from "node:events";
 import type { AddressInfo } from "node:net";
 
-import { validManifestFixture } from "@agentrail/manifest";
+import { validManifestFixture } from "@sacredlabs/agentrail-manifest";
 import {
   createAgentMockGatewayServer,
   type AgentGatewayEvent,

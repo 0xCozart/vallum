@@ -1,11 +1,11 @@
 # Node Backend Example
 
-This example shows a minimal server-side integration using `@agentrail/sdk` without exposing the app credential to browser code.
+This example shows a minimal server-side integration using `@sacredlabs/agentrail-sdk` without exposing the app credential to browser code.
 
 The example exports framework-neutral handlers from `agentrail-backend.ts` so it can be adapted to Express, Fastify, Hono, Next.js route handlers, or another backend. Your real backend owns the SDK client and app API key; frontend callers only provide transaction metadata and user signatures.
 
 ```ts
-import { createAgentRailClient } from "@agentrail/sdk";
+import { createAgentRailClient } from "@sacredlabs/agentrail-sdk";
 import { createAgentRailBackendHandlers } from "./agentrail-backend.js";
 
 const handlers = createAgentRailBackendHandlers({

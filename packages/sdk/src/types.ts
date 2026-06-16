@@ -1,5 +1,5 @@
-import type { PolicyDecision } from "@agentrail/shared-types";
-import type { AgentTransactionManifest } from "@agentrail/manifest";
+import type { PolicyDecision } from "@sacredlabs/agentrail-shared-types";
+import type { AgentTransactionManifest } from "@sacredlabs/agentrail-manifest";
 
 export interface AgentRailClientOptions {
   baseUrl: string;

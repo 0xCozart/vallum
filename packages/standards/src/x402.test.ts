@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import type { AgentActionPolicy } from "@agentrail/policy-gateway";
+import type { AgentActionPolicy } from "@sacredlabs/agentrail-policy-gateway";
 import {
   runX402MockFacilitatorFlow,
   type X402PaymentRequired,

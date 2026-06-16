@@ -1,6 +1,6 @@
 import { pathToFileURL } from "node:url";
 
-import { createAgentRailClient } from "@agentrail/sdk";
+import { createAgentRailClient } from "@sacredlabs/agentrail-sdk";
 
 import { formatDemoGrantFlowResult, runDemoGrantFlow } from "./local-flow.js";
 

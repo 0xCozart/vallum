@@ -1,5 +1,5 @@
-import { POLICY_REASON_CODES } from "@agentrail/shared-types";
-import type { PolicyReasonCode } from "@agentrail/shared-types";
+import { POLICY_REASON_CODES } from "@sacredlabs/agentrail-shared-types";
+import type { PolicyReasonCode } from "@sacredlabs/agentrail-shared-types";
 
 import { AgentRailAuthError, AgentRailError, AgentRailPolicyError } from "./errors.js";
 import { requestSponsoredAction as requestSponsoredActionThroughGateway } from "./requestSponsoredAction.js";

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { after, before, test } from "node:test";
 
-import { createAgentRailClient, AgentRailAuthError, AgentRailError, AgentRailPolicyError } from "@agentrail/sdk";
+import { createAgentRailClient, AgentRailAuthError, AgentRailError, AgentRailPolicyError } from "@sacredlabs/agentrail-sdk";
 import { createGatewayServer, type GatewayConfig } from "./server.js";
 
 const demoPolicy = {

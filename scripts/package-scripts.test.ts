@@ -401,22 +401,22 @@ test("root local verification includes deterministic secret scan after package c
 });
 
 test("docs site check is wired into local verification", () => {
-  assert.equal(packageJson.scripts?.["docs:check"], "npm run check -w @agentrail/docs-site");
+  assert.equal(packageJson.scripts?.["docs:check"], "npm run check -w @sacredlabs/agentrail-docs-site");
   assert.match(packageJson.scripts?.["verify:local"] ?? "", /npm run docs:check/);
 });
 
 test("registry, contract metadata, and standards packages are built and included in package dry-runs", () => {
-  assert.match(packageJson.scripts?.["build"] ?? "", /npm run build -w @agentrail\/registry/);
-  assert.match(packageJson.scripts?.["pack:check"] ?? "", /-w @agentrail\/registry/);
-  assert.match(packageJson.scripts?.["build"] ?? "", /npm run build -w @agentrail\/contracts-metadata/);
-  assert.match(packageJson.scripts?.["pack:check"] ?? "", /-w @agentrail\/contracts-metadata/);
-  assert.match(packageJson.scripts?.["build"] ?? "", /npm run build -w @agentrail\/standards/);
-  assert.match(packageJson.scripts?.["pack:check"] ?? "", /-w @agentrail\/standards/);
+  assert.match(packageJson.scripts?.["build"] ?? "", /npm run build -w @sacredlabs\/agentrail-registry/);
+  assert.match(packageJson.scripts?.["pack:check"] ?? "", /-w @sacredlabs\/agentrail-registry/);
+  assert.match(packageJson.scripts?.["build"] ?? "", /npm run build -w @sacredlabs\/agentrail-contracts-metadata/);
+  assert.match(packageJson.scripts?.["pack:check"] ?? "", /-w @sacredlabs\/agentrail-contracts-metadata/);
+  assert.match(packageJson.scripts?.["build"] ?? "", /npm run build -w @sacredlabs\/agentrail-standards/);
+  assert.match(packageJson.scripts?.["pack:check"] ?? "", /-w @sacredlabs\/agentrail-standards/);
 });
 
 test("marketplace package is built and included in package dry-runs", () => {
-  assert.match(packageJson.scripts?.["build"] ?? "", /npm run build -w @agentrail\/marketplace/);
-  assert.match(packageJson.scripts?.["pack:check"] ?? "", /-w @agentrail\/marketplace/);
+  assert.match(packageJson.scripts?.["build"] ?? "", /npm run build -w @sacredlabs\/agentrail-marketplace/);
+  assert.match(packageJson.scripts?.["pack:check"] ?? "", /-w @sacredlabs\/agentrail-marketplace/);
 });
 
 test("root build and package dry-run cover every public package workspace", () => {
@@ -525,9 +525,9 @@ test("Move contract tests are wired into local verification", () => {
 });
 
 test("root docs scripts build the static hosted documentation site", () => {
-  assert.equal(packageJson.scripts?.["docs:build"], "npm run build -w @agentrail/docs-site");
-  assert.equal(packageJson.scripts?.["docs:check"], "npm run check -w @agentrail/docs-site");
-  assert.equal(packageJson.scripts?.["docs:serve"], "npm run serve -w @agentrail/docs-site --");
+  assert.equal(packageJson.scripts?.["docs:build"], "npm run build -w @sacredlabs/agentrail-docs-site");
+  assert.equal(packageJson.scripts?.["docs:check"], "npm run check -w @sacredlabs/agentrail-docs-site");
+  assert.equal(packageJson.scripts?.["docs:serve"], "npm run serve -w @sacredlabs/agentrail-docs-site --");
 });
 
 test("workflow execution truth does not reference deleted milestone docs", () => {

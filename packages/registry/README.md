@@ -1,4 +1,4 @@
-# @agentrail/registry
+# @sacredlabs/agentrail-registry
 
 Versioned Agent Profile schema and validation helpers for AgentRail.
 

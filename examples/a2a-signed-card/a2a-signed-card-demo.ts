@@ -5,7 +5,7 @@ import {
   signA2AAgentCard,
   validAgentProfileFixture,
   verifyA2AAgentCardSignature,
-} from "@agentrail/registry";
+} from "@sacredlabs/agentrail-registry";
 
 export interface A2ASignedCardDemoResult {
   readonly agentName: string;

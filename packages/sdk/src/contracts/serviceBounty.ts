@@ -1,4 +1,4 @@
-import type { AgentTransactionManifest } from "@agentrail/manifest";
+import type { AgentTransactionManifest } from "@sacredlabs/agentrail-manifest";
 import {
   approveServiceBountyReceipt,
   completeServiceBountyReceipt,
@@ -10,7 +10,7 @@ import {
   submitServiceBountyReceipt,
   type ReceiptAmount,
   type ServiceBountyReceipt,
-} from "@agentrail/receipts";
+} from "@sacredlabs/agentrail-receipts";
 
 import { requestSponsoredAction } from "../requestSponsoredAction.js";
 import type { SponsoredActionResult } from "../types.js";

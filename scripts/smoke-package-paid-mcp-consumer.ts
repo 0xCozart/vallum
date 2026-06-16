@@ -24,9 +24,9 @@ export function buildPaidMcpConsumerSmokeSource(): string {
 import assert from "node:assert/strict";
 import { once } from "node:events";
 
-import { AGENT_TRANSACTION_MANIFEST_VERSION } from "@agentrail/manifest";
-import { createAgentMockGatewayServer } from "@agentrail/policy-gateway";
-import { callPaidTool } from "@agentrail/sdk";
+import { AGENT_TRANSACTION_MANIFEST_VERSION } from "@sacredlabs/agentrail-manifest";
+import { createAgentMockGatewayServer } from "@sacredlabs/agentrail-policy-gateway";
+import { callPaidTool } from "@sacredlabs/agentrail-sdk";
 
 const now = new Date("2026-06-15T12:00:00.000Z");
 const buyerAgentId = "agent:package-consumer-paid-tool-buyer";

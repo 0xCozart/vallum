@@ -106,7 +106,7 @@ async function writeMarketplaceEvidence(): Promise<string> {
 
 function completeScripts(): Record<string, string | undefined> {
   return {
-    build: "npm run build -w @agentrail/marketplace",
+    build: "npm run build -w @sacredlabs/agentrail-marketplace",
     "smoke:marketplace-read-model": "npm run build && tsx scripts/smoke-marketplace-read-model.ts",
     "verify:local": "npm run smoke:marketplace-read-model",
     "verify:fast": "npm test",

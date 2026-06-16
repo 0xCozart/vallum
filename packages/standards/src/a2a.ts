@@ -33,4 +33,4 @@ export {
   type SignA2AAgentCardOptions,
   type SignedA2AAgentCard,
   type VerifyA2AAgentCardSignatureOptions,
-} from "@agentrail/registry";
+} from "@sacredlabs/agentrail-registry";

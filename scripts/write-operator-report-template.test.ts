@@ -182,7 +182,7 @@ test("operator report template builds package publication schema without marking
   assert.equal(template.result, "pending-operator-proof");
   assert.equal(template.registry, "npm");
   assert.ok(Array.isArray(template.packageNames));
-  assert.ok((template.packageNames as string[]).includes("@agentrail/sdk"));
+  assert.ok((template.packageNames as string[]).includes("@sacredlabs/agentrail-sdk"));
   assert.deepEqual(template.checks, [
     "npm-pack-dry-run",
     "local-tarball-install",

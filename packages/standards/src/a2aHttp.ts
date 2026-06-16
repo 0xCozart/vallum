@@ -2,8 +2,8 @@ import {
   A2A_AGENT_CARD_WELL_KNOWN_PATH,
   handleA2AAgentCardWellKnownRequest,
   type A2AAgentCardWellKnownOptions,
-} from "@agentrail/registry";
-import type { AgentActionPolicy } from "@agentrail/policy-gateway";
+} from "@sacredlabs/agentrail-registry";
+import type { AgentActionPolicy } from "@sacredlabs/agentrail-policy-gateway";
 
 import {
   A2APushNotificationError,

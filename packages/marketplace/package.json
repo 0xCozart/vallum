@@ -1,5 +1,5 @@
 {
-  "name": "@agentrail/marketplace",
+  "name": "@sacredlabs/agentrail-marketplace",
   "version": "0.0.0-prerelease",
   "type": "module",
   "main": "dist/index.js",
@@ -12,11 +12,11 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@agentrail/contracts-metadata": "0.0.0-prerelease",
-    "@agentrail/manifest": "0.0.0-prerelease",
-    "@agentrail/policy-gateway": "0.0.0-prerelease",
-    "@agentrail/receipts": "0.0.0-prerelease",
-    "@agentrail/registry": "0.0.0-prerelease"
+    "@sacredlabs/agentrail-contracts-metadata": "0.0.0-prerelease",
+    "@sacredlabs/agentrail-manifest": "0.0.0-prerelease",
+    "@sacredlabs/agentrail-policy-gateway": "0.0.0-prerelease",
+    "@sacredlabs/agentrail-receipts": "0.0.0-prerelease",
+    "@sacredlabs/agentrail-registry": "0.0.0-prerelease"
   },
   "description": "Read-only local marketplace evidence views for AgentRail.",
   "files": [

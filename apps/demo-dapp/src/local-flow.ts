@@ -1,7 +1,7 @@
 import type {
   ExecuteSponsoredTransactionResponse,
   ReserveGasResponse,
-} from "@agentrail/sdk";
+} from "@sacredlabs/agentrail-sdk";
 
 export const DEMO_PACKAGE_ID = "0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0";
 export const DEMO_FUNCTION_NAME = "mint_badge";

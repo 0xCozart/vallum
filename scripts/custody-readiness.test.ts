@@ -188,7 +188,7 @@ test("custody readiness blocks incomplete local script wiring", async () => {
       cwd,
       env: {},
       scripts: {
-        build: "npm run build -w @agentrail/accounts",
+        build: "npm run build -w @sacredlabs/agentrail-accounts",
         "verify:local": "npm run proof:custody-readiness",
       },
     });

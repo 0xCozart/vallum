@@ -188,7 +188,7 @@ test("marketplace readiness blocks incomplete local script wiring", async () => 
       cwd,
       env: {},
       scripts: {
-        build: "npm run build -w @agentrail/marketplace",
+        build: "npm run build -w @sacredlabs/agentrail-marketplace",
         "smoke:marketplace-read-model": "tsx scripts/smoke-marketplace-read-model.ts",
         "verify:local": "npm run proof:marketplace-readiness",
       },

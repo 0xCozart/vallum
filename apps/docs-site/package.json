@@ -1,5 +1,5 @@
 {
-  "name": "@agentrail/docs-site",
+  "name": "@sacredlabs/agentrail-docs-site",
   "version": "0.0.0-prerelease",
   "private": true,
   "description": "Static documentation site for AgentRail.",

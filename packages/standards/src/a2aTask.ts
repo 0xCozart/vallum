@@ -1,12 +1,12 @@
 import {
   validateAgentTransactionManifest,
   type AgentTransactionManifest,
-} from "@agentrail/manifest";
+} from "@sacredlabs/agentrail-manifest";
 import {
   evaluateAgentActionPolicy,
   type AgentActionPolicy,
   type AgentPolicyDecision,
-} from "@agentrail/policy-gateway";
+} from "@sacredlabs/agentrail-policy-gateway";
 
 export const A2A_TASK_PROTOCOL_VERSION = "1.0" as const;
 export const A2A_TASK_MEDIA_TYPE = "application/a2a+json" as const;

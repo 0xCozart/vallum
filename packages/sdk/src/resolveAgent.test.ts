@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { createLocalAgentResolver, validAgentProfileFixture } from "@agentrail/registry";
+import { createLocalAgentResolver, validAgentProfileFixture } from "@sacredlabs/agentrail-registry";
 
 import { resolveAgent } from "./index.js";
 

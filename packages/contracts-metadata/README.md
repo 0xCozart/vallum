@@ -1,4 +1,4 @@
-# @agentrail/contracts-metadata
+# @sacredlabs/agentrail-contracts-metadata
 
 Versioned contract template metadata registry for AgentRail policy
 allow-lists.
@@ -13,6 +13,6 @@ recurring billing, or prove live package addresses.
 ## Local checks
 
 ```bash
-npm run build -w @agentrail/contracts-metadata
+npm run build -w @sacredlabs/agentrail-contracts-metadata
 node --import tsx --test packages/contracts-metadata/src/*.test.ts
 ```

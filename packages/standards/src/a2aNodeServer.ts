@@ -4,7 +4,7 @@ import {
   A2A_JWKS_WELL_KNOWN_PATH,
   handleA2APublicJwksRequest,
   type A2APublicJwksOptions,
-} from "@agentrail/registry";
+} from "@sacredlabs/agentrail-registry";
 
 import {
   A2A_HTTP_SEND_MESSAGE_PATH,

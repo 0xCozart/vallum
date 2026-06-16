@@ -1,4 +1,4 @@
-# @agentrail/standards
+# @sacredlabs/agentrail-standards
 
 Standards bridge adapters for AgentRail.
 

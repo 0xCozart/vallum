@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { validManifestFixture } from "@agentrail/manifest";
+import { validManifestFixture } from "@sacredlabs/agentrail-manifest";
 import { evaluateAgentActionPolicy, type AgentActionPolicy } from "./index.js";
 
 const basePolicy: AgentActionPolicy = {

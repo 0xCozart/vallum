@@ -13,14 +13,14 @@ Create one route file for reserve after copying both maintained helpers into a s
 
 Those source files use repo-local imports so they can be tested in this monorepo. In an app, update the copied helper imports before running Next.js:
 
-- in `agentrail-route.ts`, import SDK types from `@agentrail/sdk` and import `createAgentRailBackendHandlers` from `./agentrail-backend.js`;
-- in `agentrail-backend.ts`, import SDK client/errors/types from `@agentrail/sdk`; keep or replace the small policy reason-code allowlist with your installed AgentRail shared type package if your app depends on it.
+- in `agentrail-route.ts`, import SDK types from `@sacredlabs/agentrail-sdk` and import `createAgentRailBackendHandlers` from `./agentrail-backend.js`;
+- in `agentrail-backend.ts`, import SDK client/errors/types from `@sacredlabs/agentrail-sdk`; keep or replace the small policy reason-code allowlist with your installed AgentRail shared type package if your app depends on it.
 
 Then create the reserve route file:
 
 ```ts
 // app/api/agentrail/reserve/route.ts
-import { createAgentRailClient } from "@agentrail/sdk";
+import { createAgentRailClient } from "@sacredlabs/agentrail-sdk";
 import { createAgentRailNextApiRoutes } from "../_lib/agentrail-route.js";
 
 const routes = createAgentRailNextApiRoutes({
@@ -37,7 +37,7 @@ Create a second route file for execute:
 
 ```ts
 // app/api/agentrail/execute/route.ts
-import { createAgentRailClient } from "@agentrail/sdk";
+import { createAgentRailClient } from "@sacredlabs/agentrail-sdk";
 import { createAgentRailNextApiRoutes } from "../_lib/agentrail-route.js";
 
 const routes = createAgentRailNextApiRoutes({
