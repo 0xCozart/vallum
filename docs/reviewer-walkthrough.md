@@ -70,8 +70,8 @@ npm run smoke:package-paid-mcp-consumer
 
 Expected result: the command builds and packs public workspace packages,
 installs local tarballs into a fresh temporary consumer project, imports only
-`@agentrail/sdk`, `@agentrail/manifest`, and
-`@agentrail/policy-gateway` package root entrypoints, and runs approval,
+`@sacredlabs/agentrail-sdk`, `@sacredlabs/agentrail-manifest`, and
+`@sacredlabs/agentrail-policy-gateway` package root entrypoints, and runs approval,
 policy-denial, and failed-payment paths without live network calls.
 
 This is local tarball proof only. It does not prove npm registry publication,

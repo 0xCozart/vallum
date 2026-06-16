@@ -363,19 +363,26 @@ examples/
 
 ## Packages
 
-The monorepo root is marked `private` to prevent accidental publication of the workspace root. The workspace packages are not claimed as published yet. The current package namespace decision keeps the conservative `@agentrail/*` package names for the prerelease line; any `@agentrail/*` rename is deferred to a separate compatibility slice. See [`docs/agentrail/package-release-strategy.md`](docs/agentrail/package-release-strategy.md).
+The monorepo root is marked `private` to prevent accidental publication of the
+workspace root. The current prerelease package set is published to npm under
+`@sacredlabs/agentrail-*` with the requested `next` tag because npm blocked
+creation of the shorter `@agentrail` org scope pending support review. npm also
+currently exposes `latest=0.0.0-prerelease` for this first published package
+set after rejecting `latest` tag deletion. See
+[`docs/agentrail/package-release-strategy.md`](docs/agentrail/package-release-strategy.md).
 
-Package release remains roadmap work; today the repo provides package READMEs,
-public prerelease publish metadata (`access=public`, `tag=next`), map-free
-packed artifacts, local `npm pack --dry-run` verification, a local tarball
-install/import smoke, a local tarball paid MCP consumer smoke, an opt-in
-package-publication readiness gate, and an opt-in `npm publish --dry-run` gate
-for publishable packages.
+Package release evidence now includes package READMEs, public prerelease
+publish metadata (`access=public`, `tag=next`), observed registry dist-tags
+(`next` and registry-retained `latest` both pointing at `0.0.0-prerelease`),
+map-free packed artifacts, local `npm pack --dry-run` verification, local
+tarball install/import smoke, a local tarball paid MCP consumer smoke, an
+opt-in package-publication readiness gate, an opt-in `npm publish --dry-run`
+gate, real npm publication, and registry install/import proof for publishable
+packages.
 
-Package Publication remains a roadmap gate. Do not treat the AgentRail fork
-or any future namespace rename as package-publication-ready until dry-run pack
-and publish checks, local tarball consumer proof, README package names,
-lockfiles, npm account ownership, provenance decisions, and registry
+Do not treat any future namespace rename as package-publication-ready until
+dry-run pack and publish checks, local tarball consumer proof, README package
+names, lockfiles, npm account ownership, provenance decisions, and registry
 credentials are reviewed in a dedicated release slice.
 
 Dry-run package checks:
@@ -395,11 +402,11 @@ workspace package.
 Do not run a real `npm publish` without explicit operator approval and registry credentials handled outside the repo.
 
 
-### `@agentrail/shared-types`
+### `@sacredlabs/agentrail-shared-types`
 
 Shared TypeScript types for policy decisions, policy reason codes, sponsorship policy, and request context.
 
-### `@agentrail/policy-gateway`
+### `@sacredlabs/agentrail-policy-gateway`
 
 Policy decision scaffold for validating app status, credentials, daily limits,
 gas budget, wallet denylist, package allowlist, function allowlist, and
@@ -421,7 +428,7 @@ Current tests cover:
 - mismatched template versions denied
 - legacy raw package/function agent allowlists remaining compatible
 
-### `@agentrail/contracts-metadata`
+### `@sacredlabs/agentrail-contracts-metadata`
 
 Versioned contract template metadata registry for AgentRail policy
 allowlists. The local registry currently covers escrow, receipt, pay-per-call,
@@ -430,7 +437,7 @@ metadata and pure checks for approved template/version, unknown package, and
 mismatched version decisions. It does not deploy contracts, operate reputation
 scoring, operate recurring billing, or prove live package addresses.
 
-### `@agentrail/sdk`
+### `@sacredlabs/agentrail-sdk`
 
 TypeScript client scaffold for dApp backends.
 

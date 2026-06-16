@@ -87,11 +87,11 @@ GAS_STATION_BEARER_TOKEN=replace-with-local-gas-station-token
 ### 2. Start the gateway
 
 ```bash
-npm run build -w @agentrail/policy-gateway-service
+npm run build -w @sacredlabs/agentrail-policy-gateway-service
 set -a
 . ./.env
 set +a
-npm run start -w @agentrail/policy-gateway-service
+npm run start -w @sacredlabs/agentrail-policy-gateway-service
 ```
 
 Equivalent inline start command:
@@ -102,7 +102,7 @@ AGENTRAIL_GATEWAY_HOST=127.0.0.1 \
 AGENTRAIL_POLICY_PATH=examples/policies/demo-dapp.yaml \
 GAS_STATION_URL=http://127.0.0.1:9527 \
 GAS_STATION_BEARER_TOKEN=replace-with-local-token \
-npm run start -w @agentrail/policy-gateway-service
+npm run start -w @sacredlabs/agentrail-policy-gateway-service
 ```
 
 ### 3. Check local health
@@ -197,7 +197,7 @@ If you already have a local gateway running, you can point the CLI demo dApp at 
 ```bash
 AGENTRAIL_GATEWAY_URL=http://127.0.0.1:8787 \
 AGENTRAIL_DEMO_APP_KEY=local-dev-demo-key \
-npm run dev -w @agentrail/demo-dapp
+npm run dev -w @sacredlabs/agentrail-demo-dapp
 ```
 
 Or start the browser wrapper locally:
@@ -205,7 +205,7 @@ Or start the browser wrapper locally:
 ```bash
 AGENTRAIL_GATEWAY_URL=http://127.0.0.1:8787 \
 AGENTRAIL_DEMO_APP_KEY=local-dev-demo-key \
-npm run browser -w @agentrail/demo-dapp
+npm run browser -w @sacredlabs/agentrail-demo-dapp
 ```
 
 Then open `http://127.0.0.1:8788`. The browser wrapper binds to loopback hosts only and calls a same-origin local backend endpoint so the app key stays server-side; it is not embedded into browser HTML or JavaScript.

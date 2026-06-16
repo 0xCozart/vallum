@@ -5,7 +5,7 @@ The SDK helps dApp backends interact with AgentRail without hand-writing raw HTT
 ## Backend API Example
 
 ```ts
-import { createAgentRailClient } from "@agentrail/sdk";
+import { createAgentRailClient } from "@sacredlabs/agentrail-sdk";
 
 const client = createAgentRailClient({
   baseUrl: "https://api.example.com",

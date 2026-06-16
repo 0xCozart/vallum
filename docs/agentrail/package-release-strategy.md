@@ -4,8 +4,8 @@ Last updated: 2026-06-15.
 
 ## Decision
 
-AgentRail keeps the conservative `@agentrail/*` workspace package
-namespace for the current prerelease line.
+AgentRail publishes the current prerelease line under the Sacred Labs npm org
+using `@sacredlabs/agentrail-*` workspace package names.
 
 The repository root remains `agentrail` and `private: true` so the
 monorepo root cannot be accidentally published. Publishable workspace packages
@@ -14,27 +14,29 @@ remain public prerelease packages with `publishConfig.access=public` and
 
 ## Why
 
-The current product extends the existing AgentRail sponsorship toolkit. A
-full package namespace rename to `@agentrail/*` would touch every import,
-example, README, lockfile, package dry-run, and downstream integration at the
-same time. That is a compatibility migration, not a feature slice.
+The shorter `@agentrail/*` npm package scope is blocked until npm support
+approves creation of the `agentrail` organization scope. Publishing under
+`@sacredlabs/agentrail-*` keeps the product name visible, uses the organization
+the operator already controls, and avoids publishing bare `@sacredlabs/*`
+packages that could collide with future Sacred Labs projects.
 
-Keeping `@agentrail/*` now avoids mixing package rename risk with wallet,
-policy gateway, SDK, MCP, payment, identity, A2A, or marketplace safety work.
+This namespace decision is package-distribution only. It must not change
+wallet, policy gateway, SDK, MCP, payment, identity, A2A, marketplace, or live
+IOTA behavior.
 
 ## Current Publishable Packages
 
-- `@agentrail/accounts`
-- `@agentrail/contracts-metadata`
-- `@agentrail/manifest`
-- `@agentrail/marketplace`
-- `@agentrail/mcp-server`
-- `@agentrail/policy-gateway`
-- `@agentrail/receipts`
-- `@agentrail/registry`
-- `@agentrail/sdk`
-- `@agentrail/shared-types`
-- `@agentrail/standards`
+- `@sacredlabs/agentrail-accounts`
+- `@sacredlabs/agentrail-contracts-metadata`
+- `@sacredlabs/agentrail-manifest`
+- `@sacredlabs/agentrail-marketplace`
+- `@sacredlabs/agentrail-mcp-server`
+- `@sacredlabs/agentrail-policy-gateway`
+- `@sacredlabs/agentrail-receipts`
+- `@sacredlabs/agentrail-registry`
+- `@sacredlabs/agentrail-sdk`
+- `@sacredlabs/agentrail-shared-types`
+- `@sacredlabs/agentrail-standards`
 
 Private workspaces such as the demo app, docs site, and policy gateway service
 are not publishable package surfaces.
@@ -44,7 +46,7 @@ are not publishable package surfaces.
 The release metadata tests enforce:
 
 - root package is private;
-- public package names stay in `@agentrail/*`;
+- public package names stay in `@sacredlabs/agentrail-*`;
 - package versions stay aligned on `0.0.0-prerelease`;
 - packages publish ESM `dist/index.js` plus `dist/index.d.ts`;
 - package exports expose only the built root entrypoint;
@@ -94,8 +96,8 @@ package sets, or downstream application compatibility.
   project with lifecycle scripts, audit, funding prompts, and package-lock
   writes disabled;
 - runs a generated consumer program that imports only package root entrypoints
-  from `@agentrail/sdk`, `@agentrail/manifest`, and
-  `@agentrail/policy-gateway`;
+  from `@sacredlabs/agentrail-sdk`, `@sacredlabs/agentrail-manifest`, and
+  `@sacredlabs/agentrail-policy-gateway`;
 - starts an in-process mock policy gateway and exercises the canonical paid
   MCP-style flow through SDK-to-gateway calls;
 - proves approval, policy denial, failed-payment withholding, receipt event
@@ -176,23 +178,46 @@ registry, runs no real publish, does not prove npm account ownership, and does
 not clear registry publication readiness without an operator-approved
 structured publication report.
 
-## Explicit Non-Claims
+## Publication Evidence
 
-No package is claimed as published to npm today.
+The `0.0.0-prerelease` package set is published to npm under
+`@sacredlabs/agentrail-*` with the requested `next` tag. npm also currently
+exposes `latest=0.0.0-prerelease`; an attempted `latest` deletion returned
+npm `E400`, so the registry state remains `next` plus `latest` on the
+prerelease version.
 
-Do not present `npm install @agentrail/*` as a current user instruction until
-operator-approved npm publication evidence exists. Before publication, package
-adoption proof means local tarball installation through
-`npm run smoke:package-install` and `npm run smoke:package-paid-mcp-consumer`.
+Publication evidence for the current prerelease includes:
 
-No real `npm publish` may run without explicit operator approval, npm registry
+- `npm run pack:check`
+- `npm run smoke:package-install`
+- `npm run smoke:package-paid-mcp-consumer`
+- `npm run publish:dry-run`
+- real `npm publish --tag next --access public`
+- registry dist-tag proof showing `next=0.0.0-prerelease` and
+  `latest=0.0.0-prerelease` for all 11 public packages
+- registry install/import proof for all 11 public packages
+- an ignored local structured report accepted by
+  `PACKAGE_PUBLICATION_REPORT=tmp/agentrail/package-publication-report-sacredlabs.json npm run proof:package-publication-readiness`
+
+This machine has npm's local `min-release-age` safety gate enabled. Immediate
+post-publish registry install proof used `NPM_CONFIG_MIN_RELEASE_AGE=0` so the
+fresh prerelease could be verified before the local age window elapsed.
+
+Do not claim the future `@agentrail/*` namespace, provenance signing,
+stable package release, production launch readiness, live IOTA execution,
+payment-provider settlement, marketplace production operation, or production
+custody from this package publication. The registry-retained `latest` tag is a
+dist-tag state for the first prerelease package set, not a stable release claim.
+
+Future real `npm publish` runs require explicit operator approval, npm registry
 credentials outside the repo, and a fresh release checklist. `npm pack
 --dry-run` and `npm publish --dry-run` are safe local release checks; real
-publication is a separate operator-gated release slice.
+publication remains an operator-gated release action.
 
-## Future Rename Path
+## Future Scope Migration Path
 
-A future `@agentrail/*` migration remains possible, but it must be a
+A future migration from `@sacredlabs/agentrail-*` to `@agentrail/*` remains
+possible if npm support approves the `agentrail` org scope, but it must be a
 dedicated compatibility slice that updates:
 
 - package names;

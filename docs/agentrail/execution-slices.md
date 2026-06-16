@@ -3587,9 +3587,9 @@ Likely files:
 
 Acceptance criteria:
 
-- The conservative current `@agentrail/*` namespace decision is documented.
-- Any future `@agentrail/*` rename is explicitly deferred to a dedicated
-  compatibility slice.
+- The current `@sacredlabs/agentrail-*` namespace decision is documented.
+- Any future migration to `@agentrail/*` is explicitly deferred to a dedicated
+  compatibility slice after npm support approves the org scope.
 - The monorepo root remains private.
 - Publishable workspace package metadata is consistent for namespace, version,
   ESM entrypoints, exports, files, license, side-effect flag, Node engine,
@@ -3616,7 +3616,7 @@ lockfiles if it is mixed into product feature work.
 
 Escalation triggers:
 
-- Any request to rename packages to `@agentrail/*`.
+- Any request to rename packages away from `@sacredlabs/agentrail-*`.
 - Any request to run real `npm publish`.
 - Any package release requiring registry credentials, provenance, tags,
   changelogs, or downstream compatibility guarantees.

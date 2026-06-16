@@ -133,8 +133,9 @@ First code slices:
 
 Package namespace decision:
 
-- Current prerelease path: use the `@agentrail/*` workspace package namespace
-  for the renamed public package set.
+- Current prerelease path: use the `@sacredlabs/agentrail-*` workspace package namespace
+  for the renamed public package set while the `@agentrail` npm org scope is
+  blocked pending support review.
 - Compatibility path: preserve intentional IOTA protocol names and legacy
   response aliases where they are contract or ecosystem terms, but do not keep
   `@iota-gaskit/*` as a public prerelease package scope.
@@ -241,7 +242,8 @@ compatibility.
 
 ## Remaining Decisions Before Push
 
-- Public package namespace: `@agentrail/agent-*` first or full
-  `@agentrail/*` migration.
+- Future public package namespace: whether to migrate from
+  `@sacredlabs/agentrail-*` to `@agentrail/*` after npm support approves the
+  org scope.
 - Whether `/home/sacred/code/agents` should be archived, left as staging, or
   updated with a hard pointer to this fork.

@@ -5,7 +5,7 @@ These examples show the intended integration shape. The app backend owns the Age
 ## Backend SDK Setup
 
 ```ts
-import { createAgentRailClient } from "@agentrail/sdk";
+import { createAgentRailClient } from "@sacredlabs/agentrail-sdk";
 
 const agentrail = createAgentRailClient({
   baseUrl: process.env.AGENTRAIL_GATEWAY_URL!,
@@ -85,7 +85,7 @@ This is the basic server route pattern. The browser calls `/api/agentrail/reserv
 
 ```ts
 // app/api/agentrail/reserve/route.ts
-import { createAgentRailClient } from "@agentrail/sdk";
+import { createAgentRailClient } from "@sacredlabs/agentrail-sdk";
 
 const agentrail = createAgentRailClient({
   baseUrl: process.env.AGENTRAIL_GATEWAY_URL!,

@@ -10,7 +10,7 @@ Preflight checks completed before the attempt:
 
 - `npm run grant:check` passed.
 - `npm run readiness:testnet` passed with secret values hidden.
-- Package publish dry-run passed for `@agentrail/shared-types`, `@agentrail/policy-gateway`, and `@agentrail/sdk`.
+- Package publish dry-run passed for `@sacredlabs/agentrail-shared-types`, `@sacredlabs/agentrail-policy-gateway`, and `@sacredlabs/agentrail-sdk`.
 - Apex manifest detection passed for `tmp/apex-workflow/testnet-demo-package-readiness.json`.
 - Independent staged-diff review passed with no blocking issues.
 

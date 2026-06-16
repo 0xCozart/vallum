@@ -83,10 +83,11 @@ Recommended package:
 
 Recommended package name for now:
 
-- `@agentrail/accounts`
+- `@sacredlabs/agentrail-accounts`
 
-Do not do the full package namespace rebrand in the same slice. Keep
-`@agentrail/*` as a later compatibility and release-planning decision.
+The public package namespace is now `@sacredlabs/agentrail-*`. Keep any future
+move to `@agentrail/*` as a dedicated compatibility and release-planning
+decision after npm support approves the org scope.
 
 Minimum public types:
 
