@@ -197,13 +197,16 @@ Expected current result:
 - local package paid MCP consumer smoke proves the same adoption wedge from a
   fresh temporary consumer project using local tarballs and public package root
   entrypoints only;
+- npm registry paid MCP consumer smoke proves the same adoption wedge from a
+  fresh temporary consumer project using the published
+  `@sacredlabs/agentrail-*` packages;
 - example testnet-readiness preflight validates placeholders without reading real secrets;
 - testnet digest proof confirms the documented public digest evidence is present
   without contacting IOTA RPC;
 - package dry-runs complete for publishable workspace packages;
-- package publication readiness reports local package proof as configured but
-  remains blocked until an operator-approved npm registry publication report is
-  supplied;
+- package publication readiness validates local/package registry evidence when
+  supplied, while future package release, stable-channel, and namespace
+  migration claims remain blocked without operator-approved reports;
 - A2A public-readiness proof reports local A2A evidence, local loopback
   streaming proof, local authenticated extended-card access, local public JWKS
   serving, local static discovery bundle generation, local static discovery
@@ -299,4 +302,4 @@ What to verify:
 
 ## Reviewer-safe conclusion
 
-This repo currently proves a clean, licensed, tested, security-conscious open-source AgentRail toolkit with deterministic local gateway, SDK, examples, policy simulation, observability, usage read-model, demo dApp proof paths, package dry-runs, tracked-file secret scan, and documented real IOTA testnet sponsored execute evidence. It does not ask reviewers to treat the durable dashboard, production persistence, production monitoring, package publication, or final video as complete. Those remain explicit grant milestone work.
+This repo currently proves a clean, licensed, tested, security-conscious open-source AgentRail toolkit with deterministic local gateway, SDK, examples, policy simulation, observability, usage read-model, demo dApp proof paths, package dry-runs, local and npm package consumer proof, tracked-file secret scan, and documented real IOTA testnet sponsored execute evidence. It does not ask reviewers to treat the durable dashboard, production persistence, production monitoring, stable package release channel, future package namespace migration, or final video as complete. Those remain explicit grant milestone work.

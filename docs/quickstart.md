@@ -42,6 +42,10 @@ The package set was published with `tag=next`. npm also currently exposes
 `latest` dist-tag deletion. Use `@next` or the exact `@0.0.0-prerelease`
 version in docs, scripts, and demos until the first stable release exists.
 
+For the full package map, agent-runtime guidance, configuration reference, and
+current MCP-facade boundary, read
+[Package Integration Guide](agentrail/package-integration-guide.md).
+
 ## Canonical agent-safe sponsored execution path
 
 Start here when evaluating AgentRail as a developer integration:

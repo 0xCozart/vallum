@@ -1,8 +1,8 @@
 # Codebase Map
 
 Status: reviewed
-Reviewed at: 2026-06-14T12:45:00.000Z
-Last updated: 2026-06-14.
+Reviewed at: 2026-06-16T00:00:00.000Z
+Last updated: 2026-06-16.
 
 Purpose: fast, reviewed orientation for engineering work in AgentRail.
 Use this map before broad search. It is routing evidence, not product proof.
@@ -79,7 +79,8 @@ truth. Do not cite them as public product evidence.
 
 ## Core Domains And Ownership Zones
 
-- SDK and backend integration: `packages/sdk/src/`, `docs/sdk.md`,
+- SDK and backend integration: `packages/sdk/src/`,
+  `docs/agentrail/package-integration-guide.md`, `docs/sdk.md`,
   `docs/examples.md`, `examples/node-backend/`,
   `examples/nextjs-api-route/`.
 - Policy engine and app authorization: `packages/policy-gateway/src/`,
@@ -299,9 +300,10 @@ External proof boundaries:
 - A2A/public discovery: focused standards and script tests, local loopback
   smokes, `npm run proof:a2a-public-readiness`; public probes require
   operator-approved public config.
-- Payment/marketplace/custody/package publication: local readiness proof and
-  redacted structured report gates; production or registry claims require
-  operator-approved reports outside committed files.
+- Payment/marketplace/custody/stable package operations: local readiness proof
+  and redacted structured report gates; production live-operator claims, future
+  package releases, or registry migration claims require operator-approved
+  reports outside committed files.
 - Final/release-style evidence: `npm run verify:fast` for bounded iteration,
   `npm run verify:local` for full local proof, plus explicit live/operator
   reports for any live claim.

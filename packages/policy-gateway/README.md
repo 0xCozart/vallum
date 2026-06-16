@@ -7,8 +7,13 @@ Fail-closed sponsorship policy evaluation helpers for AgentRail gateways.
 For the npm prerelease, install:
 
 ```sh
-npm install @sacredlabs/agentrail-policy-gateway @sacredlabs/agentrail-shared-types
+npm install @sacredlabs/agentrail-policy-gateway@next
 ```
+
+See
+https://github.com/0xCozart/agentic-gaskit/blob/main/docs/agentrail/package-integration-guide.md
+for package selection, configuration, and when to use the gateway package
+instead of the SDK.
 
 ## Usage
 

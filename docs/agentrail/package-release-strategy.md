@@ -1,11 +1,14 @@
 # Package Release Strategy
 
-Last updated: 2026-06-15.
+Last updated: 2026-06-16.
 
 ## Decision
 
 AgentRail publishes the current prerelease line under the Sacred Labs npm org
 using `@sacredlabs/agentrail-*` workspace package names.
+
+Consumer package selection, SDK configuration, and agent-runtime guidance live
+in [Package Integration Guide](package-integration-guide.md).
 
 The repository root remains `agentrail` and `private: true` so the
 monorepo root cannot be accidentally published. Publishable workspace packages

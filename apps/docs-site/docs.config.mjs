@@ -25,6 +25,12 @@ export default {
           description: "Run the canonical paid MCP-style local proof, package consumer tarball proof, and core local verification paths."
         },
         {
+          title: "Package Integration Guide",
+          source: "docs/agentrail/package-integration-guide.md",
+          slug: "package-integration-guide",
+          description: "What AgentRail packages do, which package to install, how to configure SDK and agent integrations, and what remains outside the prerelease."
+        },
+        {
           title: "Reviewer Walkthrough",
           source: "docs/reviewer-walkthrough.md",
           slug: "reviewer-walkthrough",

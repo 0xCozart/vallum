@@ -49,12 +49,21 @@ operator visibility.
 ## Start Here: One Adoption Path
 
 The public center of gravity is agent-safe sponsored execution for IOTA.
-The first developer path is intentionally narrow:
+The first developer path is intentionally narrow. If you are consuming the
+published packages, start with the
+[Package Integration Guide](docs/agentrail/package-integration-guide.md):
+
+```bash
+npm install @sacredlabs/agentrail-sdk@next
+```
+
+If you are reviewing or contributing to this repository, run:
 
 ```bash
 npm install
 npm run smoke:paid-mcp-tool
 npm run smoke:package-paid-mcp-consumer
+npm run smoke:npm-registry-paid-mcp-consumer
 ```
 
 That path proves a local paid MCP-style tool call through the SDK and mock
@@ -62,12 +71,13 @@ policy gateway, using a manifest, scoped signer reference, sponsorship policy,
 payment gating, receipts, denial handling, failed-payment withholding, and
 redacted output. The package consumer smoke also packs the public workspace
 packages into local tarballs, installs them into a fresh temporary consumer
-project, and imports package root entrypoints only.
+project, and imports package root entrypoints only. The npm registry smoke
+proves the same adoption wedge from the published `@sacredlabs/agentrail-*`
+package set.
 
-This is local adoption proof, not a production claim. It does not prove npm
-registry publication, live IOTA/testnet execution, live payment settlement,
-custody, marketplace operation, or public A2A hosting. Those remain separate
-operator gates.
+This is package adoption proof, not a production claim. It does not prove live
+IOTA/testnet execution, live payment settlement, custody, marketplace
+operation, or public A2A hosting. Those remain separate operator gates.
 
 ## Why AgentRail Exists
 
@@ -122,8 +132,8 @@ HTTP server smoke proof,
 and a local read-only marketplace evidence model.
 
 Some production surfaces remain planned roadmap work, including the full
-dashboard UI, production persistence, production monitoring, package
-publication, final demo assets, and all production custody/KMS behavior.
+dashboard UI, production persistence, production monitoring, a stable package
+release channel, final demo assets, and all production custody/KMS behavior.
 
 The repo currently includes:
 

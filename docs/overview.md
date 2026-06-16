@@ -1,8 +1,8 @@
 # AgentRail
 
-AgentRail is the next direction for AgentRail: a self-hostable toolkit
-for teams that want to pay IOTA transaction fees for users and give agents a
-safe execution stack.
+AgentRail is the product direction for the original IOTA GasKit sponsorship
+toolkit: a self-hostable system for teams that want to pay IOTA transaction
+fees for users and give agents a safe execution stack.
 
 The short version: users and agents can request useful IOTA actions without
 managing gas up front, while the operator keeps sponsor secrets server-side,
@@ -126,8 +126,9 @@ The official Gas Station is the sponsorship engine. AgentRail is the app integra
 
 | Area | Current status | Start here |
 | --- | --- | --- |
+| Package integration | Published npm packages are available under `@sacredlabs/agentrail-*`. Most consumers install one entry package: SDK for backend use, MCP facade for programmatic agent-tool integration, or policy gateway for operator/platform work. | [Package Integration Guide](agentrail/package-integration-guide.md) |
 | Canonical adoption wedge | `npm run smoke:paid-mcp-tool` proves a local paid MCP-style tool call through SDK to mock policy gateway, with manifest/action intent, signer-reference redaction, policy approval, policy denial, failed-payment withholding, receipt events, and local-only boundaries. | [Quickstart](quickstart.md) |
-| Package consumer proof | `npm run smoke:package-paid-mcp-consumer` packs public workspace packages, installs local tarballs into a fresh temporary consumer project, imports package root entrypoints only, and runs the same canonical paid MCP-style flow without live network calls. | [Package Release Strategy](agentrail/package-release-strategy.md) |
+| Package consumer proof | `npm run smoke:package-paid-mcp-consumer` proves the local tarball consumer path, and `npm run smoke:npm-registry-paid-mcp-consumer` proves a fresh temporary consumer can install the published npm packages and run the same canonical paid MCP-style flow. | [Package Release Strategy](agentrail/package-release-strategy.md) |
 | Agentic migration | The fork direction, migrated planning docs, code-slice gates, and remote/package decisions are documented. | [Agentic Migration Plan](agentrail/migration-plan.md) |
 | Agent workflow harness | The reviewed `apex.workflow.json` profile uses local-only manifests, no external tracker, focused-search code review, no browser adapter, and repo-local verification presets; local Codex goal and handoff docs stay outside product authority. | [Agentic Migration Plan](agentrail/migration-plan.md) |
 | Agent wallets | Signer-reference-first account/wallet safety model and local package implementation exist; production custody remains blocked behind `npm run proof:custody-readiness` and an operator-approved report; `npm run proof:custody-readiness -- --out tmp/agentrail/custody-readiness.json` writes a redacted mode-600 audit artifact, and `npm run custody:write-production-proof-bundle` writes the custody report template, proof plan, readiness artifact, and redacted summary together as ignored local artifacts. | [Account And Wallet Safety](agentrail/account-wallet-safety.md) |
@@ -179,7 +180,7 @@ These are not complete production claims yet:
 - full dashboard UI;
 - production-grade durable usage storage;
 - production monitoring and alerting templates;
-- real package publication;
+- stable package release after the current `0.0.0-prerelease` package set;
 - KMS or external signer production integration;
 - mainnet operational validation;
 - final public walkthrough assets.
@@ -187,20 +188,24 @@ These are not complete production claims yet:
 ## Recommended First Path
 
 1. Read [IOTA and AgentRail Basics](concepts.md) if sponsored gas or IOTA terms are unfamiliar.
-2. Run [Quickstart](quickstart.md), starting with
+2. Read [Package Integration Guide](agentrail/package-integration-guide.md) to
+   choose the package entrypoint and configuration path.
+3. Run [Quickstart](quickstart.md), starting with
    `npm run smoke:paid-mcp-tool`.
-3. Run `npm run smoke:package-paid-mcp-consumer` when you need proof that a
+4. Run `npm run smoke:package-paid-mcp-consumer` when you need proof that a
    fresh local consumer project can use the public package root entrypoints.
-4. Read [Agentic Migration Plan](agentrail/migration-plan.md) before
+5. Run `npm run smoke:npm-registry-paid-mcp-consumer` when you need proof that
+   a fresh external consumer can install the published npm packages.
+6. Read [Agentic Migration Plan](agentrail/migration-plan.md) before
    changing repo branding, package names, wallet behavior, or agent surfaces.
-5. Read [Account And Wallet Safety](agentrail/account-wallet-safety.md)
+7. Read [Account And Wallet Safety](agentrail/account-wallet-safety.md)
    before adding any wallet/account API.
-6. Read [Architecture](architecture.md) to understand why the gateway, SDK, and policy layers are separate.
-7. Copy the safe backend and route patterns from [Code Examples](examples.md).
-8. Use [Agent Guide](agent-guide.md) when handing work to an AI coding agent.
-9. Read [Best Practices](best-practices.md) before adding live credentials.
-10. Review [Testnet Readiness](testnet-readiness.md) before a live sponsored transaction attempt.
-11. Use [Deployment](deployment.md) and [Production Hardening](production-hardening.md) when moving beyond local proof.
+8. Read [Architecture](architecture.md) to understand why the gateway, SDK, and policy layers are separate.
+9. Copy the safe backend and route patterns from [Code Examples](examples.md).
+10. Use [Agent Guide](agent-guide.md) when handing work to an AI coding agent.
+11. Read [Best Practices](best-practices.md) before adding live credentials.
+12. Review [Testnet Readiness](testnet-readiness.md) before a live sponsored transaction attempt.
+13. Use [Deployment](deployment.md) and [Production Hardening](production-hardening.md) when moving beyond local proof.
 
 ## Safety Boundary
 

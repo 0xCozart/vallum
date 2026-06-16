@@ -7,8 +7,11 @@ TypeScript client scaffold for applications integrating with an AgentRail policy
 For the npm prerelease, install:
 
 ```sh
-npm install @sacredlabs/agentrail-sdk
+npm install @sacredlabs/agentrail-sdk@next
 ```
+
+See the full package selection and configuration guide in the repository:
+https://github.com/0xCozart/agentic-gaskit/blob/main/docs/agentrail/package-integration-guide.md
 
 ## Usage
 
