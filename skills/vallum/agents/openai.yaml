@@ -1,0 +1,7 @@
+interface:
+  display_name: "Vallum"
+  short_description: "Navigate, develop, verify, and safely integrate Vallum."
+  default_prompt: "Use $vallum to work in this Vallum repo or integrate Vallum safely with the right docs, source paths, checks, and sponsor-gas boundaries."
+
+policy:
+  allow_implicit_invocation: true

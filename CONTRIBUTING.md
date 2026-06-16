@@ -1,6 +1,6 @@
-# Contributing to AgentRail
+# Contributing to Vallum
 
-Thanks for helping improve AgentRail. This project exists to make sponsored IOTA transactions easier and safer for the ecosystem.
+Thanks for helping improve Vallum. This project exists to make sponsored IOTA transactions easier and safer for the ecosystem.
 
 ## Development principles
 

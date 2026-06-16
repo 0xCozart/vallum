@@ -19,9 +19,9 @@ Use `$apex-workflow` for meaningful execution in this repo only after an
 node /home/sacred/code/apex-workflow/scripts/init-harness.mjs --target=. --yes --force
 ```
 
-Current migration note: this AgentRail fork was created before an Apex
+Current migration note: this Vallum fork was created before an Apex
 profile was present in the source repo. The fork now has a reviewed local
-profile. Read `docs/agentrail/migration-plan.md` before broad changes, and
+profile. Read `docs/vallum/migration-plan.md` before broad changes, and
 do not claim Apex verification unless `apex-doctor` plus the current slice
 manifest/detect evidence pass.
 

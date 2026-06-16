@@ -1,12 +1,12 @@
-# AgentRail
+# Vallum
 
 **IOTA-native infrastructure for agent-safe sponsored execution.**
 
-[![Toolkit](https://img.shields.io/badge/IOTA-AgentRail-5eead4?style=for-the-badge)](#agentrail)
+[![Toolkit](https://img.shields.io/badge/IOTA-Vallum-5eead4?style=for-the-badge)](#vallum)
 [![External showcase](https://img.shields.io/badge/showcase-ProofDrop-6366f1?style=for-the-badge)](https://proofdrop.xyz)
 [![License](https://img.shields.io/badge/license-Apache--2.0-f8fafc?style=for-the-badge)](LICENSE)
 
-AgentRail is the new identity for the agent-safe IOTA execution stack built on
+Vallum is the new identity for the agent-safe IOTA execution stack built on
 the original IOTA GasKit sponsorship toolkit: self-hostable Gas Station
 integration plus agent wallets, signer references, transaction manifests,
 policy controls, receipts, contract workflows, MCP/A2A surfaces, and
@@ -17,44 +17,44 @@ automation, identity products, notarization systems, RWA/product-passport apps,
 supply-chain tools, games, wallets, and demos where users or agents should not
 need to acquire IOTA tokens before experiencing product value.
 
-> **Open-source scope:** this repository is the self-hostable toolkit. A future managed service may offer hosting, support, SLAs, and enterprise onboarding, but the core project remains independently deployable, inspectable, forkable, licensed open source, and useful without hosted AgentRail.
+> **Open-source scope:** this repository is the self-hostable toolkit. A future managed service may offer hosting, support, SLAs, and enterprise onboarding, but the core project remains independently deployable, inspectable, forkable, licensed open source, and useful without hosted Vallum.
 
 ## Migration status
 
 This fork was created from `https://github.com/0xCozart/iota-gaskit` to move
-the AgentRail direction into the actual sponsorship toolkit codebase instead of
+the Vallum direction into the actual sponsorship toolkit codebase instead of
 keeping the implementation plan in `/home/sacred/code/agents`.
 
-Canonical GitHub repo: `https://github.com/0xCozart/agentrail`
+Canonical GitHub repo: `https://github.com/0xCozart/vallum`
 
-Start with [`docs/agentrail/execution-entry.md`](docs/agentrail/execution-entry.md)
+Start with [`docs/vallum/execution-entry.md`](docs/vallum/execution-entry.md)
 to begin actual product implementation. Read
-[`docs/agentrail/migration-plan.md`](docs/agentrail/migration-plan.md)
+[`docs/vallum/migration-plan.md`](docs/vallum/migration-plan.md)
 before changing package names, wallet behavior, MCP tools, gateway policy, or
 remote publishing. Existing sponsorship behavior remains the foundation;
 agent-specific behavior should be added in vertical slices.
 
 Current public execution entry:
-[`docs/agentrail/execution-entry.md`](docs/agentrail/execution-entry.md)
-and [`docs/agentrail/execution-slices.md`](docs/agentrail/execution-slices.md).
+[`docs/vallum/execution-entry.md`](docs/vallum/execution-entry.md)
+and [`docs/vallum/execution-slices.md`](docs/vallum/execution-slices.md).
 Private Codex goals, local handoffs, and scratch planning notes are kept out of
 the open-source surface.
 
 ## One-line pitch
 
-AgentRail gives AI agents a safe IOTA execution stack: sponsored gas,
+Vallum gives AI agents a safe IOTA execution stack: sponsored gas,
 policy controls, signer references, manifests, receipts, contracts, and
 operator visibility.
 
 ## Start Here: One Adoption Path
 
 The public center of gravity is agent-safe sponsored execution for IOTA.
-The first developer path is intentionally narrow. If you are consuming the
-published packages, start with the
-[Package Integration Guide](docs/agentrail/package-integration-guide.md):
+The first developer path is intentionally narrow. The prerelease packages are
+published under `@vallum/*`; start with the
+[Package Integration Guide](docs/vallum/package-integration-guide.md):
 
 ```bash
-npm install @sacredlabs/agentrail-sdk@next
+npm install @vallum/sdk@next
 ```
 
 If you are reviewing or contributing to this repository, run:
@@ -72,14 +72,13 @@ payment gating, receipts, denial handling, failed-payment withholding, and
 redacted output. The package consumer smoke also packs the public workspace
 packages into local tarballs, installs them into a fresh temporary consumer
 project, and imports package root entrypoints only. The npm registry smoke
-proves the same adoption wedge from the published `@sacredlabs/agentrail-*`
-package set.
+proves the same adoption wedge from the published `@vallum/*` package set.
 
 This is package adoption proof, not a production claim. It does not prove live
 IOTA/testnet execution, live payment settlement, custody, marketplace
 operation, or public A2A hosting. Those remain separate operator gates.
 
-## Why AgentRail Exists
+## Why Vallum Exists
 
 The official IOTA Gas Station component solves the core sponsored-transaction primitive: an application can sponsor gas fees for its users.
 
@@ -101,18 +100,18 @@ operator, and safety layer:
 - manifest, receipt, identity, and contract rails for agent actions;
 - a real IOTA testnet sponsored execute script with documented public transaction digest evidence.
 
-AgentRail packages those pieces into a reusable open-source toolkit so every IOTA
+Vallum packages those pieces into a reusable open-source toolkit so every IOTA
 builder or agent developer does not have to recreate the same safety and
 operations layer.
 
 ## What Is In This Repo Now
 
-This repository currently contains the open-source AgentRail toolkit: a tested
+This repository currently contains the open-source Vallum toolkit: a tested
 policy gateway, TypeScript SDK, local demo flows, integration examples,
 deployment templates, security docs, observability foundations, and documented
 IOTA testnet sponsored-execution evidence.
 
-It also contains the first AgentRail implementation slices:
+It also contains the first Vallum implementation slices:
 signer-reference-first account primitives, transaction manifests, pure agent
 policy evaluation, a local mock sponsorship gateway, SDK sponsored actions,
 MCP-shaped sponsorship tools, receipt state, local Move escrow/receipt state
@@ -270,7 +269,7 @@ Latest local verification and prior live proof:
   non-networked operator-gate classification to an ignored local JSON artifact.
 - `npm run gas-station:runtime-preflight`: non-networked runtime preflight for
   either the default local Docker Gas Station path or explicit
-  `AGENTRAIL_GAS_STATION_RUNTIME_MODE=managed-upstream`; it does not start
+  `VALLUM_GAS_STATION_RUNTIME_MODE=managed-upstream`; it does not start
   containers, contact IOTA services, or reserve gas.
 - `npm run gas-station:docker-direct -- --dry-run`: local-only sanitized direct
   Docker plan for starting Redis and Gas Station when Compose is unavailable;
@@ -280,21 +279,21 @@ Latest local verification and prior live proof:
 - Latest `npm run execute:testnet-demo`: real sponsored IOTA testnet execute succeeded through the local policy gateway and Gas Station; public digest `5qSeMePKyUWVf6e5AiQCZD4MNLe6dwTrcXzo7cXtN5Zg`. Earlier 2026-06-14 public digest evidence includes `Fc32GFCU95wUGs5iGjewJuMxxXwtRrjzLh3LUGrf85uf`, `FLdnYRUACAKQn8CwugEv1u6gYTh9jBr8rGMk2JZ2adsd`, and `6Fz2r2ARRo6fiQMUL4FkWuwU16ekEmKHvHbhLpF5DU6n`.
 - secret-oriented scan over tracked project files is wired into `npm run secrets:scan` and `npm run verify:local`.
 
-See `docs/testnet-attempts.md`, `docs/agentrail/product-status.md`,
-`docs/agentrail/launch-readiness-evidence.md`,
-`docs/agentrail/testnet-digest-proof.md`,
-`docs/agentrail/a2a-public-readiness.md`,
-`docs/agentrail/operator-live-gates.md`,
-`docs/agentrail/verification-profiles.md`, and
+See `docs/testnet-attempts.md`, `docs/vallum/product-status.md`,
+`docs/vallum/launch-readiness-evidence.md`,
+`docs/vallum/testnet-digest-proof.md`,
+`docs/vallum/a2a-public-readiness.md`,
+`docs/vallum/operator-live-gates.md`,
+`docs/vallum/verification-profiles.md`, and
 `docs/reviewer-walkthrough.md` for exact evidence.
 
 ## External showcase dApps
 
 ### Gasless ProofDrop
 
-[Gasless ProofDrop](https://proofdrop.xyz) is the standalone public M1 showcase dApp for AgentRail. It demonstrates a backend-owned sponsorship flow where a visitor claims a "AgentRail Launch Proof" badge without holding IOTA tokens. ProofDrop is kept in a [separate repository](https://github.com/0xCozart/ProofDrop) so the AgentRail core remains focused on the self-hostable toolkit.
+[Gasless ProofDrop](https://proofdrop.xyz) is the standalone public M1 showcase dApp for Vallum. It demonstrates a backend-owned sponsorship flow where a visitor claims a "Vallum Launch Proof" badge without holding IOTA tokens. ProofDrop is kept in a [separate repository](https://github.com/0xCozart/ProofDrop) so the Vallum core remains focused on the self-hostable toolkit.
 
-Current role: external M1 showcase app for the AgentRail integration pattern. The hosted app runs at [proofdrop.xyz](https://proofdrop.xyz), safe mock verification remains available from a clean clone, and live execution has been proven through a configured AgentRail gateway plus self-hosted IOTA Gas Station.
+Current role: external M1 showcase app for the Vallum integration pattern. The hosted app runs at [proofdrop.xyz](https://proofdrop.xyz), safe mock verification remains available from a clean clone, and live execution has been proven through a configured Vallum gateway plus self-hosted IOTA Gas Station.
 
 ProofDrop live evidence:
 
@@ -305,13 +304,13 @@ ProofDrop live evidence:
 
 ## Target architecture
 
-![AgentRail architecture](docs/assets/agentrail-architecture.svg)
+![Vallum architecture](docs/assets/architecture.svg)
 
 ```mermaid
 flowchart LR
   User[Demo dApp user] --> Demo[Demo dApp]
-  Demo --> SDK[AgentRail TypeScript SDK]
-  SDK --> Gateway[AgentRail Policy Gateway]
+  Demo --> SDK[Vallum TypeScript SDK]
+  SDK --> Gateway[Vallum Policy Gateway]
   Gateway --> Policy[(Policy Config + Usage Store)]
   Gateway --> GasStation[IOTA Gas Station]
   GasStation --> IOTA[IOTA Testnet/Mainnet RPC]
@@ -345,7 +344,7 @@ deploy/
   docker-compose/         # Local deployment templates
   gas-station/            # Safe Gas Station config templates
 docs/
-  agentrail/          # Public agentic migration plan, roadmap, safety, status, and slices
+  vallum/          # Public agentic migration plan, roadmap, safety, status, and slices
   architecture.md
   demo-script.md
   deployment.md
@@ -374,21 +373,16 @@ examples/
 ## Packages
 
 The monorepo root is marked `private` to prevent accidental publication of the
-workspace root. The current prerelease package set is published to npm under
-`@sacredlabs/agentrail-*` with the requested `next` tag because npm blocked
-creation of the shorter `@agentrail` org scope pending support review. npm also
-currently exposes `latest=0.0.0-prerelease` for this first published package
-set after rejecting `latest` tag deletion. See
-[`docs/agentrail/package-release-strategy.md`](docs/agentrail/package-release-strategy.md).
+workspace root. The current prerelease package set is published under
+`@vallum/*` with the requested `next` tag. See
+[`docs/vallum/package-release-strategy.md`](docs/vallum/package-release-strategy.md).
 
-Package release evidence now includes package READMEs, public prerelease
-publish metadata (`access=public`, `tag=next`), observed registry dist-tags
-(`next` and registry-retained `latest` both pointing at `0.0.0-prerelease`),
-map-free packed artifacts, local `npm pack --dry-run` verification, local
-tarball install/import smoke, a local tarball paid MCP consumer smoke, an
-opt-in package-publication readiness gate, an opt-in `npm publish --dry-run`
-gate, real npm publication, and registry install/import proof for publishable
-packages.
+Package release evidence includes package READMEs, public prerelease publish
+metadata (`access=public`, `tag=next`), map-free packed artifacts, local
+`npm pack --dry-run` verification, local tarball install/import smoke, a local
+tarball paid MCP consumer smoke, an opt-in package-publication readiness gate,
+an opt-in `npm publish --dry-run` gate, and post-publication registry
+install/import proof for publishable packages.
 
 Do not treat any future namespace rename as package-publication-ready until
 dry-run pack and publish checks, local tarball consumer proof, README package
@@ -412,11 +406,11 @@ workspace package.
 Do not run a real `npm publish` without explicit operator approval and registry credentials handled outside the repo.
 
 
-### `@sacredlabs/agentrail-shared-types`
+### `@vallum/shared-types`
 
 Shared TypeScript types for policy decisions, policy reason codes, sponsorship policy, and request context.
 
-### `@sacredlabs/agentrail-policy-gateway`
+### `@vallum/policy-gateway`
 
 Policy decision scaffold for validating app status, credentials, daily limits,
 gas budget, wallet denylist, package allowlist, function allowlist, and
@@ -438,16 +432,16 @@ Current tests cover:
 - mismatched template versions denied
 - legacy raw package/function agent allowlists remaining compatible
 
-### `@sacredlabs/agentrail-contracts-metadata`
+### `@vallum/contracts-metadata`
 
-Versioned contract template metadata registry for AgentRail policy
+Versioned contract template metadata registry for Vallum policy
 allowlists. The local registry currently covers escrow, receipt, pay-per-call,
 data-license, service-bounty, reputation-receipt, and subscription template
 metadata and pure checks for approved template/version, unknown package, and
 mismatched version decisions. It does not deploy contracts, operate reputation
 scoring, operate recurring billing, or prove live package addresses.
 
-### `@sacredlabs/agentrail-sdk`
+### `@vallum/sdk`
 
 TypeScript client scaffold for dApp backends.
 
@@ -466,7 +460,7 @@ It also includes typed error classes for auth, policy, and malformed-response fa
 
 ## Documentation site
 
-AgentRail includes a static docs site generated from the canonical Markdown files in this repo. The generated HTML is a hosting artifact; update the Markdown sources instead of editing `apps/docs-site/dist` directly.
+Vallum includes a static docs site generated from the canonical Markdown files in this repo. The generated HTML is a hosting artifact; update the Markdown sources instead of editing `apps/docs-site/dist` directly.
 
 Build the site:
 
@@ -488,27 +482,27 @@ Recommended static-host settings:
 
 ## Agent access: start here
 
-AI coding agents should start with the migration plan and repo-local AgentRail
+AI coding agents should start with the migration plan and repo-local Vallum
 skill:
 
 ```txt
-docs/agentrail/migration-plan.md
+docs/vallum/migration-plan.md
 ```
 
 ```txt
-skills/agentrail/SKILL.md
+skills/vallum/SKILL.md
 ```
 
 The skill is the fastest way to find the source map, safe verification ladder,
 and sponsor-gas boundaries for this repo. The migration plan tells agents how
-the AgentRail fork should evolve without duplicating or weakening existing
-AgentRail sponsorship safety.
+the Vallum fork should evolve without duplicating or weakening existing
+Vallum sponsorship safety.
 
 Recommended agent startup:
 
 1. Read `AGENTS.md`.
-2. Read `docs/agentrail/migration-plan.md`.
-3. Read `skills/agentrail/SKILL.md`.
+2. Read `docs/vallum/migration-plan.md`.
+3. Read `skills/vallum/SKILL.md`.
 4. If `apex.workflow.json` exists, read it. If it does not, do not pretend Apex
    is configured.
 5. For architecture/product context, read `docs/architecture.md`, `docs/overview.md`, and `README.md`.
@@ -564,9 +558,9 @@ rendering the local Gas Station config, running
 `npm run gas-station:runtime-preflight`, and starting Gas Station through
 Compose or the direct Docker fallback. If an operator intentionally uses a
 separately managed Gas Station at `GAS_STATION_URL`, set
-`AGENTRAIL_GAS_STATION_RUNTIME_MODE=managed-upstream` outside committed files and
+`VALLUM_GAS_STATION_RUNTIME_MODE=managed-upstream` outside committed files and
 run the same preflight. In both modes, run `npm run diagnose:gas-station --
---report tmp/agentrail/testnet-upstream-diagnostic.json`, then run
+--report tmp/vallum/testnet-upstream-diagnostic.json`, then run
 `npm run execute:testnet-demo` only with explicit operator intent. The execute
 command is intentionally opt-in, self-checks those preconditions before
 reserve/execute, and is excluded from CI because it contacts live services and
@@ -574,7 +568,7 @@ consumes sponsored testnet gas.
 
 ## Security posture
 
-AgentRail is designed to fail closed and prioritize sponsor-wallet safety.
+Vallum is designed to fail closed and prioritize sponsor-wallet safety.
 
 Never commit:
 
@@ -602,7 +596,7 @@ The open-source toolkit is designed to remain useful to any IOTA builder who wan
 
 A future managed service may later provide:
 
-- hosted AgentRail deployments;
+- hosted Vallum deployments;
 - managed sponsor-wallet operations;
 - paid support;
 - enterprise onboarding;

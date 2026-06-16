@@ -1,7 +1,0 @@
-interface:
-  display_name: "AgentRail"
-  short_description: "Navigate, develop, verify, and safely integrate AgentRail."
-  default_prompt: "Use $agentrail to work in this AgentRail repo or integrate AgentRail safely with the right docs, source paths, checks, and sponsor-gas boundaries."
-
-policy:
-  allow_implicit_invocation: true

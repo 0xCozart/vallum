@@ -2,7 +2,7 @@
 
 ## Our pledge
 
-AgentRail is intended to be useful public infrastructure for IOTA builders. We pledge to make participation in this project respectful, welcoming, and focused on technical quality, safety, and ecosystem benefit.
+Vallum is intended to be useful public infrastructure for IOTA builders. We pledge to make participation in this project respectful, welcoming, and focused on technical quality, safety, and ecosystem benefit.
 
 ## Expected behavior
 
