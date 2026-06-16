@@ -43,7 +43,9 @@ test("package publication proof bundle writes template, plan, and blocked summar
     assert.ok(bundle.requiredOperatorInputs.includes("PACKAGE_PUBLICATION_REPORT"));
     assert.ok(bundle.requiredStructuredReportFields.includes("packageNames"));
     assert.ok(bundle.requiredStructuredReportCheckIds.includes("registry-install"));
+    assert.ok(bundle.requiredStructuredReportCheckIds.includes("npm-registry-mcp-stdio-consumer"));
     assert.ok(bundle.requiredEvidenceArtifacts.includes("sanitized npm publication structured report"));
+    assert.equal(bundle.steps.find((step) => step.id === "run-local-mcp-stdio-consumer-smoke")?.contactsNpmRegistry, false);
     assert.equal(bundle.steps.find((step) => step.id === "run-approved-npm-publication-proof")?.contactsNpmRegistry, true);
     assert.equal(bundle.steps.find((step) => step.id === "write-publication-template")?.contactsNpmRegistry, false);
 
@@ -73,6 +75,8 @@ test("package publication proof bundle is ready for approval when structured rep
         "npm-pack-dry-run",
         "local-tarball-install",
         "npm-publish-dry-run",
+        "npm-registry-paid-mcp-consumer",
+        "npm-registry-mcp-stdio-consumer",
         "registry-install",
         "provenance-review",
         "rollback-review",
@@ -107,6 +111,8 @@ async function writePackageEvidence(): Promise<string> {
     "scripts/package-publish-dry-run.ts",
     "scripts/smoke-package-install.ts",
     "scripts/smoke-package-paid-mcp-consumer.ts",
+    "scripts/smoke-package-mcp-stdio-consumer.ts",
+    "scripts/smoke-npm-registry-paid-mcp-consumer.ts",
     "scripts/package-publish.test.ts",
     "scripts/package-publish-dry-run.test.ts",
     "scripts/package-install-smoke.test.ts",
@@ -128,6 +134,8 @@ function completeScripts(): Record<string, string | undefined> {
     "pack:check": "npm run build && npm pack --dry-run -w @sacredlabs/agentrail-sdk",
     "smoke:package-install": "npm run build && tsx scripts/smoke-package-install.ts",
     "smoke:package-paid-mcp-consumer": "npm run build && tsx scripts/smoke-package-paid-mcp-consumer.ts",
+    "smoke:package-mcp-stdio-consumer": "npm run build && tsx scripts/smoke-package-mcp-stdio-consumer.ts",
+    "smoke:npm-registry-paid-mcp-consumer": "tsx scripts/smoke-npm-registry-paid-mcp-consumer.ts --out tmp/agentrail/npm-registry-consumer-proof.json",
     "publish:dry-run": "npm run build && tsx scripts/package-publish-dry-run.ts",
     "verify:fast": "npm test",
     "verify:local": "npm test",

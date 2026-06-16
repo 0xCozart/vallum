@@ -18,19 +18,22 @@ interface PackageJson {
   readonly scripts?: Record<string, string>;
   readonly engines?: Record<string, string>;
   readonly publishConfig?: { access?: string; tag?: string };
+  readonly bin?: Record<string, string>;
   readonly dependencies?: Record<string, string>;
   readonly devDependencies?: Record<string, string>;
 }
 
 const publicPackages = await publicPackageDirs();
-const currentVersion = "0.0.0-prerelease";
+const repoPrereleaseVersion = "0.0.0-prerelease";
+const mcpServerVersion = "0.0.1-mcp.0";
+const mcpServerPackageName = "@sacredlabs/agentrail-mcp-server";
 
 test("workspace root is private and keeps publishable packages out of root publication", async () => {
   const root = JSON.parse(await readFile("package.json", "utf8")) as PackageJson;
 
   assert.equal(root.name, "agentrail");
   assert.equal(root.private, true);
-  assert.equal(root.version, currentVersion);
+  assert.equal(root.version, repoPrereleaseVersion);
   assert.equal(root.license, "Apache-2.0");
   assert.equal(root.type, "module");
   assert.deepEqual(root.workspaces, ["packages/*", "apps/*"]);
@@ -45,16 +48,12 @@ test("public package metadata pins safe prerelease publish settings", async () =
       /^@sacredlabs\/agentrail-[a-z0-9-]+$/,
       `${packageJson.name} must stay in the Sacred Labs AgentRail namespace`,
     );
-    assert.equal(packageJson.version, currentVersion, `${packageJson.name} must use the repo prerelease version`);
+    assert.equal(packageJson.version, expectedPackageVersion(packageJson.name), `${packageJson.name} must use the reviewed prerelease version`);
     assert.equal(packageJson.private, undefined, `${packageJson.name} must not be private if pack:check publishes it`);
     assert.equal(packageJson.type, "module", `${packageJson.name} must publish ESM`);
     assert.equal(packageJson.main, "dist/index.js", `${packageJson.name} must publish built JS entrypoint`);
     assert.equal(packageJson.types, "dist/index.d.ts", `${packageJson.name} must publish built type entrypoint`);
-    assert.deepEqual(
-      packageJson.exports,
-      { ".": { types: "./dist/index.d.ts", import: "./dist/index.js" } },
-      `${packageJson.name} must expose only the built root entrypoint`,
-    );
+    assert.deepEqual(packageJson.exports, expectedExports(packageJson.name), `${packageJson.name} must expose only reviewed built entrypoints`);
     assert.equal(packageJson.license, "Apache-2.0", `${packageJson.name} must preserve Apache-2.0`);
     assert.equal(packageJson.publishConfig?.access, "public", `${packageJson.name} must publish publicly when released`);
     assert.equal(packageJson.publishConfig?.tag, "next", `${packageJson.name} prerelease versions need a non-latest tag`);
@@ -67,10 +66,20 @@ test("public package metadata pins safe prerelease publish settings", async () =
     assert.equal(packageJson.scripts?.build, "tsc -p tsconfig.build.json", `${packageJson.name} must build from tsconfig`);
     assert.equal(packageJson.engines?.node, ">=20", `${packageJson.name} must match the repo Node support floor`);
 
+    if (packageJson.name === mcpServerPackageName) {
+      assert.deepEqual(
+        packageJson.bin,
+        { "agentrail-mcp": "dist/cli.js" },
+        "MCP package must publish the reviewed stdio CLI bin",
+      );
+    } else {
+      assert.equal(packageJson.bin, undefined, `${packageJson.name} must not add a package bin without review`);
+    }
+
     for (const [dependencyName, dependencyVersion] of internalDependencies(packageJson)) {
       assert.equal(
         dependencyVersion,
-        currentVersion,
+        repoPrereleaseVersion,
         `${packageJson.name} must pin internal dependency ${dependencyName} to the repo prerelease version`,
       );
     }
@@ -146,4 +155,21 @@ function internalDependencies(packageJson: PackageJson): [string, string][] {
     ...packageJson.dependencies,
     ...packageJson.devDependencies,
   }).filter(([name]) => name.startsWith("@sacredlabs/agentrail-"));
+}
+
+function expectedPackageVersion(packageName: string): string {
+  return packageName === mcpServerPackageName ? mcpServerVersion : repoPrereleaseVersion;
+}
+
+function expectedExports(packageName: string): Record<string, unknown> {
+  const rootExport = { types: "./dist/index.d.ts", import: "./dist/index.js" };
+  if (packageName !== mcpServerPackageName) {
+    return { ".": rootExport };
+  }
+
+  return {
+    ".": rootExport,
+    "./config": { types: "./dist/config.d.ts", import: "./dist/config.js" },
+    "./stdio": { types: "./dist/stdio.d.ts", import: "./dist/stdio.js" },
+  };
 }

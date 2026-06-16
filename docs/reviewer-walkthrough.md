@@ -197,6 +197,9 @@ Expected current result:
 - local package paid MCP consumer smoke proves the same adoption wedge from a
   fresh temporary consumer project using local tarballs and public package root
   entrypoints only;
+- local package MCP stdio consumer smoke proves the `agentrail-mcp` package bin
+  starts from a fresh local tarball consumer, lists tools, and routes approval,
+  denial, and invalid-input calls through the mock policy gateway;
 - npm registry paid MCP consumer smoke proves the same adoption wedge from a
   fresh temporary consumer project using the published
   `@sacredlabs/agentrail-*` packages;
@@ -204,9 +207,10 @@ Expected current result:
 - testnet digest proof confirms the documented public digest evidence is present
   without contacting IOTA RPC;
 - package dry-runs complete for publishable workspace packages;
-- package publication readiness validates local/package registry evidence when
-  supplied, while future package release, stable-channel, and namespace
-  migration claims remain blocked without operator-approved reports;
+- package publication readiness reports local package proof as configured,
+  including local tarball MCP stdio proof, while future package release,
+  stable-channel, and namespace migration claims remain blocked without
+  operator-approved reports;
 - A2A public-readiness proof reports local A2A evidence, local loopback
   streaming proof, local authenticated extended-card access, local public JWKS
   serving, local static discovery bundle generation, local static discovery

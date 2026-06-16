@@ -30,6 +30,8 @@ test("package publication proof plan reports current blockers without registry s
   assert.ok(plan.requiredOperatorInputs.includes("PACKAGE_PUBLICATION_REPORT"));
   assert.ok(plan.requiredStructuredReportFields.includes("packageNames"));
   assert.ok(plan.requiredStructuredReportCheckIds.includes("registry-install"));
+  assert.ok(plan.requiredStructuredReportCheckIds.includes("npm-registry-mcp-stdio-consumer"));
+  assert.ok(plan.commands.some((command) => command.id === "run-local-mcp-stdio-consumer-smoke" && !command.contactsNpmRegistry));
   assert.ok(plan.commands.some((command) => command.id === "run-approved-npm-publication-proof" && command.contactsNpmRegistry));
   assert.doesNotMatch(formatted, /npm-token-value|one-time-password|registry-response-body|package-publication-secret/i);
 });
@@ -76,6 +78,8 @@ test("package publication proof plan reports ready approval codes for a valid st
         "npm-pack-dry-run",
         "local-tarball-install",
         "npm-publish-dry-run",
+        "npm-registry-paid-mcp-consumer",
+        "npm-registry-mcp-stdio-consumer",
         "registry-install",
         "provenance-review",
         "rollback-review",

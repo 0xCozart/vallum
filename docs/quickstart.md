@@ -1,9 +1,9 @@
 # 30-Minute Quickstart
 
-This quickstart starts with the published npm package path and deterministic
-local proof paths that do not need Docker, sponsor keys, testnet funds, live
-IOTA RPC, or a running IOTA Gas Station. Use those checks first, then move to
-the live testnet path only after local configuration is ready.
+This quickstart starts with the published npm package path and deterministic local proof paths
+that do not need Docker, sponsor keys, testnet funds, live IOTA RPC, or a
+running IOTA Gas Station. Use those checks first, then move to the live testnet
+path only after local configuration is ready.
 
 Goal: a developer can install AgentRail from npm, verify the canonical local
 agent-safe sponsored execution path, understand the secret boundary, and know
@@ -43,7 +43,7 @@ The package set was published with `tag=next`. npm also currently exposes
 version in docs, scripts, and demos until the first stable release exists.
 
 For the full package map, agent-runtime guidance, configuration reference, and
-current MCP-facade boundary, read
+current MCP boundary, read
 [Package Integration Guide](agentrail/package-integration-guide.md).
 
 ## Canonical agent-safe sponsored execution path
@@ -65,6 +65,8 @@ proofs:
 
 - `npm run smoke:package-paid-mcp-consumer` for local tarballs from the
   current checkout.
+- `npm run smoke:package-mcp-stdio-consumer` for the local tarball
+  `agentrail-mcp` stdio bin.
 - `npm run smoke:npm-registry-paid-mcp-consumer` for a fresh temporary
   consumer that installs the published npm packages from the registry and
   writes `tmp/agentrail/npm-registry-consumer-proof.json`.
@@ -85,6 +87,21 @@ A2A hosting.
 `npm run smoke:package-paid-mcp-consumer` is intentionally not part of
 `verify:fast`, `verify:local`, or `grant:check`; use it when adoption
 installability matters more than iteration speed.
+
+Run the opt-in local tarball MCP stdio consumer smoke when you need to prove
+the package bin path:
+
+```bash
+npm run smoke:package-mcp-stdio-consumer
+```
+
+Expected result: the command builds the workspace, packs every public
+workspace package, installs those tarballs into a fresh temporary consumer,
+starts `node_modules/.bin/agentrail-mcp`, lists AgentRail tools, and calls
+approval, denial, and invalid-input paths against a loopback mock gateway.
+This proves local package-bin behavior only; registry availability for the new
+MCP bin still requires publishing the selected MCP package version and running
+registry smoke against that published package.
 
 The registry consumer proof is also opt-in because it contacts npm:
 

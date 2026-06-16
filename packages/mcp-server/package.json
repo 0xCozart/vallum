@@ -1,17 +1,29 @@
 {
   "name": "@sacredlabs/agentrail-mcp-server",
-  "version": "0.0.0-prerelease",
+  "version": "0.0.1-mcp.0",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "bin": {
+    "agentrail-mcp": "dist/cli.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./config": {
+      "types": "./dist/config.d.ts",
+      "import": "./dist/config.js"
+    },
+    "./stdio": {
+      "types": "./dist/stdio.d.ts",
+      "import": "./dist/stdio.js"
     }
   },
   "license": "Apache-2.0",
   "dependencies": {
+    "@modelcontextprotocol/sdk": "1.29.0",
     "@sacredlabs/agentrail-manifest": "0.0.0-prerelease",
     "@sacredlabs/agentrail-sdk": "0.0.0-prerelease"
   },

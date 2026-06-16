@@ -70,6 +70,8 @@ const REQUIRED_STRUCTURED_REPORT_CHECK_IDS = [
   "npm-pack-dry-run",
   "local-tarball-install",
   "npm-publish-dry-run",
+  "npm-registry-paid-mcp-consumer",
+  "npm-registry-mcp-stdio-consumer",
   "registry-install",
   "provenance-review",
   "rollback-review",
@@ -85,6 +87,12 @@ const PLAN_COMMANDS: readonly PackagePublicationProofPlanCommand[] = [
   {
     id: "run-local-install-smoke",
     command: "npm run smoke:package-install",
+    contactsNpmRegistry: false,
+    requiresOperatorApproval: false,
+  },
+  {
+    id: "run-local-mcp-stdio-consumer-smoke",
+    command: "npm run smoke:package-mcp-stdio-consumer",
     contactsNpmRegistry: false,
     requiresOperatorApproval: false,
   },

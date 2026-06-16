@@ -615,6 +615,32 @@ test("root npm test includes script, example, package, and app regression tests"
   assert.match(npmTest, /apps\/\*\/src\/\*\.test\.ts/);
 });
 
+test("MCP stdio smoke builds first and stays opt-in", () => {
+  const smokeMcpStdio = packageJson.scripts?.["smoke:mcp-stdio"];
+
+  assert.equal(
+    smokeMcpStdio,
+    "npm run build && tsx scripts/smoke-mcp-stdio.ts",
+    "npm run smoke:mcp-stdio must not depend on pre-existing ignored dist artifacts",
+  );
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /smoke:mcp-stdio/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /smoke:mcp-stdio/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /smoke:mcp-stdio/);
+});
+
+test("package MCP stdio consumer smoke builds first and stays opt-in", () => {
+  const smokePackageMcpStdio = packageJson.scripts?.["smoke:package-mcp-stdio-consumer"];
+
+  assert.equal(
+    smokePackageMcpStdio,
+    "npm run build && tsx scripts/smoke-package-mcp-stdio-consumer.ts",
+    "npm run smoke:package-mcp-stdio-consumer must not depend on pre-existing ignored dist artifacts",
+  );
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /package-mcp-stdio-consumer/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /package-mcp-stdio-consumer/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /package-mcp-stdio-consumer/);
+});
+
 test("root typecheck includes package, app, script, and example source", () => {
   assert.ok(tsconfig.include?.includes("packages/**/*.ts"));
   assert.ok(tsconfig.include?.includes("apps/**/*.ts"));

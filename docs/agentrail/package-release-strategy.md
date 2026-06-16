@@ -15,6 +15,12 @@ monorepo root cannot be accidentally published. Publishable workspace packages
 remain public prerelease packages with `publishConfig.access=public` and
 `publishConfig.tag=next`.
 
+The runnable MCP stdio CLI is prepared as an MCP-package-only prerelease bump:
+`@sacredlabs/agentrail-mcp-server@0.0.1-mcp.0`. The rest of the public
+workspace packages remain on `0.0.0-prerelease`, and the MCP package's
+internal AgentRail dependencies intentionally continue to pin that current
+published prerelease line.
+
 ## Why
 
 The shorter `@agentrail/*` npm package scope is blocked until npm support
@@ -50,9 +56,13 @@ The release metadata tests enforce:
 
 - root package is private;
 - public package names stay in `@sacredlabs/agentrail-*`;
-- package versions stay aligned on `0.0.0-prerelease`;
+- package versions stay aligned on `0.0.0-prerelease`, except the reviewed
+  MCP-package-only runnable stdio version
+  `@sacredlabs/agentrail-mcp-server@0.0.1-mcp.0`;
 - packages publish ESM `dist/index.js` plus `dist/index.d.ts`;
-- package exports expose only the built root entrypoint;
+- package exports expose only reviewed built entrypoints;
+- the MCP server package is the only public package with a CLI bin, and that
+  bin is `agentrail-mcp` pointing at `dist/cli.js`;
 - package files include built JavaScript, built types, `LICENSE`, and
   `README.md`;
 - `publishConfig` uses public access and the `next` tag;
@@ -235,6 +245,35 @@ stable package release, production launch readiness, live IOTA execution,
 payment-provider settlement, marketplace production operation, or production
 custody from this package publication. The registry-retained `latest` tag is a
 dist-tag state for the first prerelease package set, not a stable release claim.
+
+## Runnable MCP Package Publication Prep
+
+The source tree now prepares
+`@sacredlabs/agentrail-mcp-server@0.0.1-mcp.0` for the runnable stdio CLI. This
+is not a coordinated workspace version bump because the CLI/bin transport
+change is isolated to the MCP adapter package, while the SDK, gateway,
+manifest, registry, receipt, and shared-type packages keep the already
+published `0.0.0-prerelease` API line.
+
+Before claiming npm availability for `agentrail-mcp`, operators must prove the
+selected package metadata without publishing:
+
+```bash
+npm run pack:check
+npm run publish:dry-run
+```
+
+The pack proof must include `@sacredlabs/agentrail-mcp-server` and its
+`agentrail-mcp` bin. The publish dry-run is still a metadata rehearsal only; it
+must not be treated as proof of npm account ownership, package-name
+availability, 2FA readiness, provenance signing, registry authorization, or
+successful real publication.
+
+Real publication of `@sacredlabs/agentrail-mcp-server@0.0.1-mcp.0` remains
+blocked until explicit owner approval, npm registry credentials outside the
+repo, and a fresh release checklist. After publication, registry proof must
+install the newly published MCP version and start `agentrail-mcp` from the npm
+package before docs can claim registry availability for the runnable MCP bin.
 
 Future real `npm publish` runs require explicit operator approval, npm registry
 credentials outside the repo, and a fresh release checklist. `npm pack

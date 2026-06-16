@@ -147,6 +147,8 @@ const PACKAGE_CHECKS = [
   "npm-pack-dry-run",
   "local-tarball-install",
   "npm-publish-dry-run",
+  "npm-registry-paid-mcp-consumer",
+  "npm-registry-mcp-stdio-consumer",
   "registry-install",
   "provenance-review",
   "rollback-review",

@@ -98,6 +98,8 @@ const REQUIRED_STRUCTURED_REPORT_CHECK_IDS = [
   "npm-pack-dry-run",
   "local-tarball-install",
   "npm-publish-dry-run",
+  "npm-registry-paid-mcp-consumer",
+  "npm-registry-mcp-stdio-consumer",
   "registry-install",
   "provenance-review",
   "rollback-review",
@@ -254,11 +256,18 @@ function buildSteps(input: {
       dependsOn: ["run-local-install-smoke"],
     },
     {
+      id: "run-local-mcp-stdio-consumer-smoke",
+      command: "npm run smoke:package-mcp-stdio-consumer",
+      contactsNpmRegistry: false,
+      requiresOperatorApproval: false,
+      dependsOn: ["run-local-paid-mcp-consumer-smoke"],
+    },
+    {
       id: "run-publish-dry-run",
       command: "npm run publish:dry-run",
       contactsNpmRegistry: false,
       requiresOperatorApproval: false,
-      dependsOn: ["run-local-paid-mcp-consumer-smoke"],
+      dependsOn: ["run-local-mcp-stdio-consumer-smoke"],
     },
     {
       id: "run-approved-npm-publication-proof",

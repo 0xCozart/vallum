@@ -16,12 +16,34 @@ npm install @sacredlabs/agentrail-mcp-server@next
 
 ## Current Status
 
-This package is a programmatic MCP-shaped facade. It does not yet provide a
-standalone `bin`, stdio transport, hosted MCP server, or Claude/Cursor/Codex
-configuration snippet. A runnable MCP entrypoint is planned later; AgentRail is
-broader than MCP, and this package is one adapter surface.
+This source package builds both:
+
+- a programmatic MCP-shaped facade; and
+- a stdio CLI bin, `agentrail-mcp`, for local MCP hosts.
+
+The CLI reads gateway configuration from the MCP server process environment
+and routes tool calls through the AgentRail SDK and policy gateway. It does not
+directly call IOTA, Gas Station, or transaction submission APIs.
+
+The already-published `0.0.0-prerelease` package predates this runnable bin.
+The reviewed source version for the runnable MCP package is `0.0.1-mcp.0`.
+Treat npm registry availability for `agentrail-mcp` as unproven until that
+version is published and verified from the registry.
 
 ## Usage
+
+Run the stdio server from a package install or local tarball consumer:
+
+```sh
+AGENTRAIL_GATEWAY_URL=http://127.0.0.1:8787 \
+AGENTRAIL_API_KEY=replace-with-server-side-secret \
+npm exec -- agentrail-mcp
+```
+
+Use placeholders in MCP host configuration files. Do not commit real
+`AGENTRAIL_API_KEY` values.
+
+The programmatic facade remains available:
 
 ```ts
 import { createIotaMcpServer } from "@sacredlabs/agentrail-mcp-server";

@@ -77,6 +77,7 @@ const REQUIRED_SOURCE_PATHS = [
   "scripts/package-publish-dry-run.ts",
   "scripts/smoke-package-install.ts",
   "scripts/smoke-package-paid-mcp-consumer.ts",
+  "scripts/smoke-package-mcp-stdio-consumer.ts",
   "scripts/smoke-npm-registry-paid-mcp-consumer.ts",
   "scripts/package-publish.test.ts",
   "scripts/package-publish-dry-run.test.ts",
@@ -89,6 +90,7 @@ const REQUIRED_REGISTRY_CHECKS = [
   "local-tarball-install",
   "npm-publish-dry-run",
   "npm-registry-paid-mcp-consumer",
+  "npm-registry-mcp-stdio-consumer",
   "registry-install",
   "provenance-review",
   "rollback-review",
@@ -233,6 +235,7 @@ async function checkLocalPackageProof(
   const packCheck = scripts["pack:check"] ?? "";
   const installSmoke = scripts["smoke:package-install"] ?? "";
   const paidMcpConsumerSmoke = scripts["smoke:package-paid-mcp-consumer"] ?? "";
+  const mcpStdioConsumerSmoke = scripts["smoke:package-mcp-stdio-consumer"] ?? "";
   const npmRegistryPaidMcpConsumerSmoke = scripts["smoke:npm-registry-paid-mcp-consumer"] ?? "";
   const publishDryRun = scripts["publish:dry-run"] ?? "";
   const verifyFast = scripts["verify:fast"] ?? "";
@@ -243,6 +246,9 @@ async function checkLocalPackageProof(
   if (!installSmoke.includes("scripts/smoke-package-install.ts")) missing.push("smoke:package-install");
   if (!paidMcpConsumerSmoke.includes("scripts/smoke-package-paid-mcp-consumer.ts")) {
     missing.push("smoke:package-paid-mcp-consumer");
+  }
+  if (!mcpStdioConsumerSmoke.includes("scripts/smoke-package-mcp-stdio-consumer.ts")) {
+    missing.push("smoke:package-mcp-stdio-consumer");
   }
   if (!npmRegistryPaidMcpConsumerSmoke.includes("scripts/smoke-npm-registry-paid-mcp-consumer.ts")) {
     missing.push("smoke:npm-registry-paid-mcp-consumer");
@@ -269,6 +275,13 @@ async function checkLocalPackageProof(
     missing.push("package paid MCP consumer smoke must stay opt-in");
   }
   if (
+    verifyFast.includes("smoke:package-mcp-stdio-consumer")
+    || verifyLocal.includes("smoke:package-mcp-stdio-consumer")
+    || grantCheck.includes("smoke:package-mcp-stdio-consumer")
+  ) {
+    missing.push("package MCP stdio consumer smoke must stay opt-in");
+  }
+  if (
     verifyFast.includes("smoke:npm-registry-paid-mcp-consumer")
     || verifyLocal.includes("smoke:npm-registry-paid-mcp-consumer")
     || grantCheck.includes("smoke:npm-registry-paid-mcp-consumer")
@@ -283,7 +296,7 @@ async function checkLocalPackageProof(
       code: "PACKAGE_PUBLICATION_LOCAL_PROOF_INCOMPLETE",
       message: "Local package publication source, script, or package coverage is incomplete.",
       evidence: `missing=${missing.join(",")}`,
-      next: "Restore package release docs, pack dry-run, local tarball install smoke, paid MCP consumer tarball smoke, npm registry consumer smoke, opt-in publish dry-run, and package coverage before registry readiness review.",
+      next: "Restore package release docs, pack dry-run, local tarball install smoke, paid MCP consumer tarball smoke, MCP stdio consumer tarball smoke, npm registry consumer smoke, opt-in publish dry-run, and package coverage before registry readiness review.",
     };
   }
 
@@ -291,8 +304,8 @@ async function checkLocalPackageProof(
     id: "local-package-publication-proof",
     status: "proven-local",
     code: "PACKAGE_PUBLICATION_LOCAL_PROOF_CONFIGURED",
-    message: "Package metadata, pack dry-run, local tarball install smoke, paid MCP consumer tarball smoke, npm registry consumer smoke, and opt-in publish dry-run gates are configured.",
-    evidence: "npm run pack:check; npm run smoke:package-install; npm run smoke:package-paid-mcp-consumer; npm run smoke:npm-registry-paid-mcp-consumer; npm run publish:dry-run",
+    message: "Package metadata, pack dry-run, local tarball install smoke, paid MCP consumer tarball smoke, MCP stdio consumer tarball smoke, npm registry consumer smoke, and opt-in publish dry-run gates are configured.",
+    evidence: "npm run pack:check; npm run smoke:package-install; npm run smoke:package-paid-mcp-consumer; npm run smoke:package-mcp-stdio-consumer; npm run smoke:npm-registry-paid-mcp-consumer; npm run publish:dry-run",
     next: "Keep this as local release proof only until an operator-approved npm registry publication report exists.",
   };
 }
@@ -390,7 +403,7 @@ function validateStructuredReport(
   }
   const checks = report.checks;
   if (!Array.isArray(checks) || !REQUIRED_REGISTRY_CHECKS.every((check) => checks.includes(check))) {
-    return invalidReport("PACKAGE_PUBLICATION_REPORT_CHECKS_INCOMPLETE", "Package publication proof report is missing required check ids.", "configured-report-checks-incomplete", "Include pack dry-run, local tarball install, npm publish dry-run, npm registry paid MCP consumer, registry install, provenance review, and rollback review checks.");
+    return invalidReport("PACKAGE_PUBLICATION_REPORT_CHECKS_INCOMPLETE", "Package publication proof report is missing required check ids.", "configured-report-checks-incomplete", "Include pack dry-run, local tarball install, npm publish dry-run, npm registry paid MCP consumer, npm registry MCP stdio consumer, registry install, provenance review, and rollback review checks.");
   }
   if (typeof report.observedAt !== "string") {
     return staleReport();

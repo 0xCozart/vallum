@@ -55,7 +55,7 @@ AgentRail dependencies automatically.
 | User | Install | Use this for |
 | --- | --- | --- |
 | App/backend developer | `@sacredlabs/agentrail-sdk@next` | Calling an AgentRail-compatible gateway from backend code. |
-| Agent runtime integrator | `@sacredlabs/agentrail-sdk@next` today; `@sacredlabs/agentrail-mcp-server@next` for the current programmatic MCP-shaped facade | Building an agent integration that still routes through policy and manifests. |
+| Agent runtime integrator | `@sacredlabs/agentrail-sdk@next` for backend/tool-host code; `@sacredlabs/agentrail-mcp-server@next` after the next MCP package publish for stdio MCP hosts | Building an agent integration that still routes through policy and manifests. |
 | Policy/gateway operator | `@sacredlabs/agentrail-policy-gateway@next` | Evaluating local sponsorship policy or building a gateway service. |
 | Advanced package consumer | Lower-level packages such as `manifest`, `receipts`, `registry`, `standards`, or `accounts` | Specialized integrations that need direct primitives. |
 
@@ -75,17 +75,29 @@ npm install @sacredlabs/agentrail-sdk@next
 This installs the backend SDK and the lower-level manifest, registry, receipt,
 and shared type packages it depends on.
 
-If you are experimenting with the current MCP-shaped facade:
+If you are experimenting with the MCP package:
 
 ```bash
 npm install @sacredlabs/agentrail-mcp-server@next
 ```
 
-The MCP package currently exports a programmatic facade. It does not yet ship a
-standalone `bin`, stdio transport, hosted server, or Claude/Cursor/Codex MCP
-configuration snippet. That runnable MCP entrypoint is a planned follow-up; the
-library surface is already useful for agent integrations that can call it from
-their own runtime.
+This source tree now builds a stdio CLI bin named `agentrail-mcp` and keeps the
+programmatic facade. The already-published `0.0.0-prerelease` package predates
+that bin. The reviewed source version for the runnable MCP package is
+`0.0.1-mcp.0`, but registry install proof for the runnable MCP entrypoint
+remains blocked until that version is published and verified from npm.
+
+After that publication, an MCP host can start the server with environment
+configuration owned by the host process:
+
+```bash
+AGENTRAIL_GATEWAY_URL=https://gateway.example.test \
+AGENTRAIL_API_KEY=replace-with-server-side-secret \
+npm exec -- agentrail-mcp
+```
+
+Do not pass API keys as CLI arguments, paste them into agent prompts, or commit
+MCP host configuration files containing real values.
 
 The package set was published with `tag=next`. npm also currently exposes
 `latest=0.0.0-prerelease` for this first package set after rejecting a
@@ -178,9 +190,29 @@ const result = await agentrail.executeSponsoredTransaction({
 
 Do not log raw `transactionBytes` or `userSignature` in normal request paths.
 
-## Use The Current Agent Facade
+## Use The MCP Package
 
-The current MCP-shaped package is useful as a programmatic facade:
+The package can be used as a stdio MCP server by a local MCP host after a
+version containing `agentrail-mcp` is installed:
+
+```json
+{
+  "mcpServers": {
+    "agentrail": {
+      "command": "agentrail-mcp",
+      "env": {
+        "AGENTRAIL_GATEWAY_URL": "https://gateway.example.test",
+        "AGENTRAIL_API_KEY": "replace-with-server-side-secret"
+      }
+    }
+  }
+}
+```
+
+Those values belong to the MCP host process or local secret store. The LLM or
+agent prompt should never receive the API key.
+
+The programmatic facade remains useful for custom tool hosts:
 
 ```ts
 import { createIotaMcpServer } from "@sacredlabs/agentrail-mcp-server";
@@ -200,12 +232,6 @@ That facade exposes tool descriptors and `callTool()` behavior that routes
 through the SDK and policy gateway. It is intentionally not direct IOTA access
 and not a bypass around sponsorship policy.
 
-Until a runnable MCP transport is added, an agent runtime can either:
-
-- call the SDK directly from a backend/tool host; or
-- wrap `@sacredlabs/agentrail-mcp-server` in its own MCP transport and pass
-  gateway configuration through server-side environment variables.
-
 ## Prove A Fresh Install
 
 From this repository, the public npm adoption proof is:
@@ -224,12 +250,23 @@ This proves npm registry install/import plus local mock execution. It does not
 prove live IOTA execution, production payment settlement, production custody,
 marketplace operation, or public A2A hosting.
 
+The local tarball proof for the runnable MCP stdio bin is:
+
+```bash
+npm run smoke:package-mcp-stdio-consumer
+```
+
+That command installs local tarballs into a fresh temporary consumer, starts
+`node_modules/.bin/agentrail-mcp`, lists tools, and calls approval, denial, and
+invalid-input paths against a loopback mock gateway. It does not prove registry
+availability until a new package version is published and separately checked.
+
 ## Package Map
 
 | Package | Role |
 | --- | --- |
 | `@sacredlabs/agentrail-sdk` | Main backend SDK entrypoint. |
-| `@sacredlabs/agentrail-mcp-server` | Programmatic MCP-shaped facade for agent tool integrations. |
+| `@sacredlabs/agentrail-mcp-server` | MCP stdio server bin and programmatic facade for agent tool integrations. |
 | `@sacredlabs/agentrail-policy-gateway` | Local policy evaluation and mock gateway helpers. |
 | `@sacredlabs/agentrail-manifest` | Agent Transaction Manifest validation and fixtures. |
 | `@sacredlabs/agentrail-receipts` | Receipt state and event-chain helpers. |
@@ -244,12 +281,12 @@ marketplace operation, or public A2A hosting.
 
 This prerelease proves package installation, local SDK/gateway behavior,
 manifest validation, receipt evidence, policy denial, failed-payment
-withholding, and redaction markers.
+withholding, local tarball MCP stdio bin execution, and redaction markers.
 
 It does not claim:
 
 - stable package release status;
-- a runnable MCP server binary;
+- registry availability for the new MCP server binary before the next publish;
 - live IOTA sponsorship from the npm package alone;
 - production payment-provider settlement;
 - production signer custody or KMS integration;

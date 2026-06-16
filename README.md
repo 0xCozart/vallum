@@ -335,7 +335,7 @@ packages/
   contracts-metadata/     # Versioned contract template metadata for policy
   marketplace/            # Read-only marketplace evidence views
   standards/              # x402/AP2/A2A standards bridge adapters
-  mcp-server/             # MCP-shaped sponsorship tool facade
+  mcp-server/             # MCP stdio server and sponsorship tool facade
   receipts/               # Receipt and escrow state machine
 contracts/
   escrow_v1/              # Local Move escrow state contract

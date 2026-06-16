@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  buildMcpStdioConsumerSmokeSource,
+} from "./smoke-package-mcp-stdio-consumer.js";
+import {
   buildPaidMcpConsumerSmokeSource,
 } from "./smoke-package-paid-mcp-consumer.js";
 import {
@@ -85,6 +88,27 @@ test("paid MCP consumer smoke proves approval denial failed payment and redactio
   assert.match(source, /redaction\.apiKey=redacted/);
   assert.match(source, /redaction\.signerReference=redacted/);
   assert.match(source, /assert\.doesNotMatch\(output,/);
+});
+
+test("MCP stdio consumer smoke uses package bin without repo internals", () => {
+  const source = buildMcpStdioConsumerSmokeSource();
+
+  assert.match(source, /node_modules.*\.bin.*agentrail-mcp/s);
+  assert.match(source, /mcp\.request\("tools\/list"/);
+  assert.match(source, /mcp\.request\("tools\/call"/);
+  assert.match(source, /boundary\.route=MCP-stdio->SDK->mock-policy-gateway/);
+  assert.doesNotMatch(source, /@sacredlabs\/agentrail-mcp-server\/(src|dist)/);
+  assert.doesNotMatch(source, /\.\.\/|\.\/packages\/|\/src\//);
+});
+
+test("MCP stdio consumer smoke proves approval denial invalid input and redaction", () => {
+  const source = buildMcpStdioConsumerSmokeSource();
+
+  assert.match(source, /approval\.approved=true/);
+  assert.match(source, /denial\.reason=GAS_BUDGET_TOO_HIGH/);
+  assert.match(source, /invalid\.reason=INVALID_TOOL_INPUT/);
+  assert.match(source, /redaction\.apiKey=redacted/);
+  assert.match(source, /assert\.doesNotMatch\(mcp\.stderr\(\),/);
 });
 
 test("npm registry consumer smoke pins current published package versions", () => {
