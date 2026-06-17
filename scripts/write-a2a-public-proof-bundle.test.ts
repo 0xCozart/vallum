@@ -44,6 +44,7 @@ test("A2A public proof bundle writes templates, plan, and blocked summary withou
     assert.ok(bundle.requiredOperatorInputs.includes("A2A_PUBLIC_DISCOVERY_REPORT"));
     assert.ok(bundle.requiredEvidenceArtifacts.includes("sanitized external A2A conformance report"));
     assert.equal(bundle.steps.find((step) => step.id === "run-public-discovery-smoke")?.contactsPublicNetwork, true);
+    assert.equal(bundle.steps.find((step) => step.id === "run-public-push-delivery-smoke")?.contactsPublicNetwork, true);
     assert.equal(bundle.steps.find((step) => step.id === "write-public-proof-plan")?.contactsPublicNetwork, false);
 
     await assertMode(join(cwd, "tmp/vallum/a2a-public-proof-bundle.json"), 0o600);

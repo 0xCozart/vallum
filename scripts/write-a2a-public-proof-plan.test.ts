@@ -42,6 +42,7 @@ test("A2A public proof plan reports current blockers without configured values",
     assert.ok(plan.requiredOperatorInputs.includes("A2A_PUBLIC_DISCOVERY_REPORT"));
     assert.ok(plan.commands.some((command) => command.id === "write-static-hosting-review" && !command.contactsPublicNetwork));
     assert.ok(plan.commands.some((command) => command.id === "smoke-public-discovery" && command.contactsPublicNetwork));
+    assert.ok(plan.commands.some((command) => command.id === "smoke-public-push-delivery" && command.contactsPublicNetwork));
     assert.doesNotMatch(formatted, /agents\.example|oauth2|missing-discovery-report|missing-push-report|missing-conformance-report/);
   } finally {
     await rm(cwd, { recursive: true, force: true });

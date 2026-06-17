@@ -88,6 +88,7 @@ test("launch readiness maps local evidence to live and production blockers", asy
   assert.match(standards?.next ?? "", /a2a:write-public-proof-bundle/);
   assert.match(standards?.next ?? "", /payment:write-provider-proof-bundle/);
   assert.ok(standards?.commands.includes("npm run a2a:write-public-proof-plan"));
+  assert.ok(standards?.commands.includes("npm run smoke:a2a-public-push-delivery"));
   assert.ok(standards?.commands.includes("npm run proof:a2a-public-readiness"));
   assert.ok(
     (standards?.commands.indexOf("npm run payment:write-provider-proof-bundle -- --out tmp/vallum/payment-provider-proof-bundle.json") ?? -1)
@@ -272,6 +273,7 @@ async function writeEvidenceTree(cwd: string): Promise<void> {
     "scripts/write-payment-provider-proof-bundle.ts",
     "scripts/check-a2a-public-readiness.ts",
     "scripts/write-a2a-public-proof-bundle.ts",
+    "scripts/smoke-a2a-public-push-delivery.ts",
     "scripts/smoke-a2a-static-discovery-local.ts",
     "docs/vallum/a2a-public-readiness.md",
     "scripts/smoke-a2a-local-server.ts",

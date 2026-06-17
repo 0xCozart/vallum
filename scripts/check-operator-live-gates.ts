@@ -83,7 +83,7 @@ const GATE_COMMANDS: Record<string, string | undefined> = {
   "iota-identity-live": "npm run live:write-identity-proof-bundle -- --out tmp/vallum/identity-proof-bundle.json && npm run smoke:iota-identity-live -- --report <ignored-json-path>",
   "vc-validation-live": "npm run live:write-identity-proof-bundle -- --out tmp/vallum/identity-proof-bundle.json && npm run smoke:iota-identity-live -- --report <ignored-json-path>",
   "npm-registry-publication": "npm run package:write-publication-proof-bundle -- --out tmp/vallum/package-publication-proof-bundle.json && npm run proof:package-publication-readiness && operator-approved npm publish workflow",
-  "public-a2a-hosting": "npm run a2a:write-public-proof-bundle -- --out tmp/vallum/a2a-public-proof-bundle.json && npm run proof:a2a-public-readiness && npm run smoke:a2a-public-discovery",
+  "public-a2a-hosting": "npm run a2a:write-public-proof-bundle -- --out tmp/vallum/a2a-public-proof-bundle.json && npm run proof:a2a-public-readiness && npm run smoke:a2a-public-discovery && npm run smoke:a2a-public-push-delivery",
   "live-payment-provider": "npm run payment:write-provider-proof-bundle -- --out tmp/vallum/payment-provider-proof-bundle.json && npm run proof:payment-provider-readiness",
   "production-marketplace": "npm run marketplace:write-production-proof-bundle -- --out tmp/vallum/marketplace-production-proof-bundle.json && npm run proof:marketplace-readiness && dedicated production marketplace readiness slice",
   "production-custody": "npm run custody:write-production-proof-bundle -- --out tmp/vallum/custody-production-proof-bundle.json && npm run proof:custody-readiness && dedicated custody/security design slice",

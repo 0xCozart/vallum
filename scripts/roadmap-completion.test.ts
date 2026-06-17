@@ -268,7 +268,7 @@ function operatorGatesFixture(): OperatorLiveGateReport {
         id: "public-a2a-hosting",
         status: "requires-approval",
         code: "PUBLIC_A2A_HOSTING_UNPROVEN",
-        command: "npm run a2a:write-public-proof-bundle -- --out tmp/vallum/a2a-public-proof-bundle.json && npm run proof:a2a-public-readiness && npm run smoke:a2a-public-discovery",
+        command: "npm run a2a:write-public-proof-bundle -- --out tmp/vallum/a2a-public-proof-bundle.json && npm run proof:a2a-public-readiness && npm run smoke:a2a-public-discovery && npm run smoke:a2a-public-push-delivery",
         approvalRequired: true,
         contactsLiveService: true,
         message: "Public A2A hosting is unproven.",

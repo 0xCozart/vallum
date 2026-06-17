@@ -183,7 +183,7 @@ const AREA_DEFINITIONS = [
   },
   {
     id: "phase-4-standards-bridges",
-    claim: "x402, AP2, and A2A mappings are locally proven with fail-closed behavior, including a non-networked payment-provider readiness gate, a redacted payment-provider proof-plan writer, a redacted payment-provider proof-bundle writer, local A2A authenticated extended cards, local public JWKS serving, local static discovery bundle generation, local static discovery artifact writing and validation, local static discovery loopback host smoke, local static hosting review, streaming, push configuration, injected push delivery, opt-in push HTTP transport, callback URL admission hardening, callback host allowlisting, local retry/attempt observability, local durable attempt evidence, local delivery queueing, a local injected-transport worker, redacted structured public discovery/push/conformance report classification, and an opt-in public discovery/JWKS smoke; live payment/provider and public A2A proofs remain blocked unless accepted operator reports are configured.",
+    claim: "x402, AP2, and A2A mappings are locally proven with fail-closed behavior, including a non-networked payment-provider readiness gate, a redacted payment-provider proof-plan writer, a redacted payment-provider proof-bundle writer, local A2A authenticated extended cards, local public JWKS serving, local static discovery bundle generation, local static discovery artifact writing and validation, local static discovery loopback host smoke, local static hosting review, streaming, push configuration, injected push delivery, opt-in push HTTP transport, callback URL admission hardening, callback host allowlisting, local retry/attempt observability, local durable attempt evidence, local delivery queueing, a local injected-transport worker, redacted structured public discovery/push/conformance report classification, an opt-in public discovery/JWKS smoke, and an opt-in public push delivery smoke; live payment/provider and public A2A proofs remain blocked unless accepted operator reports are configured.",
     evidencePaths: [
       "packages/standards/src/x402.ts",
       "packages/standards/src/ap2.ts",
@@ -194,6 +194,7 @@ const AREA_DEFINITIONS = [
       "scripts/check-payment-provider-readiness.ts",
       "scripts/check-a2a-public-readiness.ts",
       "scripts/write-a2a-public-proof-bundle.ts",
+      "scripts/smoke-a2a-public-push-delivery.ts",
       "scripts/smoke-a2a-static-discovery-local.ts",
       "docs/vallum/a2a-public-readiness.md",
       "scripts/smoke-a2a-local-server.ts",
@@ -216,6 +217,7 @@ const AREA_DEFINITIONS = [
       "npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/vallum/a2a-external-conformance-report-template.json",
       "npm run a2a:write-public-proof-bundle -- --out tmp/vallum/a2a-public-proof-bundle.json",
       "npm run a2a:write-public-proof-plan",
+      "npm run smoke:a2a-public-push-delivery",
       "npm run proof:a2a-public-readiness",
     ],
     productCheckIds: ["public-a2a-hosting", "live-payment-provider"],

@@ -74,7 +74,7 @@ test("product status reports local proof gates and explicit live blockers withou
     assert.match(formatted, /operator:write-report-template -- --kind a2a-external-conformance/);
     assert.match(formatted, /npm run a2a:write-public-proof-bundle -- --out <ignored-json-path>/);
     assert.match(formatted, /redacted public proof plan, readiness artifact, and report templates/);
-    assert.match(formatted, /npm run smoke:a2a-public-discovery only with operator-approved public A2A config/);
+    assert.match(formatted, /npm run smoke:a2a-public-discovery and npm run smoke:a2a-public-push-delivery only with operator-approved public A2A config/);
     assert.match(formatted, /LIVE_PAYMENT_PROVIDER_UNPROVEN/);
     assert.match(formatted, /operator:write-report-template -- --kind payment-provider-live/);
     assert.match(formatted, /npm run payment:write-provider-proof-bundle -- --out <ignored-json-path>/);

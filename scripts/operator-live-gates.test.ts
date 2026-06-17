@@ -83,7 +83,7 @@ test("operator live gates report current blockers without secret values", async 
     );
     assert.equal(
       findGate(report, "public-a2a-hosting").command,
-      "npm run a2a:write-public-proof-bundle -- --out tmp/vallum/a2a-public-proof-bundle.json && npm run proof:a2a-public-readiness && npm run smoke:a2a-public-discovery",
+      "npm run a2a:write-public-proof-bundle -- --out tmp/vallum/a2a-public-proof-bundle.json && npm run proof:a2a-public-readiness && npm run smoke:a2a-public-discovery && npm run smoke:a2a-public-push-delivery",
     );
     assert.equal(
       findGate(report, "live-payment-provider").command,

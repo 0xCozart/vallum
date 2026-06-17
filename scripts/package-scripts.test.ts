@@ -196,6 +196,16 @@ test("A2A public discovery smoke is opt-in and excluded from local verification"
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /a2a-public-discovery/);
 });
 
+test("A2A public push delivery smoke is opt-in and excluded from local verification", () => {
+  assert.equal(
+    packageJson.scripts?.["smoke:a2a-public-push-delivery"],
+    "npm run build && tsx scripts/smoke-a2a-public-push-delivery.ts",
+  );
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /a2a-public-push-delivery/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /a2a-public-push-delivery/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /a2a-public-push-delivery/);
+});
+
 test("payment provider readiness proof is non-networked and opt-in", () => {
   assert.equal(
     packageJson.scripts?.["proof:payment-provider-readiness"],

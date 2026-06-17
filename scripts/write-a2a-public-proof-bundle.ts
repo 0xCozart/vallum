@@ -261,13 +261,20 @@ function buildSteps(input: {
       dependsOn: ["write-public-discovery-template"],
     },
     {
+      id: "run-public-push-delivery-smoke",
+      command: "npm run smoke:a2a-public-push-delivery -- --report tmp/vallum/a2a-public-push-delivery-report.json",
+      contactsPublicNetwork: true,
+      requiresOperatorApproval: true,
+      dependsOn: ["write-public-push-delivery-template"],
+    },
+    {
       id: "check-public-readiness",
       command: `npm run proof:a2a-public-readiness -- --out ${input.readinessOutFile}`,
       contactsPublicNetwork: false,
       requiresOperatorApproval: false,
       dependsOn: [
         "run-public-discovery-smoke",
-        "write-public-push-delivery-template",
+        "run-public-push-delivery-smoke",
         "write-external-conformance-template",
       ],
     },

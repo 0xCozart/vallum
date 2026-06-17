@@ -92,6 +92,12 @@ const PLAN_COMMANDS: readonly A2APublicProofPlanCommand[] = [
     requiresOperatorApproval: true,
   },
   {
+    id: "smoke-public-push-delivery",
+    command: "npm run smoke:a2a-public-push-delivery -- --report <local-report-path>",
+    contactsPublicNetwork: true,
+    requiresOperatorApproval: true,
+  },
+  {
     id: "check-public-readiness",
     command: "npm run proof:a2a-public-readiness",
     contactsPublicNetwork: false,
@@ -101,7 +107,7 @@ const PLAN_COMMANDS: readonly A2APublicProofPlanCommand[] = [
 
 const BOUNDARIES = [
   "This plan is non-networked and does not prove public hosting.",
-  "Only smoke-public-discovery contacts public A2A endpoints, and it requires operator approval.",
+  "Only smoke-public-discovery and smoke-public-push-delivery contact public A2A endpoints or callbacks, and both require operator approval.",
   "Do not commit report files, public proof outputs, credentials, private keys, bearer tokens, webhook secrets, raw payloads, or response bodies.",
   "ready-for-approval means the evidence packet is reviewable; it is not production A2A conformance by itself.",
 ] as const;

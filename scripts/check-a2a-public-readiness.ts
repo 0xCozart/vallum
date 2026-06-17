@@ -83,6 +83,7 @@ const REQUIRED_SOURCE_PATHS = [
 const ALLOWED_TASK_AUTH_DECISIONS = new Set(["bearer", "oauth2", "mtls"]);
 const A2A_PUBLIC_DISCOVERY_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/vallum/a2a-public-discovery-report-template.json";
 const A2A_PUBLIC_PUSH_DELIVERY_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/vallum/a2a-public-push-delivery-report-template.json";
+const A2A_PUBLIC_PUSH_DELIVERY_SMOKE_COMMAND = "npm run smoke:a2a-public-push-delivery -- --report <local-report-path>";
 const A2A_EXTERNAL_CONFORMANCE_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/vallum/a2a-external-conformance-report-template.json";
 
 const ARTIFACT_BOUNDARIES = [
@@ -629,7 +630,7 @@ async function checkPublicPushDeliveryReport(
       code: "A2A_PUBLIC_PUSH_DELIVERY_REPORT_MISSING",
       message: "A2A public push webhook delivery evidence has not been supplied.",
       evidence: "missing=A2A_PUBLIC_PUSH_DELIVERY_REPORT",
-      next: `${A2A_PUBLIC_PUSH_DELIVERY_TEMPLATE_COMMAND}; provide a local structured public push delivery report path outside committed docs only after an operator-approved public webhook delivery proof run.`,
+      next: `${A2A_PUBLIC_PUSH_DELIVERY_TEMPLATE_COMMAND}; run ${A2A_PUBLIC_PUSH_DELIVERY_SMOKE_COMMAND} only after operator approval and provide the report path outside committed docs.`,
     };
   }
 
