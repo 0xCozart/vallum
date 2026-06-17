@@ -2,16 +2,49 @@
 
 ## Current Next Move
 
-Build the runnable MCP adapter after the package/docs adoption path, not before
-it. The next implementation plan is:
+MCP stdio adoption is complete. `@vallum/mcp-server@0.0.1-mcp.0` carries the
+published `vallum-mcp` bin, and the repo has local plus npm-registry MCP stdio
+consumer smoke wiring.
 
-- `docs/vallum/mcp-server-design-and-implementation-plan.md`
-  - What it is: the Apex-planned design and implementation contract for turning
-    `@vallum/mcp-server` from a programmatic facade into a
-    runnable MCP stdio package.
-  - Why execute it: it gives agents a concrete install-and-run path while
-    preserving the larger Vallum product boundary: MCP is an adapter, not
-    the product.
+The package publication report, sponsored testnet digest report, local testnet
+readiness env, Docker-backed Gas Station runtime, sponsor funding report, and
+testnet upstream diagnostic report are reconciled under ignored local state.
+With those reports configured, `npm run proof:live-status` and
+`npm run proof:product-status` classify package publication plus the current
+testnet/Gas Station checks as ready-for-approval or ready-live evidence.
+
+IOTA Names live proof is also reconciled under ignored local state with a
+current sanitized report from the opt-in public testnet GraphQL smoke. That
+report is time-bounded evidence; refresh it with
+`npm run smoke:iota-names-live -- --report <ignored-json-path>` when the
+operator-owned name/address inputs change or the report ages out.
+
+IOTA Identity and VC validation are reconciled under ignored local state with a
+current sanitized report from the opt-in loopback proof endpoint harness. That
+report proves the repo's DID-resolution request path, credential evidence
+handling, and VC trust-policy evaluation; it does not prove production key
+management, public provider verification, mainnet operation, or a production
+identity service.
+
+Public A2A discovery and push delivery have current sanitized structured
+reports from an operator-approved temporary public HTTPS Agent Card/JWKS plus
+callback probe, and the non-networked public-readiness gate now accepts both
+reports under ignored local state. This is not external interoperability
+evidence: public A2A is still blocked until an external conformance report
+exists and is reviewed.
+
+The active next move is to work through the remaining open gates without
+treating templates or local mocks as production proof:
+
+- Public A2A: produce an external conformance report before accepting public
+  hosting or interoperability.
+- Live payment provider, production marketplace, and production custody:
+  dedicated proof bundles/templates now exist under ignored local state, but
+  each gate still requires an operator-approved provider/review run and a
+  redacted structured report before setting the corresponding report env vars.
+- Physical-device access remains deferred safety work until there is a separate
+  safety design for provider accountability, revocation, emergency stop,
+  privacy, and incident response.
 
 ## Roadmap Gates After MCP Adoption
 
