@@ -667,3 +667,75 @@ transaction through the local policy gateway, local Gas Station, and IOTA
 testnet RPC. The command consumed testnet gas only. No raw transaction bytes,
 user signatures, full addresses, bearer tokens, sponsor keys, endpoint values,
 or raw upstream bodies were written to tracked docs.
+
+## 2026-06-16 fresh Vallum sponsored testnet execute
+
+After Docker was started for the workspace, the Vallum live proof chain was
+refreshed from an isolated execution directory. The Docker client was pointed
+at the local Unix socket context with `DOCKER_CONTEXT=default` because the
+active Docker Desktop context did not target the reachable local daemon from
+this shell.
+
+Pre-execute gates:
+
+```bash
+npm run readiness:testnet
+npm run sponsor:check-funding -- --report tmp/vallum/sponsor-funding-report.json
+npm run gas-station:render-config
+DOCKER_CONTEXT=default npm run gas-station:docker-direct -- --execute
+DOCKER_CONTEXT=default npm run diagnose:gas-station -- --report tmp/vallum/testnet-upstream-diagnostic.json
+```
+
+Sanitized status:
+
+```text
+testnetReadiness=TESTNET_READINESS_CONFIG_PRESENT
+sponsorFundingCode=SPONSOR_FUNDING_REPORT_VALID
+gasStationRuntime=GAS_STATION_RUNTIME_READY
+gasStationReachabilityCode=GAS_STATION_ROOT_READY
+reserveGasCode=RESERVE_GAS_READY
+policyGatewayHealth=ok
+```
+
+Sponsored execute:
+
+```bash
+DOCKER_CONTEXT=default npm run execute:testnet-demo -- --report tmp/vallum/sponsored-execute-report.json
+```
+
+Sanitized successful run:
+
+```text
+gatewayConfigured=true
+iotaRpcConfigured=true
+demoTarget=0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0::demo_badge::mint_badge
+ephemeralUserAddress=0xd8e0891c...6188a833
+reservedGas=true
+reservationId=<redacted-id>
+agentRailTransactionId=vallum_2...fb3195
+sponsorAddress=0xd046a4fb...29b9b868
+executed=true
+transactionDigest=8PqFX2H35CRCSfqw3wRBwA8MbnQwwGrSEfr7Tfcu2cx
+```
+
+Read-only live digest verification:
+
+```bash
+DOCKER_CONTEXT=default npm run proof:testnet-digest:live -- --digest 8PqFX2H35CRCSfqw3wRBwA8MbnQwwGrSEfr7Tfcu2cx --report tmp/vallum/testnet-digest-proof.json
+```
+
+Sanitized successful lookup:
+
+```text
+status=verified-testnet
+effectsStatus=success
+checkpoint=228652804
+timestampMs=1781645695211
+```
+
+Outcome: the current machine again proves a real IOTA testnet sponsored
+transaction through the local policy gateway, local Gas Station, and IOTA
+testnet RPC. The command consumed testnet gas only and wrote ignored mode-0600
+operator reports. No raw transaction bytes, user signatures, full addresses,
+bearer tokens, sponsor keys, endpoint values, rendered Gas Station config, or
+raw upstream bodies were written to tracked docs.
