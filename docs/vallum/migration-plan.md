@@ -1,6 +1,6 @@
 # Vallum Migration Plan
 
-Last updated: 2026-06-14.
+Last updated: 2026-06-16.
 
 ## Intent Read
 
@@ -27,20 +27,20 @@ Local fork created for the new direction:
 - target repo/package slug: `vallum`
 - branch: `main`
 - target canonical GitHub repo: `https://github.com/0xCozart/vallum`
-- current `origin` before remote rename: `https://github.com/0xCozart/agentic-gaskit.git`
+- current `origin`: `https://github.com/0xCozart/vallum.git`
+- previous pre-rename fork remote: `https://github.com/0xCozart/agentic-gaskit.git`
 - upstream source remote: `https://github.com/0xCozart/iota-gaskit`
 - local Git remote state: `upstream` fetches from the source repo and has push
-  disabled; `origin` currently pushes to the pre-rename fork until the GitHub
-  repository is renamed
+  disabled; `origin` pushes to the renamed Vallum repository
 
 Existing local source checkouts:
 
 - `/home/sacred/code/iota-gaskit` remains the old/current GasKit checkout.
 - `/home/sacred/code/agents` remains a staging/planning source only.
 
-Remote publishing is complete for the initial fork, but the remote repository
-rename is a separate operator action. Do not re-enable push to the source
-IOTA GasKit remote as a shortcut.
+Remote publishing and the GitHub repository rename are complete for the
+initial fork. Do not re-enable push to the source IOTA GasKit remote as a
+shortcut.
 
 ## Product Framing
 
