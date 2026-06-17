@@ -30,6 +30,7 @@
     "smoke:a2a-http": "npm run build && tsx scripts/smoke-a2a-http.ts",
     "smoke:a2a-local-server": "npm run build && tsx scripts/smoke-a2a-local-server.ts",
     "smoke:a2a-public-discovery": "npm run build && tsx scripts/smoke-a2a-public-discovery.ts",
+    "smoke:a2a-public-push-delivery": "npm run build && tsx scripts/smoke-a2a-public-push-delivery.ts",
     "a2a:write-public-proof-plan": "npm run build && tsx scripts/write-a2a-public-proof-plan.ts",
     "a2a:write-public-proof-bundle": "npm run build && tsx scripts/write-a2a-public-proof-bundle.ts",
     "a2a:write-static-discovery-bundle": "npm run build && tsx scripts/write-a2a-static-discovery-bundle.ts",
