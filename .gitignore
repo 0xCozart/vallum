@@ -40,6 +40,7 @@ Thumbs.db
 
 # Local tooling
 tmp/npm_token.txt
+tmp/agents_thoughts.txt
 tmp/agentrail/
 tmp/apex-workflow/
 tmp/vallum/
