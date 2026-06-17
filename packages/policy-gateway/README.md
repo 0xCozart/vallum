@@ -11,7 +11,7 @@ npm install @vallum/policy-gateway@next
 ```
 
 See
-https://github.com/0xCozart/agentic-gaskit/blob/main/docs/vallum/package-integration-guide.md
+https://github.com/0xCozart/vallum/blob/main/docs/vallum/package-integration-guide.md
 for package selection, configuration, and when to use the gateway package
 instead of the SDK.
 

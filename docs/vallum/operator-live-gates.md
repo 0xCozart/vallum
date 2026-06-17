@@ -230,8 +230,9 @@ hosts, marketplace systems, or physical devices.
   reserve gas, execute transactions, or print sponsor signer material.
 - Points public A2A hosting/conformance review at the non-networked
   `npm run proof:a2a-public-readiness` command before any public endpoint is
-  probed, then at `npm run smoke:a2a-public-discovery` only after
-  operator-approved public HTTPS configuration exists.
+  probed, then at `npm run smoke:a2a-public-discovery` and
+  `npm run smoke:a2a-public-push-delivery` only after operator-approved public
+  HTTPS configuration exists.
 - Can write a redacted local JSON report for handoff/audit evidence before
   any live command is approved.
 - Reports command names and next gates without printing configured endpoints,
@@ -306,6 +307,7 @@ npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/
 npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/vallum/a2a-public-push-delivery-report-template.json
 npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/vallum/a2a-external-conformance-report-template.json
 npm run smoke:a2a-public-discovery
+npm run smoke:a2a-public-push-delivery
 npm run verify:fast
 npm run proof:verification-profiles
 npm run proof:operator-gates

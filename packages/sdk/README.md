@@ -11,7 +11,7 @@ npm install @vallum/sdk@next
 ```
 
 See the full package selection and configuration guide in the repository:
-https://github.com/0xCozart/agentic-gaskit/blob/main/docs/vallum/package-integration-guide.md
+https://github.com/0xCozart/vallum/blob/main/docs/vallum/package-integration-guide.md
 
 ## Usage
 

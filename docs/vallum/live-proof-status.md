@@ -74,9 +74,9 @@ the matching environment variable.
 ## Current Local Status
 
 On the current machine, `.env` is present outside Git and `npm run
-readiness:testnet` passes non-networked readiness. Docker Desktop is reachable
-from WSL, `vallum-gas-station` and `vallum-redis` are running, and `npm run
-proof:live-status` with the current ignored funding/upstream reports now
+readiness:testnet` passes non-networked readiness. Docker is reachable through
+the operator-selected context, and `npm run proof:live-status` with the current
+ignored funding, upstream, digest, IOTA Names, IOTA Identity, and VC reports now
 reports:
 
 - `TESTNET_READINESS_CONFIG_PRESENT`
@@ -84,9 +84,9 @@ reports:
 - `SPONSOR_FUNDING_REPORT_VALID`
 - `TESTNET_UPSTREAM_REPORT_VALID`
 - `TESTNET_SPONSORED_EXECUTE_DIGEST_VERIFIED`
-- `IOTA_NAMES_LIVE_CONFIG_MISSING`
-- `IOTA_IDENTITY_LIVE_CONFIG_MISSING`
-- `VC_TRUST_POLICY_CONFIG_MISSING`
+- `IOTA_NAMES_LIVE_REPORT_VALID`
+- `IOTA_IDENTITY_LIVE_REPORT_VALID`
+- `VC_VALIDATION_LIVE_REPORT_VALID`
 
 `npm run gas-station:runtime-preflight` confirms the ignored local Gas Station
 config exists, the Docker daemon is reachable, Docker Compose is available,
@@ -123,7 +123,16 @@ and IOTA testnet RPC and proves reserve_gas compatibility through the
 sanitized `VALLUM_TESTNET_UPSTREAM_REPORT`. The current sanitized digest report
 proves the documented sponsored testnet execute digest with a read-only IOTA
 RPC lookup through `VALLUM_TESTNET_DIGEST_REPORT`; it does not rerun
-`execute:testnet-demo`, reserve gas, sign, or spend sponsor gas.
+`execute:testnet-demo`, reserve gas, sign, or spend sponsor gas. The current
+sanitized IOTA Names live smoke report proves the configured public testnet
+name/address binding through `IOTA_NAMES_LIVE_REPORT`; it does not prove IOTA
+Identity, VC validation, production Agent Profile ownership, or mainnet name
+ownership. The current sanitized IOTA Identity live smoke report proves the
+configured loopback proof endpoint can resolve the profile DIDs and return
+credential evidence accepted by the configured VC trust policy through
+`IOTA_IDENTITY_LIVE_REPORT`; it does not prove production key management,
+public provider verification, mainnet operation, or a production identity
+service.
 
 Blocked or ready live-proof checks include fixed evidence labels such as
 `sponsor-funding-report-loaded-redacted`,

@@ -62,5 +62,5 @@ const result = await server.callTool("iota.request_sponsored_transaction", {
 
 Keep `VALLUM_API_KEY`, Gas Station bearer tokens, sponsor keys, raw
 transaction bytes, and user signatures server-side. See
-https://github.com/0xCozart/agentic-gaskit/blob/main/docs/vallum/package-integration-guide.md
+https://github.com/0xCozart/vallum/blob/main/docs/vallum/package-integration-guide.md
 for the full package map and configuration boundary.

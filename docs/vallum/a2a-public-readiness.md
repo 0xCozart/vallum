@@ -64,8 +64,10 @@ runs and sets the matching ignored structured report paths.
 
 When an operator has approved public A2A infrastructure and supplied local
 configuration, `npm run smoke:a2a-public-discovery` is the opt-in networked
-probe for public Agent Card and JWKS discovery. It is not part of local
-verification and must not be run as a default proof command.
+probe for public Agent Card and JWKS discovery. `npm run
+smoke:a2a-public-push-delivery` is the matching opt-in networked callback
+delivery probe. Neither command is part of local verification, and neither must
+be run as a default proof command.
 
 Run it from the repository root:
 
@@ -315,6 +317,31 @@ npm run smoke:a2a-public-discovery -- --report tmp/a2a-public-discovery-report.j
 Passing this smoke is still not external conformance, public push webhook
 delivery, production key-rotation approval, or provider verification.
 
+## Opt-In Public Push Smoke
+
+Run only after operator approval and with public A2A callback configuration
+outside committed files:
+
+```bash
+npm run smoke:a2a-public-push-delivery
+```
+
+The command requires `A2A_PUBLIC_BASE_URL` and
+`A2A_PUBLIC_PUSH_CALLBACK_URL`, rejects unsafe callback URLs through the same
+push URL hardening used by the library, constrains delivery to the callback
+host, sends one redacted task notification, and records status-only delivery
+evidence. Its formatted output redacts configured URLs, callback URLs, request
+bodies, response bodies, and report paths.
+
+To save structured push-delivery evidence for later readiness review:
+
+```bash
+npm run smoke:a2a-public-push-delivery -- --report tmp/a2a-public-push-delivery-report.json
+```
+
+Passing this smoke is still not external A2A conformance, production webhook
+authentication approval, endpoint ownership proof, or production observability.
+
 ## Operator Inputs
 
 The command can classify these optional inputs without contacting them:
@@ -358,8 +385,9 @@ Public push delivery evidence uses:
   "result": "passed",
   "observedAt": "2026-06-11T12:00:00.000Z",
   "publicBaseUrl": "https://agents.example/a2a",
-  "callbackStatus": 202,
-  "attempts": 1
+  "deliveryStatus": 204,
+  "attempts": 1,
+  "checks": ["public-config", "callback-delivery", "redaction-review"]
 }
 ```
 
