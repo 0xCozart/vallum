@@ -81,6 +81,33 @@ test("README is product-first and avoids grant or funding framing", async () => 
   assert.doesNotMatch(readme, /docs\/grant-milestones\.md/);
 });
 
+test("README opens with human context and routes installing agents", async () => {
+  const readme = await readDoc("README.md");
+  const humanSectionIndex = readme.indexOf("## For Humans");
+  const agentSectionIndex = readme.indexOf("## For Installing Agents");
+
+  assert.ok(humanSectionIndex > 0 && humanSectionIndex < 900);
+  assert.ok(agentSectionIndex > humanSectionIndex);
+
+  const humanSection = readme.slice(humanSectionIndex, agentSectionIndex);
+  const agentSection = readme.slice(agentSectionIndex);
+
+  assert.match(humanSection, /self-hostable Vallum toolkit/);
+  assert.match(humanSection, /agent-safe sponsored IOTA execution/);
+  assert.match(humanSection, /Agents should use it/);
+
+  assert.match(agentSection, /npm run vallum:installer/);
+  assert.match(agentSection, /docs\/vallum\/installer-process\.md/);
+  assert.match(agentSection, /docs\/quickstart\.md/);
+  assert.match(agentSection, /docs\/agent-guide\.md/);
+  assert.match(agentSection, /Safe local auto-scaffold/);
+  assert.match(agentSection, /Guided operator config/);
+  assert.match(agentSection, /\.env\.vallum\.local/);
+  assert.match(agentSection, /\.vallum\/reports\/install-summary\.json/);
+  assert.match(agentSection, /Do not collect, paste, echo, or commit raw private keys/);
+  assert.match(agentSection, /Run live commands.*only with explicit operator intent/s);
+});
+
 test("docs hosting source list includes best-practices and reviewer paths", async () => {
   const [config, bestPractices, docsReadme] = await Promise.all([
     readDoc("apps/docs-site/docs.config.mjs"),
