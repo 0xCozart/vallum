@@ -15,9 +15,10 @@ cannot be accidentally published. Publishable workspace packages are public
 prerelease packages with `publishConfig.access=public` and
 `publishConfig.tag=next`.
 
-The current coordinated prerelease line is `0.0.1-prerelease.0` for every
+The current coordinated prerelease line is `0.0.1-prerelease.1` for every
 public `@vallum/*` workspace package, including the runnable MCP stdio CLI.
-It publishes on the npm `next` dist-tag. The previous public line was
+It publishes on the npm `next` dist-tag. The previous coordinated public line
+was `0.0.1-prerelease.0`. Before that, the public line was
 `0.0.0-prerelease`, with `@vallum/mcp-server@0.0.1-mcp.0` as an interim
 MCP-package-only CLI bump.
 
@@ -56,7 +57,7 @@ The release metadata tests enforce:
 
 - root package is private;
 - public package names stay in `@vallum/*`;
-- package versions stay aligned on `0.0.1-prerelease.0`;
+- package versions stay aligned on `0.0.1-prerelease.1`;
 - packages publish ESM `dist/index.js` plus `dist/index.d.ts`;
 - package exports expose only reviewed built entrypoints;
 - the MCP server package is the only public package with a CLI bin, and that
@@ -230,10 +231,11 @@ structured publication report.
 
 ## Publication Evidence
 
-The `0.0.1-prerelease.0` package set is the current coordinated npm
-prerelease under `@vallum/*`. The previous public line was
-`0.0.0-prerelease`; the MCP package also had the interim runnable-stdio
-prerelease `@vallum/mcp-server@0.0.1-mcp.0`.
+The `0.0.1-prerelease.1` package set is the current coordinated npm
+prerelease under `@vallum/*`. The previous coordinated public line was
+`0.0.1-prerelease.0`; before that, the public line was `0.0.0-prerelease`.
+The MCP package also had the interim runnable-stdio prerelease
+`@vallum/mcp-server@0.0.1-mcp.0`.
 
 Publication evidence for the current prerelease includes:
 
@@ -266,7 +268,7 @@ production operation, or production custody from this package publication.
 
 ## Runnable MCP Package Publication
 
-The source tree now publishes `@vallum/mcp-server@0.0.1-prerelease.0` as part
+The source tree now publishes `@vallum/mcp-server@0.0.1-prerelease.1` as part
 of the coordinated workspace prerelease. The previous
 `@vallum/mcp-server@0.0.1-mcp.0` publication was an MCP-package-only CLI bump
 over the older `0.0.0-prerelease` API line.
@@ -307,7 +309,7 @@ publication remains an operator-gated release action.
 ## Dist-Tag Decision
 
 For the current prerelease package set, keep documentation and examples pinned
-to `@next` or `@0.0.1-prerelease.0` even if npm exposes a prerelease through
+to `@next` or `@0.0.1-prerelease.1` even if npm exposes a prerelease through
 `latest`. Do not treat `latest` as a stable-release signal.
 
 The next package publication should explicitly verify dist-tags after publish.

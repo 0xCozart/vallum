@@ -125,7 +125,7 @@ async function writePackageEvidence(): Promise<string> {
   await mkdir(join(cwd, "packages/sdk"), { recursive: true });
   await writeFile(join(cwd, "packages/sdk/package.json"), `${JSON.stringify({
     name: "@vallum/sdk",
-    version: "0.0.1-prerelease.0",
+    version: "0.0.1-prerelease.1",
   }, null, 2)}\n`);
   return cwd;
 }

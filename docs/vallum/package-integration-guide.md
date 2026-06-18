@@ -83,7 +83,7 @@ npm install @vallum/mcp-server@next
 
 The MCP package builds a stdio CLI bin named `vallum-mcp` and keeps the
 programmatic facade. The runnable MCP package is published on the coordinated
-`0.0.1-prerelease.0` package line through the npm `next` dist-tag, and
+`0.0.1-prerelease.1` package line through the npm `next` dist-tag, and
 registry install plus local stdio execution is covered by
 `npm run smoke:npm-registry-mcp-stdio-consumer`.
 

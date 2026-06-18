@@ -34,6 +34,9 @@ import {
   linkExternalPaymentState,
   linkIotaReceiptState,
   renewSubscriptionReceipt,
+  recordEscrowSettlementOpen,
+  recordEscrowSettlementRefund,
+  recordEscrowSettlementRelease,
   revokeDataLicenseAccess,
   releaseEscrow,
   releaseServiceBountyReceipt,
@@ -157,6 +160,154 @@ test("external payment and IOTA receipt states can diverge without data loss", (
     referenceId: "iota_receipt_1",
   });
   assert.equal(receipt.status, "completed");
+});
+
+test("escrow settlement release records fee split and replay-safe receipt hashes", () => {
+  const opened = recordEscrowSettlementOpen(sponsoredIotaEscrowReceipt(), {
+    at: now,
+    settlementRail: "iota-testnet",
+    escrowId: "escrow:testnet:agent-action:1",
+    releaseMode: "proof",
+    invocationId: "invocation:agent-action:1",
+    actionId: "action:agent-action",
+    actionContractId: "action-contract:agent-action",
+    actionContractVersion: "1.0.0",
+    providerPayoutRef: "provider-payout:provider-wallet",
+    platformFeeRef: "platform-fee:vallum",
+    refundDestinationRef: "refund:buyer-wallet",
+    providerNetAmount: { amount: "9.50", asset: "IOTA" },
+    platformFeeAmount: { amount: "0.50", asset: "IOTA" },
+    transactionDigest: "digest_open_escrow_1",
+  });
+  const completed = completeEscrow(opened, {
+    at: now,
+    evidenceHash: "sha256:provider-evidence",
+  });
+  const released = recordEscrowSettlementRelease(completed, {
+    at: now,
+    verifierId: "verifier:alice",
+    escrowId: "escrow:testnet:agent-action:1",
+    invocationId: "invocation:agent-action:1",
+    releaseProofHash: "sha256:release-proof",
+    providerExecutionReceiptHash: "sha256:provider-execution-receipt",
+    evidenceAttestationHash: "sha256:evidence-attestation",
+    settlementReceiptHash: "sha256:settlement-receipt",
+    buyerFacingReceiptHash: "sha256:buyer-facing-receipt",
+    transactionDigest: "digest_release_escrow_1",
+  });
+
+  assert.equal(released.status, "released");
+  assert.equal(released.escrow.status, "released");
+  assert.equal(released.escrowSettlement?.status, "released");
+  assert.equal(released.escrowSettlement?.escrowId, "escrow:testnet:agent-action:1");
+  assert.equal(released.escrowSettlement?.providerNetAmount.amount, "9.50");
+  assert.equal(released.escrowSettlement?.platformFeeAmount.amount, "0.50");
+  assert.equal(released.escrowSettlement?.platformFeePaid, true);
+  assert.equal(released.escrowSettlement?.providerExecutionReceiptHash, "sha256:provider-execution-receipt");
+  assert.equal(released.escrowSettlement?.evidenceAttestationHash, "sha256:evidence-attestation");
+  assert.equal(released.escrowSettlement?.settlementReceiptHash, "sha256:settlement-receipt");
+  assert.equal(released.escrowSettlement?.buyerFacingReceiptHash, "sha256:buyer-facing-receipt");
+  assert.equal(released.escrowSettlement?.settlementTransactionDigest, "digest_release_escrow_1");
+});
+
+test("escrow settlement open rejects invalid fee splits", () => {
+  assert.throws(
+    () => recordEscrowSettlementOpen(sponsoredIotaEscrowReceipt(), {
+      at: now,
+      settlementRail: "iota-testnet",
+      escrowId: "escrow:testnet:agent-action:2",
+      releaseMode: "proof",
+      invocationId: "invocation:agent-action:2",
+      actionId: "action:agent-action",
+      actionContractId: "action-contract:agent-action",
+      actionContractVersion: "1.0.0",
+      providerPayoutRef: "provider-payout:provider-wallet",
+      platformFeeRef: "platform-fee:vallum",
+      refundDestinationRef: "refund:buyer-wallet",
+      providerNetAmount: { amount: "9.00", asset: "IOTA" },
+      platformFeeAmount: { amount: "0.50", asset: "IOTA" },
+      transactionDigest: "digest_open_escrow_2",
+    }),
+    (error) => error instanceof ReceiptInputError && error.code === "FIELD_REQUIRED",
+  );
+});
+
+test("escrow settlement open rejects invalid rails and raw settlement addresses", () => {
+  assert.throws(
+    () => recordEscrowSettlementOpen(sponsoredIotaEscrowReceipt(), {
+      at: now,
+      settlementRail: "production" as never,
+      escrowId: "escrow:testnet:agent-action:invalid-rail",
+      releaseMode: "proof",
+      invocationId: "invocation:agent-action:invalid-rail",
+      actionId: "action:agent-action",
+      actionContractId: "action-contract:agent-action",
+      actionContractVersion: "1.0.0",
+      providerPayoutRef: "provider-payout:provider-wallet",
+      platformFeeRef: "platform-fee:vallum",
+      refundDestinationRef: "refund:buyer-wallet",
+      providerNetAmount: { amount: "9.50", asset: "IOTA" },
+      platformFeeAmount: { amount: "0.50", asset: "IOTA" },
+      transactionDigest: "digest_open_escrow_invalid_rail",
+    }),
+    (error) => error instanceof ReceiptInputError && error.code === "FIELD_REQUIRED",
+  );
+  assert.throws(
+    () => recordEscrowSettlementOpen(sponsoredIotaEscrowReceipt(), {
+      at: now,
+      settlementRail: "iota-testnet",
+      escrowId: "escrow:testnet:agent-action:raw-address",
+      releaseMode: "proof",
+      invocationId: "invocation:agent-action:raw-address",
+      actionId: "action:agent-action",
+      actionContractId: "action-contract:agent-action",
+      actionContractVersion: "1.0.0",
+      providerPayoutRef: "iota1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq",
+      platformFeeRef: "platform-fee:vallum",
+      refundDestinationRef: "refund:buyer-wallet",
+      providerNetAmount: { amount: "9.50", asset: "IOTA" },
+      platformFeeAmount: { amount: "0.50", asset: "IOTA" },
+      transactionDigest: "digest_open_escrow_raw_address",
+    }),
+    (error) => error instanceof ReceiptInputError && error.code === "FIELD_REQUIRED",
+  );
+});
+
+test("escrow settlement refund records refund evidence without paying platform fee", () => {
+  const opened = recordEscrowSettlementOpen(sponsoredIotaEscrowReceipt(), {
+    at: now,
+    settlementRail: "iota-testnet",
+    escrowId: "escrow:testnet:agent-action:3",
+    releaseMode: "proof",
+    invocationId: "invocation:agent-action:3",
+    actionId: "action:agent-action",
+    actionContractId: "action-contract:agent-action",
+    actionContractVersion: "1.0.0",
+    providerPayoutRef: "provider-payout:provider-wallet",
+    platformFeeRef: "platform-fee:vallum",
+    refundDestinationRef: "refund:buyer-wallet",
+    providerNetAmount: { amount: "9.50", asset: "IOTA" },
+    platformFeeAmount: { amount: "0.50", asset: "IOTA" },
+    transactionDigest: "digest_open_escrow_3",
+  });
+  const refunded = recordEscrowSettlementRefund(opened, {
+    at: now,
+    escrowId: "escrow:testnet:agent-action:3",
+    invocationId: "invocation:agent-action:3",
+    reason: "invalid-evidence",
+    settlementReceiptHash: "sha256:refund-settlement-receipt",
+    buyerFacingReceiptHash: "sha256:refund-buyer-facing-receipt",
+    transactionDigest: "digest_refund_escrow_3",
+  });
+
+  assert.equal(refunded.status, "refunded");
+  assert.equal(refunded.escrow.status, "refunded");
+  assert.equal(refunded.escrowSettlement?.status, "refunded");
+  assert.equal(refunded.escrowSettlement?.platformFeePaid, false);
+  assert.equal(refunded.escrowSettlement?.refundReason, "invalid-evidence");
+  assert.equal(refunded.escrowSettlement?.settlementReceiptHash, "sha256:refund-settlement-receipt");
+  assert.equal(refunded.escrowSettlement?.buyerFacingReceiptHash, "sha256:refund-buyer-facing-receipt");
+  assert.equal(refunded.escrowSettlement?.settlementTransactionDigest, "digest_refund_escrow_3");
 });
 
 test("pay-per-call receipt advances through paid result lifecycle", () => {
@@ -695,6 +846,24 @@ function completedEscrowReceipt() {
   return completeEscrow(submitted, {
     at: now,
     evidenceHash: "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  });
+}
+
+function sponsoredIotaEscrowReceipt() {
+  const approved = approveReceipt(createEscrowReceipt({
+    receiptId: "receipt_iota_escrow_1",
+    manifestId: "idem_iota_escrow_1",
+    idempotencyKey: "idem_iota_escrow_1",
+    agentId: "agent:quote-bot",
+    ownerId: "owner:alice",
+    providerId: "provider:quote-service",
+    verifierId: "verifier:alice",
+    amount: { amount: "10.00", asset: "IOTA" },
+    createdAt: now,
+  }), { at: now });
+  return sponsorReceipt(approved, {
+    at: now,
+    sponsorshipId: "mock_sponsorship_iota_escrow_1",
   });
 }
 

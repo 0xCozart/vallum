@@ -1,6 +1,6 @@
 {
   "name": "vallum",
-  "version": "0.0.1-prerelease.0",
+  "version": "0.0.1-prerelease.1",
   "private": true,
   "description": "Open-source toolkit for IOTA gas sponsorship plus agent-safe wallets, manifests, policy controls, receipts, and integrations.",
   "license": "Apache-2.0",

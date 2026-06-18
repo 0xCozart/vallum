@@ -42,6 +42,38 @@ export interface EscrowReceipt {
   readonly events: readonly ReceiptEvent[];
   readonly externalPayment?: LinkedReceiptState;
   readonly iotaReceipt?: LinkedReceiptState;
+  readonly escrowSettlement?: EscrowSettlementState;
+}
+
+export type EscrowSettlementRail = "local" | "iota-testnet" | "iota-mainnet";
+export type EscrowSettlementReleaseMode = "proof" | "acceptance" | "review";
+
+const escrowSettlementRails = ["local", "iota-testnet", "iota-mainnet"] as const;
+const escrowSettlementReleaseModes = ["proof", "acceptance", "review"] as const;
+
+export interface EscrowSettlementState {
+  readonly status: "open" | "released" | "refunded";
+  readonly settlementRail: EscrowSettlementRail;
+  readonly escrowId: string;
+  readonly releaseMode: EscrowSettlementReleaseMode;
+  readonly invocationId: string;
+  readonly actionId: string;
+  readonly actionContractId: string;
+  readonly actionContractVersion: string;
+  readonly providerPayoutRef: string;
+  readonly platformFeeRef: string;
+  readonly refundDestinationRef: string;
+  readonly providerNetAmount: ReceiptAmount;
+  readonly platformFeeAmount: ReceiptAmount;
+  readonly openedTransactionDigest: string;
+  readonly providerExecutionReceiptHash?: string;
+  readonly evidenceAttestationHash?: string;
+  readonly settlementReceiptHash?: string;
+  readonly buyerFacingReceiptHash?: string;
+  readonly settlementTransactionDigest?: string;
+  readonly releaseProofHash?: string;
+  readonly refundReason?: string;
+  readonly platformFeePaid?: boolean;
 }
 
 export interface PayPerCallReceipt {
@@ -280,6 +312,43 @@ export interface CreateSubscriptionReceiptInput {
 
 export interface TransitionOptions {
   readonly at: Date;
+}
+
+export interface RecordEscrowSettlementOpenOptions extends TransitionOptions {
+  readonly settlementRail: EscrowSettlementRail;
+  readonly escrowId: string;
+  readonly releaseMode: EscrowSettlementReleaseMode;
+  readonly invocationId: string;
+  readonly actionId: string;
+  readonly actionContractId: string;
+  readonly actionContractVersion: string;
+  readonly providerPayoutRef: string;
+  readonly platformFeeRef: string;
+  readonly refundDestinationRef: string;
+  readonly providerNetAmount: ReceiptAmount;
+  readonly platformFeeAmount: ReceiptAmount;
+  readonly transactionDigest: string;
+}
+
+export interface RecordEscrowSettlementReleaseOptions extends TransitionOptions {
+  readonly verifierId: string;
+  readonly escrowId: string;
+  readonly invocationId: string;
+  readonly releaseProofHash: string;
+  readonly providerExecutionReceiptHash: string;
+  readonly evidenceAttestationHash: string;
+  readonly settlementReceiptHash: string;
+  readonly buyerFacingReceiptHash: string;
+  readonly transactionDigest: string;
+}
+
+export interface RecordEscrowSettlementRefundOptions extends TransitionOptions {
+  readonly escrowId: string;
+  readonly invocationId: string;
+  readonly reason: string;
+  readonly settlementReceiptHash: string;
+  readonly buyerFacingReceiptHash: string;
+  readonly transactionDigest: string;
 }
 
 export class ReceiptTransitionError extends Error {
@@ -919,6 +988,112 @@ export function expireEscrow(
   }, options.reason);
 }
 
+export function recordEscrowSettlementOpen(
+  receipt: EscrowReceipt,
+  options: RecordEscrowSettlementOpenOptions,
+): EscrowReceipt {
+  requireReceiptStatus(receipt, ["sponsored"], "record escrow settlement open");
+  if (receipt.escrowSettlement) {
+    throw new ReceiptTransitionError("INVALID_TRANSITION", "Escrow settlement is already recorded.");
+  }
+  requireEscrowSettlementRail(options.settlementRail);
+  requireEscrowSettlementReleaseMode(options.releaseMode);
+  requireNonEmpty(options.escrowId, "escrowId");
+  requireNonEmpty(options.invocationId, "invocationId");
+  requireNonEmpty(options.actionId, "actionId");
+  requireNonEmpty(options.actionContractId, "actionContractId");
+  requireNonEmpty(options.actionContractVersion, "actionContractVersion");
+  requireNonEmpty(options.transactionDigest, "transactionDigest");
+  requireSafeSettlementReference(options.providerPayoutRef, "providerPayoutRef");
+  requireSafeSettlementReference(options.platformFeeRef, "platformFeeRef");
+  requireSafeSettlementReference(options.refundDestinationRef, "refundDestinationRef");
+  requireFeeSplit(receipt.amount, options.providerNetAmount, options.platformFeeAmount);
+
+  return withReceiptEvent(receipt, "submitted", options.at, {
+    status: "submitted",
+    transactionDigest: options.transactionDigest,
+    escrowSettlement: {
+      status: "open",
+      settlementRail: options.settlementRail,
+      escrowId: options.escrowId,
+      releaseMode: options.releaseMode,
+      invocationId: options.invocationId,
+      actionId: options.actionId,
+      actionContractId: options.actionContractId,
+      actionContractVersion: options.actionContractVersion,
+      providerPayoutRef: options.providerPayoutRef,
+      platformFeeRef: options.platformFeeRef,
+      refundDestinationRef: options.refundDestinationRef,
+      providerNetAmount: options.providerNetAmount,
+      platformFeeAmount: options.platformFeeAmount,
+      openedTransactionDigest: options.transactionDigest,
+    },
+  });
+}
+
+export function recordEscrowSettlementRelease(
+  receipt: EscrowReceipt,
+  options: RecordEscrowSettlementReleaseOptions,
+): EscrowReceipt {
+  const settlement = requireOpenEscrowSettlement(receipt);
+  requireSettlementBinding(settlement, options.escrowId, options.invocationId);
+  requireSafeHashReference(options.releaseProofHash, "releaseProofHash");
+  requireSafeHashReference(options.providerExecutionReceiptHash, "providerExecutionReceiptHash");
+  requireSafeHashReference(options.evidenceAttestationHash, "evidenceAttestationHash");
+  requireSafeHashReference(options.settlementReceiptHash, "settlementReceiptHash");
+  requireSafeHashReference(options.buyerFacingReceiptHash, "buyerFacingReceiptHash");
+  requireNonEmpty(options.transactionDigest, "transactionDigest");
+
+  const released = releaseEscrow(receipt, {
+    at: options.at,
+    verifierId: options.verifierId,
+    releaseProofHash: options.releaseProofHash,
+  });
+  return {
+    ...released,
+    escrowSettlement: {
+      ...settlement,
+      status: "released",
+      releaseProofHash: options.releaseProofHash,
+      providerExecutionReceiptHash: options.providerExecutionReceiptHash,
+      evidenceAttestationHash: options.evidenceAttestationHash,
+      settlementReceiptHash: options.settlementReceiptHash,
+      buyerFacingReceiptHash: options.buyerFacingReceiptHash,
+      settlementTransactionDigest: options.transactionDigest,
+      platformFeePaid: true,
+    },
+  };
+}
+
+export function recordEscrowSettlementRefund(
+  receipt: EscrowReceipt,
+  options: RecordEscrowSettlementRefundOptions,
+): EscrowReceipt {
+  const settlement = requireOpenEscrowSettlement(receipt);
+  requireSettlementBinding(settlement, options.escrowId, options.invocationId);
+  requireNonEmpty(options.reason, "reason");
+  requireSafeHashReference(options.settlementReceiptHash, "settlementReceiptHash");
+  requireSafeHashReference(options.buyerFacingReceiptHash, "buyerFacingReceiptHash");
+  requireNonEmpty(options.transactionDigest, "transactionDigest");
+
+  const refunded = refundEscrow(receipt, {
+    at: options.at,
+    reason: options.reason,
+  });
+  return {
+    ...refunded,
+    escrowSettlement: {
+      ...settlement,
+      status: "refunded",
+      settlementReceiptHash: options.settlementReceiptHash,
+      buyerFacingReceiptHash: options.buyerFacingReceiptHash,
+      settlementTransactionDigest: options.transactionDigest,
+      refundReason: options.reason,
+      platformFeePaid: false,
+    },
+  };
+}
+
 export function linkExternalPaymentState(receipt: EscrowReceipt, state: LinkedReceiptState): EscrowReceipt {
   return {
     ...receipt,
@@ -947,14 +1122,40 @@ function requireEscrowOpen(receipt: EscrowReceipt, action: string): void {
   }
 }
 
+function requireOpenEscrowSettlement(receipt: EscrowReceipt): EscrowSettlementState {
+  const settlement = receipt.escrowSettlement;
+  if (!settlement || settlement.status !== "open") {
+    throw new ReceiptTransitionError("INVALID_TRANSITION", "Escrow settlement must be open.");
+  }
+  return settlement;
+}
+
+function requireSettlementBinding(settlement: EscrowSettlementState, escrowId: string, invocationId: string): void {
+  if (settlement.escrowId !== escrowId || settlement.invocationId !== invocationId) {
+    throw new ReceiptInputError("FIELD_REQUIRED", "Escrow settlement binding does not match the receipt.");
+  }
+}
+
+function requireEscrowSettlementRail(value: EscrowSettlementRail): void {
+  if (!escrowSettlementRails.includes(value)) {
+    throw new ReceiptInputError("FIELD_REQUIRED", "settlementRail must be a supported escrow settlement rail.");
+  }
+}
+
+function requireEscrowSettlementReleaseMode(value: EscrowSettlementReleaseMode): void {
+  if (!escrowSettlementReleaseModes.includes(value)) {
+    throw new ReceiptInputError("FIELD_REQUIRED", "releaseMode must be a supported escrow settlement release mode.");
+  }
+}
+
 function requireReceiptStatus(receipt: { readonly status: ReceiptStatus }, allowed: readonly ReceiptStatus[], action: string): void {
   if (!allowed.includes(receipt.status)) {
     throw new ReceiptTransitionError("INVALID_TRANSITION", `Cannot ${action} receipt from ${receipt.status}.`);
   }
 }
 
-function requireNonEmpty(value: string, field: string): void {
-  if (value.trim() === "") {
+function requireNonEmpty(value: unknown, field: string): void {
+  if (typeof value !== "string" || value.trim() === "") {
     throw new ReceiptInputError("FIELD_REQUIRED", `${field} is required.`);
   }
 }
@@ -967,6 +1168,67 @@ function requireSafeHashReference(value: string, field: string): void {
   ) {
     throw new ReceiptInputError("FIELD_REQUIRED", `${field} must be a safe sha256 reference.`);
   }
+}
+
+function requireSafeSettlementReference(value: string, field: string): void {
+  requireNonEmpty(value, field);
+  if (
+    value.length > 160 ||
+    !/^[A-Za-z0-9._:-]+$/.test(value) ||
+    /^0x[a-f0-9]{16,}$/i.test(value) ||
+    /^(iota|sui)1[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{20,}$/i.test(value) ||
+    /(private prompt|review payload|bearer|access-token|signer_ref|payment credential|privateKey|mnemonic|seed|raw transaction|user signature)/i.test(value)
+  ) {
+    throw new ReceiptInputError("FIELD_REQUIRED", `${field} must be an opaque public reference, not raw settlement material.`);
+  }
+}
+
+function requireFeeSplit(gross: ReceiptAmount, providerNet: ReceiptAmount, platformFee: ReceiptAmount): void {
+  requireReceiptAmount(gross, "amount");
+  requireReceiptAmount(providerNet, "providerNetAmount");
+  requireReceiptAmount(platformFee, "platformFeeAmount");
+  if (gross.asset !== providerNet.asset || gross.asset !== platformFee.asset) {
+    throw new ReceiptInputError("FIELD_REQUIRED", "Escrow fee split assets must match the gross amount asset.");
+  }
+  const grossAmount = parseDecimalAmount(gross.amount, "amount");
+  const providerNetAmount = parseDecimalAmount(providerNet.amount, "providerNetAmount");
+  const platformFeeAmount = parseDecimalAmount(platformFee.amount, "platformFeeAmount");
+  const scale = Math.max(grossAmount.scale, providerNetAmount.scale, platformFeeAmount.scale);
+  const grossUnits = scaleDecimal(grossAmount, scale);
+  const providerUnits = scaleDecimal(providerNetAmount, scale);
+  const platformUnits = scaleDecimal(platformFeeAmount, scale);
+  if (providerUnits + platformUnits !== grossUnits) {
+    throw new ReceiptInputError("FIELD_REQUIRED", "Escrow fee split must equal the gross receipt amount.");
+  }
+}
+
+function requireReceiptAmount(value: ReceiptAmount, field: string): void {
+  if (!value || typeof value !== "object") {
+    throw new ReceiptInputError("FIELD_REQUIRED", `${field} is required.`);
+  }
+  requireNonEmpty(value.amount, `${field}.amount`);
+  requireNonEmpty(value.asset, `${field}.asset`);
+}
+
+function parseDecimalAmount(value: string, field: string): { readonly units: bigint; readonly scale: number } {
+  if (value.length > 80) {
+    throw new ReceiptInputError("FIELD_REQUIRED", `${field} is too large.`);
+  }
+  if (!/^(0|[1-9][0-9]*)(\.[0-9]+)?$/.test(value)) {
+    throw new ReceiptInputError("FIELD_REQUIRED", `${field} must be a non-negative decimal amount.`);
+  }
+  const [whole, fraction = ""] = value.split(".");
+  if (fraction.length > 18) {
+    throw new ReceiptInputError("FIELD_REQUIRED", `${field} has too many decimal places.`);
+  }
+  return {
+    units: BigInt(`${whole}${fraction}`),
+    scale: fraction.length,
+  };
+}
+
+function scaleDecimal(value: { readonly units: bigint; readonly scale: number }, targetScale: number): bigint {
+  return value.units * (10n ** BigInt(targetScale - value.scale));
 }
 
 function requireMatchingField(left: string, right: string, leftField: string, rightField: string): void {
