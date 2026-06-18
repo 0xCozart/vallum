@@ -39,10 +39,29 @@ test("payment provider proof bundle writes template, plan, and blocked summary w
     assert.ok(bundle.blockerCodes.includes("PAYMENT_PROVIDER_LIVE_REPORT_NOT_FOUND"));
     assert.equal(bundle.readyApprovalCodes.length, 0);
     assert.ok(bundle.requiredOperatorInputs.includes("PAYMENT_PROVIDER_LIVE_REPORT"));
+    assert.ok(bundle.requiredOperatorInputs.includes("PAYMENT_PROVIDER_X402_VERIFY_URL"));
+    assert.ok(bundle.requiredOperatorInputs.includes("PAYMENT_PROVIDER_X402_SETTLE_URL"));
+    assert.ok(bundle.requiredOperatorInputs.includes("PAYMENT_PROVIDER_X402_REQUEST"));
+    assert.ok(bundle.requiredOperatorInputs.includes("PAYMENT_PROVIDER_AP2_PROOF"));
+    assert.deepEqual(bundle.conditionalOperatorInputs, [
+      {
+        input: "PAYMENT_PROVIDER_AUTH_BEARER_TOKEN",
+        requiredWhen: "selected x402 facilitator requires Authorization",
+        secret: true,
+      },
+    ]);
     assert.ok(bundle.requiredStructuredReportFields.includes("providerKinds"));
+    assert.ok(bundle.requiredStructuredReportFields.includes("x402Proof"));
+    assert.ok(bundle.requiredStructuredReportFields.includes("ap2Proof"));
     assert.ok(bundle.requiredStructuredReportCheckIds.includes("x402-verify"));
+    assert.ok(bundle.requiredStructuredReportCheckIds.includes("x402-payment-response"));
+    assert.ok(bundle.requiredStructuredReportCheckIds.includes("ap2-mandate-chain"));
+    assert.ok(bundle.requiredStructuredReportCheckIds.includes("ap2-accountability-review"));
     assert.ok(bundle.requiredEvidenceArtifacts.includes("sanitized payment-provider structured report"));
+    assert.ok(bundle.requiredEvidenceArtifacts.includes("x402 payment response confirmation"));
+    assert.ok(bundle.requiredEvidenceArtifacts.includes("status-only AP2 accountability review"));
     assert.equal(bundle.steps.find((step) => step.id === "run-approved-x402-provider-proof")?.contactsPaymentProvider, true);
+    assert.match(bundle.steps.find((step) => step.id === "run-approved-x402-provider-proof")?.command ?? "", /smoke:payment-provider-live/);
     assert.equal(bundle.steps.find((step) => step.id === "write-payment-provider-template")?.contactsPaymentProvider, false);
 
     await assertMode(join(cwd, "tmp/vallum/payment-provider-proof-bundle.json"), 0o600);
@@ -81,7 +100,7 @@ test("payment provider proof bundle is ready for approval when structured report
     assert.equal(bundle.checks.find((check) => check.id === "live-payment-provider-report")?.status, "ready-approval");
     assert.doesNotMatch(
       bundleRaw,
-      /payment-provider-live-report\.json|facilitator\.example|Bearer secret-value|paymentInstrumentRef|settlement-123|private-key-value|mnemonic-value/i,
+      /facilitator\.example|Bearer secret-value|paymentInstrumentRef|settlement-123|private-key-value|mnemonic-value/i,
     );
   } finally {
     await rm(cwd, { recursive: true, force: true });
@@ -129,13 +148,29 @@ function validLiveReport() {
     kind: "vallum.payment-provider-live-proof",
     result: "passed",
     observedAt: NOW.toISOString(),
+    environment: "testnet",
     providerKinds: ["x402", "ap2"],
     checks: [
       "x402-verify",
       "x402-settle",
+      "x402-payment-response",
+      "ap2-mandate-chain",
       "ap2-checkout-receipt",
       "ap2-payment-receipt",
+      "ap2-accountability-review",
       "redaction-review",
     ],
+    x402Proof: {
+      facilitator: "provider-reviewed-redacted",
+      verifyResult: "passed",
+      settleResult: "passed",
+      paymentResponse: "present-redacted",
+    },
+    ap2Proof: {
+      mandateChain: "validated",
+      checkoutReceipt: "validated",
+      paymentReceipt: "validated",
+      accountabilityReview: "passed",
+    },
   };
 }

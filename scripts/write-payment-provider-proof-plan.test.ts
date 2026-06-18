@@ -32,10 +32,26 @@ test("payment provider proof plan reports current blockers without configured va
     assert.deepEqual(plan.blockerCodes, []);
     assert.ok(plan.readyApprovalCodes.includes("PAYMENT_PROVIDER_LIVE_REPORT_VALID"));
     assert.ok(plan.requiredOperatorInputs.includes("PAYMENT_PROVIDER_LIVE_REPORT"));
+    assert.ok(plan.requiredOperatorInputs.includes("PAYMENT_PROVIDER_X402_VERIFY_URL"));
+    assert.ok(plan.requiredOperatorInputs.includes("PAYMENT_PROVIDER_X402_SETTLE_URL"));
+    assert.ok(plan.requiredOperatorInputs.includes("PAYMENT_PROVIDER_X402_REQUEST"));
+    assert.ok(plan.requiredOperatorInputs.includes("PAYMENT_PROVIDER_AP2_PROOF"));
+    assert.deepEqual(plan.conditionalOperatorInputs, [
+      {
+        input: "PAYMENT_PROVIDER_AUTH_BEARER_TOKEN",
+        requiredWhen: "selected x402 facilitator requires Authorization",
+        secret: true,
+      },
+    ]);
     assert.ok(plan.requiredStructuredReportFields.includes("observedAt"));
+    assert.ok(plan.requiredStructuredReportFields.includes("x402Proof"));
+    assert.ok(plan.requiredStructuredReportFields.includes("ap2Proof"));
     assert.ok(plan.requiredStructuredReportCheckIds.includes("x402-verify"));
+    assert.ok(plan.requiredStructuredReportCheckIds.includes("x402-payment-response"));
+    assert.ok(plan.requiredStructuredReportCheckIds.includes("ap2-mandate-chain"));
+    assert.ok(plan.requiredStructuredReportCheckIds.includes("ap2-accountability-review"));
     assert.ok(plan.commands.some((command) => command.id === "run-local-standards-proof" && !command.contactsPaymentProvider));
-    assert.ok(plan.commands.some((command) => command.id === "run-approved-x402-provider-proof" && command.contactsPaymentProvider));
+    assert.ok(plan.commands.some((command) => command.id === "run-approved-x402-provider-proof" && command.contactsPaymentProvider && command.command.includes("smoke:payment-provider-live")));
     assert.ok(plan.commands.some((command) => command.id === "check-payment-provider-readiness" && !command.requiresOperatorApproval));
     assert.doesNotMatch(
       formatted,
@@ -128,13 +144,29 @@ function validLiveReport() {
     kind: "vallum.payment-provider-live-proof",
     result: "passed",
     observedAt: NOW.toISOString(),
+    environment: "testnet",
     providerKinds: ["x402", "ap2"],
     checks: [
       "x402-verify",
       "x402-settle",
+      "x402-payment-response",
+      "ap2-mandate-chain",
       "ap2-checkout-receipt",
       "ap2-payment-receipt",
+      "ap2-accountability-review",
       "redaction-review",
     ],
+    x402Proof: {
+      facilitator: "provider-reviewed-redacted",
+      verifyResult: "passed",
+      settleResult: "passed",
+      paymentResponse: "present-redacted",
+    },
+    ap2Proof: {
+      mandateChain: "validated",
+      checkoutReceipt: "validated",
+      paymentReceipt: "validated",
+      accountabilityReview: "passed",
+    },
   };
 }

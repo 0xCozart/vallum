@@ -88,7 +88,92 @@ test("payment provider readiness accepts valid structured live report without pr
     assert.equal(findCheck(report, "live-payment-provider-report").status, "ready-approval");
     assert.equal(findCheck(report, "live-payment-provider-report").code, "PAYMENT_PROVIDER_LIVE_REPORT_VALID");
     assert.match(formatted, /Vallum payment provider readiness ready-for-approval/);
-    assert.doesNotMatch(formatted, /payment-provider-live-report|tmp\/|x402-verify|ap2-payment-receipt/);
+    assert.doesNotMatch(formatted, /payment-provider-live-report|tmp\/|x402-verify|x402-payment-response|ap2-payment-receipt/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("payment provider readiness hydrates live report path from local env", async () => {
+  const cwd = await writeLocalPaymentProviderEvidence();
+  try {
+    await writeJsonReport(join(cwd, "tmp/payment-provider-live-report.json"), validLiveReport());
+    await writeFile(join(cwd, ".env"), [
+      "PAYMENT_PROVIDER_LIVE_REPORT=tmp/payment-provider-live-report.json",
+      "PAYMENT_PROVIDER_AUTH_BEARER_TOKEN=secret-token-value",
+      "",
+    ].join("\n"));
+
+    const report = await checkPaymentProviderReadiness({ cwd, now: NOW });
+    const formatted = formatPaymentProviderReadinessReport(report);
+
+    assert.equal(report.localProofOk, true);
+    assert.equal(report.liveReady, true);
+    assert.equal(findCheck(report, "live-payment-provider-report").code, "PAYMENT_PROVIDER_LIVE_REPORT_VALID");
+    assert.doesNotMatch(formatted, /payment-provider-live-report|secret-token-value|tmp\//i);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("payment provider readiness rejects reports without x402 and AP2 proof summaries", async () => {
+  const cwd = await writeLocalPaymentProviderEvidence();
+  try {
+    await writeJsonReport(join(cwd, "missing-x402-report.json"), {
+      ...validLiveReport(),
+      x402Proof: undefined,
+    });
+    await writeJsonReport(join(cwd, "failed-x402-report.json"), {
+      ...validLiveReport(),
+      x402Proof: {
+        verifyResult: "passed",
+        settleResult: "failed",
+        paymentResponse: "present-redacted",
+      },
+    });
+    await writeJsonReport(join(cwd, "missing-ap2-report.json"), {
+      ...validLiveReport(),
+      ap2Proof: {
+        mandateChain: "validated",
+        checkoutReceipt: "validated",
+        paymentReceipt: "validated",
+      },
+    });
+
+    const missingX402 = await checkPaymentProviderReadiness({
+      cwd,
+      env: { PAYMENT_PROVIDER_LIVE_REPORT: "missing-x402-report.json" },
+      now: NOW,
+    });
+    const failedX402 = await checkPaymentProviderReadiness({
+      cwd,
+      env: { PAYMENT_PROVIDER_LIVE_REPORT: "failed-x402-report.json" },
+      now: NOW,
+    });
+    const missingAp2 = await checkPaymentProviderReadiness({
+      cwd,
+      env: { PAYMENT_PROVIDER_LIVE_REPORT: "missing-ap2-report.json" },
+      now: NOW,
+    });
+    const formatted = [
+      formatPaymentProviderReadinessReport(missingX402),
+      formatPaymentProviderReadinessReport(failedX402),
+      formatPaymentProviderReadinessReport(missingAp2),
+    ].join("\n");
+
+    assert.equal(
+      findCheck(missingX402, "live-payment-provider-report").code,
+      "PAYMENT_PROVIDER_LIVE_REPORT_X402_PROOF_MISSING",
+    );
+    assert.equal(
+      findCheck(failedX402, "live-payment-provider-report").code,
+      "PAYMENT_PROVIDER_LIVE_REPORT_X402_SETTLE_NOT_PASSED",
+    );
+    assert.equal(
+      findCheck(missingAp2, "live-payment-provider-report").code,
+      "PAYMENT_PROVIDER_LIVE_REPORT_AP2_ACCOUNTABILITY_REVIEW_MISSING",
+    );
+    assert.doesNotMatch(formatted, /missing-x402-report|failed-x402-report|missing-ap2-report|paymentResponse/);
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }
@@ -200,14 +285,30 @@ function validLiveReport() {
     kind: "vallum.payment-provider-live-proof",
     result: "passed",
     observedAt: NOW.toISOString(),
+    environment: "testnet",
     providerKinds: ["x402", "ap2"],
     checks: [
       "x402-verify",
       "x402-settle",
+      "x402-payment-response",
+      "ap2-mandate-chain",
       "ap2-checkout-receipt",
       "ap2-payment-receipt",
+      "ap2-accountability-review",
       "redaction-review",
     ],
+    x402Proof: {
+      facilitator: "provider-reviewed-redacted",
+      verifyResult: "passed",
+      settleResult: "passed",
+      paymentResponse: "present-redacted",
+    },
+    ap2Proof: {
+      mandateChain: "validated",
+      checkoutReceipt: "validated",
+      paymentReceipt: "validated",
+      accountabilityReview: "passed",
+    },
   };
 }
 

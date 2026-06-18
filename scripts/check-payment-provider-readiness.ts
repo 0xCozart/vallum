@@ -2,6 +2,7 @@ import { access, chmod, mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { loadEnvFile } from "../apps/policy-gateway-service/src/readiness.js";
 import { containsUnsafeReportContent } from "./structured-report-safety.js";
 
 export type PaymentProviderReadinessStatus =
@@ -60,12 +61,16 @@ interface StructuredPaymentProviderReport {
   readonly kind?: unknown;
   readonly result?: unknown;
   readonly observedAt?: unknown;
+  readonly environment?: unknown;
   readonly providerKinds?: unknown;
   readonly checks?: unknown;
+  readonly x402Proof?: unknown;
+  readonly ap2Proof?: unknown;
 }
 
 const MAX_REPORT_BYTES = 64 * 1024;
 const MAX_REPORT_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+const LOCAL_ENV_FILE = ".env";
 const PAYMENT_PROVIDER_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind payment-provider-live --out tmp/vallum/payment-provider-live-report-template.json";
 const REQUIRED_SOURCE_PATHS = [
   "packages/manifest/src/x402Mapping.ts",
@@ -85,8 +90,11 @@ const REQUIRED_SOURCE_PATHS = [
 const REQUIRED_LIVE_CHECKS = [
   "x402-verify",
   "x402-settle",
+  "x402-payment-response",
+  "ap2-mandate-chain",
   "ap2-checkout-receipt",
   "ap2-payment-receipt",
+  "ap2-accountability-review",
   "redaction-review",
 ] as const;
 
@@ -114,7 +122,7 @@ export async function checkPaymentProviderReadiness(
   options: PaymentProviderReadinessOptions = {},
 ): Promise<PaymentProviderReadinessReport> {
   const cwd = options.cwd ?? process.cwd();
-  const env = options.env ?? process.env;
+  const env = await resolvePaymentProviderReadinessEnv(cwd, options.env);
   const now = options.now ?? new Date();
   const checks = [
     await checkLocalStandardsProof(cwd),
@@ -126,6 +134,14 @@ export async function checkPaymentProviderReadiness(
     liveReady: checks.every((check) => check.status === "proven-local" || check.status === "ready-approval"),
     checks,
   };
+}
+
+export async function resolvePaymentProviderReadinessEnv(
+  cwd: string,
+  env?: NodeJS.ProcessEnv | Record<string, string | undefined>,
+): Promise<Record<string, string | undefined>> {
+  const fileEnv = await loadOptionalLocalEnv(cwd);
+  return { ...fileEnv, ...(env ?? process.env) };
 }
 
 export function formatPaymentProviderReadinessReport(report: PaymentProviderReadinessReport): string {
@@ -300,12 +316,16 @@ function validateStructuredReport(
   }
   const providerKinds = report.providerKinds;
   if (!Array.isArray(providerKinds) || !providerKinds.includes("x402") || !providerKinds.includes("ap2")) {
-    return invalidReport("PAYMENT_PROVIDER_LIVE_REPORT_PROVIDER_MISSING", "Live payment-provider proof report must include x402 and AP2 provider kinds.", "configured-report-provider-missing", "Provide evidence for both x402 facilitator verify/settle and AP2 checkout/payment receipt paths.");
+    return invalidReport("PAYMENT_PROVIDER_LIVE_REPORT_PROVIDER_MISSING", "Live payment-provider proof report must include x402 and AP2 provider kinds.", "configured-report-provider-missing", "Provide evidence for both x402 facilitator verify/settle/payment-response and AP2 mandate/receipt/accountability paths.");
   }
   const checks = report.checks;
   if (!Array.isArray(checks) || !REQUIRED_LIVE_CHECKS.every((check) => checks.includes(check))) {
-    return invalidReport("PAYMENT_PROVIDER_LIVE_REPORT_CHECKS_INCOMPLETE", "Live payment-provider proof report is missing required check ids.", "configured-report-checks-incomplete", "Include x402 verify/settle, AP2 checkout/payment receipt, and redaction-review checks.");
+    return invalidReport("PAYMENT_PROVIDER_LIVE_REPORT_CHECKS_INCOMPLETE", "Live payment-provider proof report is missing required check ids.", "configured-report-checks-incomplete", "Include x402 verify, settle, payment-response, AP2 mandate-chain, checkout receipt, payment receipt, accountability review, and redaction-review checks.");
   }
+  const x402Invalid = validateX402Proof(report.x402Proof);
+  if (x402Invalid) return x402Invalid;
+  const ap2Invalid = validateAp2Proof(report.ap2Proof);
+  if (ap2Invalid) return ap2Invalid;
   if (typeof report.observedAt !== "string") {
     return staleReport();
   }
@@ -314,6 +334,53 @@ function validateStructuredReport(
     return staleReport();
   }
   return undefined;
+}
+
+async function loadOptionalLocalEnv(cwd: string): Promise<Record<string, string>> {
+  try {
+    return await loadEnvFile(LOCAL_ENV_FILE, cwd);
+  } catch {
+    return {};
+  }
+}
+
+function validateX402Proof(value: unknown): PaymentProviderReadinessCheck | undefined {
+  if (!isRecord(value)) {
+    return invalidReport("PAYMENT_PROVIDER_LIVE_REPORT_X402_PROOF_MISSING", "Live payment-provider proof report is missing x402 proof details.", "configured-report-x402-proof-missing", "Include status-only x402 verify, settle, and payment response evidence.");
+  }
+  if (value.verifyResult !== "passed") {
+    return invalidReport("PAYMENT_PROVIDER_LIVE_REPORT_X402_VERIFY_NOT_PASSED", "Live payment-provider proof report does not prove x402 verification passed.", "configured-report-x402-verify-not-passed", "Rerun the approved x402 verify proof and record only status-level evidence.");
+  }
+  if (value.settleResult !== "passed") {
+    return invalidReport("PAYMENT_PROVIDER_LIVE_REPORT_X402_SETTLE_NOT_PASSED", "Live payment-provider proof report does not prove x402 settlement passed.", "configured-report-x402-settle-not-passed", "Rerun the approved x402 settle proof and record only status-level evidence.");
+  }
+  if (value.paymentResponse !== "present-redacted") {
+    return invalidReport("PAYMENT_PROVIDER_LIVE_REPORT_X402_PAYMENT_RESPONSE_MISSING", "Live payment-provider proof report does not prove the x402 payment response confirmation was present.", "configured-report-x402-payment-response-missing", "Record that the x402 payment response confirmation was present without storing the raw header or body.");
+  }
+  return undefined;
+}
+
+function validateAp2Proof(value: unknown): PaymentProviderReadinessCheck | undefined {
+  if (!isRecord(value)) {
+    return invalidReport("PAYMENT_PROVIDER_LIVE_REPORT_AP2_PROOF_MISSING", "Live payment-provider proof report is missing AP2 proof details.", "configured-report-ap2-proof-missing", "Include status-only AP2 mandate-chain, checkout receipt, payment receipt, and accountability evidence.");
+  }
+  if (value.mandateChain !== "validated") {
+    return invalidReport("PAYMENT_PROVIDER_LIVE_REPORT_AP2_MANDATE_CHAIN_NOT_VALIDATED", "Live payment-provider proof report does not prove AP2 mandate-chain validation.", "configured-report-ap2-mandate-chain-not-validated", "Record status-only AP2 mandate-chain validation evidence after an approved proof run.");
+  }
+  if (value.checkoutReceipt !== "validated") {
+    return invalidReport("PAYMENT_PROVIDER_LIVE_REPORT_AP2_CHECKOUT_RECEIPT_NOT_VALIDATED", "Live payment-provider proof report does not prove AP2 checkout receipt validation.", "configured-report-ap2-checkout-receipt-not-validated", "Record status-only AP2 checkout receipt validation evidence after an approved proof run.");
+  }
+  if (value.paymentReceipt !== "validated") {
+    return invalidReport("PAYMENT_PROVIDER_LIVE_REPORT_AP2_PAYMENT_RECEIPT_NOT_VALIDATED", "Live payment-provider proof report does not prove AP2 payment receipt validation.", "configured-report-ap2-payment-receipt-not-validated", "Record status-only AP2 payment receipt validation evidence after an approved proof run.");
+  }
+  if (value.accountabilityReview !== "passed") {
+    return invalidReport("PAYMENT_PROVIDER_LIVE_REPORT_AP2_ACCOUNTABILITY_REVIEW_MISSING", "Live payment-provider proof report does not prove AP2 accountability review passed.", "configured-report-ap2-accountability-review-missing", "Record status-only AP2 accountability review evidence after an approved proof run.");
+  }
+  return undefined;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function staleReport(): PaymentProviderReadinessCheck {

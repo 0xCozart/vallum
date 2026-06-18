@@ -33,6 +33,12 @@ export interface PaymentProviderProofBundleCheck {
   readonly next: string;
 }
 
+export interface PaymentProviderProofBundleConditionalOperatorInput {
+  readonly input: string;
+  readonly requiredWhen: string;
+  readonly secret: boolean;
+}
+
 export interface PaymentProviderProofBundle {
   readonly schemaVersion: 1;
   readonly kind: "vallum.payment-provider-proof-bundle";
@@ -47,6 +53,7 @@ export interface PaymentProviderProofBundle {
   readonly readyApprovalCodes: readonly string[];
   readonly checks: readonly PaymentProviderProofBundleCheck[];
   readonly requiredOperatorInputs: readonly string[];
+  readonly conditionalOperatorInputs: readonly PaymentProviderProofBundleConditionalOperatorInput[];
   readonly requiredStructuredReportFields: readonly string[];
   readonly requiredStructuredReportCheckIds: readonly string[];
   readonly requiredEvidenceArtifacts: readonly string[];
@@ -81,6 +88,18 @@ const DEFAULT_TEMPLATE_OUT_FILE = "tmp/vallum/payment-provider-live-report-templ
 
 const REQUIRED_OPERATOR_INPUTS = [
   "PAYMENT_PROVIDER_LIVE_REPORT",
+  "PAYMENT_PROVIDER_X402_VERIFY_URL",
+  "PAYMENT_PROVIDER_X402_SETTLE_URL",
+  "PAYMENT_PROVIDER_X402_REQUEST",
+  "PAYMENT_PROVIDER_AP2_PROOF",
+] as const;
+
+const CONDITIONAL_OPERATOR_INPUTS: readonly PaymentProviderProofBundleConditionalOperatorInput[] = [
+  {
+    input: "PAYMENT_PROVIDER_AUTH_BEARER_TOKEN",
+    requiredWhen: "selected x402 facilitator requires Authorization",
+    secret: true,
+  },
 ] as const;
 
 const REQUIRED_STRUCTURED_REPORT_FIELDS = [
@@ -88,15 +107,21 @@ const REQUIRED_STRUCTURED_REPORT_FIELDS = [
   "kind",
   "result",
   "observedAt",
+  "environment",
   "providerKinds",
   "checks",
+  "x402Proof",
+  "ap2Proof",
 ] as const;
 
 const REQUIRED_STRUCTURED_REPORT_CHECK_IDS = [
   "x402-verify",
   "x402-settle",
+  "x402-payment-response",
+  "ap2-mandate-chain",
   "ap2-checkout-receipt",
   "ap2-payment-receipt",
+  "ap2-accountability-review",
   "redaction-review",
 ] as const;
 
@@ -104,15 +129,19 @@ const REQUIRED_EVIDENCE_ARTIFACTS = [
   "sanitized payment-provider structured report",
   "x402 facilitator verify result",
   "x402 facilitator settle result",
-  "AP2 checkout receipt review",
-  "AP2 payment receipt review",
+  "x402 payment response confirmation",
+  "status-only AP2 mandate-chain validation",
+  "status-only AP2 checkout receipt review",
+  "status-only AP2 payment receipt review",
+  "status-only AP2 accountability review",
   "redaction review result",
 ] as const;
 
 const BOUNDARIES = [
   "This bundle writer is non-networked and only writes an ignored local report template, payment-provider proof plan, readiness artifact, and bundle summary.",
   "The generated template is a pending-operator-proof artifact; it does not clear payment-provider readiness by itself.",
-  "Only dedicated operator-approved proof steps may contact payment providers, facilitators, processors, AP2 participants, settlement systems, or dispute systems.",
+  "Only smoke:payment-provider-live may contact configured x402 payment-provider endpoints, and it requires explicit operator approval.",
+  "PAYMENT_PROVIDER_AP2_PROOF is a status-only local review artifact; this repo does not automate provider-specific AP2 credentials or payment instruments.",
   "Do not commit generated bundle artifacts, payment credentials, authorization headers, signatures, payment instruments, raw payloads, response bodies, provider account details, settlement ids, report paths, or local secret paths.",
 ] as const;
 
@@ -179,6 +208,7 @@ export async function writePaymentProviderProofBundle(
     readyApprovalCodes: readyApproval.map((check) => check.code),
     checks,
     requiredOperatorInputs: REQUIRED_OPERATOR_INPUTS,
+    conditionalOperatorInputs: CONDITIONAL_OPERATOR_INPUTS,
     requiredStructuredReportFields: REQUIRED_STRUCTURED_REPORT_FIELDS,
     requiredStructuredReportCheckIds: REQUIRED_STRUCTURED_REPORT_CHECK_IDS,
     requiredEvidenceArtifacts: REQUIRED_EVIDENCE_ARTIFACTS,
@@ -238,14 +268,14 @@ function buildSteps(input: {
     },
     {
       id: "run-approved-x402-provider-proof",
-      command: "operator-approved x402 facilitator verify and settle proof",
+      command: "npm run smoke:payment-provider-live -- --report tmp/vallum/payment-provider-live-report.json",
       contactsPaymentProvider: true,
       requiresOperatorApproval: true,
       dependsOn: ["run-local-standards-proof", "write-payment-provider-template"],
     },
     {
       id: "run-approved-ap2-provider-proof",
-      command: "operator-approved AP2 checkout and payment receipt proof",
+      command: "prepare PAYMENT_PROVIDER_AP2_PROOF status-only JSON from operator-approved AP2 mandate-chain, checkout receipt, payment receipt, and accountability proof",
       contactsPaymentProvider: true,
       requiresOperatorApproval: true,
       dependsOn: ["run-local-standards-proof", "write-payment-provider-template"],
