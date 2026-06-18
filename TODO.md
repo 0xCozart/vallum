@@ -29,22 +29,56 @@ identity service.
 Public A2A discovery and push delivery have current sanitized structured
 reports from an operator-approved temporary public HTTPS Agent Card/JWKS plus
 callback probe, and the non-networked public-readiness gate now accepts both
-reports under ignored local state. This is not external interoperability
-evidence: public A2A is still blocked until an external conformance report
-exists and is reviewed.
+reports under ignored local state. Public external conformance is also
+reconciled under ignored local state with a current sanitized
+`smoke:a2a-external-conformance` report. This is ready-for-approval evidence,
+not official A2A TCK certification or durable production hosting proof.
+
+The official A2A TCK HTTP+JSON diagnostic has been advanced locally against
+Vallum's loopback server. It fixed Agent Card security requirement scope
+shape, AIP-193 HTTP+JSON error formatting, opt-in unmanifested official A2A
+task creation, official `SendMessageResponse` task wrapping, raw GetTask and
+ListTasks response shape, SubscribeToTask routing, stream-response status
+updates, request `Content-Type` rejection, and the push-not-supported HTTP
+status in A2A compatibility mode.
+The latest auth-injecting loopback proxy run reports 98.4% overall
+compatibility and HTTP+JSON 73/88, with only one MUST failure left:
+the upstream TCK requirement metadata for `CORE-SEND-003` omits the expected
+`ContentTypeNotSupportedError` binding even though Vallum returns the
+standards-shaped 415 response. A temporary local TCK metadata patch that adds
+that expected error binding passes the full HTTP+JSON diagnostic at 100.0%
+overall and HTTP+JSON 74/88.
+This remains diagnostic only, not a passing external conformance report,
+because it uses a local loopback server plus auth-injecting proxy rather than
+an operator-owned public endpoint/report.
+The repo now has an opt-in public external conformance smoke:
+`npm run smoke:a2a-external-conformance -- --report <ignored-json-path>`.
+It requires `A2A_PUBLIC_TASK_AUTH_DECISION=bearer` plus a local
+`A2A_PUBLIC_TASK_BEARER_TOKEN`, fetches the configured public Agent Card, sends
+one bearer-authenticated public `message:send`, and writes the accepted
+redacted report shape only after both probes pass. OAuth2 and mTLS task routes
+still require an operator-owned conformance report.
 
 The active next move is to work through the remaining open gates without
 treating templates or local mocks as production proof:
 
-- Public A2A: produce an external conformance report before accepting public
-  hosting or interoperability.
 - Live payment provider, production marketplace, and production custody:
   dedicated proof bundles/templates now exist under ignored local state, but
   each gate still requires an operator-approved provider/review run and a
   redacted structured report before setting the corresponding report env vars.
-- Physical-device access remains deferred safety work until there is a separate
-  safety design for provider accountability, revocation, emergency stop,
-  privacy, and incident response.
+  The direct readiness checks now hydrate those report env vars from local
+  `.env` when present, matching the live smoke and aggregate status flows.
+- Physical-device access now has an ignored owner-supplied status-only safety
+  report at `tmp/vallum/device-access-safety-report.json`, with
+  `DEVICE_ACCESS_SAFETY_REPORT` configured locally. That clears the
+  non-networked readiness gate for manual owner review only; it does not prove
+  any live device operation, provider system access, actuator control, or
+  safety-critical integration.
+
+With the A2A and device-access reports configured, the current remaining
+product blockers are live payment-provider proof, production marketplace
+review, and production custody review. Keep generated templates, bundles, and
+local mocks separate from production proof.
 
 ## Roadmap Gates After MCP Adoption
 
