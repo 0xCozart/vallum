@@ -31,6 +31,9 @@ import {
   type LocalA2ATaskStore,
 } from "./a2aTask.js";
 
+export type A2AHttpStandardsBodyMode = "vallum" | "a2a";
+export type A2AHttpA2ATaskBody = Omit<A2ATask, "agenticVallum">;
+
 export interface A2AHttpRequest {
   readonly method?: string;
   readonly path?: string;
@@ -39,6 +42,19 @@ export interface A2AHttpRequest {
 }
 
 export type A2AHttpResponseBody =
+  | A2AHttpA2ATaskBody
+  | {
+      readonly message: A2AMessage;
+    }
+  | {
+      readonly task: A2AHttpA2ATaskBody;
+    }
+  | {
+      readonly tasks: readonly A2AHttpA2ATaskBody[];
+      readonly nextPageToken?: string;
+      readonly pageSize?: number;
+      readonly totalSize?: number;
+    }
   | {
       readonly kind: "agent-card";
       readonly [key: string]: unknown;
@@ -69,8 +85,16 @@ export type A2AHttpResponseBody =
     }
   | {
       readonly error: {
-        readonly code: A2AHttpErrorCode | string;
+        readonly code: number;
+        readonly status: string;
         readonly message: string;
+        readonly details: readonly {
+          readonly "@type": "type.googleapis.com/google.rpc.ErrorInfo";
+          readonly reason: string;
+          readonly domain: "a2a-protocol.org";
+          readonly metadata?: Record<string, string>;
+        }[];
+        readonly reason: A2AHttpErrorCode | string;
       };
     };
 
@@ -104,9 +128,17 @@ export interface LocalA2AHttpHandlerOptions {
   readonly pushNotificationStore?: LocalA2APushNotificationStore;
   readonly pushNotificationTransport?: A2APushNotificationTransport;
   readonly now?: () => Date;
+  readonly standardsBodyMode?: A2AHttpStandardsBodyMode;
+  readonly allowUnmanifestedTasks?: boolean;
   readonly processMessage?: (
     context: A2AProcessMessageContext,
   ) => Promise<A2AProcessMessageResult> | A2AProcessMessageResult;
+}
+
+interface SendMessageConfiguration {
+  readonly returnImmediately?: boolean;
+  readonly historyLength?: number;
+  readonly taskPushNotificationConfig?: unknown;
 }
 
 interface SendMessageBody {
@@ -114,12 +146,14 @@ interface SendMessageBody {
   readonly manifest?: unknown;
   readonly protocolVersion?: string;
   readonly contextId?: string;
+  readonly configuration?: SendMessageConfiguration;
 }
 
 export const A2A_HTTP_SEND_MESSAGE_PATH = "/message:send" as const;
 export const A2A_HTTP_STREAM_MESSAGE_PATH = "/message:stream" as const;
 export const A2A_HTTP_EXTENDED_AGENT_CARD_PATH = "/extendedAgentCard" as const;
 export const A2A_HTTP_TASKS_PATH = "/tasks" as const;
+export const A2A_HTTP_SUBSCRIBE_TASK_SUFFIX = ":subscribe" as const;
 
 export async function handleLocalA2AHttpRequest(
   request: A2AHttpRequest,
@@ -164,32 +198,47 @@ export async function handleLocalA2AHttpRequest(
 
     if (url.pathname === A2A_HTTP_TASKS_PATH) {
       if (method !== "GET") return methodNotAllowed(["GET"]);
-      return ok({
-        kind: "task-list",
-        ...listA2ATasks({
+      const pageSize = numberQuery(url, "pageSize");
+      return taskListResponse(
+        listA2ATasks({
           store: options.store,
           contextId: optionalQuery(url, "contextId"),
           state: optionalQuery(url, "state") as never,
           includeArtifacts: booleanQuery(url, "includeArtifacts"),
           historyLength: numberQuery(url, "historyLength"),
-          pageSize: numberQuery(url, "pageSize"),
+          pageSize,
         }),
-      });
+        options,
+        pageSize,
+      );
     }
 
     const taskRoute = matchTaskRoute(url.pathname);
     if (taskRoute) {
       if (taskRoute.action === "get") {
         if (method !== "GET") return methodNotAllowed(["GET"]);
-        return ok({
-          kind: "task",
-          ...getA2ATask({
+        return taskResponse(
+          getA2ATask({
             store: options.store,
             id: taskRoute.taskId,
             includeArtifacts: booleanQuery(url, "includeArtifacts"),
             historyLength: numberQuery(url, "historyLength"),
           }),
+          options,
+        );
+      }
+      if (taskRoute.action === "subscribe") {
+        if (method !== "GET" && method !== "POST") return methodNotAllowed(["GET", "POST"]);
+        const result = getA2ATask({
+          store: options.store,
+          id: taskRoute.taskId,
+          includeArtifacts: booleanQuery(url, "includeArtifacts"),
+          historyLength: numberQuery(url, "historyLength"),
         });
+        if (options.standardsBodyMode === "a2a" && isTerminalTaskState(result.task.status.state)) {
+          throw new A2ATaskError("A2A_TASK_TERMINAL", "Terminal A2A tasks cannot be subscribed.", 409);
+        }
+        return taskResponse(result, options);
       }
       if (method !== "POST") return methodNotAllowed(["POST"]);
       const result = cancelA2ATask({
@@ -199,10 +248,7 @@ export async function handleLocalA2AHttpRequest(
         includeArtifacts: booleanQuery(url, "includeArtifacts"),
       });
       await maybeDeliverPushNotifications(result.task, options);
-      return ok({
-        kind: "task",
-        ...result,
-      });
+      return taskResponse(result, options);
     }
 
     return errorResponse(404, "A2A_ROUTE_NOT_FOUND", "A2A route was not found.");
@@ -282,12 +328,22 @@ async function handleSendMessage(
   request: A2AHttpRequest,
   options: LocalA2AHttpHandlerOptions,
 ): Promise<A2AHttpResponse> {
-  if (!options.taskPolicy) {
-    return errorResponse(503, "A2A_POLICY_NOT_CONFIGURED", "A2A task endpoint policy is not configured.");
+  const contentType = header(request.headers, "content-type");
+  if (contentType !== undefined && !isSupportedRequestContentType(contentType)) {
+    return errorResponse(
+      415,
+      "A2A_CONTENT_TYPE_NOT_SUPPORTED",
+      "A2A request content type is not supported.",
+    );
   }
   const body = parseBody(request.body);
   if (!isSendMessageBody(body)) {
     return errorResponse(400, "A2A_BODY_INVALID", "A2A request body is invalid.");
+  }
+  const isNewTask = body.message.taskId === undefined;
+  const canCreateUnmanifestedTask = options.allowUnmanifestedTasks && body.manifest === undefined;
+  if (isNewTask && !options.taskPolicy && !canCreateUnmanifestedTask) {
+    return errorResponse(503, "A2A_POLICY_NOT_CONFIGURED", "A2A task endpoint policy is not configured.");
   }
   const result = await sendA2AMessage({
     store: options.store,
@@ -297,13 +353,12 @@ async function handleSendMessage(
     policy: body.message.taskId ? undefined : options.taskPolicy,
     now: options.now?.(),
     contextId: body.contextId,
+    allowUnmanifestedTasks: options.allowUnmanifestedTasks,
+    returnImmediately: body.configuration?.returnImmediately,
     processMessage: options.processMessage,
   });
   await maybeDeliverPushNotifications(result.task, options);
-  return ok({
-    kind: "task",
-    ...result,
-  });
+  return sendMessageResponse(result, options);
 }
 
 function handlePushNotificationRoute(
@@ -315,8 +370,8 @@ function handlePushNotificationRoute(
 ): A2AHttpResponse {
   if (!options.pushNotificationStore) {
     return errorResponse(
-      501,
-      "A2A_OPERATION_UNSUPPORTED",
+      options.standardsBodyMode === "a2a" ? 400 : 501,
+      options.standardsBodyMode === "a2a" ? "A2A_PUSH_NOTIFICATION_NOT_SUPPORTED" : "A2A_OPERATION_UNSUPPORTED",
       "A2A push notification configuration is not enabled for this local Vallum server.",
     );
   }
@@ -370,6 +425,15 @@ function handlePushNotificationRoute(
   return methodNotAllowed(["DELETE", "GET"]);
 }
 
+function isTerminalTaskState(state: A2ATask["status"]["state"]): boolean {
+  return [
+    "TASK_STATE_COMPLETED",
+    "TASK_STATE_CANCELED",
+    "TASK_STATE_FAILED",
+    "TASK_STATE_REJECTED",
+  ].includes(state);
+}
+
 async function maybeDeliverPushNotifications(
   task: A2ATask,
   options: LocalA2AHttpHandlerOptions,
@@ -404,16 +468,72 @@ function validateProtocolVersion(request: A2AHttpRequest): A2AHttpResponse | und
   return undefined;
 }
 
-function ok(body: Exclude<A2AHttpResponseBody, { error: unknown }>): A2AHttpResponse {
+function ok(
+  body: Exclude<A2AHttpResponseBody, { error: unknown }>,
+  contentType: string = A2A_TASK_MEDIA_TYPE,
+): A2AHttpResponse {
   return {
     status: 200,
     headers: {
-      "content-type": `${A2A_TASK_MEDIA_TYPE}; charset=utf-8`,
+      "content-type": `${contentType}; charset=utf-8`,
       "cache-control": "no-store",
     },
     body,
     json: `${JSON.stringify(body)}\n`,
   };
+}
+
+function sendMessageResponse(
+  result: { readonly task: A2ATask; readonly message?: A2AMessage; readonly policyDecision?: unknown },
+  options: LocalA2AHttpHandlerOptions,
+): A2AHttpResponse {
+  if (options.standardsBodyMode === "a2a") {
+    if (result.message) {
+      return ok({ message: result.message }, "application/json");
+    }
+    return ok({ task: a2aTaskBody(result.task) }, "application/json");
+  }
+  return ok({
+    kind: "task",
+    ...result,
+  });
+}
+
+function taskResponse(
+  result: { readonly task: A2ATask; readonly policyDecision?: unknown },
+  options: LocalA2AHttpHandlerOptions,
+): A2AHttpResponse {
+  if (options.standardsBodyMode === "a2a") {
+    return ok(a2aTaskBody(result.task), "application/json");
+  }
+  return ok({
+    kind: "task",
+    ...result,
+  });
+}
+
+function taskListResponse(
+  result: { readonly tasks: readonly A2ATask[] },
+  options: LocalA2AHttpHandlerOptions,
+  pageSize?: number,
+): A2AHttpResponse {
+  if (options.standardsBodyMode === "a2a") {
+    return ok({
+      tasks: result.tasks.map(a2aTaskBody),
+      nextPageToken: "",
+      pageSize: pageSize ?? result.tasks.length,
+      totalSize: result.tasks.length,
+    }, "application/json");
+  }
+  return ok({
+    kind: "task-list",
+    ...result,
+  });
+}
+
+function a2aTaskBody(task: A2ATask): A2AHttpA2ATaskBody {
+  const { agenticVallum: _agenticVallum, ...rest } = task;
+  return rest;
 }
 
 function errorResponse(
@@ -422,7 +542,22 @@ function errorResponse(
   message: string,
   headers: Record<string, string> = {},
 ): A2AHttpResponse {
-  const body = { error: { code, message } };
+  const body = {
+    error: {
+      code: status,
+      status: httpStatusName(status),
+      message,
+      details: [{
+        "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+        reason: a2aErrorInfoReason(code),
+        domain: "a2a-protocol.org",
+        metadata: {
+          vallumCode: code,
+        },
+      }],
+      reason: code,
+    },
+  } satisfies A2AHttpResponseBody;
   return {
     status,
     headers: {
@@ -444,6 +579,53 @@ function methodNotAllowed(allowed: readonly string[]): A2AHttpResponse {
   );
 }
 
+function httpStatusName(status: A2AHttpResponse["status"]): string {
+  switch (status) {
+    case 400:
+      return "INVALID_ARGUMENT";
+    case 401:
+      return "UNAUTHENTICATED";
+    case 404:
+      return "NOT_FOUND";
+    case 405:
+      return "METHOD_NOT_ALLOWED";
+    case 409:
+      return "FAILED_PRECONDITION";
+    case 410:
+      return "ABORTED";
+    case 415:
+      return "INVALID_ARGUMENT";
+    case 501:
+      return "UNIMPLEMENTED";
+    case 503:
+      return "UNAVAILABLE";
+    case 200:
+      return "OK";
+  }
+}
+
+function a2aErrorInfoReason(code: A2AHttpErrorCode | string): string {
+  switch (code) {
+    case "A2A_TASK_NOT_FOUND":
+      return "TASK_NOT_FOUND";
+    case "A2A_TASK_NOT_CANCELABLE":
+      return "TASK_NOT_CANCELABLE";
+    case "A2A_PUSH_NOT_ENABLED":
+    case "A2A_OPERATION_UNSUPPORTED":
+      return "UNSUPPORTED_OPERATION";
+    case "A2A_PUSH_NOTIFICATION_NOT_SUPPORTED":
+      return "PUSH_NOTIFICATION_NOT_SUPPORTED";
+    case "A2A_EXTENDED_AGENT_CARD_NOT_CONFIGURED":
+      return "EXTENDED_AGENT_CARD_NOT_CONFIGURED";
+    case "A2A_VERSION_NOT_SUPPORTED":
+      return "VERSION_NOT_SUPPORTED";
+    case "A2A_CONTENT_TYPE_NOT_SUPPORTED":
+      return "CONTENT_TYPE_NOT_SUPPORTED";
+    default:
+      return "INVALID_REQUEST";
+  }
+}
+
 function parseBody(body: unknown): unknown {
   if (typeof body !== "string") return body;
   try {
@@ -458,12 +640,25 @@ function isSendMessageBody(value: unknown): value is SendMessageBody {
   return isRecord(value.message);
 }
 
-function matchTaskRoute(pathname: string): { readonly taskId: string; readonly action: "get" | "cancel" } | undefined {
+function isSupportedRequestContentType(contentType: string): boolean {
+  const mediaType = contentType.split(";")[0]?.trim().toLowerCase();
+  return mediaType === "application/json" || mediaType === A2A_TASK_MEDIA_TYPE;
+}
+
+function matchTaskRoute(
+  pathname: string,
+): { readonly taskId: string; readonly action: "get" | "cancel" | "subscribe" } | undefined {
   const parts = pathname.split("/").filter(Boolean);
   if (parts.length !== 2 || parts[0] !== "tasks") return undefined;
   const taskPart = parts[1] ?? "";
   if (taskPart.endsWith(":cancel")) {
     return { taskId: decodeURIComponent(taskPart.slice(0, -":cancel".length)), action: "cancel" };
+  }
+  if (taskPart.endsWith(A2A_HTTP_SUBSCRIBE_TASK_SUFFIX)) {
+    return {
+      taskId: decodeURIComponent(taskPart.slice(0, -A2A_HTTP_SUBSCRIBE_TASK_SUFFIX.length)),
+      action: "subscribe",
+    };
   }
   return { taskId: decodeURIComponent(taskPart), action: "get" };
 }

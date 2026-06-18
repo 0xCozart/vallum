@@ -58,7 +58,7 @@ test("A2A Agent Card generation maps an active Agent Profile to current discover
       },
     },
   });
-  assert.deepEqual(card.securityRequirements, [{ schemes: { vallumBearer: [] } }]);
+  assert.deepEqual(card.securityRequirements, [{ schemes: { vallumBearer: { list: [] } } }]);
   assert.deepEqual(card.capabilities, {
     streaming: false,
     pushNotifications: false,
@@ -83,7 +83,7 @@ test("A2A Agent Card generation maps an active Agent Profile to current discover
     tags: ["vallum", "contract:escrow", "action:open_escrow", "escrow:v1"],
     inputModes: ["text/plain", "application/json"],
     outputModes: ["text/plain", "application/json"],
-    securityRequirements: [{ schemes: { vallumBearer: [] } }],
+    securityRequirements: [{ schemes: { vallumBearer: { list: [] } } }],
   }]);
 });
 
@@ -143,7 +143,22 @@ test("A2A Agent Card generation fails closed for malformed auth and private exte
   assert.throws(
     () => createA2AAgentCardFromProfile(profile, {
       now: new Date("2026-06-10T12:00:00.000Z"),
-      securityRequirements: [{ schemes: { missingScheme: [] } }],
+      securityRequirements: [{ schemes: { missingScheme: { list: [] } } }],
+    }),
+    (error) => error instanceof A2AAgentCardError && error.code === "A2A_SECURITY_SCHEME_INVALID",
+  );
+
+  assert.throws(
+    () => createA2AAgentCardFromProfile(profile, {
+      now: new Date("2026-06-10T12:00:00.000Z"),
+      securityRequirements: [{
+        schemes: {
+          vallumBearer: {
+            list: [],
+            extra: "schema-invalid",
+          } as never,
+        },
+      }],
     }),
     (error) => error instanceof A2AAgentCardError && error.code === "A2A_SECURITY_SCHEME_INVALID",
   );

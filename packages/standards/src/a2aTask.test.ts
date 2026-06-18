@@ -99,6 +99,85 @@ test("local A2A send message fails closed for unsupported protocol versions and 
   );
 });
 
+test("new A2A tasks require Vallum manifests unless unmanifested compatibility is explicit", async () => {
+  const store = new LocalA2ATaskStore();
+
+  await assert.rejects(
+    () => sendA2AMessage({
+      store,
+      protocolVersion: A2A_TASK_PROTOCOL_VERSION,
+      message: userMessage("msg-no-manifest", "Run official A2A work."),
+      now,
+    }),
+    { name: "A2ATaskError", code: "A2A_MANIFEST_REQUIRED" },
+  );
+
+  const accepted = await sendA2AMessage({
+    store,
+    protocolVersion: A2A_TASK_PROTOCOL_VERSION,
+    message: userMessage("msg-unmanifested", "Run official A2A work."),
+    allowUnmanifestedTasks: true,
+    returnImmediately: true,
+    now,
+    processMessage: () => {
+      throw new Error("processor must not run when returnImmediately is requested");
+    },
+  });
+
+  assert.equal(accepted.task.status.state, "TASK_STATE_SUBMITTED");
+  assert.equal(accepted.task.agenticVallum, undefined);
+  assert.equal(accepted.task.history[0]?.messageId, "msg-unmanifested");
+});
+
+test("A2A flat file parts reject unsupported media types with content-type errors", async () => {
+  const store = new LocalA2ATaskStore();
+
+  await assert.rejects(
+    () => sendA2AMessage({
+      store,
+      protocolVersion: A2A_TASK_PROTOCOL_VERSION,
+      message: {
+        messageId: "msg-unsupported-media",
+        role: "ROLE_USER",
+        parts: [{
+          raw: "dGNr",
+          mediaType: "application/x-unsupported-tck-type",
+        }],
+      },
+      allowUnmanifestedTasks: true,
+      now,
+    }),
+    { name: "A2ATaskError", code: "A2A_CONTENT_TYPE_NOT_SUPPORTED", status: 415 },
+  );
+});
+
+test("A2A processors can request a direct message response while still storing task state", async () => {
+  const store = new LocalA2ATaskStore();
+  const result = await sendA2AMessage({
+    store,
+    protocolVersion: A2A_TASK_PROTOCOL_VERSION,
+    message: userMessage("msg-direct-response", "Reply directly."),
+    allowUnmanifestedTasks: true,
+    now,
+    processMessage: ({ task }) => ({
+      state: "TASK_STATE_COMPLETED",
+      responseKind: "message",
+      message: {
+        messageId: "agent-direct-response",
+        role: "ROLE_AGENT",
+        taskId: task.id,
+        contextId: task.contextId,
+        parts: [{ text: "Direct message response" }],
+      },
+    }),
+  });
+
+  assert.equal(result.task.status.state, "TASK_STATE_COMPLETED");
+  assert.equal(result.message?.messageId, "agent-direct-response");
+  assert.equal(result.message?.parts[0]?.text, "Direct message response");
+  assert.equal(getA2ATask({ store, id: result.task.id }).task.status.message?.messageId, "agent-direct-response");
+});
+
 test("policy-denied A2A tasks are rejected without artifacts or sponsored results", async () => {
   const store = new LocalA2ATaskStore();
   const result = await sendA2AMessage({

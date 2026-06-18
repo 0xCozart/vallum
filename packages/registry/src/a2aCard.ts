@@ -47,7 +47,7 @@ export interface A2AAgentCapabilities {
 }
 
 export interface A2ASecurityRequirement {
-  readonly schemes: Record<string, readonly string[]>;
+  readonly schemes: Record<string, { readonly list?: readonly string[] }>;
 }
 
 export type A2ASecurityScheme =
@@ -238,7 +238,7 @@ export function createA2AAgentCardFromProfile(
   const securitySchemeName = nonEmptyString(options.securitySchemeName ?? "vallumBearer", "$.securitySchemeName");
   const securitySchemes = options.securitySchemes ?? defaultSecuritySchemes(securitySchemeName);
   assertValidSecuritySchemes(securitySchemes);
-  const securityRequirements = options.securityRequirements ?? [{ schemes: { [securitySchemeName]: [] } }];
+  const securityRequirements = options.securityRequirements ?? [{ schemes: { [securitySchemeName]: { list: [] } } }];
   assertValidSecurityRequirements(securityRequirements, securitySchemes);
   const profile = validation.profile;
 
@@ -499,7 +499,7 @@ function assertValidSecurityRequirements(
       );
     }
     for (const [schemeName, scopes] of Object.entries(requirement.schemes)) {
-      if (!knownSchemes.has(schemeName) || !Array.isArray(scopes)) {
+      if (!knownSchemes.has(schemeName) || !isStringListWrapper(scopes)) {
         throw new A2AAgentCardError(
           "A2A_SECURITY_SCHEME_INVALID",
           "A2A security requirements must reference declared security schemes.",
@@ -508,6 +508,16 @@ function assertValidSecurityRequirements(
       }
     }
   });
+}
+
+function isStringListWrapper(value: unknown): value is { readonly list?: readonly string[] } {
+  return isRecord(value)
+    && Object.keys(value).every((key) => key === "list")
+    && isOptionalStringList(value.list);
+}
+
+function isOptionalStringList(value: unknown): value is readonly string[] | undefined {
+  return value === undefined || (Array.isArray(value) && value.every((item) => typeof item === "string"));
 }
 
 function assertNoPrivateProfileFields(value: unknown, path = "$"): void {

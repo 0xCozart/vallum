@@ -141,6 +141,76 @@ test("local A2A Node server serves public JWKS only when explicitly configured",
   }
 });
 
+test("local A2A Node server streams task subscribe events in official A2A compatibility mode", async () => {
+  const server = await startLocalA2ANodeServer({
+    ...serverOptions(),
+    standardsBodyMode: "a2a",
+    allowUnmanifestedTasks: true,
+    processMessage: ({ message }) => message.taskId
+      ? {
+          state: "TASK_STATE_COMPLETED" as const,
+          artifacts: [{
+            artifactId: "node-subscribe-terminal",
+            parts: [{ text: "done" }],
+          }],
+        }
+      : {
+          state: "TASK_STATE_INPUT_REQUIRED" as const,
+        },
+  });
+  const auth = { authorization: `Bearer ${taskAuthToken}` };
+
+  try {
+    const sent = await requestJson(server.baseUrl, A2A_HTTP_SEND_MESSAGE_PATH, {
+      method: "POST",
+      headers: auth,
+      body: {
+        message: {
+          messageId: "msg-subscribe-a2a",
+          role: "ROLE_USER",
+          parts: [{ text: "Run official A2A server work." }],
+        },
+      },
+    });
+    const task = sendTaskFrom(sent.body);
+    const subscribedPromise = requestText(server.baseUrl, `/tasks/${encodeURIComponent(task.id)}:subscribe`, {
+      method: "POST",
+      headers: auth,
+    });
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    const completed = await requestJson(server.baseUrl, A2A_HTTP_SEND_MESSAGE_PATH, {
+      method: "POST",
+      headers: auth,
+      body: {
+        message: {
+          messageId: "msg-subscribe-a2a-complete",
+          role: "ROLE_USER",
+          taskId: task.id,
+          parts: [{ text: "Complete." }],
+        },
+      },
+    });
+    const subscribed = await subscribedPromise;
+    const events = parseSseEvents(subscribed.text);
+    const firstUpdate = streamStatusUpdateFrom(events[0]?.data);
+    const lastUpdate = streamStatusUpdateFrom(events.at(-1)?.data);
+
+    assert.equal(sent.status, 200);
+    assert.equal(completed.status, 200);
+    assert.equal(subscribed.status, 200);
+    assert.match(subscribed.headers.get("content-type") ?? "", /text\/event-stream/);
+    assert.equal(events[0]?.event, "task");
+    assert.equal(firstUpdate.taskId, task.id);
+    assert.equal(firstUpdate.status?.state, "TASK_STATE_INPUT_REQUIRED");
+    assert.equal(lastUpdate.taskId, task.id);
+    assert.equal(lastUpdate.status?.state, "TASK_STATE_COMPLETED");
+    assert.doesNotMatch(`${sent.text}\n${completed.text}\n${subscribed.text}`, /agenticVallum|policyDecision|\"kind\"/);
+    assertSafeResponse(`${sent.text}\n${completed.text}\n${subscribed.text}`);
+  } finally {
+    await server.close();
+  }
+});
+
 test("local A2A Node server refuses non-loopback hosts unless explicitly opted in", async () => {
   await assert.rejects(
     () => startLocalA2ANodeServer({
@@ -320,6 +390,36 @@ function taskFrom(value: unknown): {
     throw new Error("A2A local Node server did not return a task response.");
   }
   return value.task as { readonly id: string; readonly status?: { readonly state?: string } };
+}
+
+function rawTaskFrom(value: unknown): {
+  readonly id: string;
+  readonly status?: { readonly state?: string };
+} {
+  if (!isRecord(value) || typeof value.id !== "string") {
+    throw new Error("A2A local Node server did not return a raw task response.");
+  }
+  return value as { readonly id: string; readonly status?: { readonly state?: string } };
+}
+
+function sendTaskFrom(value: unknown): {
+  readonly id: string;
+  readonly status?: { readonly state?: string };
+} {
+  if (!isRecord(value) || !isRecord(value.task)) {
+    throw new Error("A2A local Node server did not return a send task response.");
+  }
+  return rawTaskFrom(value.task);
+}
+
+function streamStatusUpdateFrom(value: unknown): {
+  readonly taskId: string;
+  readonly status?: { readonly state?: string };
+} {
+  if (!isRecord(value) || !isRecord(value.status_update) || typeof value.status_update.taskId !== "string") {
+    throw new Error("A2A local Node server did not return a stream status update.");
+  }
+  return value.status_update as { readonly taskId: string; readonly status?: { readonly state?: string } };
 }
 
 function taskListFrom(value: unknown): readonly unknown[] {

@@ -24,6 +24,10 @@ export type A2ATaskState =
 export interface A2APart {
   readonly text?: string;
   readonly data?: Record<string, unknown>;
+  readonly raw?: string;
+  readonly url?: string;
+  readonly filename?: string;
+  readonly mediaType?: string;
   readonly file?: {
     readonly uri?: string;
     readonly bytes?: string;
@@ -79,6 +83,7 @@ export interface A2ATask {
 export type A2ATaskErrorCode =
   | "A2A_VERSION_NOT_SUPPORTED"
   | "A2A_MESSAGE_INVALID"
+  | "A2A_CONTENT_TYPE_NOT_SUPPORTED"
   | "A2A_MANIFEST_REQUIRED"
   | "A2A_POLICY_REQUIRED"
   | "A2A_MANIFEST_INVALID"
@@ -88,9 +93,9 @@ export type A2ATaskErrorCode =
 
 export class A2ATaskError extends Error {
   readonly code: A2ATaskErrorCode;
-  readonly status: 400 | 404 | 409;
+  readonly status: 400 | 404 | 409 | 415;
 
-  constructor(code: A2ATaskErrorCode, message: string, status: 400 | 404 | 409 = 400) {
+  constructor(code: A2ATaskErrorCode, message: string, status: 400 | 404 | 409 | 415 = 400) {
     super(message);
     this.name = "A2ATaskError";
     this.code = code;
@@ -110,6 +115,7 @@ export interface A2AProcessMessageResult {
   readonly message?: A2AMessage;
   readonly artifacts?: readonly A2AArtifact[];
   readonly metadata?: Record<string, unknown>;
+  readonly responseKind?: "task" | "message";
 }
 
 export interface SendA2AMessageOptions {
@@ -120,6 +126,8 @@ export interface SendA2AMessageOptions {
   readonly policy?: AgentActionPolicy;
   readonly now?: Date;
   readonly contextId?: string;
+  readonly allowUnmanifestedTasks?: boolean;
+  readonly returnImmediately?: boolean;
   readonly processMessage?: (
     context: A2AProcessMessageContext,
   ) => Promise<A2AProcessMessageResult> | A2AProcessMessageResult;
@@ -127,6 +135,7 @@ export interface SendA2AMessageOptions {
 
 export interface SendA2AMessageResult {
   readonly task: A2ATask;
+  readonly message?: A2AMessage;
   readonly policyDecision?: AgentPolicyDecision;
 }
 
@@ -239,6 +248,21 @@ function createTask(
   now: Date,
 ): Promise<SendA2AMessageResult> | SendA2AMessageResult {
   if (options.manifest === undefined) {
+    if (options.allowUnmanifestedTasks) {
+      const baseTask: A2ATask = {
+        id: randomId("task"),
+        contextId: message.contextId ?? options.contextId ?? randomId("ctx"),
+        status: {
+          state: "TASK_STATE_SUBMITTED",
+          timestamp: timestamp(now),
+        },
+        history: [message],
+      };
+      if (options.returnImmediately) {
+        return { task: options.store.put(baseTask) };
+      }
+      return processAndStoreTask(options, baseTask, message, now);
+    }
     throw new A2ATaskError("A2A_MANIFEST_REQUIRED", "New A2A tasks require an Vallum manifest.");
   }
   if (!options.policy) {
@@ -276,6 +300,9 @@ function createTask(
   };
 
   if (!policyDecision.allowed) {
+    return { task: options.store.put(baseTask), policyDecision };
+  }
+  if (options.returnImmediately) {
     return { task: options.store.put(baseTask), policyDecision };
   }
 
@@ -327,6 +354,9 @@ async function processAndStoreTask(
       };
   assertValidTaskState(outcome.state);
   if (outcome.message) assertValidMessage(outcome.message, "$.processMessage.message");
+  if (outcome.responseKind === "message" && !outcome.message) {
+    throw new A2ATaskError("A2A_MESSAGE_INVALID", "A2A message responses require an agent message.");
+  }
   for (const [index, artifact] of (outcome.artifacts ?? []).entries()) {
     assertValidArtifact(artifact, `$.processMessage.artifacts[${index}]`);
   }
@@ -349,7 +379,11 @@ async function processAndStoreTask(
     ...(outcome.artifacts ? { artifacts: outcome.artifacts.map(redactA2AArtifact) } : {}),
     ...(outcome.metadata ? { metadata: redactRecord(outcome.metadata) } : {}),
   };
-  return { task: options.store.put(nextTask), policyDecision };
+  return {
+    task: options.store.put(nextTask),
+    ...(outcome.responseKind === "message" && statusMessage ? { message: statusMessage } : {}),
+    policyDecision,
+  };
 }
 
 function rejectionMessage(policyDecision: Exclude<AgentPolicyDecision, { allowed: true }>, now: Date): A2AMessage {
@@ -419,10 +453,26 @@ function assertValidPart(part: A2APart, path: string): void {
     typeof part.text === "string" && part.text.trim() !== "",
     isRecord(part.data),
     isRecord(part.file),
+    typeof part.raw === "string" && part.raw.trim() !== "",
+    typeof part.url === "string" && part.url.trim() !== "",
   ].filter(Boolean);
   if (variants.length !== 1) {
     throw new A2ATaskError("A2A_MESSAGE_INVALID", `${path} must contain exactly one text, data, or file part.`);
   }
+  if ((typeof part.raw === "string" || typeof part.url === "string") && !isSupportedFileMediaType(part.mediaType)) {
+    throw new A2ATaskError(
+      "A2A_CONTENT_TYPE_NOT_SUPPORTED",
+      "A2A message part media type is not supported.",
+      415,
+    );
+  }
+}
+
+function isSupportedFileMediaType(mediaType: unknown): boolean {
+  return typeof mediaType === "string" && [
+    "text/plain",
+    "application/json",
+  ].includes(mediaType.trim().toLowerCase());
 }
 
 function taskView(

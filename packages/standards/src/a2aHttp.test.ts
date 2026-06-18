@@ -15,6 +15,7 @@ import {
   LocalA2APushNotificationStore,
   LocalA2ATaskStore,
   handleLocalA2AHttpRequest,
+  type A2AHttpA2ATaskBody,
   type A2AHttpResponse,
   type A2APushNotificationDeliveryRequest,
 } from "./index.js";
@@ -158,19 +159,9 @@ test("local A2A HTTP task endpoints fail closed when bearer auth is missing or u
   });
 
   assert.equal(missingAuth.status, 401);
-  assert.deepEqual(missingAuth.body, {
-    error: {
-      code: "A2A_AUTH_REQUIRED",
-      message: "A2A task endpoints require bearer authentication.",
-    },
-  });
+  assertA2AError(missingAuth.body, 401, "A2A_AUTH_REQUIRED", "INVALID_REQUEST");
   assert.equal(unconfiguredAuth.status, 503);
-  assert.deepEqual(unconfiguredAuth.body, {
-    error: {
-      code: "A2A_AUTH_NOT_CONFIGURED",
-      message: "A2A task endpoint authentication is not configured.",
-    },
-  });
+  assertA2AError(unconfiguredAuth.body, 503, "A2A_AUTH_NOT_CONFIGURED", "INVALID_REQUEST");
   assert.equal(streamingWithoutAuth.status, 401);
   assert.deepEqual(streamingWithoutAuth.body, missingAuth.body);
 });
@@ -235,6 +226,250 @@ test("local A2A HTTP handler sends gets lists and cancels authorized tasks", asy
   assert.equal(listed.body.tasks[0]?.artifacts, undefined);
   assert.equal(canceled.body.task.status.state, "TASK_STATE_CANCELED");
   assert.equal(canceled.body.task.artifacts, undefined);
+});
+
+test("local A2A HTTP handler can emit official A2A task and list bodies in compatibility mode", async () => {
+  const store = new LocalA2ATaskStore();
+  const options = {
+    store,
+    taskAuthToken: "local-a2a-token",
+    standardsBodyMode: "a2a" as const,
+    allowUnmanifestedTasks: true,
+    now: () => now,
+    processMessage: () => ({
+      state: "TASK_STATE_COMPLETED" as const,
+      artifacts: [{
+        artifactId: "a2a-output",
+        parts: [{ text: "official A2A output" }],
+      }],
+    }),
+  };
+  const auth = { authorization: "Bearer local-a2a-token" };
+
+  const sent = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: A2A_HTTP_SEND_MESSAGE_PATH,
+    headers: auth,
+    body: {
+      message: {
+        messageId: "msg-a2a-raw",
+        role: "ROLE_USER",
+        parts: [{ text: "Run official A2A work." }],
+      },
+    },
+  }, options);
+  assertA2ASendTaskResponse(sent);
+  assert.equal(sent.body.task.status.state, "TASK_STATE_COMPLETED");
+  assert.equal("kind" in sent.body, false);
+  assert.equal("agenticVallum" in sent.body.task, false);
+
+  const listed = await handleLocalA2AHttpRequest({
+    method: "GET",
+    path: A2A_HTTP_TASKS_PATH,
+    headers: auth,
+  }, options);
+  assertRawA2ATaskListResponse(listed);
+  assert.equal(listed.body.tasks.length, 1);
+  assert.equal(listed.body.nextPageToken, "");
+  assert.equal(listed.body.pageSize, 1);
+  assert.equal(listed.body.totalSize, 1);
+  assert.equal("kind" in listed.body, false);
+  assert.doesNotMatch(sent.json, /agenticVallum|policyDecision|\"kind\"/);
+  assert.doesNotMatch(listed.json, /agenticVallum|policyDecision|\"kind\"/);
+});
+
+test("local A2A HTTP handler supports return-immediately compatibility without running local processor", async () => {
+  const response = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: A2A_HTTP_SEND_MESSAGE_PATH,
+    headers: { authorization: "Bearer local-a2a-token" },
+    body: {
+      message: {
+        messageId: "msg-return-immediately",
+        role: "ROLE_USER",
+        parts: [{ text: "Start async work." }],
+      },
+      configuration: {
+        returnImmediately: true,
+      },
+    },
+  }, {
+    store: new LocalA2ATaskStore(),
+    taskAuthToken: "local-a2a-token",
+    standardsBodyMode: "a2a",
+    allowUnmanifestedTasks: true,
+    now: () => now,
+    processMessage: () => {
+      throw new Error("processor must not run for returnImmediately");
+    },
+  });
+
+  assertA2ASendTaskResponse(response);
+  assert.equal(response.body.task.status.state, "TASK_STATE_SUBMITTED");
+  assert.equal(response.body.task.artifacts, undefined);
+});
+
+test("local A2A HTTP compatibility mode can emit direct Message send responses", async () => {
+  const response = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: A2A_HTTP_SEND_MESSAGE_PATH,
+    headers: { authorization: "Bearer local-a2a-token" },
+    body: {
+      message: {
+        messageId: "msg-direct-message-response",
+        role: "ROLE_USER",
+        parts: [{ text: "Reply directly." }],
+      },
+    },
+  }, {
+    store: new LocalA2ATaskStore(),
+    taskAuthToken: "local-a2a-token",
+    standardsBodyMode: "a2a",
+    allowUnmanifestedTasks: true,
+    now: () => now,
+    processMessage: ({ task }) => ({
+      state: "TASK_STATE_COMPLETED" as const,
+      responseKind: "message" as const,
+      message: {
+        messageId: "agent-direct-message-response",
+        role: "ROLE_AGENT",
+        taskId: task.id,
+        contextId: task.contextId,
+        parts: [{ text: "Direct message response" }],
+      },
+    }),
+  });
+
+  assertA2ASendMessageResponse(response);
+  assert.equal(response.body.message.role, "ROLE_AGENT");
+  assert.equal(response.body.message.parts[0]?.text, "Direct message response");
+  assert.equal("task" in response.body, false);
+  assert.doesNotMatch(response.json, /agenticVallum|policyDecision|\"kind\"/);
+});
+
+test("local A2A HTTP compatibility mode maps unsupported flat file media to A2A content-type errors", async () => {
+  const response = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: A2A_HTTP_SEND_MESSAGE_PATH,
+    headers: { authorization: "Bearer local-a2a-token" },
+    body: {
+      message: {
+        messageId: "msg-unsupported-media",
+        role: "ROLE_USER",
+        parts: [{
+          raw: "dGNr",
+          mediaType: "application/x-unsupported-tck-type",
+        }],
+      },
+    },
+  }, {
+    store: new LocalA2ATaskStore(),
+    taskAuthToken: "local-a2a-token",
+    standardsBodyMode: "a2a",
+    allowUnmanifestedTasks: true,
+    now: () => now,
+  });
+
+  assert.equal(response.status, 415);
+  assertA2AError(response.body, 415, "A2A_CONTENT_TYPE_NOT_SUPPORTED", "CONTENT_TYPE_NOT_SUPPORTED");
+});
+
+test("local A2A HTTP compatibility mode rejects unsupported request content types", async () => {
+  const response = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: A2A_HTTP_SEND_MESSAGE_PATH,
+    headers: {
+      authorization: "Bearer local-a2a-token",
+      "content-type": "text/plain",
+    },
+    body: JSON.stringify({
+      message: {
+        messageId: "msg-unsupported-request-content-type",
+        role: "ROLE_USER",
+        parts: [{ text: "Wrong envelope media type." }],
+      },
+    }),
+  }, {
+    store: new LocalA2ATaskStore(),
+    taskAuthToken: "local-a2a-token",
+    standardsBodyMode: "a2a",
+    allowUnmanifestedTasks: true,
+    now: () => now,
+  });
+
+  assert.equal(response.status, 415);
+  assertA2AError(response.body, 415, "A2A_CONTENT_TYPE_NOT_SUPPORTED", "CONTENT_TYPE_NOT_SUPPORTED");
+});
+
+test("local A2A HTTP subscribe route reports missing tasks with AIP-193 not found errors", async () => {
+  const response = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: "/tasks/task_missing:subscribe",
+    headers: { authorization: "Bearer local-a2a-token" },
+  }, {
+    store: new LocalA2ATaskStore(),
+    taskAuthToken: "local-a2a-token",
+    standardsBodyMode: "a2a",
+    allowUnmanifestedTasks: true,
+    now: () => now,
+  });
+
+  assert.equal(response.status, 404);
+  assertA2AError(response.body, 404, "A2A_TASK_NOT_FOUND", "TASK_NOT_FOUND");
+});
+
+test("local A2A HTTP compatibility mode rejects terminal task subscribe attempts", async () => {
+  const store = new LocalA2ATaskStore();
+  const options = {
+    store,
+    taskAuthToken: "local-a2a-token",
+    standardsBodyMode: "a2a" as const,
+    allowUnmanifestedTasks: true,
+    now: () => now,
+  };
+  const auth = { authorization: "Bearer local-a2a-token" };
+  const sent = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: A2A_HTTP_SEND_MESSAGE_PATH,
+    headers: auth,
+    body: {
+      message: {
+        messageId: "msg-terminal-subscribe",
+        role: "ROLE_USER",
+        parts: [{ text: "Complete immediately." }],
+      },
+    },
+  }, options);
+  assertA2ASendTaskResponse(sent);
+
+  const subscribed = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: `/tasks/${encodeURIComponent(sent.body.task.id)}:subscribe`,
+    headers: auth,
+  }, options);
+
+  assert.equal(subscribed.status, 409);
+  assertA2AError(subscribed.body, 409, "A2A_TASK_TERMINAL", "INVALID_REQUEST");
+});
+
+test("local A2A HTTP compatibility mode maps unsupported push config to the official 400 status", async () => {
+  const response = await handleLocalA2AHttpRequest({
+    method: "POST",
+    path: "/tasks/task_without_push/pushNotificationConfigs",
+    headers: { authorization: "Bearer local-a2a-token" },
+    body: {
+      url: "https://client.example.test/a2a/push",
+    },
+  }, {
+    store: new LocalA2ATaskStore(),
+    taskAuthToken: "local-a2a-token",
+    standardsBodyMode: "a2a",
+    allowUnmanifestedTasks: true,
+    now: () => now,
+  });
+
+  assert.equal(response.status, 400);
+  assertA2AError(response.body, 400, "A2A_PUSH_NOTIFICATION_NOT_SUPPORTED", "PUSH_NOTIFICATION_NOT_SUPPORTED");
 });
 
 test("local A2A HTTP handler manages push notification configs without storing webhook credentials", async () => {
@@ -541,12 +776,7 @@ test("local A2A HTTP handler denies unsupported methods and malformed bodies saf
   assert.equal(badMethod.headers.allow, "GET");
   assert.equal(badBody.status, 400);
   assert.equal(badVersion.status, 400);
-  assert.deepEqual(badVersion.body, {
-    error: {
-      code: "A2A_VERSION_NOT_SUPPORTED",
-      message: "A2A protocol version is unsupported.",
-    },
-  });
+  assertA2AError(badVersion.body, 400, "A2A_VERSION_NOT_SUPPORTED", "VERSION_NOT_SUPPORTED");
   assert.equal(streaming.status, 501);
   assert.equal(push.status, 501);
   assertSafeJson(badBody);
@@ -562,6 +792,22 @@ function sendBody(messageId: string) {
     manifest: validManifestFixture(),
     protocolVersion: A2A_TASK_PROTOCOL_VERSION,
   };
+}
+
+function assertA2AError(body: unknown, status: number, reason: string, errorInfoReason: string) {
+  assert.ok(isRecord(body));
+  assert.ok(isRecord(body.error));
+  assert.equal(body.error.code, status);
+  assert.equal(body.error.reason, reason);
+  const details = body.error.details;
+  assert.ok(Array.isArray(details));
+  assert.equal(details[0]?.["@type"], "type.googleapis.com/google.rpc.ErrorInfo");
+  assert.equal(details[0]?.domain, "a2a-protocol.org");
+  assert.equal(details[0]?.reason, errorInfoReason);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
 function a2aProfileFixture() {
@@ -631,6 +877,52 @@ function assertTaskListResponse(response: A2AHttpResponse): asserts response is 
 } {
   assert.equal(response.status, 200);
   assert.ok("kind" in response.body && response.body.kind === "task-list");
+}
+
+function assertA2ASendTaskResponse(response: A2AHttpResponse): asserts response is A2AHttpResponse & {
+  readonly body: { readonly task: A2AHttpA2ATaskBody };
+} {
+  assert.equal(response.status, 200);
+  assert.ok(isRecord(response.body));
+  const body = response.body as { readonly task?: unknown };
+  assert.ok(isRecord(body.task));
+  assert.equal(typeof body.task.id, "string");
+  assert.ok(isRecord(body.task.status));
+}
+
+function assertA2ASendMessageResponse(response: A2AHttpResponse): asserts response is A2AHttpResponse & {
+  readonly body: { readonly message: { readonly role: string; readonly parts: readonly { readonly text?: string }[] } };
+} {
+  assert.equal(response.status, 200);
+  assert.ok(isRecord(response.body));
+  const body = response.body as { readonly message?: unknown };
+  assert.ok(isRecord(body.message));
+  assert.equal(typeof body.message.role, "string");
+  assert.ok(Array.isArray(body.message.parts));
+}
+
+function assertRawA2ATaskResponse(response: A2AHttpResponse): asserts response is A2AHttpResponse & {
+  readonly body: A2AHttpA2ATaskBody;
+} {
+  assert.equal(response.status, 200);
+  assert.ok(isRecord(response.body));
+  const body = response.body as Record<string, unknown>;
+  assert.equal(typeof body.id, "string");
+  assert.ok(isRecord(body.status));
+}
+
+function assertRawA2ATaskListResponse(response: A2AHttpResponse): asserts response is A2AHttpResponse & {
+  readonly body: {
+    readonly tasks: readonly A2AHttpA2ATaskBody[];
+    readonly nextPageToken?: string;
+    readonly pageSize?: number;
+    readonly totalSize?: number;
+  };
+} {
+  assert.equal(response.status, 200);
+  assert.ok(isRecord(response.body));
+  const body = response.body as { readonly tasks?: unknown };
+  assert.ok(Array.isArray(body.tasks));
 }
 
 function assertPushConfigResponse(response: A2AHttpResponse): asserts response is A2AHttpResponse & {
