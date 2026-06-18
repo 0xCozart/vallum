@@ -96,6 +96,7 @@ test("docs hosting source list includes best-practices and reviewer paths", asyn
     "docs/examples.md",
     "docs/agent-guide.md",
     "docs/reviewer-walkthrough.md",
+    "docs/vallum/installer-process.md",
     "docs/vallum/testnet-digest-proof.md",
     "docs/vallum/a2a-public-readiness.md",
     "docs/vallum/verification-profiles.md",
@@ -141,6 +142,24 @@ test("operator live-gates docs list every report template kind", async () => {
   assert.match(docs, /IOTA Names and IOTA Identity report kinds/);
   assert.match(docs, /trust-policy configuration/);
   assert.match(docs, /result=pending-operator-proof/);
+});
+
+test("installer process docs cover mode selection, artifacts, and live gates", async () => {
+  const [config, installer] = await Promise.all([
+    readDoc("apps/docs-site/docs.config.mjs"),
+    readDoc("docs/vallum/installer-process.md"),
+  ]);
+
+  assert.match(config, /docs\/vallum\/installer-process\.md/);
+  assert.match(installer, /Safe local auto-scaffold/);
+  assert.match(installer, /Guided operator config/);
+  assert.match(installer, /Existing gateway\/client only/);
+  assert.match(installer, /Default: Safe local auto-scaffold/);
+  assert.match(installer, /\.env\.vallum\.local/);
+  assert.match(installer, /\.vallum\/reports\/install-summary\.json/);
+  assert.match(installer, /npm run vallum:installer/);
+  assert.match(installer, /explicit operator approval/);
+  assert.doesNotMatch(installer, /paste.*private key|paste.*bearer token/i);
 });
 
 test("hosted docs exclude internal planning and handoff sources", async () => {

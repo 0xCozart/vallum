@@ -31,6 +31,12 @@ export default {
           description: "What Vallum packages do, which package to install, how to configure SDK and agent integrations, and what remains outside the prerelease."
         },
         {
+          title: "Installer Process",
+          source: "docs/vallum/installer-process.md",
+          slug: "installer-process",
+          description: "Agent-assisted Vallum installation modes, local artifacts, gitignore boundaries, and live approval gates."
+        },
+        {
           title: "Reviewer Walkthrough",
           source: "docs/reviewer-walkthrough.md",
           slug: "reviewer-walkthrough",
