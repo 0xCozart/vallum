@@ -216,6 +216,16 @@ test("payment provider readiness proof is non-networked and opt-in", () => {
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /payment-provider-readiness/);
 });
 
+test("payment provider live smoke is opt-in and excluded from local verification", () => {
+  assert.equal(
+    packageJson.scripts?.["smoke:payment-provider-live"],
+    "npm run build && tsx scripts/smoke-payment-provider-live.ts",
+  );
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /smoke:payment-provider-live/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /smoke:payment-provider-live/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /smoke:payment-provider-live/);
+});
+
 test("payment provider proof plan is non-networked and opt-in", () => {
   assert.equal(
     packageJson.scripts?.["payment:write-provider-proof-plan"],
@@ -324,6 +334,33 @@ test("custody production proof plan is non-networked and opt-in", () => {
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /write-custody-production-proof-bundle/);
 });
 
+test("device access safety readiness proof is non-networked and opt-in", () => {
+  assert.equal(
+    packageJson.scripts?.["proof:device-access-safety-readiness"],
+    "npm run build && tsx scripts/check-device-access-safety-readiness.ts",
+  );
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /device-access-safety-readiness/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /device-access-safety-readiness/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /device-access-safety-readiness/);
+});
+
+test("device access safety proof plan is non-networked and opt-in", () => {
+  assert.equal(
+    packageJson.scripts?.["device-access:write-safety-proof-plan"],
+    "npm run build && tsx scripts/write-device-access-safety-proof-plan.ts",
+  );
+  assert.equal(
+    packageJson.scripts?.["device-access:write-safety-proof-bundle"],
+    "npm run build && tsx scripts/write-device-access-safety-proof-bundle.ts",
+  );
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /write-safety-proof-plan/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /write-safety-proof-plan/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /write-safety-proof-plan/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /write-safety-proof-bundle/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /write-safety-proof-bundle/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /write-safety-proof-bundle/);
+});
+
 test("A2A public proof plan is non-networked and opt-in", () => {
   assert.equal(
     packageJson.scripts?.["a2a:write-public-proof-plan"],
@@ -341,11 +378,38 @@ test("A2A public proof plan is non-networked and opt-in", () => {
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /write-public-proof-bundle/);
 });
 
+test("A2A TCK conformance wrapper is non-networked and opt-in", () => {
+  assert.equal(
+    packageJson.scripts?.["a2a:wrap-tck-conformance"],
+    "npm run build && tsx scripts/wrap-a2a-tck-conformance.ts",
+  );
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /wrap-tck-conformance/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /wrap-tck-conformance/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /wrap-tck-conformance/);
+});
+
+test("A2A external conformance smoke is networked and opt-in", () => {
+  assert.equal(
+    packageJson.scripts?.["smoke:a2a-external-conformance"],
+    "npm run build && tsx scripts/smoke-a2a-external-conformance.ts",
+  );
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /a2a-external-conformance/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /a2a-external-conformance/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /a2a-external-conformance/);
+});
+
 test("operator live gate report writer is non-networked and opt-in", () => {
+  assert.equal(
+    packageJson.scripts?.["operator:write-blocker-resolution-plan"],
+    "npm run build && tsx scripts/write-blocker-resolution-plan.ts",
+  );
   assert.equal(
     packageJson.scripts?.["operator:write-live-gate-report"],
     "npm run build && tsx scripts/check-operator-live-gates.ts --json --out tmp/vallum/operator-live-gates.json",
   );
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /write-blocker-resolution-plan/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /write-blocker-resolution-plan/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /write-blocker-resolution-plan/);
   assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /write-live-gate-report/);
   assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /write-live-gate-report/);
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /write-live-gate-report/);

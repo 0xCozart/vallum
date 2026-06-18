@@ -35,6 +35,7 @@ test("product status reports local proof gates and explicit live blockers withou
       env: {},
       a2aPublicReadiness: blockedA2APublicReadiness(),
       custodyReadiness: blockedCustodyReadiness(),
+      deviceAccessSafetyReadiness: blockedDeviceAccessSafetyReadiness(),
       gasStationRuntimeReport: blockedGasStationRuntime(),
       scripts: completeScripts(),
       marketplaceReadiness: blockedMarketplaceReadiness(),
@@ -74,7 +75,7 @@ test("product status reports local proof gates and explicit live blockers withou
     assert.match(formatted, /operator:write-report-template -- --kind a2a-external-conformance/);
     assert.match(formatted, /npm run a2a:write-public-proof-bundle -- --out <ignored-json-path>/);
     assert.match(formatted, /redacted public proof plan, readiness artifact, and report templates/);
-    assert.match(formatted, /npm run smoke:a2a-public-discovery and npm run smoke:a2a-public-push-delivery only with operator-approved public A2A config/);
+    assert.match(formatted, /npm run smoke:a2a-public-discovery, npm run smoke:a2a-public-push-delivery, and either npm run smoke:a2a-external-conformance -- --report <ignored-json-path> or npm run a2a:wrap-tck-conformance/);
     assert.match(formatted, /LIVE_PAYMENT_PROVIDER_UNPROVEN/);
     assert.match(formatted, /operator:write-report-template -- --kind payment-provider-live/);
     assert.match(formatted, /npm run payment:write-provider-proof-bundle -- --out <ignored-json-path>/);
@@ -106,6 +107,7 @@ test("product status artifact summarizes blockers without secret values", async 
       env: {},
       a2aPublicReadiness: blockedA2APublicReadiness(),
       custodyReadiness: blockedCustodyReadiness(),
+      deviceAccessSafetyReadiness: blockedDeviceAccessSafetyReadiness(),
       gasStationRuntimeReport: blockedGasStationRuntime(),
       scripts: completeScripts(),
       marketplaceReadiness: blockedMarketplaceReadiness(),
@@ -205,6 +207,7 @@ test("product status marks report-backed live gates ready without contacting end
       scripts: completeScripts(),
       a2aPublicReadiness: blockedA2APublicReadiness(),
       custodyReadiness: blockedCustodyReadiness(),
+      deviceAccessSafetyReadiness: blockedDeviceAccessSafetyReadiness(),
       marketplaceReadiness: blockedMarketplaceReadiness(),
       packagePublicationReadiness: blockedPackagePublicationReadiness(),
       gasStationRuntimeReport: readyGasStationRuntime(),
@@ -272,6 +275,7 @@ test("product status blocks stale configured testnet digest reports without cont
       scripts: completeScripts(),
       a2aPublicReadiness: blockedA2APublicReadiness(),
       custodyReadiness: blockedCustodyReadiness(),
+      deviceAccessSafetyReadiness: blockedDeviceAccessSafetyReadiness(),
       marketplaceReadiness: blockedMarketplaceReadiness(),
       packagePublicationReadiness: blockedPackagePublicationReadiness(),
       paymentProviderReadiness: blockedPaymentProviderReadiness(),
@@ -301,6 +305,7 @@ test("product status can mark managed upstream runtime ready while upstream proo
         GAS_STATION_URL: "https://gas-station.testnet.example",
       },
       a2aPublicReadiness: blockedA2APublicReadiness(),
+      deviceAccessSafetyReadiness: blockedDeviceAccessSafetyReadiness(),
       gasStationRuntimeRunner: async () => {
         throw new Error("managed-upstream product status must not inspect Docker");
       },
@@ -330,6 +335,7 @@ test("product status can mark package publication report ready for approval with
       cwd,
       env: {},
       a2aPublicReadiness: blockedA2APublicReadiness(),
+      deviceAccessSafetyReadiness: blockedDeviceAccessSafetyReadiness(),
       gasStationRuntimeReport: blockedGasStationRuntime(),
       scripts: completeScripts(),
       testnetDigestProof: verifiedTestnetDigestProof(),
@@ -379,6 +385,7 @@ test("product status can mark payment provider report ready for approval without
       cwd,
       env: {},
       a2aPublicReadiness: blockedA2APublicReadiness(),
+      deviceAccessSafetyReadiness: blockedDeviceAccessSafetyReadiness(),
       gasStationRuntimeReport: blockedGasStationRuntime(),
       scripts: completeScripts(),
       testnetDigestProof: blockedTestnetDigestProof(),
@@ -423,6 +430,7 @@ test("product status can mark public A2A readiness ready for approval without ex
       cwd,
       env: {},
       a2aPublicReadiness: readyA2APublicReadiness(),
+      deviceAccessSafetyReadiness: blockedDeviceAccessSafetyReadiness(),
       gasStationRuntimeReport: blockedGasStationRuntime(),
       scripts: completeScripts(),
       testnetDigestProof: blockedTestnetDigestProof(),
@@ -446,6 +454,7 @@ test("product status can mark marketplace report ready for approval without expo
       cwd,
       env: {},
       a2aPublicReadiness: blockedA2APublicReadiness(),
+      deviceAccessSafetyReadiness: blockedDeviceAccessSafetyReadiness(),
       gasStationRuntimeReport: blockedGasStationRuntime(),
       scripts: completeScripts(),
       testnetDigestProof: blockedTestnetDigestProof(),
@@ -511,6 +520,7 @@ test("product status can mark custody report ready for approval without exposing
           },
         ],
       },
+      deviceAccessSafetyReadiness: blockedDeviceAccessSafetyReadiness(),
       gasStationRuntimeReport: blockedGasStationRuntime(),
       scripts: completeScripts(),
       testnetDigestProof: blockedTestnetDigestProof(),
@@ -527,6 +537,50 @@ test("product status can mark custody report ready for approval without exposing
   }
 });
 
+test("product status can mark device access safety report ready for approval without exposing report values", async () => {
+  const cwd = await mkdtemp(join(tmpdir(), "vallum-product-status-"));
+  try {
+    const report = await checkProductStatus({
+      cwd,
+      env: {},
+      a2aPublicReadiness: blockedA2APublicReadiness(),
+      deviceAccessSafetyReadiness: {
+        localProofOk: true,
+        safetyReady: true,
+        checks: [
+          {
+            id: "local-device-access-safety-gate",
+            status: "proven-local",
+            code: "DEVICE_ACCESS_SAFETY_LOCAL_GATE_CONFIGURED",
+            message: "Local device access safety gate exists.",
+            next: "Keep local proof current.",
+          },
+          {
+            id: "physical-device-safety-report",
+            status: "ready-approval",
+            code: "DEVICE_ACCESS_SAFETY_REPORT_VALID",
+            message: "Structured report is valid.",
+            evidence: "local-structured-report-valid-redacted",
+            next: "Review manually.",
+          },
+        ],
+      },
+      gasStationRuntimeReport: blockedGasStationRuntime(),
+      scripts: completeScripts(),
+      testnetDigestProof: blockedTestnetDigestProof(),
+    });
+    const formatted = formatProductStatusReport(report);
+    const safety = report.checks.find((check) => check.id === "physical-device-access");
+
+    assert.equal(safety?.status, "ready-live");
+    assert.equal(safety?.code, "DEVICE_ACCESS_SAFETY_REPORT_VALID");
+    assert.match(formatted, /DEVICE_ACCESS_SAFETY_REPORT_VALID/);
+    assert.doesNotMatch(formatted, /device-class-hazard-analysis|device-access-safety-proof/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
 test("product status fails the local proof surface when required commands are missing", async () => {
   const cwd = await mkdtemp(join(tmpdir(), "vallum-product-status-"));
   try {
@@ -534,6 +588,7 @@ test("product status fails the local proof surface when required commands are mi
       cwd,
       env: {},
       a2aPublicReadiness: blockedA2APublicReadiness(),
+      deviceAccessSafetyReadiness: blockedDeviceAccessSafetyReadiness(),
       gasStationRuntimeReport: blockedGasStationRuntime(),
       testnetDigestProof: blockedTestnetDigestProof(),
       scripts: {
@@ -570,6 +625,7 @@ test("product status keeps publish dry-run opt-in", async () => {
       cwd,
       env: {},
       a2aPublicReadiness: blockedA2APublicReadiness(),
+      deviceAccessSafetyReadiness: blockedDeviceAccessSafetyReadiness(),
       gasStationRuntimeReport: blockedGasStationRuntime(),
       scripts,
       testnetDigestProof: blockedTestnetDigestProof(),
@@ -840,6 +896,30 @@ function blockedCustodyReadiness() {
         code: "CUSTODY_PRODUCTION_REPORT_MISSING",
         message: "Structured report is missing.",
         evidence: "missing=CUSTODY_PRODUCTION_REPORT",
+        next: "Provide a redacted structured report.",
+      },
+    ],
+  };
+}
+
+function blockedDeviceAccessSafetyReadiness() {
+  return {
+    localProofOk: true,
+    safetyReady: false,
+    checks: [
+      {
+        id: "local-device-access-safety-gate",
+        status: "proven-local" as const,
+        code: "DEVICE_ACCESS_SAFETY_LOCAL_GATE_CONFIGURED",
+        message: "Local device access safety gate exists.",
+        next: "Keep local proof current.",
+      },
+      {
+        id: "physical-device-safety-report",
+        status: "blocked-config" as const,
+        code: "DEVICE_ACCESS_SAFETY_REPORT_MISSING",
+        message: "Structured report is missing.",
+        evidence: "missing=DEVICE_ACCESS_SAFETY_REPORT",
         next: "Provide a redacted structured report.",
       },
     ],

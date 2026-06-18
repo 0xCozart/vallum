@@ -89,6 +89,8 @@ test("launch readiness maps local evidence to live and production blockers", asy
   assert.match(standards?.next ?? "", /payment:write-provider-proof-bundle/);
   assert.ok(standards?.commands.includes("npm run a2a:write-public-proof-plan"));
   assert.ok(standards?.commands.includes("npm run smoke:a2a-public-push-delivery"));
+  assert.ok(standards?.commands.includes("npm run smoke:a2a-external-conformance -- --report <ignored-json-path>"));
+  assert.ok(standards?.commands.includes("npm run a2a:wrap-tck-conformance -- --compatibility <reports/compatibility.json> --out <ignored-json-path> --public-agent-card-url <url> --public-base-url <url>"));
   assert.ok(standards?.commands.includes("npm run proof:a2a-public-readiness"));
   assert.ok(
     (standards?.commands.indexOf("npm run payment:write-provider-proof-bundle -- --out tmp/vallum/payment-provider-proof-bundle.json") ?? -1)
@@ -263,6 +265,9 @@ async function writeEvidenceTree(cwd: string): Promise<void> {
     "contracts/reputation_receipt_v1/Move.toml",
     "contracts/subscription_v1/Move.toml",
     "docs/vallum/device-access-safety-gate.md",
+    "scripts/check-device-access-safety-readiness.ts",
+    "scripts/write-device-access-safety-proof-plan.ts",
+    "scripts/write-device-access-safety-proof-bundle.ts",
     "packages/standards/src/x402.ts",
     "packages/standards/src/ap2.ts",
     "packages/standards/src/a2a.ts",
@@ -274,6 +279,7 @@ async function writeEvidenceTree(cwd: string): Promise<void> {
     "scripts/check-a2a-public-readiness.ts",
     "scripts/write-a2a-public-proof-bundle.ts",
     "scripts/smoke-a2a-public-push-delivery.ts",
+    "scripts/smoke-a2a-external-conformance.ts",
     "scripts/smoke-a2a-static-discovery-local.ts",
     "docs/vallum/a2a-public-readiness.md",
     "scripts/smoke-a2a-local-server.ts",

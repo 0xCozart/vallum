@@ -22,6 +22,7 @@ import {
   writeRoadmapCompletionArtifact,
   type RoadmapCompletionArtifact,
 } from "./check-roadmap-completion.js";
+import { loadEnvFile } from "../apps/policy-gateway-service/src/readiness.js";
 import {
   writeA2APublicProofBundle,
   type A2APublicProofBundle,
@@ -30,6 +31,10 @@ import {
   writeCustodyProductionProofBundle,
   type CustodyProductionProofBundle,
 } from "./write-custody-production-proof-bundle.js";
+import {
+  writeDeviceAccessSafetyProofBundle,
+  type DeviceAccessSafetyProofBundle,
+} from "./write-device-access-safety-proof-bundle.js";
 import {
   writeIdentityProofBundle,
   type IdentityProofBundle,
@@ -106,6 +111,7 @@ interface CliOptions {
 
 const DEFAULT_ARTIFACT_DIR = "tmp/vallum/roadmap-execution";
 const DEFAULT_OUT_FILE = "tmp/vallum/roadmap-execution-proof-bundle.json";
+const LOCAL_ENV_FILE = ".env";
 
 const BOUNDARIES = [
   "This bundle writer is non-networked and only writes ignored local status artifacts and proof-preparation bundle summaries.",
@@ -126,11 +132,12 @@ export async function writeRoadmapExecutionProofBundle(
   const now = options.now ?? new Date();
   const artifactDir = options.artifactDir ?? DEFAULT_ARTIFACT_DIR;
   const outFile = options.outFile ?? DEFAULT_OUT_FILE;
+  const env = await resolveRoadmapExecutionEnv(cwd, options.env);
 
   const paths = artifactPaths(artifactDir);
   const identity = await writeIdentityProofBundle({
     cwd,
-    env: options.env,
+    env,
     gasStationRuntimeReport: options.gasStationRuntimeReport,
     gasStationRuntimeRunner: options.gasStationRuntimeRunner,
     now,
@@ -143,7 +150,7 @@ export async function writeRoadmapExecutionProofBundle(
   });
   const packagePublication = await writePackagePublicationProofBundle({
     cwd,
-    env: options.env,
+    env,
     now,
     outFile: paths.packagePublicationBundle,
     planOutFile: paths.packagePublicationPlan,
@@ -152,7 +159,7 @@ export async function writeRoadmapExecutionProofBundle(
   });
   const a2aPublic = await writeA2APublicProofBundle({
     cwd,
-    env: options.env,
+    env,
     now,
     outFile: paths.a2aPublicBundle,
     planOutFile: paths.a2aPublicPlan,
@@ -163,7 +170,7 @@ export async function writeRoadmapExecutionProofBundle(
   });
   const paymentProvider = await writePaymentProviderProofBundle({
     cwd,
-    env: options.env,
+    env,
     now,
     outFile: paths.paymentProviderBundle,
     planOutFile: paths.paymentProviderPlan,
@@ -172,7 +179,7 @@ export async function writeRoadmapExecutionProofBundle(
   });
   const marketplace = await writeMarketplaceProductionProofBundle({
     cwd,
-    env: options.env,
+    env,
     now,
     outFile: paths.marketplaceBundle,
     planOutFile: paths.marketplacePlan,
@@ -181,17 +188,26 @@ export async function writeRoadmapExecutionProofBundle(
   });
   const custody = await writeCustodyProductionProofBundle({
     cwd,
-    env: options.env,
+    env,
     now,
     outFile: paths.custodyBundle,
     planOutFile: paths.custodyPlan,
     readinessOutFile: paths.custodyReadiness,
     templateOutFile: paths.custodyTemplate,
   });
+  const deviceAccessSafety = await writeDeviceAccessSafetyProofBundle({
+    cwd,
+    env,
+    now,
+    outFile: paths.deviceAccessSafetyBundle,
+    planOutFile: paths.deviceAccessSafetyPlan,
+    readinessOutFile: paths.deviceAccessSafetyReadiness,
+    templateOutFile: paths.deviceAccessSafetyTemplate,
+  });
 
   const productStatus = await writeProductStatusArtifact({
     cwd,
-    env: options.env,
+    env,
     gasStationRuntimeReport: options.gasStationRuntimeReport,
     gasStationRuntimeRunner: options.gasStationRuntimeRunner,
     now,
@@ -205,7 +221,7 @@ export async function writeRoadmapExecutionProofBundle(
   });
   const operatorGates = await writeOperatorLiveGateArtifact({
     cwd,
-    env: options.env,
+    env,
     productStatus,
     gasStationRuntimeReport: options.gasStationRuntimeReport,
     gasStationRuntimeRunner: options.gasStationRuntimeRunner,
@@ -228,6 +244,7 @@ export async function writeRoadmapExecutionProofBundle(
     summarizeProofBundle("payment-provider", paths.paymentProviderBundle, paymentProvider),
     summarizeProofBundle("marketplace-production", paths.marketplaceBundle, marketplace),
     summarizeProofBundle("custody-production", paths.custodyBundle, custody),
+    summarizeProofBundle("device-access-safety", paths.deviceAccessSafetyBundle, deviceAccessSafety),
   ];
   const statusArtifacts = [
     summarizeStatusArtifact("product-status", paths.productStatus, productStatus),
@@ -266,6 +283,25 @@ export async function writeRoadmapExecutionProofBundle(
   return bundle;
 }
 
+export async function resolveRoadmapExecutionEnv(
+  cwd: string,
+  env: NodeJS.ProcessEnv | Record<string, string | undefined> | undefined,
+): Promise<Record<string, string | undefined>> {
+  const fileEnv = await loadOptionalRoadmapEnv(cwd);
+  return {
+    ...fileEnv,
+    ...(env ?? process.env),
+  };
+}
+
+async function loadOptionalRoadmapEnv(cwd: string): Promise<Record<string, string>> {
+  try {
+    return await loadEnvFile(LOCAL_ENV_FILE, cwd);
+  } catch {
+    return {};
+  }
+}
+
 function artifactPaths(artifactDir: string): Record<string, string> {
   return {
     identityBundle: join(artifactDir, "identity-proof-bundle.json"),
@@ -296,6 +332,10 @@ function artifactPaths(artifactDir: string): Record<string, string> {
     custodyPlan: join(artifactDir, "custody-production-proof-plan.json"),
     custodyReadiness: join(artifactDir, "custody-readiness.json"),
     custodyTemplate: join(artifactDir, "custody-production-report-template.json"),
+    deviceAccessSafetyBundle: join(artifactDir, "device-access-safety-proof-bundle.json"),
+    deviceAccessSafetyPlan: join(artifactDir, "device-access-safety-proof-plan.json"),
+    deviceAccessSafetyReadiness: join(artifactDir, "device-access-safety-readiness.json"),
+    deviceAccessSafetyTemplate: join(artifactDir, "device-access-safety-report-template.json"),
     productStatus: join(artifactDir, "product-status.json"),
     launchReadiness: join(artifactDir, "launch-readiness.json"),
     operatorGates: join(artifactDir, "operator-live-gates.json"),
@@ -312,7 +352,8 @@ function summarizeProofBundle(
     | A2APublicProofBundle
     | PaymentProviderProofBundle
     | MarketplaceProductionProofBundle
-    | CustodyProductionProofBundle,
+    | CustodyProductionProofBundle
+    | DeviceAccessSafetyProofBundle,
 ): RoadmapExecutionProofBundleArtifactRef {
   return {
     id,
@@ -394,6 +435,12 @@ function buildSteps(paths: Record<string, string>): readonly RoadmapExecutionPro
       requiresOperatorApproval: false,
     },
     {
+      id: "write-device-access-safety-proof-bundle",
+      command: `npm run device-access:write-safety-proof-bundle -- --out ${paths.deviceAccessSafetyBundle}`,
+      contactsLiveService: false,
+      requiresOperatorApproval: false,
+    },
+    {
       id: "write-roadmap-completion-audit",
       command: `npm run proof:roadmap-completion -- --out ${paths.roadmapCompletion}`,
       contactsLiveService: false,
@@ -405,6 +452,7 @@ function buildSteps(paths: Record<string, string>): readonly RoadmapExecutionPro
         "write-payment-provider-proof-bundle",
         "write-marketplace-production-proof-bundle",
         "write-custody-production-proof-bundle",
+        "write-device-access-safety-proof-bundle",
       ],
     },
     {

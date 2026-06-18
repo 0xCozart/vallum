@@ -83,11 +83,11 @@ const GATE_COMMANDS: Record<string, string | undefined> = {
   "iota-identity-live": "npm run live:write-identity-proof-bundle -- --out tmp/vallum/identity-proof-bundle.json && npm run smoke:iota-identity-live -- --report <ignored-json-path>",
   "vc-validation-live": "npm run live:write-identity-proof-bundle -- --out tmp/vallum/identity-proof-bundle.json && npm run smoke:iota-identity-live -- --report <ignored-json-path>",
   "npm-registry-publication": "npm run package:write-publication-proof-bundle -- --out tmp/vallum/package-publication-proof-bundle.json && npm run proof:package-publication-readiness && operator-approved npm publish workflow",
-  "public-a2a-hosting": "npm run a2a:write-public-proof-bundle -- --out tmp/vallum/a2a-public-proof-bundle.json && npm run proof:a2a-public-readiness && npm run smoke:a2a-public-discovery && npm run smoke:a2a-public-push-delivery",
+  "public-a2a-hosting": "npm run a2a:write-public-proof-bundle -- --out tmp/vallum/a2a-public-proof-bundle.json && npm run proof:a2a-public-readiness && npm run smoke:a2a-public-discovery && npm run smoke:a2a-public-push-delivery && (npm run smoke:a2a-external-conformance -- --report <ignored-json-path> or npm run a2a:wrap-tck-conformance -- --compatibility <reports/compatibility.json> --out <ignored-json-path> --public-agent-card-url <url> --public-base-url <url>)",
   "live-payment-provider": "npm run payment:write-provider-proof-bundle -- --out tmp/vallum/payment-provider-proof-bundle.json && npm run proof:payment-provider-readiness",
   "production-marketplace": "npm run marketplace:write-production-proof-bundle -- --out tmp/vallum/marketplace-production-proof-bundle.json && npm run proof:marketplace-readiness && dedicated production marketplace readiness slice",
   "production-custody": "npm run custody:write-production-proof-bundle -- --out tmp/vallum/custody-production-proof-bundle.json && npm run proof:custody-readiness && dedicated custody/security design slice",
-  "physical-device-access": "dedicated physical device safety design slice",
+  "physical-device-access": "npm run device-access:write-safety-proof-bundle -- --out tmp/vallum/device-access-safety-proof-bundle.json && npm run proof:device-access-safety-readiness && dedicated physical device safety design slice",
 };
 
 const LIVE_SERVICE_GATES = new Set([
@@ -232,7 +232,9 @@ function commandForGate(check: ProductEvidenceCheck): string | undefined {
 
 function classifyGate(check: ProductEvidenceCheck): OperatorGateStatus {
   if (check.status === "proven-local") return "proven-local";
-  if (check.status === "deferred-safety") return "deferred-safety";
+  if (check.status === "deferred-safety") {
+    return APPROVAL_REQUIRED_GATES.has(check.id) ? "requires-approval" : "deferred-safety";
+  }
   if (check.status === "ready-live") {
     return APPROVAL_REQUIRED_GATES.has(check.id) ? "ready-approval" : "ready-to-run";
   }

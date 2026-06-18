@@ -195,6 +195,42 @@ test("operator report template builds package publication schema without marking
   ]);
 });
 
+test("operator report template builds payment-provider status-only proof sections", async () => {
+  const template = await buildOperatorReportTemplate({
+    kind: "payment-provider-live",
+    environment: "testnet",
+    now: new Date("2026-06-14T12:00:00.000Z"),
+  });
+
+  assert.equal(template.schemaVersion, 1);
+  assert.equal(template.kind, "vallum.payment-provider-live-proof");
+  assert.equal(template.result, "pending-operator-proof");
+  assert.equal(template.environment, "testnet");
+  assert.deepEqual(template.providerKinds, ["x402", "ap2"]);
+  assert.deepEqual(template.checks, [
+    "x402-verify",
+    "x402-settle",
+    "x402-payment-response",
+    "ap2-mandate-chain",
+    "ap2-checkout-receipt",
+    "ap2-payment-receipt",
+    "ap2-accountability-review",
+    "redaction-review",
+  ]);
+  assert.deepEqual(template.x402Proof, {
+    facilitator: "provider-reviewed-redacted",
+    verifyResult: "pending",
+    settleResult: "pending",
+    paymentResponse: "pending",
+  });
+  assert.deepEqual(template.ap2Proof, {
+    mandateChain: "pending",
+    checkoutReceipt: "pending",
+    paymentReceipt: "pending",
+    accountabilityReview: "pending",
+  });
+});
+
 test("operator report template writes private local artifact and remains not-passed evidence", async () => {
   const cwd = await mkdtemp(join(tmpdir(), "vallum-report-template-"));
   const outFile = join(cwd, "package-report.json");
@@ -253,6 +289,25 @@ test("operator report template builds A2A discovery report fields without unsafe
   assert.equal(discovery?.code, "A2A_PUBLIC_DISCOVERY_REPORT_NOT_PASSED");
 });
 
+test("operator report template documents A2A external conformance report options", async () => {
+  const template = await buildOperatorReportTemplate({
+    kind: "a2a-external-conformance",
+    now: new Date("2026-06-14T12:00:00.000Z"),
+    publicBaseUrl: "https://agent.example.com/a2a",
+    publicAgentCardUrl: "https://agent.example.com/.well-known/agent-card.json",
+  });
+
+  assert.equal(template.kind, "a2a-external-conformance");
+  assert.equal(template.result, "pending-operator-proof");
+  assert.equal(template.acceptedReportEnv, "A2A_EXTERNAL_CONFORMANCE_REPORT");
+  assert.deepEqual(template.acceptedRunners, ["vallum-public-task-route-smoke", "a2a-tck"]);
+  assert.deepEqual(template.checks, ["agent-card", "message-send", "official-a2a-tck", "http-json-must", "redaction-review"]);
+  assert.deepEqual((template.tckCompatibility as Record<string, unknown>).requiredMustRequirements, [
+    "CORE-SEND-001",
+    "CORE-SEND-003",
+  ]);
+});
+
 test("operator report template builds production custody and marketplace choices", async () => {
   const custody = await buildOperatorReportTemplate({
     kind: "custody-production",
@@ -264,11 +319,33 @@ test("operator report template builds production custody and marketplace choices
     environment: "production",
     now: new Date("2026-06-14T12:00:00.000Z"),
   });
+  const deviceAccess = await buildOperatorReportTemplate({
+    kind: "device-access-safety",
+    now: new Date("2026-06-14T12:00:00.000Z"),
+  });
 
   assert.equal(custody.kind, "vallum.custody-production-proof");
   assert.equal(custody.custodyMode, "kms");
   assert.ok((custody.checks as string[]).includes("incident-response-review"));
+  assert.ok((custody.checks as string[]).includes("cryptographic-module-validation-review"));
+  assert.equal((custody.signerReferenceReview as Record<string, unknown>).scopedHandles, "pending");
+  assert.equal((custody.custodyControlReview as Record<string, unknown>).moduleValidation, "pending");
+  assert.equal((custody.lifecycleReview as Record<string, unknown>).rotation, "pending");
+  assert.equal((custody.recoveryReview as Record<string, unknown>).restoreDrill, "pending");
+  assert.equal((custody.complianceReview as Record<string, unknown>).redaction, "pending");
   assert.equal(marketplace.kind, "vallum.marketplace-production-proof");
   assert.equal(marketplace.environment, "production");
   assert.ok((marketplace.checks as string[]).includes("operations-incident-review"));
+  assert.ok((marketplace.checks as string[]).includes("provider-capability-review"));
+  assert.equal((marketplace.providerReview as Record<string, unknown>).capabilityReview, "pending");
+  assert.equal((marketplace.accessReview as Record<string, unknown>).leastPrivilege, "pending");
+  assert.equal((marketplace.operationsReview as Record<string, unknown>).incidentRunbook, "pending");
+  assert.equal(deviceAccess.kind, "vallum.device-access-safety-proof");
+  assert.equal(deviceAccess.deviceAccessMode, "physical-approved");
+  assert.ok((deviceAccess.checks as string[]).includes("revocation-emergency-stop-review"));
+  assert.ok((deviceAccess.checks as string[]).includes("no-real-world-motion-test-path-review"));
+  assert.equal((deviceAccess.hazardReview as Record<string, unknown>).hazardAnalysis, "pending");
+  assert.equal((deviceAccess.revocationReview as Record<string, unknown>).emergencyStop, "pending");
+  assert.equal((deviceAccess.proofPathReview as Record<string, unknown>).noRealWorldMotion, "pending");
+  assert.equal((deviceAccess.legalReview as Record<string, unknown>).regulatoryOwner, "pending");
 });

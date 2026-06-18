@@ -16,7 +16,8 @@ export type OperatorReportTemplateKind =
   | "payment-provider-live"
   | "package-publication"
   | "marketplace-production"
-  | "custody-production";
+  | "custody-production"
+  | "device-access-safety";
 
 export interface OperatorReportTemplate {
   readonly schemaVersion: 1;
@@ -40,6 +41,7 @@ export interface WriteOperatorReportTemplateOptions {
   readonly taskAuthDecision?: "bearer" | "oauth2" | "mtls";
   readonly environment?: "testnet" | "production";
   readonly custodyMode?: "external-signer" | "kms";
+  readonly deviceAccessMode?: "physical-approved";
 }
 
 interface CliOptions {
@@ -53,6 +55,7 @@ interface CliOptions {
   readonly taskAuthDecision?: "bearer" | "oauth2" | "mtls";
   readonly environment?: "testnet" | "production";
   readonly custodyMode?: "external-signer" | "kms";
+  readonly deviceAccessMode?: "physical-approved";
 }
 
 const RESULT = "pending-operator-proof" as const;
@@ -138,8 +141,11 @@ const VC_VALIDATION_CHECKS = [
 const PAYMENT_CHECKS = [
   "x402-verify",
   "x402-settle",
+  "x402-payment-response",
+  "ap2-mandate-chain",
   "ap2-checkout-receipt",
   "ap2-payment-receipt",
+  "ap2-accountability-review",
   "redaction-review",
 ] as const;
 
@@ -157,23 +163,45 @@ const PACKAGE_CHECKS = [
 const MARKETPLACE_CHECKS = [
   "provider-onboarding-review",
   "provider-verification-review",
+  "provider-capability-review",
   "moderation-abuse-review",
   "session-auth-review",
   "receipt-access-review",
   "payment-settlement-review",
+  "settlement-reconciliation-review",
   "dispute-workflow-review",
   "operations-incident-review",
+  "incident-response-review",
+  "redaction-review",
 ] as const;
 
 const CUSTODY_CHECKS = [
   "signer-reference-contract-review",
   "no-agent-secret-exposure-review",
   "kms-external-signer-review",
+  "cryptographic-module-validation-review",
+  "operator-access-review",
+  "key-lifecycle-review",
   "recovery-export-review",
+  "backup-restore-review",
   "rotation-revocation-review",
   "audit-logging-review",
   "legal-security-review",
   "incident-response-review",
+  "redaction-review",
+] as const;
+
+const DEVICE_ACCESS_SAFETY_CHECKS = [
+  "device-class-hazard-analysis",
+  "provider-accountability-review",
+  "requester-authorization-review",
+  "revocation-emergency-stop-review",
+  "network-failure-expiry-review",
+  "audit-privacy-review",
+  "dispute-incident-response-review",
+  "credential-storage-rotation-review",
+  "no-real-world-motion-test-path-review",
+  "legal-regulatory-review",
 ] as const;
 
 const usage = `usage: npm exec tsx -- scripts/write-operator-report-template.ts --kind <kind> [--out <path>]
@@ -193,7 +221,8 @@ kinds:
   payment-provider-live
   package-publication
   marketplace-production
-  custody-production`;
+  custody-production
+  device-access-safety`;
 
 export async function writeOperatorReportTemplate(
   options: WriteOperatorReportTemplateOptions,
@@ -365,13 +394,36 @@ export async function buildOperatorReportTemplate(
         kind: "a2a-external-conformance",
         publicBaseUrl: options.publicBaseUrl,
         publicAgentCardUrl: options.publicAgentCardUrl,
+        acceptedReportEnv: "A2A_EXTERNAL_CONFORMANCE_REPORT",
+        acceptedRunners: ["vallum-public-task-route-smoke", "a2a-tck"],
+        checks: ["agent-card", "message-send", "official-a2a-tck", "http-json-must", "redaction-review"],
+        tckCompatibility: {
+          reportFormat: "a2a-tck reports/compatibility.json summary",
+          requiredTransport: "HTTP+JSON",
+          requiredMustCompatibility: "100.0%",
+          requiredMustRequirements: ["CORE-SEND-001", "CORE-SEND-003"],
+          forbiddenFields: ["authorization", "bearerToken", "credentials", "requestBody", "responseBody"],
+        },
       });
     case "payment-provider-live":
       return {
         ...base,
         kind: "vallum.payment-provider-live-proof",
+        environment: options.environment ?? "testnet",
         providerKinds: ["x402", "ap2"],
         checks: PAYMENT_CHECKS,
+        x402Proof: {
+          facilitator: "provider-reviewed-redacted",
+          verifyResult: "pending",
+          settleResult: "pending",
+          paymentResponse: "pending",
+        },
+        ap2Proof: {
+          mandateChain: "pending",
+          checkoutReceipt: "pending",
+          paymentReceipt: "pending",
+          accountabilityReview: "pending",
+        },
       };
     case "package-publication":
       return {
@@ -387,6 +439,34 @@ export async function buildOperatorReportTemplate(
         kind: "vallum.marketplace-production-proof",
         environment: options.environment ?? "testnet",
         checks: MARKETPLACE_CHECKS,
+        providerReview: {
+          onboarding: "pending",
+          verification: "pending",
+          capabilityReview: "pending",
+        },
+        moderationReview: {
+          abuseControls: "pending",
+          escalationPath: "pending",
+          redaction: "pending",
+        },
+        accessReview: {
+          apiAccess: "pending",
+          receiptAccess: "pending",
+          leastPrivilege: "pending",
+        },
+        settlementReview: {
+          paymentSettlement: "pending",
+          reconciliation: "pending",
+        },
+        disputeReview: {
+          workflow: "pending",
+          evidencePack: "pending",
+        },
+        operationsReview: {
+          incidentRunbook: "pending",
+          monitoring: "pending",
+          rollback: "pending",
+        },
       };
     case "custody-production":
       return {
@@ -394,6 +474,100 @@ export async function buildOperatorReportTemplate(
         kind: "vallum.custody-production-proof",
         custodyMode: options.custodyMode ?? "external-signer",
         checks: CUSTODY_CHECKS,
+        signerReferenceReview: {
+          scopedHandles: "pending",
+          nonBearer: "pending",
+          policyBoundary: "pending",
+        },
+        custodyControlReview: {
+          providerMode: "pending",
+          moduleValidation: "pending",
+          operatorAccess: "pending",
+        },
+        lifecycleReview: {
+          generation: "pending",
+          rotation: "pending",
+          revocation: "pending",
+          destruction: "pending",
+        },
+        recoveryReview: {
+          backupPlan: "pending",
+          restoreDrill: "pending",
+          exportControls: "pending",
+          zeroization: "pending",
+        },
+        auditReview: {
+          accessLogs: "pending",
+          operationLogs: "pending",
+          retention: "pending",
+        },
+        incidentReview: {
+          detection: "pending",
+          response: "pending",
+          recovery: "pending",
+        },
+        complianceReview: {
+          legalSecurity: "pending",
+          redaction: "pending",
+          segregation: "pending",
+        },
+      };
+    case "device-access-safety":
+      return {
+        ...base,
+        kind: "vallum.device-access-safety-proof",
+        deviceAccessMode: options.deviceAccessMode ?? "physical-approved",
+        checks: DEVICE_ACCESS_SAFETY_CHECKS,
+        hazardReview: {
+          deviceClass: "pending",
+          hazardAnalysis: "pending",
+          safetyBoundary: "pending",
+        },
+        accountabilityReview: {
+          providerIdentity: "pending",
+          providerLiability: "pending",
+          operatorOwnership: "pending",
+        },
+        authorizationReview: {
+          requesterAuthorization: "pending",
+          leastPrivilege: "pending",
+          humanApproval: "pending",
+        },
+        revocationReview: {
+          revocation: "pending",
+          emergencyStop: "pending",
+          failClosed: "pending",
+        },
+        expiryReview: {
+          leaseExpiry: "pending",
+          networkFailure: "pending",
+          clockSkew: "pending",
+        },
+        auditPrivacyReview: {
+          auditRetention: "pending",
+          privacyMinimization: "pending",
+          accessLogs: "pending",
+        },
+        incidentReview: {
+          disputeProcess: "pending",
+          incidentResponse: "pending",
+          escalationPath: "pending",
+        },
+        credentialReview: {
+          storage: "pending",
+          rotation: "pending",
+          revocation: "pending",
+        },
+        proofPathReview: {
+          simulatedOnly: "pending",
+          noRealWorldMotion: "pending",
+          testIsolation: "pending",
+        },
+        legalReview: {
+          regulatoryOwner: "pending",
+          jurisdiction: "pending",
+          terms: "pending",
+        },
       };
   }
 }
@@ -497,6 +671,7 @@ function parseKind(value: string): OperatorReportTemplateKind {
     "package-publication",
     "marketplace-production",
     "custody-production",
+    "device-access-safety",
   ]);
   if (!allowed.has(value as OperatorReportTemplateKind)) {
     throw new Error(`Unsupported report template kind: ${value}`);

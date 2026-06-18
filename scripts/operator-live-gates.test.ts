@@ -83,7 +83,7 @@ test("operator live gates report current blockers without secret values", async 
     );
     assert.equal(
       findGate(report, "public-a2a-hosting").command,
-      "npm run a2a:write-public-proof-bundle -- --out tmp/vallum/a2a-public-proof-bundle.json && npm run proof:a2a-public-readiness && npm run smoke:a2a-public-discovery && npm run smoke:a2a-public-push-delivery",
+      "npm run a2a:write-public-proof-bundle -- --out tmp/vallum/a2a-public-proof-bundle.json && npm run proof:a2a-public-readiness && npm run smoke:a2a-public-discovery && npm run smoke:a2a-public-push-delivery && (npm run smoke:a2a-external-conformance -- --report <ignored-json-path> or npm run a2a:wrap-tck-conformance -- --compatibility <reports/compatibility.json> --out <ignored-json-path> --public-agent-card-url <url> --public-base-url <url>)",
     );
     assert.equal(
       findGate(report, "live-payment-provider").command,
@@ -97,7 +97,11 @@ test("operator live gates report current blockers without secret values", async 
       findGate(report, "production-custody").command,
       "npm run custody:write-production-proof-bundle -- --out tmp/vallum/custody-production-proof-bundle.json && npm run proof:custody-readiness && dedicated custody/security design slice",
     );
-    assert.equal(findGate(report, "physical-device-access").status, "deferred-safety");
+    assert.equal(findGate(report, "physical-device-access").status, "requires-approval");
+    assert.equal(
+      findGate(report, "physical-device-access").command,
+      "npm run device-access:write-safety-proof-bundle -- --out tmp/vallum/device-access-safety-proof-bundle.json && npm run proof:device-access-safety-readiness && dedicated physical device safety design slice",
+    );
     assert.doesNotMatch(formatted, /graphql\.testnet\.example|researcher\.demo\.iota|identity\.testnet\.example|profiles\/researcher\.json/);
     assert.doesNotMatch(formatted, /0x1111111111111111111111111111111111111111111111111111111111111111/);
   } finally {

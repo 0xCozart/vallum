@@ -1,11 +1,42 @@
 import assert from "node:assert/strict";
-import { readFile, rm, stat } from "node:fs/promises";
+import { mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { test } from "node:test";
 
-import { writeRoadmapExecutionProofBundle } from "./write-roadmap-execution-proof-bundle.js";
+import {
+  resolveRoadmapExecutionEnv,
+  writeRoadmapExecutionProofBundle,
+} from "./write-roadmap-execution-proof-bundle.js";
 
 const NOW = new Date("2026-06-15T12:00:00.000Z");
+
+test("roadmap execution env hydrates local .env and preserves explicit overrides", async () => {
+  const cwd = `tmp/vallum/roadmap-env-test-${process.pid}-${Date.now()}`;
+  try {
+    await mkdir(cwd, { recursive: true });
+    await writeFile(
+      join(cwd, ".env"),
+      [
+        "PACKAGE_PUBLICATION_REPORT=tmp/vallum/package-publication-proof-report.json",
+        "A2A_EXTERNAL_CONFORMANCE_REPORT=tmp/vallum/a2a-external-conformance-report.json",
+        "DEVICE_ACCESS_SAFETY_REPORT=tmp/vallum/device-access-safety-report.json",
+      ].join("\n"),
+      { mode: 0o600 },
+    );
+
+    const env = await resolveRoadmapExecutionEnv(cwd, {
+      DEVICE_ACCESS_SAFETY_REPORT: "",
+      PAYMENT_PROVIDER_LIVE_REPORT: "tmp/vallum/payment-provider-live-report.json",
+    });
+
+    assert.equal(env.PACKAGE_PUBLICATION_REPORT, "tmp/vallum/package-publication-proof-report.json");
+    assert.equal(env.A2A_EXTERNAL_CONFORMANCE_REPORT, "tmp/vallum/a2a-external-conformance-report.json");
+    assert.equal(env.PAYMENT_PROVIDER_LIVE_REPORT, "tmp/vallum/payment-provider-live-report.json");
+    assert.equal(env.DEVICE_ACCESS_SAFETY_REPORT, "");
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
 
 test("roadmap execution proof bundle writes all remaining proof artifacts without running live proofs", async () => {
   const artifactDir = `tmp/vallum/roadmap-execution-test-${process.pid}-${Date.now()}`;
@@ -13,6 +44,9 @@ test("roadmap execution proof bundle writes all remaining proof artifacts withou
   try {
     const bundle = await writeRoadmapExecutionProofBundle({
       cwd: process.cwd(),
+      env: {
+        DEVICE_ACCESS_SAFETY_REPORT: "",
+      },
       now: NOW,
       artifactDir,
       outFile,
@@ -31,6 +65,7 @@ test("roadmap execution proof bundle writes all remaining proof artifacts withou
       "payment-provider",
       "marketplace-production",
       "custody-production",
+      "device-access-safety",
     ]);
     assert.deepEqual(bundle.statusArtifacts.map((artifact) => artifact.id), [
       "product-status",
@@ -38,9 +73,9 @@ test("roadmap execution proof bundle writes all remaining proof artifacts withou
       "operator-live-gates",
       "roadmap-completion",
     ]);
-    assert.ok(bundle.blockerCodes.includes("IOTA_NAMES_LIVE_CONFIG_MISSING"));
-    assert.ok(bundle.blockerCodes.includes("NPM_PUBLICATION_UNRUN"));
-    assert.ok(bundle.nextCommands.some((command) => command.includes("live:write-identity-proof-bundle")));
+    assert.ok(bundle.blockerCodes.includes("DEVICE_ACCESS_SAFETY_REPORT_MISSING"));
+    assert.ok(bundle.nextCommands.some((command) => command.includes("device-access:write-safety-proof-bundle")));
+    assert.equal(bundle.steps.some((step) => step.id === "write-device-access-safety-proof-bundle"), true);
     assert.equal(bundle.steps.find((step) => step.id === "write-roadmap-completion-audit")?.contactsLiveService, false);
     assert.equal(bundle.steps.find((step) => step.id === "run-operator-approved-remaining-proof")?.requiresOperatorApproval, true);
 

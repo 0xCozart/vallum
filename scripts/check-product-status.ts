@@ -24,6 +24,10 @@ import {
   type CustodyReadinessReport,
 } from "./check-custody-readiness.js";
 import {
+  checkDeviceAccessSafetyReadiness,
+  type DeviceAccessSafetyReadinessReport,
+} from "./check-device-access-safety-readiness.js";
+import {
   checkTestnetDigestProof,
   type TestnetDigestProofReport,
 } from "./check-testnet-digest-proof.js";
@@ -78,6 +82,7 @@ export interface ProductStatusOptions {
   readonly a2aPublicReadiness?: A2APublicReadinessReport;
   readonly env?: NodeJS.ProcessEnv | Record<string, string | undefined>;
   readonly custodyReadiness?: CustodyReadinessReport;
+  readonly deviceAccessSafetyReadiness?: DeviceAccessSafetyReadinessReport;
   readonly gasStationRuntimeReport?: GasStationRuntimePreflightReport;
   readonly gasStationRuntimeRunner?: GasStationRuntimeCommandRunner;
   readonly marketplaceReadiness?: MarketplaceReadinessReport;
@@ -140,12 +145,16 @@ const MARKETPLACE_PRODUCTION_TEMPLATE_COMMAND = "npm run operator:write-report-t
 const MARKETPLACE_PRODUCTION_PROOF_BUNDLE_COMMAND = "npm run marketplace:write-production-proof-bundle -- --out <ignored-json-path>";
 const CUSTODY_PRODUCTION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind custody-production --out tmp/vallum/custody-production-report-template.json";
 const CUSTODY_PRODUCTION_PROOF_BUNDLE_COMMAND = "npm run custody:write-production-proof-bundle -- --out <ignored-json-path>";
+const DEVICE_ACCESS_SAFETY_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind device-access-safety --out tmp/vallum/device-access-safety-report-template.json";
+const DEVICE_ACCESS_SAFETY_PROOF_BUNDLE_COMMAND = "npm run device-access:write-safety-proof-bundle -- --out <ignored-json-path>";
 const A2A_PUBLIC_DISCOVERY_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/vallum/a2a-public-discovery-report-template.json";
 const A2A_PUBLIC_PUSH_DELIVERY_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/vallum/a2a-public-push-delivery-report-template.json";
 const A2A_EXTERNAL_CONFORMANCE_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/vallum/a2a-external-conformance-report-template.json";
 const A2A_PUBLIC_PROOF_BUNDLE_COMMAND = "npm run a2a:write-public-proof-bundle -- --out <ignored-json-path>";
 const A2A_PUBLIC_DISCOVERY_SMOKE_COMMAND = "npm run smoke:a2a-public-discovery";
 const A2A_PUBLIC_PUSH_DELIVERY_SMOKE_COMMAND = "npm run smoke:a2a-public-push-delivery";
+const A2A_EXTERNAL_CONFORMANCE_SMOKE_COMMAND = "npm run smoke:a2a-external-conformance -- --report <ignored-json-path>";
+const A2A_TCK_CONFORMANCE_WRAPPER_COMMAND = "npm run a2a:wrap-tck-conformance -- --compatibility <reports/compatibility.json> --out <ignored-json-path> --public-agent-card-url <url> --public-base-url <url>";
 
 const usage = `usage: npm exec tsx -- scripts/check-product-status.ts [--json] [--out <path>]
 
@@ -191,6 +200,11 @@ export async function checkProductStatus(options: ProductStatusOptions = {}): Pr
     env,
     scripts,
   });
+  const deviceAccessSafetyReadiness = options.deviceAccessSafetyReadiness ?? await checkDeviceAccessSafetyReadiness({
+    cwd,
+    env,
+    scripts,
+  });
   const testnetDigestProof = options.testnetDigestProof ?? await testnetDigestProofStatus(cwd, env);
   const liveChecks = withSponsoredExecuteCheck(
     liveStatus.checks.map(mapLiveProofCheck),
@@ -202,7 +216,7 @@ export async function checkProductStatus(options: ProductStatusOptions = {}): Pr
     checkPackageReleaseCoverage(scripts),
     checkOperatorReportTemplateCoverage(scripts),
     ...liveChecks,
-    ...productionBlockers(a2aPublicReadiness, paymentProviderReadiness, packagePublicationReadiness, marketplaceReadiness, custodyReadiness),
+    ...productionBlockers(a2aPublicReadiness, paymentProviderReadiness, packagePublicationReadiness, marketplaceReadiness, custodyReadiness, deviceAccessSafetyReadiness),
   ];
 
   return {
@@ -521,6 +535,7 @@ function productionBlockers(
   packagePublicationReadiness: PackagePublicationReadinessReport,
   marketplaceReadiness: MarketplaceReadinessReport,
   custodyReadiness: CustodyReadinessReport,
+  deviceAccessSafetyReadiness: DeviceAccessSafetyReadinessReport,
 ): readonly ProductEvidenceCheck[] {
   return [
     packagePublicationCheck(packagePublicationReadiness),
@@ -528,14 +543,43 @@ function productionBlockers(
     paymentProviderCheck(paymentProviderReadiness),
     marketplaceCheck(marketplaceReadiness),
     custodyCheck(custodyReadiness),
-    {
+    deviceAccessSafetyCheck(deviceAccessSafetyReadiness),
+  ];
+}
+
+function deviceAccessSafetyCheck(readiness: DeviceAccessSafetyReadinessReport): ProductEvidenceCheck {
+  if (readiness.safetyReady) {
+    return {
+      id: "physical-device-access",
+      status: "ready-live",
+      code: "DEVICE_ACCESS_SAFETY_REPORT_VALID",
+      message: "Local virtual-only safety gate exists and an owner-supplied structured physical-device safety report is valid for manual review.",
+      evidence: "npm run proof:device-access-safety-readiness",
+      next: "Manually review the ignored structured report before accepting physical-device, actuator, access-control, provider-accountability, revocation, emergency-stop, or safety-critical claims.",
+    };
+  }
+
+  if (!readiness.localProofOk) {
+    const local = readiness.checks.find((check) => check.id === "local-device-access-safety-gate");
+    return {
       id: "physical-device-access",
       status: "deferred-safety",
-      code: "DEVICE_ACCESS_SAFETY_DEFERRED",
-      message: "Physical device access remains safety-gated; only virtual or simulated resource proof is allowed until a separate safety design is approved.",
-      next: "Replace the safety gate only after physical safety, provider accountability, revocation, emergency stop, privacy, and incident response are approved.",
-    },
-  ];
+      code: local?.code ?? "DEVICE_ACCESS_SAFETY_LOCAL_PROOF_INCOMPLETE",
+      message: "Local physical-device safety gate docs, absence checks, or opt-in script boundaries are incomplete.",
+      evidence: "npm run proof:device-access-safety-readiness",
+      next: local?.next ?? "Restore the local virtual-only safety gate, then rerun physical-device safety readiness.",
+    };
+  }
+
+  const report = readiness.checks.find((check) => check.id === "physical-device-safety-report");
+  return {
+    id: "physical-device-access",
+    status: "deferred-safety",
+    code: "DEVICE_ACCESS_SAFETY_DEFERRED",
+    message: `Physical device access remains safety-gated; only virtual or simulated resource proof is allowed until an owner-approved safety report exists. Current blocker: ${report?.code ?? "DEVICE_ACCESS_SAFETY_REPORT_MISSING"}.`,
+    evidence: "npm run proof:device-access-safety-readiness",
+    next: `${DEVICE_ACCESS_SAFETY_PROOF_BUNDLE_COMMAND} to prepare the redacted physical-device safety proof plan, readiness artifact, and report template; complete a dedicated physical safety, provider accountability, revocation, emergency-stop, privacy, incident-response, and legal review, save a redacted structured report outside tracked files, set DEVICE_ACCESS_SAFETY_REPORT, and rerun readiness/status gates. The bundle includes ${DEVICE_ACCESS_SAFETY_TEMPLATE_COMMAND}.`,
+  };
 }
 
 function publicA2AHostingCheck(readiness: A2APublicReadinessReport): ProductEvidenceCheck {
@@ -569,7 +613,7 @@ function publicA2AHostingCheck(readiness: A2APublicReadinessReport): ProductEvid
     code: "PUBLIC_A2A_HOSTING_UNPROVEN",
     message: `A2A discovery, local public JWKS serving, local static discovery bundle generation, local static discovery artifact writing, local static discovery artifact validation, local static discovery loopback host smoke, local static hosting review, task routes, authenticated extended Agent Card access, SSE streaming, push notification configuration, injected push delivery, opt-in push HTTP transport, callback URL admission hardening, callback host allowlisting, local retry/attempt observability, local durable attempt evidence, local delivery queueing, and a local injected-transport worker are proven locally and over loopback/local handler or mocked paths only; public readiness is blocked by ${blocked?.code ?? "A2A_PUBLIC_READINESS_REPORT_MISSING"}.`,
     evidence: "npm run proof:a2a-public-readiness",
-    next: `${A2A_PUBLIC_PROOF_BUNDLE_COMMAND} to prepare the redacted public proof plan, readiness artifact, and report templates; use npm run proof:a2a-public-readiness to inspect blockers, then run ${A2A_PUBLIC_DISCOVERY_SMOKE_COMMAND} and ${A2A_PUBLIC_PUSH_DELIVERY_SMOKE_COMMAND} only with operator-approved public A2A config. The bundle includes ${A2A_PUBLIC_DISCOVERY_TEMPLATE_COMMAND}, ${A2A_PUBLIC_PUSH_DELIVERY_TEMPLATE_COMMAND}, and ${A2A_EXTERNAL_CONFORMANCE_TEMPLATE_COMMAND}.`,
+    next: `${A2A_PUBLIC_PROOF_BUNDLE_COMMAND} to prepare the redacted public proof plan, readiness artifact, and report templates; use npm run proof:a2a-public-readiness to inspect blockers, then run ${A2A_PUBLIC_DISCOVERY_SMOKE_COMMAND}, ${A2A_PUBLIC_PUSH_DELIVERY_SMOKE_COMMAND}, and either ${A2A_EXTERNAL_CONFORMANCE_SMOKE_COMMAND} or ${A2A_TCK_CONFORMANCE_WRAPPER_COMMAND} only with operator-approved public A2A evidence. The bundle includes ${A2A_PUBLIC_DISCOVERY_TEMPLATE_COMMAND}, ${A2A_PUBLIC_PUSH_DELIVERY_TEMPLATE_COMMAND}, and ${A2A_EXTERNAL_CONFORMANCE_TEMPLATE_COMMAND}.`,
   };
 }
 

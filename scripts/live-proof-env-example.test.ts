@@ -31,6 +31,7 @@ const requiredExampleKeys = [
   "PAYMENT_PROVIDER_LIVE_REPORT",
   "MARKETPLACE_PRODUCTION_REPORT",
   "CUSTODY_PRODUCTION_REPORT",
+  "DEVICE_ACCESS_SAFETY_REPORT",
 ] as const;
 
 test(".env.example documents live proof and production report inputs as comments", () => {
