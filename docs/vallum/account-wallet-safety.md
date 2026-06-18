@@ -115,14 +115,29 @@ local verification coverage. It does not create a production custody service,
 connect to a KMS, export keys, operate signer infrastructure, stake, bond,
 slash, or custody funds.
 
+The accounts package can also build a local status-only custody production
+review snapshot for the required signer-reference, no-secret-exposure,
+KMS/external-signer, lifecycle, recovery, backup, rotation, audit, legal,
+incident-response, and redaction checks. Missing checks remain pending and
+notes are redacted. The snapshot is operator preparation material only; it does
+not replace the ignored `CUSTODY_PRODUCTION_REPORT` structured report required
+by this readiness gate.
+
 Production custody claims remain blocked unless `CUSTODY_PRODUCTION_REPORT`
 points to an ignored redacted structured report from an operator-approved
 custody review. The report must be status-only JSON with `schemaVersion=1`,
 `kind=vallum.custody-production-proof`, `result=passed`, a recent
 `observedAt`, `custodyMode=external-signer` or `custodyMode=kms`, and check ids
 for signer-reference contract review, no agent secret exposure, KMS/external
-signer review, recovery/export review, rotation/revocation review, audit
-logging, legal/security review, and incident response.
+signer review, cryptographic module validation, operator access, key
+lifecycle, recovery/export review, backup/restore, rotation/revocation review,
+audit logging, legal/security review, incident response, and redaction review.
+It also must include passing status-only sections named
+`signerReferenceReview`, `custodyControlReview`, `lifecycleReview`,
+`recoveryReview`, `auditReview`, `incidentReview`, and `complianceReview`.
+Those sections must summarize only review status, not raw key-management
+records, module certificates, operator account data, recovery artifacts, audit
+logs, incident details, or legal documents.
 
 The report must not include seeds, mnemonics, private keys, raw keypairs,
 signer material, credentials, payloads, headers, signatures, or local secret

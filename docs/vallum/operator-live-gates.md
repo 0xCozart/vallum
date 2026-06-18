@@ -13,8 +13,8 @@ It reads the product-status proof and classifies each gate as:
 - `blocked-config` for missing or failing local testnet, upstream diagnostic,
   IOTA Names, IOTA Identity, or VC trust-policy configuration;
 - `requires-approval` for live endpoint, registry, payment, public hosting,
-  marketplace, custody, or device gates that still lack accepted proof and need
-  explicit operator approval or a dedicated slice;
+  marketplace, custody, or physical-device safety gates that still lack
+  accepted proof and need explicit operator approval or a dedicated slice;
 - `blocked-production` for production claims without enough design or proof;
 - `deferred-safety` for physical-device access until a separate safety design
   is approved.
@@ -50,8 +50,8 @@ The template writer is also non-networked. It can write templates for
 `testnet-upstream`, `testnet-digest`, `iota-names-live`,
 `iota-identity-live`, `vc-validation-live`, `a2a-public-discovery`,
 `a2a-public-push-delivery`, `a2a-external-conformance`,
-`payment-provider-live`, `package-publication`, `marketplace-production`, and
-`custody-production`. Generated templates keep
+`payment-provider-live`, `package-publication`, `marketplace-production`,
+`custody-production`, and `device-access-safety`. Generated templates keep
 `result=pending-operator-proof`; a readiness gate will not accept the report
 until a real operator-approved proof run replaces that status with passing
 evidence.
@@ -120,6 +120,14 @@ hosts, marketplace systems, or physical devices.
 - Keeps package publication, public A2A hosting, live payment/provider proof,
   production marketplace, custody, and physical-device access out of automatic
   local verification claims.
+- Points physical-device safety review at the non-networked
+  `npm run proof:device-access-safety-readiness` command, which validates the
+  virtual-only local safety gate plus an ignored structured owner-approved
+  safety report before manual acceptance.
+- Lets operators prepare that review with
+  `npm run device-access:write-safety-proof-bundle`, a redacted local bundle
+  that writes the safety report template, proof plan, readiness artifact, and
+  summary without contacting or operating physical devices.
 - Lets operators prepare public A2A hosting and conformance review with
   `npm run a2a:write-public-proof-plan`, a redacted local plan that lists
   command order, blocker codes, operator input names, and safety boundaries
@@ -127,6 +135,10 @@ hosts, marketplace systems, or physical devices.
   `npm run a2a:write-public-proof-bundle` command writes that plan, the public
   readiness artifact, and the discovery, push-delivery, and external
   conformance templates together as ignored local artifacts.
+- Lets operators wrap an operator-reviewed official A2A TCK
+  `reports/compatibility.json` file with
+  `npm run a2a:wrap-tck-conformance`, producing the accepted redacted
+  `a2a-external-conformance` report shape without contacting public endpoints.
 - Points package publication review at the non-networked
   `npm run proof:package-publication-readiness` command, which validates local
   package release proof plus an ignored structured npm publication report
@@ -141,7 +153,10 @@ hosts, marketplace systems, or physical devices.
 - Points production marketplace review at the non-networked
   `npm run proof:marketplace-readiness` command, which validates local
   marketplace read-model proof plus an ignored structured production
-  marketplace report before manual acceptance.
+  marketplace report before manual acceptance. Accepted reports must include
+  status-only provider, moderation, access-control, settlement, dispute, and
+  operations review sections, plus capability, reconciliation,
+  incident-response, and redaction check ids.
 - Lets operators prepare that review with
   `npm run marketplace:write-production-proof-plan`, a redacted local plan that
   lists marketplace review command order, required report fields, required
@@ -153,7 +168,10 @@ hosts, marketplace systems, or physical devices.
 - Points production custody review at the non-networked
   `npm run proof:custody-readiness` command, which validates local
   signer-reference proof plus an ignored structured custody report before
-  manual acceptance.
+  manual acceptance. Accepted reports must include status-only
+  signer-reference, custody-control, lifecycle, recovery, audit, incident, and
+  compliance review sections, plus module validation, operator access,
+  backup/restore, key lifecycle, and redaction check ids.
 - Lets operators prepare that review with
   `npm run custody:write-production-proof-plan`, a redacted local plan that
   lists custody review command order, required report fields, required check
@@ -165,6 +183,9 @@ hosts, marketplace systems, or physical devices.
 - Points live payment/provider review at the non-networked
   `npm run proof:payment-provider-readiness` command, which validates local
   x402/AP2 proof plus an ignored structured report before manual acceptance.
+  Accepted reports must be status-only: x402 facilitator verify, settle, and
+  payment-response confirmation, plus AP2 mandate-chain validation, checkout
+  receipt, payment receipt, and accountability review.
 - Lets operators prepare that review with
   `npm run payment:write-provider-proof-plan`, a redacted local plan that lists
   command order, required report fields, approval boundaries, and blocker
@@ -172,6 +193,14 @@ hosts, marketplace systems, or physical devices.
 - The adjacent `npm run payment:write-provider-proof-bundle` command writes
   that plan, the payment-provider readiness artifact, and the live payment
   provider report template together as ignored local artifacts.
+- Adds `npm run smoke:payment-provider-live -- --report <ignored-json-path>`
+  as the opt-in operator-approved x402 facilitator verify/settle smoke. It
+  reads ignored local x402 request and AP2 status proof inputs, contacts only
+  the configured x402 verify/settle endpoints, and writes the accepted
+  redacted report shape only after x402 and AP2 status checks pass.
+- The payment smoke is not part of default local verification. It must not be
+  run without payment-provider approval because settlement may submit a real
+  payment through the selected facilitator.
 - Lets operators generate ignored structured report templates with
   `npm run operator:write-report-template -- --kind <kind> --out <path>` so the
   report fields and required check ids match the existing readiness validators
@@ -232,7 +261,10 @@ hosts, marketplace systems, or physical devices.
   `npm run proof:a2a-public-readiness` command before any public endpoint is
   probed, then at `npm run smoke:a2a-public-discovery` and
   `npm run smoke:a2a-public-push-delivery` only after operator-approved public
-  HTTPS configuration exists.
+  HTTPS configuration exists. An operator-reviewed official TCK
+  `reports/compatibility.json` can be converted with
+  `npm run a2a:wrap-tck-conformance` instead of using the Vallum task-route
+  smoke for external conformance evidence.
 - Can write a redacted local JSON report for handoff/audit evidence before
   any live command is approved.
 - Reports command names and next gates without printing configured endpoints,
@@ -266,14 +298,17 @@ Use this report with the other proof gates:
 
 ```bash
 npm run roadmap:write-execution-proof-bundle -- --out tmp/vallum/roadmap-execution-proof-bundle.json
+npm run operator:write-blocker-resolution-plan -- --out tmp/vallum/blocker-resolution-plan.json
 npm run proof:product-status
 npm run proof:launch-readiness
 npm run proof:testnet-digest
 npm run proof:testnet-digest:live -- --report tmp/vallum/testnet-digest-proof.json
 npm run package:write-publication-proof-bundle -- --out tmp/vallum/package-publication-proof-bundle.json
 npm run payment:write-provider-proof-bundle -- --out tmp/vallum/payment-provider-proof-bundle.json
+npm run smoke:payment-provider-live -- --report tmp/vallum/payment-provider-live-report.json
 npm run a2a:write-public-proof-plan -- --out tmp/vallum/a2a-public-proof-plan.json
 npm run a2a:write-public-proof-bundle -- --out tmp/vallum/a2a-public-proof-bundle.json
+npm run a2a:wrap-tck-conformance -- --compatibility <reports/compatibility.json> --out tmp/vallum/a2a-external-conformance-report.json --public-agent-card-url <url> --public-base-url <url>
 npm run proof:a2a-public-readiness
 npm run proof:package-publication-readiness
 npm run proof:payment-provider-readiness
@@ -283,6 +318,9 @@ npm run marketplace:write-production-proof-plan -- --out tmp/vallum/marketplace-
 npm run custody:write-production-proof-bundle -- --out tmp/vallum/custody-production-proof-bundle.json
 npm run proof:custody-readiness
 npm run custody:write-production-proof-plan -- --out tmp/vallum/custody-production-proof-plan.json
+npm run device-access:write-safety-proof-bundle -- --out tmp/vallum/device-access-safety-proof-bundle.json
+npm run proof:device-access-safety-readiness
+npm run device-access:write-safety-proof-plan -- --out tmp/vallum/device-access-safety-proof-plan.json
 npm run live:write-proof-plan -- --out tmp/vallum/live-proof-plan.json
 npm run live:write-identity-proof-bundle -- --out tmp/vallum/identity-proof-bundle.json
 npm run proof:live-status -- --out tmp/vallum/live-proof-status.json
@@ -301,11 +339,14 @@ VALLUM_SPONSOR_FAUCET_REPORT=tmp/vallum/sponsor-faucet-request.json npm run proo
 npm run sponsor:check-funding -- --report tmp/vallum/sponsor-funding-report.json
 npm run operator:write-report-template -- --kind package-publication --out tmp/vallum/package-publication-report-template.json
 npm run operator:write-report-template -- --kind payment-provider-live --out tmp/vallum/payment-provider-live-report-template.json
+npm run smoke:payment-provider-live -- --report tmp/vallum/payment-provider-live-report.json
 npm run operator:write-report-template -- --kind marketplace-production --out tmp/vallum/marketplace-production-report-template.json
 npm run operator:write-report-template -- --kind custody-production --out tmp/vallum/custody-production-report-template.json
+npm run operator:write-report-template -- --kind device-access-safety --out tmp/vallum/device-access-safety-report-template.json
 npm run operator:write-report-template -- --kind a2a-public-discovery --out tmp/vallum/a2a-public-discovery-report-template.json
 npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/vallum/a2a-public-push-delivery-report-template.json
 npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/vallum/a2a-external-conformance-report-template.json
+npm run a2a:wrap-tck-conformance -- --compatibility <reports/compatibility.json> --out tmp/vallum/a2a-external-conformance-report.json --public-agent-card-url <url> --public-base-url <url>
 npm run smoke:a2a-public-discovery
 npm run smoke:a2a-public-push-delivery
 npm run verify:fast
@@ -326,10 +367,20 @@ npm run smoke:iota-identity-live -- --report tmp/vallum/iota-identity-live-repor
 The aggregate roadmap execution proof bundle is a non-networked handoff packet:
 it writes the current product, launch, operator-gate, and roadmap-completion
 artifacts plus the existing identity, package publication, public A2A,
-payment-provider, marketplace, and custody proof-preparation bundles. It does
+payment-provider, marketplace, custody, and device-access safety
+proof-preparation bundles. It does
 not run the approval-required live or production commands and does not make a
 live IOTA Names, IOTA Identity, VC, npm, public A2A, payment, marketplace,
 custody, or physical-device claim.
+
+The blocker-resolution plan is the operator-facing consolidation over that
+roadmap bundle. It writes the same ignored proof-preparation artifacts, then
+groups remaining blocker codes by proof area with required environment variable
+names, accepted report env names, required structured report fields, evidence
+artifact names, non-networked preparation commands, and approval-required
+commands. It does not contact live services or print configured endpoint
+values, tokens, report contents, response bodies, payment instruments, signer
+material, or secret local paths.
 
 The `--skip-reserve` diagnostic is reachability triage only. It cannot clear
 `testnet-upstream`; the full diagnostic without `--skip-reserve` must pass

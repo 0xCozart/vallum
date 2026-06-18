@@ -32,8 +32,10 @@ surface in one machine-checkable place:
   local evidence gate;
 - payment-provider readiness wiring that checks local x402/AP2 source and test
   proof, then accepts only an operator-supplied redacted structured report path
-  before moving live payment/provider evidence to manual review, with an
-  optional redacted mode-600 local readiness artifact for audit snapshots;
+  with status-only x402 verify/settle/payment-response evidence and AP2
+  mandate-chain/checkout/payment/accountability evidence before moving live
+  payment/provider evidence to manual review, with an optional redacted
+  mode-600 local readiness artifact for audit snapshots;
 - payment-provider proof-plan wiring that writes a redacted non-networked
   command/report checklist with kind
   `vallum.payment-provider-proof-plan` before any operator-approved
@@ -41,6 +43,10 @@ surface in one machine-checkable place:
 - payment-provider proof-bundle wiring that writes the report template, proof
   plan, readiness artifact, and redacted summary together as ignored local
   artifacts before any operator-approved x402/AP2 provider proof is attempted;
+- payment-provider live smoke wiring that can produce the accepted redacted
+  `vallum.payment-provider-live-proof` report from operator-approved x402
+  verify/settle endpoints, an ignored x402 request envelope, and status-only
+  AP2 proof input;
 - package-publication readiness wiring that checks local package release docs,
   pack dry-runs, tarball install smoke, opt-in publish dry-run, and accepts only
   an operator-supplied redacted structured npm publication report path before
@@ -50,9 +56,10 @@ surface in one machine-checkable place:
   is attempted;
 - marketplace readiness wiring that checks local read-model source, docs,
   tests, smoke wiring, and accepts only an operator-supplied redacted structured
-  production marketplace report path before moving marketplace evidence to
-  manual review, with an optional redacted mode-600 local readiness artifact
-  for audit snapshots;
+  production marketplace report path with status-only provider, moderation,
+  access-control, settlement, dispute, and operations review sections before
+  moving marketplace evidence to manual review, with an optional redacted
+  mode-600 local readiness artifact for audit snapshots;
 - marketplace-production proof-plan wiring that writes a redacted non-networked
   command/report checklist before any operator-approved production marketplace
   review is attempted;
@@ -62,12 +69,13 @@ surface in one machine-checkable place:
   attempted;
 - custody readiness wiring that checks local signer-reference account source,
   docs, tests, build coverage, and accepts only an operator-supplied redacted
-  structured production custody report path before moving custody evidence to
-  manual review, with an optional redacted mode-600 local readiness artifact
-  for audit snapshots;
+  structured production custody report path with status-only signer-reference,
+  custody-control, lifecycle, recovery, audit, incident, and compliance review
+  sections before moving custody evidence to manual review, with an optional
+  redacted mode-600 local readiness artifact for audit snapshots;
 - custody-production proof-plan wiring that writes a redacted non-networked
-  command/report checklist before any operator-approved custody, KMS, recovery,
-  legal, or incident-response review is attempted;
+  command/report checklist before any operator-approved custody, KMS, module,
+  lifecycle, recovery, legal, or incident-response review is attempted;
 - operator report-template wiring that writes ignored local structured JSON
   templates for package publication, payment-provider, marketplace, custody,
   and public A2A reports while keeping `result=pending-operator-proof` until a
@@ -112,8 +120,9 @@ live gates are all clear; it does not replace any live/testnet, publication,
 public A2A, payment, marketplace, custody, or safety proof.
 
 For an operator handoff packet that writes the roadmap audit plus all existing
-identity, package publication, public A2A, payment-provider, marketplace, and
-custody proof-preparation bundles into one ignored artifact directory, use
+identity, package publication, public A2A, payment-provider, marketplace,
+custody, and device-access safety proof-preparation bundles into one ignored
+artifact directory, use
 `npm run roadmap:write-execution-proof-bundle -- --out
 tmp/vallum/roadmap-execution-proof-bundle.json`. The aggregate bundle is still
 only preparation evidence; it does not clear live or production blockers.
@@ -187,13 +196,18 @@ content.
 - Live IOTA Names, IOTA Identity, VC, payment, or A2A proof unless the
   corresponding opt-in live command is configured and passes.
 - Live x402/AP2 facilitator, processor, or settlement proof unless
-  `npm run proof:payment-provider-readiness` validates an ignored structured
-  report and the operator manually accepts it.
+  `npm run smoke:payment-provider-live -- --report <ignored-json-path>`
+  generates an ignored structured report or the operator supplies an equivalent
+  reviewed report, then `npm run proof:payment-provider-readiness` validates
+  that report containing status-only `x402Proof` and `ap2Proof` sections and
+  the operator manually accepts it.
 - Public A2A hosting, production key management, external conformance, public
   push delivery, or production auth decisions unless
   `npm run proof:a2a-public-readiness` validates the required public
-  configuration and ignored structured reports and the operator manually
-  accepts them.
+  configuration and ignored structured reports. External conformance can come
+  from the opt-in Vallum smoke report or from
+  `npm run a2a:wrap-tck-conformance` wrapping an operator-reviewed official A2A
+  TCK compatibility report, then the operator manually accepts the evidence.
 - Any operator report template by itself. Templates remain
   `pending-operator-proof` and do not clear readiness blockers.
 - Production marketplace, provider verification, moderation, public scoring, or
@@ -231,6 +245,7 @@ npm run operator:write-report-template -- --kind a2a-public-push-delivery --out 
 npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/vallum/a2a-external-conformance-report-template.json
 npm run a2a:write-public-proof-plan -- --out tmp/vallum/a2a-public-proof-plan.json
 npm run a2a:write-public-proof-bundle -- --out tmp/vallum/a2a-public-proof-bundle.json
+npm run a2a:wrap-tck-conformance -- --compatibility <reports/compatibility.json> --out tmp/vallum/a2a-external-conformance-report.json --public-agent-card-url <url> --public-base-url <url>
 npm run proof:a2a-public-readiness
 npm run operator:write-report-template -- --kind package-publication --out tmp/vallum/package-publication-report-template.json
 npm run package:write-publication-proof-bundle -- --out tmp/vallum/package-publication-proof-bundle.json
@@ -238,6 +253,7 @@ npm run proof:package-publication-readiness
 npm run package:write-publication-proof-plan -- --out tmp/vallum/package-publication-proof-plan.json
 npm run operator:write-report-template -- --kind payment-provider-live --out tmp/vallum/payment-provider-live-report-template.json
 npm run payment:write-provider-proof-bundle -- --out tmp/vallum/payment-provider-proof-bundle.json
+npm run smoke:payment-provider-live -- --report tmp/vallum/payment-provider-live-report.json
 npm run proof:payment-provider-readiness
 npm run operator:write-report-template -- --kind marketplace-production --out tmp/vallum/marketplace-production-report-template.json
 npm run marketplace:write-production-proof-bundle -- --out tmp/vallum/marketplace-production-proof-bundle.json

@@ -8796,8 +8796,8 @@ User-visible outcome:
 Operators can run one non-networked command to write the current roadmap
 completion audit, product status, launch readiness, operator-gate report, and
 all existing proof-preparation bundles for the remaining identity, package
-publication, public A2A, payment-provider, marketplace, and custody gates into
-one ignored artifact directory.
+publication, public A2A, payment-provider, marketplace, custody, and
+device-access safety gates into one ignored artifact directory.
 
 Likely files:
 
@@ -8841,9 +8841,9 @@ Verification:
 
 Dependencies:
 Existing identity, package-publication, public-A2A, payment-provider,
-marketplace-production, and custody-production proof bundle writers; product
-status, launch readiness, operator live-gate, and roadmap-completion artifact
-writers.
+marketplace-production, custody-production, and device-access safety proof
+bundle writers; product status, launch readiness, operator live-gate, and
+roadmap-completion artifact writers.
 
 Risk:
 Low to medium. This improves operator handoff ergonomics, but an aggregate

@@ -103,6 +103,7 @@ These questions block production marketplace work:
 | Live A2A discovery | Unproven live. Local signed-card and loopback server proof exists only for deterministic local JWS signing, trusted-key verification, and local authenticated task routes. | Prove public well-known hosting, production key distribution/rotation, external client discovery, and task/message protocol boundaries before claiming A2A interoperability. |
 | Access control for logs and receipts | Local marketplace receipt access-control tests exist for buyer/provider/operator/reviewer views. | Broaden to production API/session authorization before exposing buyer/provider/operator records outside local proof. |
 | Dispute evidence walkthrough | Local redacted dispute bundle links manifest, receipt, template, transaction digest, and standards evidence with a stable hash. | Build reviewer workflow, retention, appeal, and moderation process before production dispute operation. |
+| Production review snapshot | The marketplace package can build a local status-only review snapshot for required provider, moderation, access-control, settlement, dispute, operations, incident-response, and redaction checks. Missing checks remain pending and notes are redacted. | Use the snapshot as operator preparation only; it does not replace the ignored `MARKETPLACE_PRODUCTION_REPORT` structured report required by the production readiness gate. |
 | Data-license workflows | Implemented locally/mock only. | Prove production provider access, access control, legal terms, live payment, and dispute handling before marketplace use. |
 | Reputation scoring | Local reputation receipt evidence exists; public scoring is not implemented. | Design anti-gaming, low-value spam resistance, and source-of-truth rules before any public marketplace ranking claim. |
 | Subscription operations | Local subscription entitlement evidence exists; recurring billing and production access enforcement are not implemented. | Prove provider access control, renewal billing, cancellation/refund policy, legal terms handling, and partial-failure receipts before marketplace subscription use. |
@@ -115,7 +116,10 @@ These questions block production marketplace work:
 Marketplace implementation remains blocked for production and public launch.
 The first safe marketplace-adjacent read-only package now proves how
 marketplace pages would consume existing registry, policy, contract metadata,
-receipt, and standards bridge outputs.
+receipt, standards bridge outputs, and status-only production review snapshots.
+The review snapshot model keeps required production checks pending until an
+operator supplies real review evidence, so it does not clear production
+marketplace readiness on its own.
 
 `npm run proof:marketplace-readiness` now provides the non-networked production
 marketplace readiness gate. It checks local marketplace source, docs, tests,
@@ -170,9 +174,15 @@ marketplace readiness without an operator-approved structured report.
 The structured report must be status-only JSON with `schemaVersion=1`,
 `kind=vallum.marketplace-production-proof`, `result=passed`, a recent
 `observedAt`, `environment=testnet` or `environment=production`, and check ids
-for provider onboarding, provider verification, moderation/abuse response,
-session authorization, receipt access, payment settlement, dispute workflow,
-and operations/incident review. It must not include provider secrets, session
+for provider onboarding, provider verification, provider capability,
+moderation/abuse response, session authorization, receipt access, payment
+settlement, settlement reconciliation, dispute workflow, operations/incident
+review, incident response, and redaction review. It also must include passing
+status-only sections named `providerReview`, `moderationReview`,
+`accessReview`, `settlementReview`, `disputeReview`, and `operationsReview`.
+These sections must summarize only review status, not raw provider records,
+moderation evidence, API traffic, payment evidence, dispute artifacts, incident
+details, or account data. The report must not include provider secrets, session
 data, payment credentials, authorization headers, raw payloads, signatures,
 private prompts, or local secret paths.
 

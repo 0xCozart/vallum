@@ -148,9 +148,13 @@ A2A proof:
 - `npm run smoke:a2a-http`
 - `npm run smoke:a2a-local-server`
 - `npm run smoke:a2a-static-discovery-local`
+- `npm run smoke:a2a-public-discovery`
+- `npm run smoke:a2a-public-push-delivery`
+- `npm run smoke:a2a-external-conformance`
 - `npm run proof:a2a-public-readiness`
 - `npm run a2a:write-public-proof-plan`
 - `npm run a2a:write-public-proof-bundle`
+- `npm run a2a:wrap-tck-conformance`
 - `npm run a2a:write-static-discovery-bundle`
 - `npm run a2a:check-static-discovery-bundle`
 - `npm run a2a:write-static-hosting-review`
@@ -182,6 +186,7 @@ Readiness/product gates:
 - `npm run proof:operator-gates`
 - `npm run proof:roadmap-completion`
 - `npm run roadmap:write-execution-proof-bundle`
+- `npm run operator:write-blocker-resolution-plan`
 - `npm run operator:write-live-gate-report`
 - `npm run operator:write-report-template`
 - `npm run proof:verification-profiles`
@@ -189,6 +194,7 @@ Readiness/product gates:
 - `npm run package:write-publication-proof-plan`
 - `npm run package:write-publication-proof-bundle`
 - `npm run proof:payment-provider-readiness`
+- `npm run smoke:payment-provider-live`
 - `npm run payment:write-provider-proof-plan`
 - `npm run payment:write-provider-proof-bundle`
 - `npm run proof:marketplace-readiness`
@@ -197,6 +203,9 @@ Readiness/product gates:
 - `npm run proof:custody-readiness`
 - `npm run custody:write-production-proof-plan`
 - `npm run custody:write-production-proof-bundle`
+- `npm run proof:device-access-safety-readiness`
+- `npm run device-access:write-safety-proof-plan`
+- `npm run device-access:write-safety-proof-bundle`
 
 Publication checks:
 
@@ -278,8 +287,10 @@ External proof boundaries:
   security changes.
 - Public A2A work must keep key management, endpoint ownership, push delivery,
   external conformance, and public hosting separate.
-- Physical device access remains safety-deferred; only virtual or simulated
-  work is allowed until a separate safety design is approved.
+- Physical device access remains safety-deferred; the repo has a
+  non-networked `DEVICE_ACCESS_SAFETY_REPORT` readiness path, but only virtual
+  or simulated work is allowed until a separate safety design and structured
+  report are approved.
 - `.env`, Gas Station rendered config, local proof reports, Apex manifests,
   local handoffs, and generated runtime artifacts must stay ignored.
 

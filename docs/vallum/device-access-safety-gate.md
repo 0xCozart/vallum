@@ -1,6 +1,6 @@
 # Device Access Safety Gate
 
-Last updated: 2026-06-10.
+Last updated: 2026-06-17.
 
 ## Decision
 
@@ -63,11 +63,42 @@ Physical device access cannot start until a later owner-approved design records:
 - localnet/testnet proof path that cannot trigger real-world motion or access
 - legal and regulatory review owner, if the device class requires one
 
+## Structured Proof Path
+
+The repository now has a non-networked readiness gate for this future approval
+path:
+
+```bash
+npm run proof:device-access-safety-readiness
+npm run device-access:write-safety-proof-bundle -- --out tmp/vallum/device-access-safety-proof-bundle.json
+```
+
+The bundle writes an ignored report template, proof plan, readiness artifact,
+and summary under `tmp/vallum/`. Those files are not passing evidence by
+themselves. They only define the owner-approved report shape required before
+`DEVICE_ACCESS_SAFETY_REPORT` may clear the product-status safety blocker.
+
+An accepted report must be a redacted `vallum.device-access-safety-proof`
+JSON document with `result="passed"`, `deviceAccessMode="physical-approved"`,
+a fresh `observedAt`, and all required safety-review check ids. It also must
+include passing status-only sections named `hazardReview`,
+`accountabilityReview`, `authorizationReview`, `revocationReview`,
+`expiryReview`, `auditPrivacyReview`, `incidentReview`, `credentialReview`,
+`proofPathReview`, and `legalReview`. These sections must summarize only
+review status, not device records, raw safety evidence, access-control traffic,
+credential material, incident details, or legal documents. The report must not
+include device credentials, access tokens, authorization headers, raw payloads,
+private incident details, or local secret paths.
+
 ## Verification For This Gate
 
-This gate is verified by docs and regression tests only:
+This gate is verified by docs, readiness scripts, and regression tests only:
 
 - docs state the physical-device blocker and virtual-only future path
+- `npm run proof:device-access-safety-readiness` fails closed until
+  `DEVICE_ACCESS_SAFETY_REPORT` points at a valid ignored structured report
+- `npm run device-access:write-safety-proof-bundle` prepares the redacted
+  operator-owned proof path without contacting physical devices
 - no `contracts/device_access_lease_v1` implementation is claimed
 - no SDK, receipt, metadata, marketplace, MCP, or package script exposes device
   access as a working product path
