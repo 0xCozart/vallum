@@ -22,6 +22,12 @@ export interface A2APublicProofPlanCheck {
   readonly next: string;
 }
 
+export interface A2APublicProofPlanConditionalOperatorInput {
+  readonly input: string;
+  readonly requiredWhen: string;
+  readonly secret: boolean;
+}
+
 export interface A2APublicProofPlan {
   readonly schemaVersion: 1;
   readonly kind: "vallum.a2a-public-proof-plan";
@@ -35,6 +41,7 @@ export interface A2APublicProofPlan {
   readonly checks: readonly A2APublicProofPlanCheck[];
   readonly boundaries: readonly string[];
   readonly requiredOperatorInputs: readonly string[];
+  readonly conditionalOperatorInputs: readonly A2APublicProofPlanConditionalOperatorInput[];
 }
 
 interface CliOptions {
@@ -58,6 +65,14 @@ const REQUIRED_OPERATOR_INPUTS = [
   "A2A_PUBLIC_DISCOVERY_REPORT",
   "A2A_PUBLIC_PUSH_DELIVERY_REPORT",
   "A2A_EXTERNAL_CONFORMANCE_REPORT",
+] as const;
+
+const CONDITIONAL_OPERATOR_INPUTS: readonly A2APublicProofPlanConditionalOperatorInput[] = [
+  {
+    input: "A2A_PUBLIC_TASK_BEARER_TOKEN",
+    requiredWhen: "A2A_PUBLIC_TASK_AUTH_DECISION=bearer and using npm run smoke:a2a-external-conformance",
+    secret: true,
+  },
 ] as const;
 
 const PLAN_COMMANDS: readonly A2APublicProofPlanCommand[] = [
@@ -98,6 +113,18 @@ const PLAN_COMMANDS: readonly A2APublicProofPlanCommand[] = [
     requiresOperatorApproval: true,
   },
   {
+    id: "smoke-external-conformance",
+    command: "npm run smoke:a2a-external-conformance -- --report <local-report-path>",
+    contactsPublicNetwork: true,
+    requiresOperatorApproval: true,
+  },
+  {
+    id: "wrap-official-tck-conformance",
+    command: "npm run a2a:wrap-tck-conformance -- --compatibility <reports/compatibility.json> --out <local-report-path> --public-agent-card-url <url> --public-base-url <url>",
+    contactsPublicNetwork: false,
+    requiresOperatorApproval: true,
+  },
+  {
     id: "check-public-readiness",
     command: "npm run proof:a2a-public-readiness",
     contactsPublicNetwork: false,
@@ -107,7 +134,9 @@ const PLAN_COMMANDS: readonly A2APublicProofPlanCommand[] = [
 
 const BOUNDARIES = [
   "This plan is non-networked and does not prove public hosting.",
-  "Only smoke-public-discovery and smoke-public-push-delivery contact public A2A endpoints or callbacks, and both require operator approval.",
+  "Only smoke-public-discovery, smoke-public-push-delivery, and smoke-external-conformance contact public A2A endpoints or callbacks, and all require operator approval.",
+  "The built-in external conformance smoke requires a locally configured bearer token only when the selected public task auth decision is bearer.",
+  "The official TCK wrapper is non-networked, but it must only wrap an operator-reviewed reports/compatibility.json from the official A2A TCK run.",
   "Do not commit report files, public proof outputs, credentials, private keys, bearer tokens, webhook secrets, raw payloads, or response bodies.",
   "ready-for-approval means the evidence packet is reviewable; it is not production A2A conformance by itself.",
 ] as const;
@@ -162,6 +191,7 @@ export function buildA2APublicProofPlan(
     checks,
     boundaries: BOUNDARIES,
     requiredOperatorInputs: REQUIRED_OPERATOR_INPUTS,
+    conditionalOperatorInputs: CONDITIONAL_OPERATOR_INPUTS,
   };
 }
 

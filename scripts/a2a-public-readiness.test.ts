@@ -229,6 +229,109 @@ test("A2A public readiness accepts redacted public config and existing conforman
   }
 });
 
+test("A2A public readiness accepts official A2A TCK compatibility evidence", async () => {
+  const cwd = await writeA2AEvidence();
+  try {
+    await writeJsonReport(join(cwd, "a2a-tck-conformance-report.json"), {
+      schemaVersion: 1,
+      kind: "a2a-external-conformance",
+      result: "passed",
+      observedAt: NOW.toISOString(),
+      publicAgentCardUrl: "https://agents.example/.well-known/agent-card.json",
+      publicBaseUrl: "https://agents.example/a2a",
+      checks: ["agent-card", "official-a2a-tck", "http-json-must"],
+      runner: "a2a-tck",
+      tckCompatibility: officialTckCompatibilityReport(),
+    });
+    const report = await checkA2APublicReadiness({
+      cwd,
+      scripts: completeScripts(),
+      env: {
+        A2A_PUBLIC_AGENT_CARD_URL: "https://agents.example/.well-known/agent-card.json",
+        A2A_PUBLIC_BASE_URL: "https://agents.example/a2a",
+        A2A_PUBLIC_JWKS_URL: "https://agents.example/.well-known/jwks.json",
+        A2A_PUBLIC_TASK_AUTH_DECISION: "bearer",
+        A2A_EXTERNAL_CONFORMANCE_REPORT: "a2a-tck-conformance-report.json",
+      },
+      now: NOW,
+    });
+    const formatted = formatA2APublicReadinessReport(report);
+
+    assert.equal(findCheck(report, "external-conformance").status, "ready-approval");
+    assert.equal(findCheck(report, "external-conformance").code, "A2A_EXTERNAL_CONFORMANCE_REPORT_VALID");
+    assert.equal(report.publicReady, false, "public discovery and push delivery proof are still missing");
+    assert.doesNotMatch(formatted, /agents\.example|a2a-tck-conformance-report|bearer/i);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("A2A public readiness rejects official A2A TCK evidence with remaining MUST failures", async () => {
+  const cwd = await writeA2AEvidence();
+  try {
+    const baseTck = officialTckCompatibilityReport();
+    const baseTckSummary = baseTck.summary as Record<string, unknown>;
+    const baseTckRequirements = baseTck.per_requirement as Record<string, unknown>;
+    await writeJsonReport(join(cwd, "a2a-tck-conformance-report.json"), {
+      schemaVersion: 1,
+      kind: "a2a-external-conformance",
+      result: "passed",
+      observedAt: NOW.toISOString(),
+      publicAgentCardUrl: "https://agents.example/.well-known/agent-card.json",
+      publicBaseUrl: "https://agents.example/a2a",
+      checks: ["agent-card", "official-a2a-tck", "http-json-must"],
+      runner: "a2a-tck",
+      tckCompatibility: {
+        ...baseTck,
+        summary: {
+          ...baseTckSummary,
+          must_compatibility: "99.0%",
+        },
+        per_transport: {
+          "HTTP+JSON": {
+            total: 88,
+            passed: 73,
+            failed: 1,
+            skipped: 14,
+          },
+        },
+        per_requirement: {
+          ...baseTckRequirements,
+          "CORE-SEND-003": {
+            level: "MUST",
+            status: "FAIL",
+            transports: { "HTTP+JSON": "FAIL" },
+            errors: ["redacted failure"],
+            test_ids: ["test_content_type_not_supported_error_32005"],
+          },
+        },
+      },
+    });
+    const report = await checkA2APublicReadiness({
+      cwd,
+      scripts: completeScripts(),
+      env: {
+        A2A_PUBLIC_AGENT_CARD_URL: "https://agents.example/.well-known/agent-card.json",
+        A2A_PUBLIC_BASE_URL: "https://agents.example/a2a",
+        A2A_PUBLIC_JWKS_URL: "https://agents.example/.well-known/jwks.json",
+        A2A_PUBLIC_TASK_AUTH_DECISION: "bearer",
+        A2A_EXTERNAL_CONFORMANCE_REPORT: "a2a-tck-conformance-report.json",
+      },
+      now: NOW,
+    });
+    const formatted = formatA2APublicReadinessReport(report);
+
+    assert.equal(report.publicReady, false);
+    assert.equal(
+      findCheck(report, "external-conformance").code,
+      "A2A_EXTERNAL_CONFORMANCE_REPORT_TCK_MUST_COMPATIBILITY_INCOMPLETE",
+    );
+    assert.doesNotMatch(formatted, /agents\.example|a2a-tck-conformance-report|redacted failure|bearer/i);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
 test("A2A public readiness accepts redacted public push delivery evidence after approved proof", async () => {
   const cwd = await writeA2AEvidence();
   try {
@@ -276,6 +379,57 @@ test("A2A public readiness accepts redacted public push delivery evidence after 
     assert.equal(findCheck(report, "public-push-delivery").code, "A2A_PUBLIC_PUSH_DELIVERY_REPORT_VALID");
     assert.equal(findCheck(report, "external-conformance").status, "ready-approval");
     assert.doesNotMatch(formatted, /agents\.example|a2a-public-discovery-report|a2a-public-push-report|a2a-conformance-report|oauth2/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("A2A public readiness hydrates public proof evidence from local env", async () => {
+  const cwd = await writeA2AEvidence();
+  try {
+    await writeJsonReport(join(cwd, "a2a-public-discovery-report.json"), publicDiscoveryReport());
+    await writeJsonReport(join(cwd, "a2a-conformance-report.json"), {
+      schemaVersion: 1,
+      kind: "a2a-external-conformance",
+      result: "passed",
+      observedAt: NOW.toISOString(),
+      publicAgentCardUrl: "https://agents.example/.well-known/agent-card.json",
+      publicBaseUrl: "https://agents.example/a2a",
+      checks: ["agent-card", "task-route"],
+    });
+    await writeJsonReport(join(cwd, "a2a-public-push-report.json"), {
+      schemaVersion: 1,
+      kind: "a2a-public-push-delivery",
+      result: "passed",
+      observedAt: NOW.toISOString(),
+      publicBaseUrl: "https://agents.example/a2a",
+      callbackStatus: 204,
+      attempts: 1,
+    });
+    await writeFile(join(cwd, ".env"), [
+      "A2A_PUBLIC_AGENT_CARD_URL=https://agents.example/.well-known/agent-card.json",
+      "A2A_PUBLIC_BASE_URL=https://agents.example/a2a",
+      "A2A_PUBLIC_JWKS_URL=https://agents.example/.well-known/jwks.json",
+      "A2A_PUBLIC_TASK_AUTH_DECISION=oauth2",
+      "A2A_PUBLIC_TASK_BEARER_TOKEN=super-secret-token",
+      "A2A_PUBLIC_DISCOVERY_REPORT=a2a-public-discovery-report.json",
+      "A2A_PUBLIC_PUSH_DELIVERY_REPORT=a2a-public-push-report.json",
+      "A2A_EXTERNAL_CONFORMANCE_REPORT=a2a-conformance-report.json",
+      "",
+    ].join("\n"));
+
+    const report = await checkA2APublicReadiness({ cwd, scripts: completeScripts(), now: NOW });
+    const formatted = formatA2APublicReadinessReport(report);
+
+    assert.equal(report.localProofOk, true);
+    assert.equal(report.publicReady, true);
+    assert.equal(findCheck(report, "public-discovery").code, "A2A_PUBLIC_DISCOVERY_REPORT_VALID");
+    assert.equal(findCheck(report, "public-push-delivery").code, "A2A_PUBLIC_PUSH_DELIVERY_REPORT_VALID");
+    assert.equal(findCheck(report, "external-conformance").code, "A2A_EXTERNAL_CONFORMANCE_REPORT_VALID");
+    assert.doesNotMatch(
+      formatted,
+      /agents\.example|a2a-public-discovery-report|a2a-public-push-report|a2a-conformance-report|oauth2|super-secret-token/i,
+    );
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }
@@ -411,6 +565,44 @@ function publicDiscoveryReport(): Record<string, unknown> {
     publicJwksUrl: "https://agents.example/.well-known/jwks.json",
     taskAuthDecision: "oauth2",
     checks: ["public-config", "public-agent-card", "public-jwks"],
+  };
+}
+
+function officialTckCompatibilityReport(): Record<string, unknown> {
+  return {
+    summary: {
+      timestamp: NOW.toISOString(),
+      sut_url: "https://agents.example/a2a",
+      spec_version: "1.0.0",
+      overall_compatibility: "100.0%",
+      must_compatibility: "100.0%",
+      should_compatibility: "100.0%",
+      may_compatibility: "100.0%",
+    },
+    per_requirement: {
+      "CORE-SEND-001": {
+        level: "MUST",
+        status: "PASS",
+        transports: { "HTTP+JSON": "PASS" },
+        errors: [],
+        test_ids: ["test_send_message_returns_task_or_message"],
+      },
+      "CORE-SEND-003": {
+        level: "MUST",
+        status: "PASS",
+        transports: { "HTTP+JSON": "PASS" },
+        errors: [],
+        test_ids: ["test_content_type_not_supported_error_32005"],
+      },
+    },
+    per_transport: {
+      "HTTP+JSON": {
+        total: 88,
+        passed: 74,
+        failed: 0,
+        skipped: 14,
+      },
+    },
   };
 }
 

@@ -33,6 +33,12 @@ export interface A2APublicProofBundleCheck {
   readonly next: string;
 }
 
+export interface A2APublicProofBundleConditionalOperatorInput {
+  readonly input: string;
+  readonly requiredWhen: string;
+  readonly secret: boolean;
+}
+
 export interface A2APublicProofBundle {
   readonly schemaVersion: 1;
   readonly kind: "vallum.a2a-public-proof-bundle";
@@ -47,6 +53,7 @@ export interface A2APublicProofBundle {
   readonly readyApprovalCodes: readonly string[];
   readonly checks: readonly A2APublicProofBundleCheck[];
   readonly requiredOperatorInputs: readonly string[];
+  readonly conditionalOperatorInputs: readonly A2APublicProofBundleConditionalOperatorInput[];
   readonly requiredEvidenceArtifacts: readonly string[];
   readonly steps: readonly A2APublicProofBundleStep[];
   readonly boundaries: readonly string[];
@@ -93,10 +100,18 @@ const REQUIRED_OPERATOR_INPUTS = [
   "A2A_EXTERNAL_CONFORMANCE_REPORT",
 ] as const;
 
+const CONDITIONAL_OPERATOR_INPUTS: readonly A2APublicProofBundleConditionalOperatorInput[] = [
+  {
+    input: "A2A_PUBLIC_TASK_BEARER_TOKEN",
+    requiredWhen: "A2A_PUBLIC_TASK_AUTH_DECISION=bearer and using npm run smoke:a2a-external-conformance",
+    secret: true,
+  },
+] as const;
+
 const REQUIRED_EVIDENCE_ARTIFACTS = [
   "sanitized public A2A discovery smoke report",
   "sanitized public A2A push-delivery report",
-  "sanitized external A2A conformance report",
+  "sanitized Vallum external A2A conformance smoke report or redacted official A2A TCK compatibility wrapper",
   "static discovery hosting review artifact",
 ] as const;
 
@@ -104,6 +119,8 @@ const BOUNDARIES = [
   "This bundle writer is non-networked and only writes ignored local templates, a public A2A proof plan, a readiness artifact, and a bundle summary.",
   "The generated templates are pending-operator-proof artifacts; they do not clear public A2A readiness by themselves.",
   "Public discovery smoke, public push delivery, and external conformance checks contact operator-configured public systems and require explicit operator approval.",
+  "The built-in external conformance smoke requires a locally configured bearer token only when the selected public task auth decision is bearer.",
+  "The official TCK wrapper is non-networked, but it must only wrap an operator-reviewed reports/compatibility.json from the official A2A TCK run.",
   "Do not commit generated bundle artifacts, public endpoint values, report paths, credentials, private keys, bearer tokens, webhook secrets, raw payloads, response bodies, or local secret paths.",
 ] as const;
 
@@ -190,6 +207,7 @@ export async function writeA2APublicProofBundle(
     readyApprovalCodes: readyApproval.map((check) => check.code),
     checks,
     requiredOperatorInputs: REQUIRED_OPERATOR_INPUTS,
+    conditionalOperatorInputs: CONDITIONAL_OPERATOR_INPUTS,
     requiredEvidenceArtifacts: REQUIRED_EVIDENCE_ARTIFACTS,
     steps: buildSteps({
       planOutFile,
@@ -268,6 +286,20 @@ function buildSteps(input: {
       dependsOn: ["write-public-push-delivery-template"],
     },
     {
+      id: "run-external-conformance-smoke",
+      command: "npm run smoke:a2a-external-conformance -- --report tmp/vallum/a2a-external-conformance-report.json",
+      contactsPublicNetwork: true,
+      requiresOperatorApproval: true,
+      dependsOn: ["write-external-conformance-template"],
+    },
+    {
+      id: "wrap-official-tck-conformance",
+      command: "npm run a2a:wrap-tck-conformance -- --compatibility <reports/compatibility.json> --out tmp/vallum/a2a-external-conformance-report.json --public-agent-card-url <url> --public-base-url <url>",
+      contactsPublicNetwork: false,
+      requiresOperatorApproval: true,
+      dependsOn: ["write-external-conformance-template"],
+    },
+    {
       id: "check-public-readiness",
       command: `npm run proof:a2a-public-readiness -- --out ${input.readinessOutFile}`,
       contactsPublicNetwork: false,
@@ -275,7 +307,7 @@ function buildSteps(input: {
       dependsOn: [
         "run-public-discovery-smoke",
         "run-public-push-delivery-smoke",
-        "write-external-conformance-template",
+        "run-external-conformance-smoke or wrap-official-tck-conformance",
       ],
     },
   ];

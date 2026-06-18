@@ -126,6 +126,10 @@ export async function runA2APublicPushDeliverySmoke(
     if (!delivered) {
       return failed("A2A_PUBLIC_PUSH_DELIVERY_FAILED", "A2A public push delivery callback did not return a successful HTTP status.");
     }
+    const deliveredStatus = delivered.httpStatus;
+    if (!isSuccessStatus(deliveredStatus)) {
+      return failed("A2A_PUBLIC_PUSH_DELIVERY_FAILED", "A2A public push delivery callback did not return a successful HTTP status.");
+    }
 
     const checks = [
       passed("public-config", "A2A_PUBLIC_PUSH_CONFIG_SAFE", "A2A public push delivery configuration is safe to probe."),
@@ -137,7 +141,7 @@ export async function runA2APublicPushDeliverySmoke(
       source: "a2a-public-push-delivery",
       checks,
       attempts: attempts.length,
-      deliveredStatus: delivered.httpStatus,
+      deliveredStatus,
     };
     if (options.reportPath) {
       await writePushDeliveryReport(options.reportPath, {
@@ -146,7 +150,7 @@ export async function runA2APublicPushDeliverySmoke(
         result: "passed",
         observedAt: now.toISOString(),
         publicBaseUrl: base.toString(),
-        deliveryStatus: delivered.httpStatus,
+        deliveryStatus: deliveredStatus,
         attempts: attempts.length,
         checks: checks.map((check) => check.id),
       });

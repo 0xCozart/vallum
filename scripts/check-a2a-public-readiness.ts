@@ -2,6 +2,8 @@ import { access, chmod, mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { loadEnvFile } from "../apps/policy-gateway-service/src/readiness.js";
+
 export type A2APublicReadinessStatus =
   | "proven-local"
   | "blocked-local"
@@ -85,6 +87,7 @@ const A2A_PUBLIC_DISCOVERY_TEMPLATE_COMMAND = "npm run operator:write-report-tem
 const A2A_PUBLIC_PUSH_DELIVERY_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-public-push-delivery --out tmp/vallum/a2a-public-push-delivery-report-template.json";
 const A2A_PUBLIC_PUSH_DELIVERY_SMOKE_COMMAND = "npm run smoke:a2a-public-push-delivery -- --report <local-report-path>";
 const A2A_EXTERNAL_CONFORMANCE_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind a2a-external-conformance --out tmp/vallum/a2a-external-conformance-report-template.json";
+const LOCAL_ENV_FILE = ".env";
 
 const ARTIFACT_BOUNDARIES = [
   "This report is non-networked and does not contact public A2A endpoints.",
@@ -107,7 +110,7 @@ export async function checkA2APublicReadiness(
   options: A2APublicReadinessOptions = {},
 ): Promise<A2APublicReadinessReport> {
   const cwd = options.cwd ?? process.cwd();
-  const env = options.env ?? process.env;
+  const env = await resolveA2APublicReadinessEnv(cwd, options.env);
   const scripts = options.scripts ?? await loadPackageScripts(cwd);
   const now = options.now ?? new Date();
   const checks = [
@@ -177,6 +180,14 @@ export async function checkA2APublicReadiness(
   };
 }
 
+export async function resolveA2APublicReadinessEnv(
+  cwd: string,
+  env?: NodeJS.ProcessEnv | Record<string, string | undefined>,
+): Promise<Record<string, string | undefined>> {
+  const fileEnv = await loadOptionalLocalEnv(cwd);
+  return { ...fileEnv, ...(env ?? process.env) };
+}
+
 export function formatA2APublicReadinessReport(report: A2APublicReadinessReport): string {
   const lines = [
     `Vallum A2A public readiness ${report.publicReady ? "ready-for-approval" : "blocked"}`,
@@ -242,6 +253,14 @@ async function loadPackageScripts(cwd: string): Promise<Record<string, string | 
       scripts?: Record<string, string>;
     };
     return packageJson.scripts ?? {};
+  } catch {
+    return {};
+  }
+}
+
+async function loadOptionalLocalEnv(cwd: string): Promise<Record<string, string>> {
+  try {
+    return await loadEnvFile(LOCAL_ENV_FILE, cwd);
   } catch {
     return {};
   }
@@ -682,7 +701,7 @@ async function checkConformanceReport(
       code: "A2A_EXTERNAL_CONFORMANCE_REPORT_MISSING",
       message: "External A2A conformance evidence has not been supplied.",
       evidence: "missing=A2A_EXTERNAL_CONFORMANCE_REPORT",
-      next: `${A2A_EXTERNAL_CONFORMANCE_TEMPLATE_COMMAND}; provide a local structured conformance report path outside committed docs only after an operator-approved public A2A proof run.`,
+      next: `${A2A_EXTERNAL_CONFORMANCE_TEMPLATE_COMMAND}; run npm run smoke:a2a-external-conformance -- --report <ignored-json-path> with operator-approved bearer task-route config, or run npm run a2a:wrap-tck-conformance -- --compatibility <reports/compatibility.json> --out <ignored-json-path> --public-agent-card-url <url> --public-base-url <url> after an operator-reviewed official A2A TCK run.`,
     };
   }
 
@@ -869,6 +888,20 @@ async function readStructuredEvidenceReport(
     );
   }
 
+  if (options.kind === "a2a-external-conformance" && !hasExternalConformanceChecks(parsed.checks)) {
+    return structuredEvidenceFailure(
+      `${options.invalidCodePrefix}_CHECKS_INCOMPLETE`,
+      options.invalidMessage,
+      "configured-report-checks-incomplete",
+      "Provide external conformance evidence with agent-card and task-route or message-send checks.",
+    );
+  }
+
+  if (options.kind === "a2a-external-conformance") {
+    const tckValidation = validateTckCompatibility(parsed, options.invalidCodePrefix, options.invalidMessage);
+    if (!tckValidation.ok) return tckValidation;
+  }
+
   return { ok: true };
 }
 
@@ -908,6 +941,118 @@ function normalizeTaskAuthDecision(value: string | undefined): "bearer" | "oauth
   const normalized = value?.trim().toLowerCase();
   if (!normalized || !ALLOWED_TASK_AUTH_DECISIONS.has(normalized)) return undefined;
   return normalized as "bearer" | "oauth2" | "mtls";
+}
+
+function hasExternalConformanceChecks(value: unknown): boolean {
+  if (!Array.isArray(value)) return false;
+  const checks = new Set(value.filter((entry): entry is string => typeof entry === "string"));
+  return checks.has("agent-card")
+    && (
+      checks.has("task-route")
+      || checks.has("message-send")
+      || (checks.has("official-a2a-tck") && checks.has("http-json-must"))
+    );
+}
+
+function validateTckCompatibility(
+  parsed: Record<string, unknown>,
+  invalidCodePrefix: string,
+  invalidMessage: string,
+): StructuredEvidenceValidationResult {
+  const tckCompatibility = parsed.tckCompatibility;
+  if (tckCompatibility === undefined) return { ok: true };
+  if (!isRecord(tckCompatibility)) {
+    return structuredEvidenceFailure(
+      `${invalidCodePrefix}_TCK_INVALID_SHAPE`,
+      invalidMessage,
+      "configured-report-tck-invalid-shape",
+      "Provide the official A2A TCK compatibility JSON object under tckCompatibility.",
+    );
+  }
+
+  const summary = isRecord(tckCompatibility.summary) ? tckCompatibility.summary : undefined;
+  if (!summary) {
+    return structuredEvidenceFailure(
+      `${invalidCodePrefix}_TCK_SUMMARY_MISSING`,
+      invalidMessage,
+      "configured-report-tck-summary-missing",
+      "Provide the official A2A TCK summary object.",
+    );
+  }
+
+  const mustCompatibility = parsePercent(summary.must_compatibility);
+  if (mustCompatibility !== 100) {
+    return structuredEvidenceFailure(
+      `${invalidCodePrefix}_TCK_MUST_COMPATIBILITY_INCOMPLETE`,
+      invalidMessage,
+      "configured-report-tck-must-compatibility-incomplete",
+      "Provide official A2A TCK evidence with 100.0% MUST compatibility.",
+    );
+  }
+
+  const perTransport = isRecord(tckCompatibility.per_transport) ? tckCompatibility.per_transport : undefined;
+  const httpJson = perTransport && isRecord(perTransport["HTTP+JSON"]) ? perTransport["HTTP+JSON"] : undefined;
+  if (!httpJson || readNonNegativeNumber(httpJson.total) <= 0) {
+    return structuredEvidenceFailure(
+      `${invalidCodePrefix}_TCK_HTTP_JSON_TRANSPORT_MISSING`,
+      invalidMessage,
+      "configured-report-tck-http-json-transport-missing",
+      "Provide official A2A TCK evidence for the HTTP+JSON transport.",
+    );
+  }
+  if (readNonNegativeNumber(httpJson.failed) !== 0) {
+    return structuredEvidenceFailure(
+      `${invalidCodePrefix}_TCK_HTTP_JSON_FAILURES_PRESENT`,
+      invalidMessage,
+      "configured-report-tck-http-json-failures-present",
+      "Provide official A2A TCK HTTP+JSON evidence with zero failed tests.",
+    );
+  }
+
+  const perRequirement = isRecord(tckCompatibility.per_requirement) ? tckCompatibility.per_requirement : undefined;
+  if (!perRequirement) {
+    return structuredEvidenceFailure(
+      `${invalidCodePrefix}_TCK_REQUIREMENTS_MISSING`,
+      invalidMessage,
+      "configured-report-tck-requirements-missing",
+      "Provide official A2A TCK per-requirement results.",
+    );
+  }
+
+  for (const requirementId of ["CORE-SEND-001", "CORE-SEND-003"]) {
+    const requirement = isRecord(perRequirement[requirementId]) ? perRequirement[requirementId] : undefined;
+    if (!requirement || requirement.level !== "MUST" || requirement.status !== "PASS") {
+      return structuredEvidenceFailure(
+        `${invalidCodePrefix}_TCK_REQUIRED_MUST_NOT_PASSED`,
+        invalidMessage,
+        "configured-report-tck-required-must-not-passed",
+        "Provide official A2A TCK evidence where CORE-SEND-001 and CORE-SEND-003 pass.",
+      );
+    }
+    const transports = isRecord(requirement.transports) ? requirement.transports : {};
+    if (transports["HTTP+JSON"] !== "PASS") {
+      return structuredEvidenceFailure(
+        `${invalidCodePrefix}_TCK_REQUIRED_HTTP_JSON_NOT_PASSED`,
+        invalidMessage,
+        "configured-report-tck-required-http-json-not-passed",
+        "Provide official A2A TCK HTTP+JSON evidence where CORE-SEND-001 and CORE-SEND-003 pass.",
+      );
+    }
+  }
+
+  return { ok: true };
+}
+
+function parsePercent(value: unknown): number | undefined {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value !== "string") return undefined;
+  const match = /^(\d+(?:\.\d+)?)%$/.exec(value.trim());
+  if (!match) return undefined;
+  return Number(match[1]);
+}
+
+function readNonNegativeNumber(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : -1;
 }
 
 function parsePublicHttpsUrl(value: string): URL | undefined {

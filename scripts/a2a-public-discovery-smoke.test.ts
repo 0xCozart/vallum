@@ -193,7 +193,7 @@ function validAgentCard() {
         },
       },
     },
-    securityRequirements: [{ schemes: { vallumBearer: [] } }],
+    securityRequirements: [{ schemes: { vallumBearer: { list: [] } } }],
     defaultInputModes: ["text/plain", "application/json"],
     defaultOutputModes: ["text/plain", "application/json"],
     skills: [{

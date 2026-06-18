@@ -40,9 +40,20 @@ test("A2A public proof plan reports current blockers without configured values",
     assert.ok(plan.blockerCodes.includes("A2A_EXTERNAL_CONFORMANCE_REPORT_NOT_FOUND"));
     assert.ok(plan.readyApprovalCodes.includes("A2A_PUBLIC_TASK_AUTH_DECISION_PRESENT"));
     assert.ok(plan.requiredOperatorInputs.includes("A2A_PUBLIC_DISCOVERY_REPORT"));
+    assert.deepEqual(plan.conditionalOperatorInputs, [
+      {
+        input: "A2A_PUBLIC_TASK_BEARER_TOKEN",
+        requiredWhen: "A2A_PUBLIC_TASK_AUTH_DECISION=bearer and using npm run smoke:a2a-external-conformance",
+        secret: true,
+      },
+    ]);
     assert.ok(plan.commands.some((command) => command.id === "write-static-hosting-review" && !command.contactsPublicNetwork));
     assert.ok(plan.commands.some((command) => command.id === "smoke-public-discovery" && command.contactsPublicNetwork));
     assert.ok(plan.commands.some((command) => command.id === "smoke-public-push-delivery" && command.contactsPublicNetwork));
+    assert.ok(plan.commands.some((command) => command.id === "smoke-external-conformance" && command.contactsPublicNetwork));
+    assert.ok(plan.commands.some((command) => command.id === "wrap-official-tck-conformance" && !command.contactsPublicNetwork && command.requiresOperatorApproval));
+    assert.ok(plan.boundaries.some((boundary) => boundary.includes("smoke-external-conformance")));
+    assert.ok(plan.boundaries.some((boundary) => boundary.includes("official TCK wrapper")));
     assert.doesNotMatch(formatted, /agents\.example|oauth2|missing-discovery-report|missing-push-report|missing-conformance-report/);
   } finally {
     await rm(cwd, { recursive: true, force: true });

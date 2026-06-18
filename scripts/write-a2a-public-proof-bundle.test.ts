@@ -42,9 +42,27 @@ test("A2A public proof bundle writes templates, plan, and blocked summary withou
     assert.ok(bundle.readyApprovalCodes.includes("A2A_PUBLIC_AGENT_CARD_URL_CONFIG_PRESENT"));
     assert.ok(bundle.readyApprovalCodes.includes("A2A_PUBLIC_TASK_AUTH_DECISION_PRESENT"));
     assert.ok(bundle.requiredOperatorInputs.includes("A2A_PUBLIC_DISCOVERY_REPORT"));
-    assert.ok(bundle.requiredEvidenceArtifacts.includes("sanitized external A2A conformance report"));
+    assert.deepEqual(bundle.conditionalOperatorInputs, [
+      {
+        input: "A2A_PUBLIC_TASK_BEARER_TOKEN",
+        requiredWhen: "A2A_PUBLIC_TASK_AUTH_DECISION=bearer and using npm run smoke:a2a-external-conformance",
+        secret: true,
+      },
+    ]);
+    assert.ok(
+      bundle.requiredEvidenceArtifacts.includes(
+        "sanitized Vallum external A2A conformance smoke report or redacted official A2A TCK compatibility wrapper",
+      ),
+    );
     assert.equal(bundle.steps.find((step) => step.id === "run-public-discovery-smoke")?.contactsPublicNetwork, true);
     assert.equal(bundle.steps.find((step) => step.id === "run-public-push-delivery-smoke")?.contactsPublicNetwork, true);
+    assert.equal(bundle.steps.find((step) => step.id === "run-external-conformance-smoke")?.contactsPublicNetwork, true);
+    assert.equal(bundle.steps.find((step) => step.id === "wrap-official-tck-conformance")?.contactsPublicNetwork, false);
+    assert.equal(bundle.steps.find((step) => step.id === "wrap-official-tck-conformance")?.requiresOperatorApproval, true);
+    assert.deepEqual(
+      bundle.steps.find((step) => step.id === "check-public-readiness")?.dependsOn,
+      ["run-public-discovery-smoke", "run-public-push-delivery-smoke", "run-external-conformance-smoke or wrap-official-tck-conformance"],
+    );
     assert.equal(bundle.steps.find((step) => step.id === "write-public-proof-plan")?.contactsPublicNetwork, false);
 
     await assertMode(join(cwd, "tmp/vallum/a2a-public-proof-bundle.json"), 0o600);
@@ -83,7 +101,8 @@ test("A2A public proof bundle is ready for approval when public reports pass", a
       observedAt: NOW.toISOString(),
       publicAgentCardUrl: "https://agents.example/.well-known/agent-card.json",
       publicBaseUrl: "https://agents.example/a2a",
-      checks: ["agent-card", "task-route"],
+      checks: ["agent-card", "message-send", "redaction-review"],
+      runner: "vallum-public-task-route-smoke",
     });
 
     const bundle = await writeA2APublicProofBundle({
