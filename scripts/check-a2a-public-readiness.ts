@@ -505,7 +505,7 @@ function localPushHttpTransportSupport(): A2APublicReadinessCheck {
     id: "local-push-http-transport",
     status: "proven-local",
     code: "A2A_PUSH_HTTP_TRANSPORT_LOCAL_PROOF_CONFIGURED",
-    message: "A2A push notification HTTP transport is locally supported as an explicitly injected helper with safe URL checks, timeout handling, manual redirect handling, and status-only results.",
+    message: "A2A push notification HTTP transport is locally supported as an explicitly injected helper with safe URL checks, timeout handling, manual redirect handling, production host-allowlist enforcement, optional DNS private-address rejection, and status-only results.",
     evidence: "node --import tsx --test packages/standards/src/a2aPush.test.ts",
     next: "Keep this as local mocked transport proof only until public webhook infrastructure, delivery observability, and external conformance evidence exist.",
   };
@@ -527,9 +527,9 @@ function localPushCallbackHostAllowlistSupport(): A2APublicReadinessCheck {
     id: "local-push-callback-host-allowlist",
     status: "proven-local",
     code: "A2A_PUSH_CALLBACK_HOST_ALLOWLIST_LOCAL_PROOF_CONFIGURED",
-    message: "A2A push notification callback hosts can be constrained by an exact local allowlist before config storage or injected HTTP transport delivery.",
+    message: "A2A push notification callback hosts can be constrained by an exact local allowlist before config storage or injected HTTP transport delivery; HTTP delivery can also reject private DNS resolutions when a resolver is configured.",
     evidence: "node --import tsx --test packages/standards/src/a2aPush.test.ts",
-    next: "Keep this as local host-admission proof only until public webhook allowlisting, authentication, worker, queue, observability, and external conformance evidence exist.",
+    next: "Keep this as local host-admission proof only until public webhook allowlisting, DNS/private-resolution policy, authentication, worker, queue, observability, and external conformance evidence exist.",
   };
 }
 
@@ -647,7 +647,7 @@ async function checkPublicPushDeliveryReport(
       id: "public-push-delivery",
       status: "blocked-conformance",
       code: "A2A_PUBLIC_PUSH_DELIVERY_REPORT_MISSING",
-      message: "A2A public push webhook delivery evidence has not been supplied.",
+      message: "A2A public push webhook delivery evidence has not been supplied, including production callback host allowlist and DNS/private-resolution review.",
       evidence: "missing=A2A_PUBLIC_PUSH_DELIVERY_REPORT",
       next: `${A2A_PUBLIC_PUSH_DELIVERY_TEMPLATE_COMMAND}; run ${A2A_PUBLIC_PUSH_DELIVERY_SMOKE_COMMAND} only after operator approval and provide the report path outside committed docs.`,
     };

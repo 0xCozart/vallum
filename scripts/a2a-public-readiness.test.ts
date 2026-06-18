@@ -81,7 +81,10 @@ test("A2A public readiness reports local proof while public gates remain blocked
     assert.match(formatted, /operator:write-report-template -- --kind a2a-public-push-delivery/);
     assert.match(formatted, /operator:write-report-template -- --kind a2a-external-conformance/);
     assert.match(formatted, /Vallum A2A public readiness blocked/);
-    assert.doesNotMatch(formatted, /secret|token|private/i);
+    assert.doesNotMatch(
+      formatted,
+      /authorization:\s*bearer|bearer\s+[a-z0-9._~+/=-]{20,}|iotaprivkey|privateKey|mnemonic|query-token-secret|missing-secret-report|0x[0-9a-fA-F]{64}|\.env/i,
+    );
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }

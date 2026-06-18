@@ -500,6 +500,102 @@ test("A2A push callback host allowlists gate storage and injected transport deli
   );
 });
 
+test("A2A push HTTP transport requires callback host allowlists in production mode", () => {
+  assert.throws(
+    () => createA2APushHttpTransport({
+      requireCallbackHostAllowlist: true,
+      fetch: async () => new Response(null, { status: 204 }),
+    }),
+    /requires a callback host allowlist/,
+  );
+
+  const transport = createA2APushHttpTransport({
+    requireCallbackHostAllowlist: true,
+    allowedCallbackHosts: ["client.example.test"],
+    fetch: async () => new Response(null, { status: 204 }),
+  });
+
+  assert.equal(typeof transport, "function");
+});
+
+test("A2A push HTTP transport rejects callback hosts that resolve to private addresses", async () => {
+  let called = false;
+  const safeRequest = buildA2APushNotificationDeliveryRequest(createConfigFixture(), taskFixture());
+  const transport = createA2APushHttpTransport({
+    allowedCallbackHosts: ["client.example.test"],
+    requireCallbackHostAllowlist: true,
+    resolveCallbackHost: async () => ["10.0.0.5"],
+    fetch: async () => {
+      called = true;
+      return new Response(null, { status: 204 });
+    },
+  });
+
+  await assert.rejects(
+    async () => transport(safeRequest),
+    /resolves to an unsafe network address/,
+  );
+  assert.equal(called, false);
+});
+
+test("A2A push HTTP transport rejects IPv4-mapped IPv6 private resolutions", async () => {
+  let called = false;
+  const safeRequest = buildA2APushNotificationDeliveryRequest(createConfigFixture(), taskFixture());
+  const transport = createA2APushHttpTransport({
+    allowedCallbackHosts: ["client.example.test"],
+    requireCallbackHostAllowlist: true,
+    resolveCallbackHost: async () => ["::ffff:10.0.0.5"],
+    fetch: async () => {
+      called = true;
+      return new Response(null, { status: 204 });
+    },
+  });
+
+  await assert.rejects(
+    async () => transport(safeRequest),
+    /resolves to an unsafe network address/,
+  );
+  assert.equal(called, false);
+});
+
+test("A2A queued delivery is revalidated against current callback allowlist at delivery time", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "vallum-a2a-push-"));
+  const queuePath = join(dir, "queue.json");
+  try {
+    const store = new LocalA2APushNotificationStore();
+    const queue = new JsonFileA2APushNotificationDeliveryQueue(queuePath);
+    createA2APushNotificationConfig({
+      store,
+      taskId: "task-push-1",
+      now,
+      value: {
+        id: "push-1",
+        url: "https://client.example.test/a2a/push",
+      },
+    });
+    queueA2APushNotificationDeliveries({ store, task: taskFixture(), queue });
+    let called = false;
+
+    const result = await processNextA2APushNotificationDelivery({
+      queue,
+      transport: createA2APushHttpTransport({
+        allowedCallbackHosts: ["changed.example.test"],
+        requireCallbackHostAllowlist: true,
+        fetch: async () => {
+          called = true;
+          return new Response(null, { status: 204 });
+        },
+      }),
+    });
+
+    assert.equal(result.status, "failed");
+    assert.equal(result.attempt?.errorCode, "A2A_PUSH_TRANSPORT_FAILED");
+    assert.equal(called, false);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test("A2A push HTTP transport reports redirects and timeouts as failed delivery without leaking errors", async () => {
   const store = new LocalA2APushNotificationStore();
   createA2APushNotificationConfig({

@@ -49,9 +49,13 @@ export type A2APushNotificationTransport = (
   request: A2APushNotificationDeliveryRequest,
 ) => A2APushNotificationTransportResponse | Promise<A2APushNotificationTransportResponse>;
 
+export type A2ACallbackHostResolver = (hostname: string) => readonly string[] | Promise<readonly string[]>;
+
 export interface A2APushHttpTransportOptions {
   readonly allowedCallbackHosts?: readonly string[];
   readonly fetch?: typeof fetch;
+  readonly requireCallbackHostAllowlist?: boolean;
+  readonly resolveCallbackHost?: A2ACallbackHostResolver;
   readonly timeoutMs?: number;
 }
 
@@ -492,12 +496,18 @@ export function createA2APushHttpTransport(
   if (typeof fetchImpl !== "function") {
     throw new A2APushNotificationError("A2A_PUSH_CONFIG_INVALID", "A2A push HTTP transport requires fetch support.");
   }
+  if (options.requireCallbackHostAllowlist && (!options.allowedCallbackHosts || options.allowedCallbackHosts.length === 0)) {
+    throw new A2APushNotificationError("A2A_PUSH_CONFIG_INVALID", "A2A production push HTTP transport requires a callback host allowlist.");
+  }
   const timeoutMs = normalizeTimeoutMs(options.timeoutMs);
 
   return async (request) => {
     const url = safeWebhookUrl(request.url, {
       allowedCallbackHosts: options.allowedCallbackHosts,
     });
+    if (options.resolveCallbackHost) {
+      await assertResolvedWebhookHostSafe(new URL(url).hostname, options.resolveCallbackHost);
+    }
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
     try {
@@ -513,6 +523,18 @@ export function createA2APushHttpTransport(
       clearTimeout(timeout);
     }
   };
+}
+
+async function assertResolvedWebhookHostSafe(hostname: string, resolver: A2ACallbackHostResolver): Promise<void> {
+  let addresses: readonly string[];
+  try {
+    addresses = await resolver(hostname);
+  } catch {
+    throw new A2APushNotificationError("A2A_PUSH_URL_UNSAFE", "A2A push notification URL host could not be resolved safely.");
+  }
+  if (addresses.length === 0 || addresses.some((address) => isUnsafeWebhookHost(address))) {
+    throw new A2APushNotificationError("A2A_PUSH_URL_UNSAFE", "A2A push notification URL host resolves to an unsafe network address.");
+  }
 }
 
 function parsePushNotificationConfig(
@@ -789,6 +811,9 @@ function isUnsafeWebhookHost(hostname: string): boolean {
       || first >= 224;
   }
   if (ipVersion === 6) {
+    if (normalized.startsWith("::ffff:")) {
+      return isUnsafeWebhookHost(normalized.slice("::ffff:".length));
+    }
     return normalized === "::"
       || normalized === "::1"
       || normalized.startsWith("fc")
