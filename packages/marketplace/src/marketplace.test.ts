@@ -15,10 +15,13 @@ import { validAgentProfileFixture } from "@vallum/registry";
 
 import {
   createDisputeEvidenceBundle,
+  createMarketplaceProductionReviewSnapshot,
   createMarketplaceProviderListing,
   createMarketplaceReceiptView,
   formatMarketplaceReadModelDemoResult,
   runMarketplaceReadModelDemo,
+  type MarketplaceProductionReviewCheckId,
+  type MarketplaceProductionReviewStatus,
 } from "./index.js";
 
 const now = new Date("2026-06-10T12:00:00.000Z");
@@ -162,6 +165,59 @@ test("dispute evidence bundle links manifest receipt template and standards evid
   assert.doesNotMatch(serialized, /private prompt|Bearer abc|signer_ref|payment-secret|secret provider/i);
 });
 
+test("production review snapshot keeps missing operator checks pending and redacts notes", () => {
+  const snapshot = createMarketplaceProductionReviewSnapshot({
+    environment: "local",
+    generatedAt: now,
+    checks: [
+      {
+        id: "receipt-access-review",
+        status: "passed",
+        observedAt: now,
+        note: "Local receipt access check passed with session-id=session_secret_123.",
+      },
+      {
+        id: "redaction-review",
+        status: "passed",
+        observedAt: now,
+        note: "Removed private prompt, credential=provider_secret, and Bearer abc.def.ghi.",
+      },
+    ],
+  });
+  const serialized = JSON.stringify(snapshot);
+
+  assert.equal(snapshot.kind, "vallum.marketplace-production-review-snapshot");
+  assert.equal(snapshot.result, "pending-operator-proof");
+  assert.equal(snapshot.passedCheckIds.includes("receipt-access-review"), true);
+  assert.equal(snapshot.pendingCheckIds.includes("provider-onboarding-review"), true);
+  assert.equal(snapshot.blockedCheckIds.length, 0);
+  assert.ok(snapshot.blockerCodes.includes("MARKETPLACE_PROVIDER_ONBOARDING_REVIEW_PENDING"));
+  assert.doesNotMatch(serialized, /session_secret|private prompt|provider_secret|Bearer abc/i);
+});
+
+test("production review snapshot distinguishes blocked and fully passed reviews", () => {
+  const blocked = createMarketplaceProductionReviewSnapshot({
+    environment: "testnet",
+    generatedAt: now,
+    checks: [
+      ...allProductionChecks("passed"),
+      { id: "payment-settlement-review", status: "blocked", observedAt: now },
+    ],
+  });
+  const passed = createMarketplaceProductionReviewSnapshot({
+    environment: "production",
+    generatedAt: now,
+    checks: allProductionChecks("passed"),
+  });
+
+  assert.equal(blocked.result, "blocked");
+  assert.equal(blocked.blockedCheckIds.includes("payment-settlement-review"), true);
+  assert.ok(blocked.blockerCodes.includes("MARKETPLACE_PAYMENT_SETTLEMENT_REVIEW_BLOCKED"));
+  assert.equal(passed.result, "passed");
+  assert.equal(passed.pendingCheckIds.length, 0);
+  assert.equal(passed.blockedCheckIds.length, 0);
+});
+
 test("marketplace read-model demo proves local access and dispute evidence without leaking secrets", () => {
   const result = runMarketplaceReadModelDemo();
   const formatted = formatMarketplaceReadModelDemoResult(result);
@@ -171,9 +227,29 @@ test("marketplace read-model demo proves local access and dispute evidence witho
   assert.equal(result.buyerReceiptAllowed, true);
   assert.equal(result.strangerReceiptAllowed, false);
   assert.match(result.disputeBundleHash, /^sha256:[a-f0-9]{64}$/);
+  assert.equal(result.productionReviewResult, "pending-operator-proof");
+  assert.ok(result.productionReviewPendingChecks.includes("provider-onboarding-review"));
   assert.equal(result.logLeaksSecretMaterial, false);
   assert.doesNotMatch(formatted, /private prompt|Bearer abc|signer_ref|wallet_demo|payment-secret/i);
 });
+
+function allProductionChecks(status: MarketplaceProductionReviewStatus) {
+  const ids = [
+    "provider-onboarding-review",
+    "provider-verification-review",
+    "provider-capability-review",
+    "moderation-abuse-review",
+    "session-auth-review",
+    "receipt-access-review",
+    "payment-settlement-review",
+    "settlement-reconciliation-review",
+    "dispute-workflow-review",
+    "operations-incident-review",
+    "incident-response-review",
+    "redaction-review",
+  ] as const satisfies readonly MarketplaceProductionReviewCheckId[];
+  return ids.map((id) => ({ id, status, observedAt: now }));
+}
 
 function serviceBountyReceipt() {
   const created = createServiceBountyReceipt({

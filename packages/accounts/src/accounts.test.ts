@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { createInMemoryWalletAccountStore, redactAccountValue } from "./index.js";
+import {
+  createCustodyProductionReviewSnapshot,
+  createInMemoryWalletAccountStore,
+  redactAccountValue,
+  type CustodyProductionReviewCheckId,
+  type CustodyProductionReviewStatus,
+} from "./index.js";
 
 const SECRET_PATTERNS = [
   /seed/i,
@@ -154,6 +160,64 @@ test("denies recovery export with audit metadata and no secret material", async 
   assertNoSecretMaterial(result);
 });
 
+test("custody production review snapshot keeps missing operator checks pending and redacts notes", () => {
+  const now = new Date("2026-06-10T12:00:00.000Z");
+  const snapshot = createCustodyProductionReviewSnapshot({
+    environment: "local",
+    custodyMode: "local-in-memory",
+    generatedAt: now,
+    checks: [
+      {
+        id: "signer-reference-contract-review",
+        status: "passed",
+        observedAt: now,
+        note: "Signer refs are scoped handles; signer_ref_fixture_123 is not enough.",
+      },
+      {
+        id: "no-agent-secret-exposure-review",
+        status: "passed",
+        observedAt: now,
+        note: "No privateKey=abc123, credential=provider_secret, or Bearer abc.def.ghi was returned.",
+      },
+    ],
+  });
+  const serialized = JSON.stringify(snapshot);
+
+  assert.equal(snapshot.kind, "vallum.custody-production-review-snapshot");
+  assert.equal(snapshot.result, "pending-operator-proof");
+  assert.equal(snapshot.passedCheckIds.includes("signer-reference-contract-review"), true);
+  assert.equal(snapshot.pendingCheckIds.includes("kms-external-signer-review"), true);
+  assert.equal(snapshot.blockedCheckIds.length, 0);
+  assert.ok(snapshot.blockerCodes.includes("CUSTODY_KMS_EXTERNAL_SIGNER_REVIEW_PENDING"));
+  assert.doesNotMatch(serialized, /signer_ref_fixture|privateKey|provider_secret|Bearer abc/i);
+});
+
+test("custody production review snapshot distinguishes blocked and fully passed reviews", () => {
+  const now = new Date("2026-06-10T12:00:00.000Z");
+  const blocked = createCustodyProductionReviewSnapshot({
+    environment: "testnet",
+    custodyMode: "kms",
+    generatedAt: now,
+    checks: [
+      ...allCustodyProductionChecks("passed"),
+      { id: "recovery-export-review", status: "blocked", observedAt: now },
+    ],
+  });
+  const passed = createCustodyProductionReviewSnapshot({
+    environment: "production",
+    custodyMode: "external-signer",
+    generatedAt: now,
+    checks: allCustodyProductionChecks("passed"),
+  });
+
+  assert.equal(blocked.result, "blocked");
+  assert.equal(blocked.blockedCheckIds.includes("recovery-export-review"), true);
+  assert.ok(blocked.blockerCodes.includes("CUSTODY_RECOVERY_EXPORT_REVIEW_BLOCKED"));
+  assert.equal(passed.result, "passed");
+  assert.equal(passed.pendingCheckIds.length, 0);
+  assert.equal(passed.blockedCheckIds.length, 0);
+});
+
 test("redacts signer references and secret-looking fixture values", () => {
   const redacted = redactAccountValue({
     signerRef: {
@@ -179,3 +243,22 @@ test("redacts signer references and secret-looking fixture values", () => {
     },
   });
 });
+
+function allCustodyProductionChecks(status: CustodyProductionReviewStatus) {
+  const ids = [
+    "signer-reference-contract-review",
+    "no-agent-secret-exposure-review",
+    "kms-external-signer-review",
+    "cryptographic-module-validation-review",
+    "operator-access-review",
+    "key-lifecycle-review",
+    "recovery-export-review",
+    "backup-restore-review",
+    "rotation-revocation-review",
+    "audit-logging-review",
+    "legal-security-review",
+    "incident-response-review",
+    "redaction-review",
+  ] as const satisfies readonly CustodyProductionReviewCheckId[];
+  return ids.map((id) => ({ id, status, observedAt: new Date("2026-06-10T12:00:00.000Z") }));
+}

@@ -35,6 +35,22 @@ import {
 export type MarketplaceEvidenceLevel = "mock" | "local" | "testnet" | "live";
 export type MarketplaceProfileLabel = AgentProfileStatus | "unverified";
 export type MarketplaceRole = "buyer" | "provider" | "operator" | "reviewer";
+export type MarketplaceProductionEnvironment = "local" | "testnet" | "production";
+export type MarketplaceProductionReviewStatus = "pending" | "passed" | "blocked";
+export type MarketplaceProductionReviewResult = "pending-operator-proof" | "passed" | "blocked";
+export type MarketplaceProductionReviewCheckId =
+  | "provider-onboarding-review"
+  | "provider-verification-review"
+  | "provider-capability-review"
+  | "moderation-abuse-review"
+  | "session-auth-review"
+  | "receipt-access-review"
+  | "payment-settlement-review"
+  | "settlement-reconciliation-review"
+  | "dispute-workflow-review"
+  | "operations-incident-review"
+  | "incident-response-review"
+  | "redaction-review";
 export type MarketplaceReceipt =
   | EscrowReceipt
   | PayPerCallReceipt
@@ -53,6 +69,19 @@ export interface MarketplaceStandardsEvidence {
   readonly status: MarketplaceEvidenceLevel;
   readonly referenceId: string;
   readonly metadata?: Record<string, unknown>;
+}
+
+export interface MarketplaceProductionReviewCheckInput {
+  readonly id: MarketplaceProductionReviewCheckId;
+  readonly status: MarketplaceProductionReviewStatus;
+  readonly observedAt?: Date | string;
+  readonly note?: string;
+}
+
+export interface CreateMarketplaceProductionReviewSnapshotInput {
+  readonly environment: MarketplaceProductionEnvironment;
+  readonly checks?: readonly MarketplaceProductionReviewCheckInput[];
+  readonly generatedAt?: Date;
 }
 
 export interface MarketplaceProviderListingInput {
@@ -169,7 +198,31 @@ export interface MarketplaceReadModelDemoResult {
   readonly buyerReceiptAllowed: boolean;
   readonly strangerReceiptAllowed: boolean;
   readonly disputeBundleHash: string;
+  readonly productionReviewResult: MarketplaceProductionReviewResult;
+  readonly productionReviewPendingChecks: readonly MarketplaceProductionReviewCheckId[];
   readonly logLeaksSecretMaterial: boolean;
+}
+
+export interface MarketplaceProductionReviewSnapshot {
+  readonly schemaVersion: 1;
+  readonly kind: "vallum.marketplace-production-review-snapshot";
+  readonly result: MarketplaceProductionReviewResult;
+  readonly environment: MarketplaceProductionEnvironment;
+  readonly generatedAt: string;
+  readonly requiredCheckIds: readonly MarketplaceProductionReviewCheckId[];
+  readonly passedCheckIds: readonly MarketplaceProductionReviewCheckId[];
+  readonly pendingCheckIds: readonly MarketplaceProductionReviewCheckId[];
+  readonly blockedCheckIds: readonly MarketplaceProductionReviewCheckId[];
+  readonly blockerCodes: readonly string[];
+  readonly checks: readonly MarketplaceProductionReviewCheck[];
+  readonly boundaries: readonly string[];
+}
+
+export interface MarketplaceProductionReviewCheck {
+  readonly id: MarketplaceProductionReviewCheckId;
+  readonly status: MarketplaceProductionReviewStatus;
+  readonly observedAt?: string;
+  readonly note?: string;
 }
 
 type MarketplaceWorkflow =
@@ -179,6 +232,27 @@ type MarketplaceWorkflow =
   | "service_bounty"
   | "reputation_receipt"
   | "subscription";
+
+const MARKETPLACE_PRODUCTION_REVIEW_CHECKS = [
+  "provider-onboarding-review",
+  "provider-verification-review",
+  "provider-capability-review",
+  "moderation-abuse-review",
+  "session-auth-review",
+  "receipt-access-review",
+  "payment-settlement-review",
+  "settlement-reconciliation-review",
+  "dispute-workflow-review",
+  "operations-incident-review",
+  "incident-response-review",
+  "redaction-review",
+] as const satisfies readonly MarketplaceProductionReviewCheckId[];
+
+const MARKETPLACE_PRODUCTION_REVIEW_BOUNDARIES = [
+  "This snapshot is status-only and does not prove production marketplace readiness by itself.",
+  "Missing checks stay pending until an operator-approved review supplies passing evidence.",
+  "Do not include provider records, session data, authorization headers, payment credentials, raw payloads, moderation evidence, sensitive prompt text, signatures, or local secret paths.",
+] as const;
 
 export function createMarketplaceProviderListing(
   input: MarketplaceProviderListingInput,
@@ -275,6 +349,46 @@ export function createDisputeEvidenceBundle(
   };
 }
 
+export function createMarketplaceProductionReviewSnapshot(
+  input: CreateMarketplaceProductionReviewSnapshotInput,
+): MarketplaceProductionReviewSnapshot {
+  const supplied = new Map<MarketplaceProductionReviewCheckId, MarketplaceProductionReviewCheckInput>();
+  for (const check of input.checks ?? []) {
+    supplied.set(check.id, check);
+  }
+
+  const checks = MARKETPLACE_PRODUCTION_REVIEW_CHECKS.map((id) => {
+    const check = supplied.get(id);
+    return {
+      id,
+      status: check?.status ?? "pending",
+      ...(check?.observedAt ? { observedAt: isoString(check.observedAt) } : {}),
+      ...(check?.note ? { note: redactString(check.note) } : {}),
+    } satisfies MarketplaceProductionReviewCheck;
+  });
+  const passedCheckIds = checks.filter((check) => check.status === "passed").map((check) => check.id);
+  const pendingCheckIds = checks.filter((check) => check.status === "pending").map((check) => check.id);
+  const blockedCheckIds = checks.filter((check) => check.status === "blocked").map((check) => check.id);
+
+  return {
+    schemaVersion: 1,
+    kind: "vallum.marketplace-production-review-snapshot",
+    result: productionReviewResult({ pendingCheckIds, blockedCheckIds }),
+    environment: input.environment,
+    generatedAt: (input.generatedAt ?? new Date()).toISOString(),
+    requiredCheckIds: MARKETPLACE_PRODUCTION_REVIEW_CHECKS,
+    passedCheckIds,
+    pendingCheckIds,
+    blockedCheckIds,
+    blockerCodes: [
+      ...pendingCheckIds.map((id) => `MARKETPLACE_${constantCase(id)}_PENDING`),
+      ...blockedCheckIds.map((id) => `MARKETPLACE_${constantCase(id)}_BLOCKED`),
+    ],
+    checks,
+    boundaries: MARKETPLACE_PRODUCTION_REVIEW_BOUNDARIES,
+  };
+}
+
 export function runMarketplaceReadModelDemo(): MarketplaceReadModelDemoResult {
   const now = new Date("2026-06-10T12:00:00.000Z");
   const receipt = appendMarketplaceDiagnosticEvent(createReleasedServiceBountyReceipt({
@@ -330,7 +444,25 @@ export function runMarketplaceReadModelDemo(): MarketplaceReadModelDemoResult {
     standardsEvidence: [{ protocol: "a2a", status: "local", referenceId: "a2a-local-server-smoke" }],
     viewer: { principalId: "operator:demo", role: "operator" },
   });
-  const serialized = JSON.stringify({ listing, buyer, stranger, bundle });
+  const productionReview = createMarketplaceProductionReviewSnapshot({
+    environment: "local",
+    generatedAt: now,
+    checks: [
+      {
+        id: "receipt-access-review",
+        status: "passed",
+        observedAt: now,
+        note: "Local receipt access model passed without session-id=session_secret_123.",
+      },
+      {
+        id: "redaction-review",
+        status: "passed",
+        observedAt: now,
+        note: "Local redaction removed private prompt and Bearer abc.def.ghi values.",
+      },
+    ],
+  });
+  const serialized = JSON.stringify({ listing, buyer, stranger, bundle, productionReview });
 
   return {
     providerProfileLabel: listing.profileLabel,
@@ -338,6 +470,8 @@ export function runMarketplaceReadModelDemo(): MarketplaceReadModelDemoResult {
     buyerReceiptAllowed: buyer.allowed,
     strangerReceiptAllowed: stranger.allowed,
     disputeBundleHash: bundle.bundleHash,
+    productionReviewResult: productionReview.result,
+    productionReviewPendingChecks: productionReview.pendingCheckIds,
     logLeaksSecretMaterial: responseLeaks(serialized),
   };
 }
@@ -350,6 +484,8 @@ export function formatMarketplaceReadModelDemoResult(result: MarketplaceReadMode
     `buyerReceipt.allowed=${result.buyerReceiptAllowed}`,
     `strangerReceipt.allowed=${result.strangerReceiptAllowed}`,
     `dispute.bundleHash=${result.disputeBundleHash}`,
+    `productionReview.result=${result.productionReviewResult}`,
+    `productionReview.pendingChecks=${result.productionReviewPendingChecks.length}`,
     `logLeaksSecretMaterial=${result.logLeaksSecretMaterial}`,
   ].join("\n");
 }
@@ -540,6 +676,23 @@ function visibility(viewer: MarketplaceViewer): MarketplaceDisputeEvidenceBundle
   return "party";
 }
 
+function productionReviewResult(input: {
+  readonly pendingCheckIds: readonly MarketplaceProductionReviewCheckId[];
+  readonly blockedCheckIds: readonly MarketplaceProductionReviewCheckId[];
+}): MarketplaceProductionReviewResult {
+  if (input.blockedCheckIds.length > 0) return "blocked";
+  if (input.pendingCheckIds.length > 0) return "pending-operator-proof";
+  return "passed";
+}
+
+function isoString(value: Date | string): string {
+  return value instanceof Date ? value.toISOString() : value;
+}
+
+function constantCase(value: string): string {
+  return value.replace(/[^a-z0-9]+/gi, "_").replace(/^_+|_+$/g, "").toUpperCase();
+}
+
 function pickString(record: Record<string, unknown>, key: string): Record<string, string> {
   const value = stringValue(record[key]);
   return value ? { [key]: value } : {};
@@ -573,13 +726,15 @@ function redactString(value: string): string {
   return value
     .replace(/Bearer\s+[A-Za-z0-9._-]+/gi, "[REDACTED]")
     .replace(/private prompt[^,.]*/gi, "[REDACTED]")
+    .replace(/\bsession[-_ ]?id\s*[:=]\s*[A-Za-z0-9._:-]+/gi, "[REDACTED]")
+    .replace(/\b(token|credential|authorization|payment secret)\s*[:=]\s*[A-Za-z0-9._:-]+/gi, "[REDACTED]")
     .replace(/signer_ref[\w:-]*/gi, "[REDACTED]")
     .replace(/wallet_[\w:-]*/gi, "[REDACTED]")
     .replace(/payment-secret/gi, "[REDACTED]");
 }
 
 function responseLeaks(text: string): boolean {
-  return /private prompt|Bearer abc|signer_ref|wallet_demo|payment-secret|secret provider|PRIVATE KEY|BEGIN PRIVATE/i.test(text);
+  return /private prompt|Bearer abc|signer_ref|wallet_demo|payment-secret|session_secret|secret provider|PRIVATE KEY|BEGIN PRIVATE/i.test(text);
 }
 
 function stableStringify(value: unknown): string {

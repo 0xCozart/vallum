@@ -1,6 +1,24 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 
 export type WalletAccountStatus = "active" | "disabled" | "revoked" | "compromised";
+export type CustodyProductionEnvironment = "local" | "testnet" | "production";
+export type CustodyProductionMode = "local-in-memory" | "external-signer" | "kms";
+export type CustodyProductionReviewStatus = "pending" | "passed" | "blocked";
+export type CustodyProductionReviewResult = "pending-operator-proof" | "passed" | "blocked";
+export type CustodyProductionReviewCheckId =
+  | "signer-reference-contract-review"
+  | "no-agent-secret-exposure-review"
+  | "kms-external-signer-review"
+  | "cryptographic-module-validation-review"
+  | "operator-access-review"
+  | "key-lifecycle-review"
+  | "recovery-export-review"
+  | "backup-restore-review"
+  | "rotation-revocation-review"
+  | "audit-logging-review"
+  | "legal-security-review"
+  | "incident-response-review"
+  | "redaction-review";
 
 export interface SignerRef {
   readonly value: string;
@@ -99,7 +117,65 @@ export interface InMemoryWalletAccountStoreOptions {
   readonly maxWalletsPerOwnerAgent?: number;
 }
 
+export interface CustodyProductionReviewCheckInput {
+  readonly id: CustodyProductionReviewCheckId;
+  readonly status: CustodyProductionReviewStatus;
+  readonly observedAt?: Date | string;
+  readonly note?: string;
+}
+
+export interface CreateCustodyProductionReviewSnapshotInput {
+  readonly environment: CustodyProductionEnvironment;
+  readonly custodyMode: CustodyProductionMode;
+  readonly checks?: readonly CustodyProductionReviewCheckInput[];
+  readonly generatedAt?: Date;
+}
+
+export interface CustodyProductionReviewSnapshot {
+  readonly schemaVersion: 1;
+  readonly kind: "vallum.custody-production-review-snapshot";
+  readonly result: CustodyProductionReviewResult;
+  readonly environment: CustodyProductionEnvironment;
+  readonly custodyMode: CustodyProductionMode;
+  readonly generatedAt: string;
+  readonly requiredCheckIds: readonly CustodyProductionReviewCheckId[];
+  readonly passedCheckIds: readonly CustodyProductionReviewCheckId[];
+  readonly pendingCheckIds: readonly CustodyProductionReviewCheckId[];
+  readonly blockedCheckIds: readonly CustodyProductionReviewCheckId[];
+  readonly blockerCodes: readonly string[];
+  readonly checks: readonly CustodyProductionReviewCheck[];
+  readonly boundaries: readonly string[];
+}
+
+export interface CustodyProductionReviewCheck {
+  readonly id: CustodyProductionReviewCheckId;
+  readonly status: CustodyProductionReviewStatus;
+  readonly observedAt?: string;
+  readonly note?: string;
+}
+
 const EMPTY_SCOPES: readonly string[] = Object.freeze([]);
+const CUSTODY_PRODUCTION_REVIEW_CHECKS = [
+  "signer-reference-contract-review",
+  "no-agent-secret-exposure-review",
+  "kms-external-signer-review",
+  "cryptographic-module-validation-review",
+  "operator-access-review",
+  "key-lifecycle-review",
+  "recovery-export-review",
+  "backup-restore-review",
+  "rotation-revocation-review",
+  "audit-logging-review",
+  "legal-security-review",
+  "incident-response-review",
+  "redaction-review",
+] as const satisfies readonly CustodyProductionReviewCheckId[];
+
+const CUSTODY_PRODUCTION_REVIEW_BOUNDARIES = [
+  "This snapshot is status-only and does not prove production custody readiness by itself.",
+  "Missing checks stay pending until an operator-approved custody review supplies passing evidence.",
+  "Do not include key material, signer material, credentials, authorization headers, payloads, raw signing proofs, exported keys, recovery artifacts, account data, or local secret paths.",
+] as const;
 
 export function createInMemoryWalletAccountStore(
   options: InMemoryWalletAccountStoreOptions = {},
@@ -218,6 +294,47 @@ export function createInMemoryWalletAccountStore(
   };
 }
 
+export function createCustodyProductionReviewSnapshot(
+  input: CreateCustodyProductionReviewSnapshotInput,
+): CustodyProductionReviewSnapshot {
+  const supplied = new Map<CustodyProductionReviewCheckId, CustodyProductionReviewCheckInput>();
+  for (const check of input.checks ?? []) {
+    supplied.set(check.id, check);
+  }
+
+  const checks = CUSTODY_PRODUCTION_REVIEW_CHECKS.map((id) => {
+    const check = supplied.get(id);
+    return {
+      id,
+      status: check?.status ?? "pending",
+      ...(check?.observedAt ? { observedAt: isoString(check.observedAt) } : {}),
+      ...(check?.note ? { note: redactString(check.note) } : {}),
+    } satisfies CustodyProductionReviewCheck;
+  });
+  const passedCheckIds = checks.filter((check) => check.status === "passed").map((check) => check.id);
+  const pendingCheckIds = checks.filter((check) => check.status === "pending").map((check) => check.id);
+  const blockedCheckIds = checks.filter((check) => check.status === "blocked").map((check) => check.id);
+
+  return {
+    schemaVersion: 1,
+    kind: "vallum.custody-production-review-snapshot",
+    result: custodyReviewResult({ pendingCheckIds, blockedCheckIds }),
+    environment: input.environment,
+    custodyMode: input.custodyMode,
+    generatedAt: (input.generatedAt ?? new Date()).toISOString(),
+    requiredCheckIds: CUSTODY_PRODUCTION_REVIEW_CHECKS,
+    passedCheckIds,
+    pendingCheckIds,
+    blockedCheckIds,
+    blockerCodes: [
+      ...pendingCheckIds.map((id) => `CUSTODY_${constantCase(id)}_PENDING`),
+      ...blockedCheckIds.map((id) => `CUSTODY_${constantCase(id)}_BLOCKED`),
+    ],
+    checks,
+    boundaries: CUSTODY_PRODUCTION_REVIEW_BOUNDARIES,
+  };
+}
+
 export function redactAccountValue(value: unknown): unknown {
   if (typeof value === "string") {
     return redactString(value);
@@ -249,6 +366,23 @@ function findAccountBySignerRef(
   return undefined;
 }
 
+function custodyReviewResult(input: {
+  readonly pendingCheckIds: readonly CustodyProductionReviewCheckId[];
+  readonly blockedCheckIds: readonly CustodyProductionReviewCheckId[];
+}): CustodyProductionReviewResult {
+  if (input.blockedCheckIds.length > 0) return "blocked";
+  if (input.pendingCheckIds.length > 0) return "pending-operator-proof";
+  return "passed";
+}
+
+function isoString(value: Date | string): string {
+  return value instanceof Date ? value.toISOString() : value;
+}
+
+function constantCase(value: string): string {
+  return value.replace(/[^a-z0-9]+/gi, "_").replace(/^_+|_+$/g, "").toUpperCase();
+}
+
 function deny(
   reasonCode: Exclude<SigningAuthorizationResult, { authorized: true }>["reasonCode"],
   message: string,
@@ -259,7 +393,7 @@ function deny(
 function redactString(value: string): string {
   return value
     .replace(/\bsigner_ref_[A-Za-z0-9_:-]+\b/g, "signer_ref_[REDACTED]")
-    .replace(/\b(?:seed|mnemonic|private[_-]?key|raw[_-]?keypair|bearer|api[_-]?key)\b[^\s,;]*/gi, "[REDACTED]");
+    .replace(/\b(?:seed|mnemonic|private[_-]?key|raw[_-]?keypair|key[_-]?material|exported[_-]?key|bearer|api[_-]?key|credential|authorization|signature|payload)\b[^\s,;]*/gi, "[REDACTED]");
 }
 
 function shouldRedactKey(key: string): boolean {

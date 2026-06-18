@@ -10,3 +10,11 @@ tokens.
 
 Production custody, KMS integrations, and recovery/export workflows are outside
 this first package slice.
+
+The package also exposes a status-only custody production review snapshot
+builder. The snapshot tracks required signer-reference, no-secret-exposure,
+KMS/external-signer, lifecycle, recovery, backup, rotation, audit, legal,
+incident-response, and redaction checks as `pending`, `passed`, or `blocked`,
+with redacted notes and explicit blocker codes. Missing operator checks remain
+pending; a local snapshot is preparation material, not production custody
+proof.
