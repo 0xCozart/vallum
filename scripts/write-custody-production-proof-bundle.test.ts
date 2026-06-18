@@ -41,8 +41,13 @@ test("custody production proof bundle writes template, plan, and blocked summary
     assert.equal(bundle.readyApprovalCodes.length, 0);
     assert.ok(bundle.requiredOperatorInputs.includes("CUSTODY_PRODUCTION_REPORT"));
     assert.ok(bundle.requiredStructuredReportFields.includes("custodyMode"));
+    assert.ok(bundle.requiredStructuredReportFields.includes("signerReferenceReview"));
+    assert.ok(bundle.requiredStructuredReportFields.includes("lifecycleReview"));
     assert.ok(bundle.requiredStructuredReportCheckIds.includes("kms-external-signer-review"));
+    assert.ok(bundle.requiredStructuredReportCheckIds.includes("cryptographic-module-validation-review"));
     assert.ok(bundle.requiredEvidenceArtifacts.includes("sanitized custody production structured report"));
+    assert.ok(bundle.requiredEvidenceArtifacts.includes("key lifecycle review result"));
+    assert.ok(bundle.requiredEvidenceArtifacts.includes("redaction review result"));
     assert.equal(bundle.steps.find((step) => step.id === "run-approved-production-custody-review")?.contactsCustodySystem, true);
     assert.equal(bundle.steps.find((step) => step.id === "write-custody-template")?.contactsCustodySystem, false);
 
@@ -138,11 +143,53 @@ function validProductionReport() {
       "signer-reference-contract-review",
       "no-agent-secret-exposure-review",
       "kms-external-signer-review",
+      "cryptographic-module-validation-review",
+      "operator-access-review",
+      "key-lifecycle-review",
       "recovery-export-review",
+      "backup-restore-review",
       "rotation-revocation-review",
       "audit-logging-review",
       "legal-security-review",
       "incident-response-review",
+      "redaction-review",
     ],
+    signerReferenceReview: {
+      scopedHandles: "passed",
+      nonBearer: "passed",
+      policyBoundary: "passed",
+    },
+    custodyControlReview: {
+      providerMode: "passed",
+      moduleValidation: "passed",
+      operatorAccess: "passed",
+    },
+    lifecycleReview: {
+      generation: "passed",
+      rotation: "passed",
+      revocation: "passed",
+      destruction: "passed",
+    },
+    recoveryReview: {
+      backupPlan: "passed",
+      restoreDrill: "passed",
+      exportControls: "passed",
+      zeroization: "passed",
+    },
+    auditReview: {
+      accessLogs: "passed",
+      operationLogs: "passed",
+      retention: "passed",
+    },
+    incidentReview: {
+      detection: "passed",
+      response: "passed",
+      recovery: "passed",
+    },
+    complianceReview: {
+      legalSecurity: "passed",
+      redaction: "passed",
+      segregation: "passed",
+    },
   };
 }

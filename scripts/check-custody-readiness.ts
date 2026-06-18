@@ -2,6 +2,7 @@ import { access, chmod, mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { loadEnvFile } from "../apps/policy-gateway-service/src/readiness.js";
 import { containsUnsafeReportContent } from "./structured-report-safety.js";
 
 export type CustodyReadinessStatus =
@@ -63,10 +64,18 @@ interface StructuredCustodyReport {
   readonly observedAt?: unknown;
   readonly custodyMode?: unknown;
   readonly checks?: unknown;
+  readonly signerReferenceReview?: unknown;
+  readonly custodyControlReview?: unknown;
+  readonly lifecycleReview?: unknown;
+  readonly recoveryReview?: unknown;
+  readonly auditReview?: unknown;
+  readonly incidentReview?: unknown;
+  readonly complianceReview?: unknown;
 }
 
 const MAX_REPORT_BYTES = 64 * 1024;
 const MAX_REPORT_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+const LOCAL_ENV_FILE = ".env";
 const CUSTODY_PRODUCTION_TEMPLATE_COMMAND = "npm run operator:write-report-template -- --kind custody-production --out tmp/vallum/custody-production-report-template.json";
 const REQUIRED_SOURCE_PATHS = [
   "packages/accounts/src/index.ts",
@@ -80,11 +89,16 @@ const REQUIRED_PRODUCTION_CHECKS = [
   "signer-reference-contract-review",
   "no-agent-secret-exposure-review",
   "kms-external-signer-review",
+  "cryptographic-module-validation-review",
+  "operator-access-review",
+  "key-lifecycle-review",
   "recovery-export-review",
+  "backup-restore-review",
   "rotation-revocation-review",
   "audit-logging-review",
   "legal-security-review",
   "incident-response-review",
+  "redaction-review",
 ] as const;
 
 const SECRET_FIELD_RE = /seed|mnemonic|private|rawKeypair|raw_keypair|secret|token|credential|authorization|signature|payload|header|password|session|cookie|keyMaterial|exportedKey/i;
@@ -93,7 +107,7 @@ const SECRET_VALUE_RE = /\b(seed phrase|mnemonic|private key|raw keypair|key mat
 const ARTIFACT_BOUNDARIES = [
   "This report is non-networked and does not contact KMS providers, external signers, custody providers, IOTA services, Gas Station endpoints, or live wallet infrastructure.",
   "productionReady=false means local signer-reference proof or operator-approved production custody evidence remains blocked.",
-  "ready-approval checks require manual operator review before any production custody, KMS, external signer, recovery export, staking, bonding, slashing, or signer-operation claim is accepted.",
+  "ready-approval checks require manual operator review before any production custody, KMS, external signer, recovery export, rotation, revocation, backup, audit, incident-response, staking, bonding, slashing, or signer-operation claim is accepted.",
   "Do not commit generated reports, custody proof outputs, seeds, mnemonics, private keys, raw keypairs, signer material, credentials, authorization headers, payloads, signatures, exported keys, or local secret paths.",
 ] as const;
 
@@ -111,7 +125,7 @@ export async function checkCustodyReadiness(
   options: CustodyReadinessOptions = {},
 ): Promise<CustodyReadinessReport> {
   const cwd = options.cwd ?? process.cwd();
-  const env = options.env ?? process.env;
+  const env = await resolveCustodyReadinessEnv(cwd, options.env);
   const now = options.now ?? new Date();
   const scripts = options.scripts ?? await loadPackageScripts(cwd);
   const checks = [
@@ -124,6 +138,14 @@ export async function checkCustodyReadiness(
     productionReady: checks.every((check) => check.status === "proven-local" || check.status === "ready-approval"),
     checks,
   };
+}
+
+export async function resolveCustodyReadinessEnv(
+  cwd: string,
+  env?: NodeJS.ProcessEnv | Record<string, string | undefined>,
+): Promise<Record<string, string | undefined>> {
+  const fileEnv = await loadOptionalLocalEnv(cwd);
+  return { ...fileEnv, ...(env ?? process.env) };
 }
 
 export function formatCustodyReadinessReport(report: CustodyReadinessReport): string {
@@ -189,6 +211,14 @@ async function loadPackageScripts(cwd: string): Promise<Record<string, string | 
       scripts?: Record<string, string>;
     };
     return packageJson.scripts ?? {};
+  } catch {
+    return {};
+  }
+}
+
+async function loadOptionalLocalEnv(cwd: string): Promise<Record<string, string>> {
+  try {
+    return await loadEnvFile(LOCAL_ENV_FILE, cwd);
   } catch {
     return {};
   }
@@ -301,9 +331,9 @@ async function checkProductionReport(
     id: "production-custody-report",
     status: "ready-approval",
     code: "CUSTODY_PRODUCTION_REPORT_VALID",
-    message: "Production custody evidence is a passing structured report for a future approved review.",
+    message: "Production custody evidence is a passing status-only structured report for a future approved review.",
     evidence: "local-structured-report-valid-redacted",
-    next: "Review the report manually before accepting production custody, KMS, recovery, staking, bonding, slashing, or signer-operation claims.",
+    next: "Review the report manually before accepting production custody, KMS, recovery, rotation, revocation, audit, incident-response, staking, bonding, slashing, or signer-operation claims.",
   };
 }
 
@@ -331,8 +361,22 @@ function validateStructuredReport(
   }
   const checks = report.checks;
   if (!Array.isArray(checks) || !REQUIRED_PRODUCTION_CHECKS.every((check) => checks.includes(check))) {
-    return invalidReport("CUSTODY_PRODUCTION_REPORT_CHECKS_INCOMPLETE", "Production custody proof report is missing required check ids.", "configured-report-checks-incomplete", "Include signer-reference, no secret exposure, KMS/external signer, recovery, rotation/revocation, audit logging, legal/security, and incident-response checks.");
+    return invalidReport("CUSTODY_PRODUCTION_REPORT_CHECKS_INCOMPLETE", "Production custody proof report is missing required check ids.", "configured-report-checks-incomplete", "Include signer-reference, no secret exposure, KMS/external signer, cryptographic module, operator access, key lifecycle, recovery/export, backup/restore, rotation/revocation, audit logging, legal/security, incident-response, and redaction checks.");
   }
+  const signerReference = validateSignerReferenceReview(report.signerReferenceReview);
+  if (signerReference) return signerReference;
+  const custodyControl = validateCustodyControlReview(report.custodyControlReview);
+  if (custodyControl) return custodyControl;
+  const lifecycle = validateLifecycleReview(report.lifecycleReview);
+  if (lifecycle) return lifecycle;
+  const recovery = validateRecoveryReview(report.recoveryReview);
+  if (recovery) return recovery;
+  const audit = validateAuditReview(report.auditReview);
+  if (audit) return audit;
+  const incident = validateIncidentReview(report.incidentReview);
+  if (incident) return incident;
+  const compliance = validateComplianceReview(report.complianceReview);
+  if (compliance) return compliance;
   if (typeof report.observedAt !== "string") {
     return staleReport();
   }
@@ -341,6 +385,85 @@ function validateStructuredReport(
     return staleReport();
   }
   return undefined;
+}
+
+function validateSignerReferenceReview(value: unknown): CustodyReadinessCheck | undefined {
+  if (!isRecord(value)) {
+    return invalidReport("CUSTODY_PRODUCTION_REPORT_SIGNER_REFERENCE_REVIEW_MISSING", "Production custody proof report is missing signer-reference status review.", "configured-report-signer-reference-review-missing", "Provide status-only scoped handle, non-bearer, and policy-boundary review results.");
+  }
+  return requirePassed(value, "scopedHandles", "CUSTODY_PRODUCTION_REPORT_SCOPED_HANDLES_NOT_PASSED", "Signer-reference scoped handle review must be passed.")
+    ?? requirePassed(value, "nonBearer", "CUSTODY_PRODUCTION_REPORT_NON_BEARER_NOT_PASSED", "Signer-reference non-bearer review must be passed.")
+    ?? requirePassed(value, "policyBoundary", "CUSTODY_PRODUCTION_REPORT_POLICY_BOUNDARY_NOT_PASSED", "Signer-reference policy-boundary review must be passed.");
+}
+
+function validateCustodyControlReview(value: unknown): CustodyReadinessCheck | undefined {
+  if (!isRecord(value)) {
+    return invalidReport("CUSTODY_PRODUCTION_REPORT_CUSTODY_CONTROL_REVIEW_MISSING", "Production custody proof report is missing custody-control status review.", "configured-report-custody-control-review-missing", "Provide status-only provider mode, module validation, and operator access review results.");
+  }
+  return requirePassed(value, "providerMode", "CUSTODY_PRODUCTION_REPORT_PROVIDER_MODE_NOT_PASSED", "Custody provider-mode review must be passed.")
+    ?? requirePassed(value, "moduleValidation", "CUSTODY_PRODUCTION_REPORT_MODULE_VALIDATION_NOT_PASSED", "Cryptographic module validation review must be passed.")
+    ?? requirePassed(value, "operatorAccess", "CUSTODY_PRODUCTION_REPORT_OPERATOR_ACCESS_NOT_PASSED", "Operator access review must be passed.");
+}
+
+function validateLifecycleReview(value: unknown): CustodyReadinessCheck | undefined {
+  if (!isRecord(value)) {
+    return invalidReport("CUSTODY_PRODUCTION_REPORT_LIFECYCLE_REVIEW_MISSING", "Production custody proof report is missing lifecycle status review.", "configured-report-lifecycle-review-missing", "Provide status-only generation, rotation, revocation, and destruction review results.");
+  }
+  return requirePassed(value, "generation", "CUSTODY_PRODUCTION_REPORT_GENERATION_NOT_PASSED", "Lifecycle generation review must be passed.")
+    ?? requirePassed(value, "rotation", "CUSTODY_PRODUCTION_REPORT_ROTATION_NOT_PASSED", "Lifecycle rotation review must be passed.")
+    ?? requirePassed(value, "revocation", "CUSTODY_PRODUCTION_REPORT_REVOCATION_NOT_PASSED", "Lifecycle revocation review must be passed.")
+    ?? requirePassed(value, "destruction", "CUSTODY_PRODUCTION_REPORT_DESTRUCTION_NOT_PASSED", "Lifecycle destruction review must be passed.");
+}
+
+function validateRecoveryReview(value: unknown): CustodyReadinessCheck | undefined {
+  if (!isRecord(value)) {
+    return invalidReport("CUSTODY_PRODUCTION_REPORT_RECOVERY_REVIEW_MISSING", "Production custody proof report is missing recovery status review.", "configured-report-recovery-review-missing", "Provide status-only backup, restore, export-control, and zeroization review results.");
+  }
+  return requirePassed(value, "backupPlan", "CUSTODY_PRODUCTION_REPORT_BACKUP_PLAN_NOT_PASSED", "Recovery backup plan review must be passed.")
+    ?? requirePassed(value, "restoreDrill", "CUSTODY_PRODUCTION_REPORT_RESTORE_DRILL_NOT_PASSED", "Recovery restore drill review must be passed.")
+    ?? requirePassed(value, "exportControls", "CUSTODY_PRODUCTION_REPORT_EXPORT_CONTROLS_NOT_PASSED", "Recovery export-control review must be passed.")
+    ?? requirePassed(value, "zeroization", "CUSTODY_PRODUCTION_REPORT_ZEROIZATION_NOT_PASSED", "Recovery zeroization review must be passed.");
+}
+
+function validateAuditReview(value: unknown): CustodyReadinessCheck | undefined {
+  if (!isRecord(value)) {
+    return invalidReport("CUSTODY_PRODUCTION_REPORT_AUDIT_REVIEW_MISSING", "Production custody proof report is missing audit status review.", "configured-report-audit-review-missing", "Provide status-only access log, operation log, and retention review results.");
+  }
+  return requirePassed(value, "accessLogs", "CUSTODY_PRODUCTION_REPORT_ACCESS_LOGS_NOT_PASSED", "Audit access log review must be passed.")
+    ?? requirePassed(value, "operationLogs", "CUSTODY_PRODUCTION_REPORT_OPERATION_LOGS_NOT_PASSED", "Audit operation log review must be passed.")
+    ?? requirePassed(value, "retention", "CUSTODY_PRODUCTION_REPORT_RETENTION_NOT_PASSED", "Audit retention review must be passed.");
+}
+
+function validateIncidentReview(value: unknown): CustodyReadinessCheck | undefined {
+  if (!isRecord(value)) {
+    return invalidReport("CUSTODY_PRODUCTION_REPORT_INCIDENT_REVIEW_MISSING", "Production custody proof report is missing incident status review.", "configured-report-incident-review-missing", "Provide status-only detection, response, and recovery review results.");
+  }
+  return requirePassed(value, "detection", "CUSTODY_PRODUCTION_REPORT_DETECTION_NOT_PASSED", "Incident detection review must be passed.")
+    ?? requirePassed(value, "response", "CUSTODY_PRODUCTION_REPORT_RESPONSE_NOT_PASSED", "Incident response review must be passed.")
+    ?? requirePassed(value, "recovery", "CUSTODY_PRODUCTION_REPORT_INCIDENT_RECOVERY_NOT_PASSED", "Incident recovery review must be passed.");
+}
+
+function validateComplianceReview(value: unknown): CustodyReadinessCheck | undefined {
+  if (!isRecord(value)) {
+    return invalidReport("CUSTODY_PRODUCTION_REPORT_COMPLIANCE_REVIEW_MISSING", "Production custody proof report is missing compliance status review.", "configured-report-compliance-review-missing", "Provide status-only legal/security, redaction, and segregation review results.");
+  }
+  return requirePassed(value, "legalSecurity", "CUSTODY_PRODUCTION_REPORT_LEGAL_SECURITY_NOT_PASSED", "Legal/security review must be passed.")
+    ?? requirePassed(value, "redaction", "CUSTODY_PRODUCTION_REPORT_REDACTION_NOT_PASSED", "Report redaction review must be passed.")
+    ?? requirePassed(value, "segregation", "CUSTODY_PRODUCTION_REPORT_SEGREGATION_NOT_PASSED", "Duties segregation review must be passed.");
+}
+
+function requirePassed(
+  record: Record<string, unknown>,
+  field: string,
+  code: string,
+  message: string,
+): CustodyReadinessCheck | undefined {
+  if (record[field] === "passed") return undefined;
+  return invalidReport(code, message, `configured-report-${field}-not-passed`, "Provide a status-only production custody report where every required review field is passed.");
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
 function staleReport(): CustodyReadinessCheck {

@@ -90,17 +90,29 @@ const REQUIRED_STRUCTURED_REPORT_FIELDS = [
   "observedAt",
   "custodyMode",
   "checks",
+  "signerReferenceReview",
+  "custodyControlReview",
+  "lifecycleReview",
+  "recoveryReview",
+  "auditReview",
+  "incidentReview",
+  "complianceReview",
 ] as const;
 
 const REQUIRED_STRUCTURED_REPORT_CHECK_IDS = [
   "signer-reference-contract-review",
   "no-agent-secret-exposure-review",
   "kms-external-signer-review",
+  "cryptographic-module-validation-review",
+  "operator-access-review",
+  "key-lifecycle-review",
   "recovery-export-review",
+  "backup-restore-review",
   "rotation-revocation-review",
   "audit-logging-review",
   "legal-security-review",
   "incident-response-review",
+  "redaction-review",
 ] as const;
 
 const REQUIRED_EVIDENCE_ARTIFACTS = [
@@ -108,11 +120,16 @@ const REQUIRED_EVIDENCE_ARTIFACTS = [
   "signer-reference contract review result",
   "no agent secret exposure review result",
   "KMS or external signer review result",
+  "cryptographic module validation review result",
+  "operator access review result",
+  "key lifecycle review result",
   "recovery and export review result",
+  "backup and restore review result",
   "rotation and revocation review result",
   "audit logging review result",
   "legal and security review result",
   "incident response review result",
+  "redaction review result",
 ] as const;
 
 const BOUNDARIES = [
@@ -246,7 +263,7 @@ function buildSteps(input: {
     },
     {
       id: "run-approved-production-custody-review",
-      command: "operator-approved signer-reference, KMS/external signer, recovery/export, rotation/revocation, audit, legal/security, and incident-response review",
+      command: "operator-approved signer-reference, KMS/external signer, module validation, operator access, lifecycle, recovery/export, backup/restore, rotation/revocation, audit, legal/security, and incident-response review",
       contactsCustodySystem: true,
       requiresOperatorApproval: true,
       dependsOn: ["run-local-account-signer-reference-tests", "write-custody-template"],

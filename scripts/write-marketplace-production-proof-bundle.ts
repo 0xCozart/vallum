@@ -90,28 +90,41 @@ const REQUIRED_STRUCTURED_REPORT_FIELDS = [
   "observedAt",
   "environment",
   "checks",
+  "providerReview",
+  "moderationReview",
+  "accessReview",
+  "settlementReview",
+  "disputeReview",
+  "operationsReview",
 ] as const;
 
 const REQUIRED_STRUCTURED_REPORT_CHECK_IDS = [
   "provider-onboarding-review",
   "provider-verification-review",
+  "provider-capability-review",
   "moderation-abuse-review",
   "session-auth-review",
   "receipt-access-review",
   "payment-settlement-review",
+  "settlement-reconciliation-review",
   "dispute-workflow-review",
   "operations-incident-review",
+  "incident-response-review",
+  "redaction-review",
 ] as const;
 
 const REQUIRED_EVIDENCE_ARTIFACTS = [
   "sanitized marketplace production structured report",
   "provider onboarding review result",
   "provider verification review result",
+  "provider capability review result",
   "moderation and abuse review result",
-  "session auth review result",
+  "access-control review result",
   "payment settlement review result",
+  "settlement reconciliation review result",
   "dispute workflow review result",
   "operations and incident review result",
+  "redaction review result",
 ] as const;
 
 const BOUNDARIES = [
@@ -252,7 +265,7 @@ function buildSteps(input: {
     },
     {
       id: "run-approved-production-marketplace-review",
-      command: "operator-approved provider onboarding, verification, moderation, auth, settlement, dispute, and operations review",
+      command: "operator-approved provider onboarding, verification, capability, moderation, access-control, settlement, dispute, and operations review",
       contactsMarketplaceSystem: true,
       requiresOperatorApproval: true,
       dependsOn: ["run-local-marketplace-smoke", "write-marketplace-template"],

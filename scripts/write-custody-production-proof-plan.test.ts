@@ -15,11 +15,16 @@ const requiredChecks = [
   "signer-reference-contract-review",
   "no-agent-secret-exposure-review",
   "kms-external-signer-review",
+  "cryptographic-module-validation-review",
+  "operator-access-review",
+  "key-lifecycle-review",
   "recovery-export-review",
+  "backup-restore-review",
   "rotation-revocation-review",
   "audit-logging-review",
   "legal-security-review",
   "incident-response-review",
+  "redaction-review",
 ] as const;
 
 test("custody production proof plan reports current blockers without custody secrets", async () => {
@@ -37,7 +42,10 @@ test("custody production proof plan reports current blockers without custody sec
   assert.ok(plan.blockerCodes.includes("CUSTODY_PRODUCTION_REPORT_MISSING"));
   assert.ok(plan.requiredOperatorInputs.includes("CUSTODY_PRODUCTION_REPORT"));
   assert.ok(plan.requiredStructuredReportFields.includes("custodyMode"));
+  assert.ok(plan.requiredStructuredReportFields.includes("signerReferenceReview"));
+  assert.ok(plan.requiredStructuredReportFields.includes("lifecycleReview"));
   assert.ok(plan.requiredStructuredReportCheckIds.includes("kms-external-signer-review"));
+  assert.ok(plan.requiredStructuredReportCheckIds.includes("cryptographic-module-validation-review"));
   assert.ok(plan.commands.some((command) => command.id === "run-approved-production-custody-review" && command.contactsCustodySystem));
   assert.doesNotMatch(formatted, /seed-phrase-value|private-key-value|raw-keypair-value|signer-material-value|authorization-header-value|exported-key-value/i);
 });
@@ -68,14 +76,7 @@ test("custody production proof plan reports ready approval codes for a valid str
   const cwd = await mkdtemp(join(tmpdir(), "vallum-custody-plan-"));
   try {
     const reportPath = join(cwd, "custody-report.json");
-    await writeFile(reportPath, JSON.stringify({
-      schemaVersion: 1,
-      kind: "vallum.custody-production-proof",
-      result: "passed",
-      observedAt: "2026-06-13T11:00:00.000Z",
-      custodyMode: "kms",
-      checks: requiredChecks,
-    }));
+    await writeFile(reportPath, JSON.stringify(validProductionReport("2026-06-13T11:00:00.000Z")));
 
     const plan = await writeCustodyProductionProofPlan({
       cwd: repoRoot,
@@ -92,3 +93,51 @@ test("custody production proof plan reports ready approval codes for a valid str
     await rm(cwd, { recursive: true, force: true });
   }
 });
+
+function validProductionReport(observedAt: string) {
+  return {
+    schemaVersion: 1,
+    kind: "vallum.custody-production-proof",
+    result: "passed",
+    observedAt,
+    custodyMode: "kms",
+    checks: requiredChecks,
+    signerReferenceReview: {
+      scopedHandles: "passed",
+      nonBearer: "passed",
+      policyBoundary: "passed",
+    },
+    custodyControlReview: {
+      providerMode: "passed",
+      moduleValidation: "passed",
+      operatorAccess: "passed",
+    },
+    lifecycleReview: {
+      generation: "passed",
+      rotation: "passed",
+      revocation: "passed",
+      destruction: "passed",
+    },
+    recoveryReview: {
+      backupPlan: "passed",
+      restoreDrill: "passed",
+      exportControls: "passed",
+      zeroization: "passed",
+    },
+    auditReview: {
+      accessLogs: "passed",
+      operationLogs: "passed",
+      retention: "passed",
+    },
+    incidentReview: {
+      detection: "passed",
+      response: "passed",
+      recovery: "passed",
+    },
+    complianceReview: {
+      legalSecurity: "passed",
+      redaction: "passed",
+      segregation: "passed",
+    },
+  };
+}

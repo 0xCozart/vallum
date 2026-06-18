@@ -41,8 +41,12 @@ test("marketplace production proof bundle writes template, plan, and blocked sum
     assert.equal(bundle.readyApprovalCodes.length, 0);
     assert.ok(bundle.requiredOperatorInputs.includes("MARKETPLACE_PRODUCTION_REPORT"));
     assert.ok(bundle.requiredStructuredReportFields.includes("environment"));
+    assert.ok(bundle.requiredStructuredReportFields.includes("providerReview"));
+    assert.ok(bundle.requiredStructuredReportFields.includes("operationsReview"));
     assert.ok(bundle.requiredStructuredReportCheckIds.includes("provider-verification-review"));
+    assert.ok(bundle.requiredStructuredReportCheckIds.includes("provider-capability-review"));
     assert.ok(bundle.requiredEvidenceArtifacts.includes("sanitized marketplace production structured report"));
+    assert.ok(bundle.requiredEvidenceArtifacts.includes("redaction review result"));
     assert.equal(bundle.steps.find((step) => step.id === "run-approved-production-marketplace-review")?.contactsMarketplaceSystem, true);
     assert.equal(bundle.steps.find((step) => step.id === "write-marketplace-template")?.contactsMarketplaceSystem, false);
 
@@ -138,12 +142,44 @@ function validProductionReport() {
     checks: [
       "provider-onboarding-review",
       "provider-verification-review",
+      "provider-capability-review",
       "moderation-abuse-review",
       "session-auth-review",
       "receipt-access-review",
       "payment-settlement-review",
+      "settlement-reconciliation-review",
       "dispute-workflow-review",
       "operations-incident-review",
+      "incident-response-review",
+      "redaction-review",
     ],
+    providerReview: {
+      onboarding: "passed",
+      verification: "passed",
+      capabilityReview: "passed",
+    },
+    moderationReview: {
+      abuseControls: "passed",
+      escalationPath: "passed",
+      redaction: "passed",
+    },
+    accessReview: {
+      apiAccess: "passed",
+      receiptAccess: "passed",
+      leastPrivilege: "passed",
+    },
+    settlementReview: {
+      paymentSettlement: "passed",
+      reconciliation: "passed",
+    },
+    disputeReview: {
+      workflow: "passed",
+      evidencePack: "passed",
+    },
+    operationsReview: {
+      incidentRunbook: "passed",
+      monitoring: "passed",
+      rollback: "passed",
+    },
   };
 }

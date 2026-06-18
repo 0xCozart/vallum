@@ -62,17 +62,27 @@ const REQUIRED_STRUCTURED_REPORT_FIELDS = [
   "observedAt",
   "environment",
   "checks",
+  "providerReview",
+  "moderationReview",
+  "accessReview",
+  "settlementReview",
+  "disputeReview",
+  "operationsReview",
 ] as const;
 
 const REQUIRED_STRUCTURED_REPORT_CHECK_IDS = [
   "provider-onboarding-review",
   "provider-verification-review",
+  "provider-capability-review",
   "moderation-abuse-review",
   "session-auth-review",
   "receipt-access-review",
   "payment-settlement-review",
+  "settlement-reconciliation-review",
   "dispute-workflow-review",
   "operations-incident-review",
+  "incident-response-review",
+  "redaction-review",
 ] as const;
 
 const PLAN_COMMANDS: readonly MarketplaceProductionProofPlanCommand[] = [
@@ -90,7 +100,7 @@ const PLAN_COMMANDS: readonly MarketplaceProductionProofPlanCommand[] = [
   },
   {
     id: "run-approved-production-marketplace-review",
-    command: "operator-approved provider onboarding, verification, moderation, auth, settlement, dispute, and operations review",
+    command: "operator-approved provider onboarding, verification, capability, moderation, access-control, settlement, dispute, and operations review",
     contactsMarketplaceSystem: true,
     requiresOperatorApproval: true,
   },
@@ -113,6 +123,7 @@ const BOUNDARIES = [
   "Only the operator-approved production marketplace review may contact production or testnet marketplace systems, provider systems, payment systems, or public endpoints, and it requires explicit operator approval.",
   "Do not commit reports, provider credentials, session tokens, authorization headers, payment instruments, raw payloads, response bodies, moderation payloads, provider secrets, private prompts, signatures, or local secret paths.",
   "ready-for-approval means a redacted structured report is reviewable; it is not production marketplace approval by itself.",
+  "Accepted structured reports are status-only: providerReview, moderationReview, accessReview, settlementReview, disputeReview, and operationsReview must contain only passing review statuses.",
 ] as const;
 
 const usage = `usage: npm exec tsx -- scripts/write-marketplace-production-proof-plan.ts [--out <path>]

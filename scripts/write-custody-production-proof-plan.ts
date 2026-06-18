@@ -62,17 +62,29 @@ const REQUIRED_STRUCTURED_REPORT_FIELDS = [
   "observedAt",
   "custodyMode",
   "checks",
+  "signerReferenceReview",
+  "custodyControlReview",
+  "lifecycleReview",
+  "recoveryReview",
+  "auditReview",
+  "incidentReview",
+  "complianceReview",
 ] as const;
 
 const REQUIRED_STRUCTURED_REPORT_CHECK_IDS = [
   "signer-reference-contract-review",
   "no-agent-secret-exposure-review",
   "kms-external-signer-review",
+  "cryptographic-module-validation-review",
+  "operator-access-review",
+  "key-lifecycle-review",
   "recovery-export-review",
+  "backup-restore-review",
   "rotation-revocation-review",
   "audit-logging-review",
   "legal-security-review",
   "incident-response-review",
+  "redaction-review",
 ] as const;
 
 const PLAN_COMMANDS: readonly CustodyProductionProofPlanCommand[] = [
@@ -84,7 +96,7 @@ const PLAN_COMMANDS: readonly CustodyProductionProofPlanCommand[] = [
   },
   {
     id: "run-approved-production-custody-review",
-    command: "operator-approved signer-reference, KMS/external signer, recovery/export, rotation/revocation, audit, legal/security, and incident-response review",
+    command: "operator-approved signer-reference, KMS/external signer, module validation, operator access, lifecycle, recovery/export, backup/restore, rotation/revocation, audit, legal/security, and incident-response review",
     contactsCustodySystem: true,
     requiresOperatorApproval: true,
   },
@@ -107,6 +119,7 @@ const BOUNDARIES = [
   "Only the operator-approved custody review may contact KMS, external signer, custody provider, or live wallet infrastructure, and it requires explicit operator approval.",
   "Do not commit reports, seeds, mnemonics, private keys, raw keypairs, signer material, credentials, authorization headers, payloads, signatures, exported keys, or local secret paths.",
   "ready-for-approval means a redacted structured report is reviewable; it is not production custody approval by itself.",
+  "Accepted structured reports are status-only: signerReferenceReview, custodyControlReview, lifecycleReview, recoveryReview, auditReview, incidentReview, and complianceReview must contain only passing review statuses.",
 ] as const;
 
 const usage = `usage: npm exec tsx -- scripts/write-custody-production-proof-plan.ts [--out <path>]
