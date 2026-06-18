@@ -116,7 +116,7 @@ test("MCP stdio consumer smoke proves approval denial invalid input and redactio
 });
 
 test("npm registry MCP stdio consumer smoke pins the MCP package version separately", () => {
-  const currentVersion = "0.0.1-prerelease.1";
+  const currentVersion = "0.1.0";
   const packageJson = JSON.parse(buildRegistryMcpStdioConsumerPackageJson({
     mcpVersion: currentVersion,
     supportPackages: [
@@ -145,7 +145,7 @@ test("npm registry MCP stdio consumer smoke uses package bin and registry marker
 });
 
 test("npm registry consumer smoke pins current published package versions", () => {
-  const currentVersion = "0.0.1-prerelease.1";
+  const currentVersion = "0.1.0";
   const packageJson = JSON.parse(buildRegistryConsumerPackageJson([
     { dir: "packages/accounts", name: "@vallum/accounts", version: currentVersion },
     { dir: "packages/mcp-server", name: "@vallum/mcp-server", version: currentVersion },

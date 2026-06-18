@@ -40,7 +40,7 @@ test("launch evidence reflects the current public local proof surface", async ()
   assert.match(proof, /npm run proof:testnet-digest/);
   assert.match(proof, /Phase 1 sponsored policy MVP/);
   assert.match(proof, /Phase 6 package release/);
-  assert.match(readme, /npm publish --dry-run --tag next --access public/);
+  assert.match(readme, /npm publish --dry-run --tag latest --access public/);
   assert.match(readme, /Do not run a real `npm publish` without explicit operator approval/);
   assert.match(readme, /FLdnYRUACAKQn8CwugEv1u6gYTh9jBr8rGMk2JZ2adsd/);
 });

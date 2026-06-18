@@ -1,6 +1,6 @@
 {
   "name": "@vallum/accounts",
-  "version": "0.0.1-prerelease.1",
+  "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -27,6 +27,6 @@
   },
   "publishConfig": {
     "access": "public",
-    "tag": "next"
+    "tag": "latest"
   }
 }

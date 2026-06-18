@@ -37,7 +37,7 @@ export async function collectPublishablePackages(cwd = process.cwd()): Promise<P
 }
 
 export function buildNpmPublishDryRunArgs(packages: readonly PublishablePackage[]): string[] {
-  const args = ["publish", "--dry-run", "--tag", "next", "--access", "public"];
+  const args = ["publish", "--dry-run", "--tag", "latest", "--access", "public"];
 
   for (const packageInfo of packages) {
     args.push("-w", packageInfo.name);

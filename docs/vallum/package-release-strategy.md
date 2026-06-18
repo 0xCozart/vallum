@@ -4,7 +4,7 @@ Last updated: 2026-06-18.
 
 ## Decision
 
-Vallum publishes the current prerelease line under `@vallum/*` workspace
+Vallum publishes the first official package line under `@vallum/*` workspace
 package names.
 
 Consumer package selection, SDK configuration, and agent-runtime guidance live
@@ -12,15 +12,14 @@ in [Package Integration Guide](package-integration-guide.md).
 
 The repository root remains `vallum` and `private: true` so the monorepo root
 cannot be accidentally published. Publishable workspace packages are public
-prerelease packages with `publishConfig.access=public` and
-`publishConfig.tag=next`.
+packages with `publishConfig.access=public` and `publishConfig.tag=latest`.
 
-The current coordinated prerelease line is `0.0.1-prerelease.1` for every
-public `@vallum/*` workspace package, including the runnable MCP stdio CLI.
-It publishes on the npm `next` dist-tag. The previous coordinated public line
-was `0.0.1-prerelease.0`. Before that, the public line was
-`0.0.0-prerelease`, with `@vallum/mcp-server@0.0.1-mcp.0` as an interim
-MCP-package-only CLI bump.
+The current official release line is `0.1.0` for every public `@vallum/*`
+workspace package, including the runnable MCP stdio CLI. It publishes on the
+npm `latest` dist-tag. The previous coordinated public line was
+`0.0.1-prerelease.1`; before that, `0.0.1-prerelease.0` and
+`0.0.0-prerelease` were prerelease package lines, with
+`@vallum/mcp-server@0.0.1-mcp.0` as an interim MCP-package-only CLI bump.
 
 ## Why
 
@@ -57,15 +56,15 @@ The release metadata tests enforce:
 
 - root package is private;
 - public package names stay in `@vallum/*`;
-- package versions stay aligned on `0.0.1-prerelease.1`;
+- package versions stay aligned on `0.1.0`;
 - packages publish ESM `dist/index.js` plus `dist/index.d.ts`;
 - package exports expose only reviewed built entrypoints;
 - the MCP server package is the only public package with a CLI bin, and that
   bin is `vallum-mcp` pointing at `dist/cli.js`;
 - package files include built JavaScript, built types, `LICENSE`, and
   `README.md`;
-- `publishConfig` uses public access and the `next` tag;
-- internal package dependencies pin to the repo prerelease version;
+- `publishConfig` uses public access and the `latest` tag;
+- internal package dependencies pin to the repo release version;
 - root `build` and `pack:check` cover every public package workspace;
 - private app workspaces do not carry public publish metadata.
 
@@ -74,7 +73,7 @@ The release metadata tests enforce:
 - builds every workspace first;
 - enumerates every non-private package under `packages/*`;
 - excludes private app workspaces;
-- runs `npm publish --dry-run --tag next --access public` with explicit `-w`
+- runs `npm publish --dry-run --tag latest --access public` with explicit `-w`
   workspace arguments for the public packages;
 - prints package names plus `mode=dry-run` and `realPublish=false`.
 
@@ -231,13 +230,13 @@ structured publication report.
 
 ## Publication Evidence
 
-The `0.0.1-prerelease.1` package set is the current coordinated npm
-prerelease under `@vallum/*`. The previous coordinated public line was
-`0.0.1-prerelease.0`; before that, the public line was `0.0.0-prerelease`.
-The MCP package also had the interim runnable-stdio prerelease
+The `0.1.0` package set is the first official npm release under `@vallum/*`.
+The previous coordinated public line was `0.0.1-prerelease.1`; before that,
+the prerelease lines were `0.0.1-prerelease.0` and `0.0.0-prerelease`. The
+MCP package also had the interim runnable-stdio prerelease
 `@vallum/mcp-server@0.0.1-mcp.0`.
 
-Publication evidence for the current prerelease includes:
+Publication evidence for the current official release includes:
 
 - `npm run pack:check`
 - `npm run smoke:package-install`
@@ -245,7 +244,7 @@ Publication evidence for the current prerelease includes:
 - `npm run smoke:npm-registry-paid-mcp-consumer`
 - `npm run smoke:npm-registry-mcp-stdio-consumer`
 - `npm run publish:dry-run`
-- real `npm publish --tag next --access public`
+- real `npm publish --tag latest --access public`
 - registry visibility proof for all 11 public `@vallum/*` packages;
 - old package deletion proof showing the `@sacredlabs/agentrail-*` package
   line returns npm E404;
@@ -262,14 +261,14 @@ operator needs immediate post-publish registry install proof, use
 `NPM_CONFIG_MIN_RELEASE_AGE=0` deliberately and record that choice in the
 ignored publication report.
 
-Do not claim provenance signing, stable package release, production launch
-readiness, live IOTA execution, payment-provider settlement, marketplace
-production operation, or production custody from this package publication.
+Do not claim provenance signing, production launch readiness, live IOTA
+execution, payment-provider settlement, marketplace production operation, or
+production custody from this package publication.
 
 ## Runnable MCP Package Publication
 
-The source tree now publishes `@vallum/mcp-server@0.0.1-prerelease.1` as part
-of the coordinated workspace prerelease. The previous
+The source tree now publishes `@vallum/mcp-server@0.1.0` as part of the
+coordinated workspace release. The previous
 `@vallum/mcp-server@0.0.1-mcp.0` publication was an MCP-package-only CLI bump
 over the older `0.0.0-prerelease` API line.
 
@@ -308,11 +307,11 @@ publication remains an operator-gated release action.
 
 ## Dist-Tag Decision
 
-For the current prerelease package set, keep documentation and examples pinned
-to `@next` or `@0.0.1-prerelease.1` even if npm exposes a prerelease through
-`latest`. Do not treat `latest` as a stable-release signal.
+For the current official package set, documentation and examples should use the
+default npm `latest` path or pin exact `0.1.0` versions where reproducibility
+matters. Do not move `latest` again without a reviewed release slice.
 
-The next package publication should explicitly verify dist-tags after publish.
+Each package publication should explicitly verify dist-tags after publish.
 
 ## Scope Rename Checklist
 

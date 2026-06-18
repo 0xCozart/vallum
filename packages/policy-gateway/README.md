@@ -4,10 +4,10 @@ Fail-closed sponsorship policy evaluation helpers for Vallum gateways.
 
 ## Install
 
-For the npm prerelease, install:
+For the npm release, install:
 
 ```sh
-npm install @vallum/policy-gateway@next
+npm install @vallum/policy-gateway
 ```
 
 See

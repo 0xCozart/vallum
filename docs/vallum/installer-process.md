@@ -42,8 +42,8 @@ Use this for a first install into an application repo.
 The installer may:
 
 - detect package manager and target repo shape;
-- propose `@vallum/sdk@next`, `@vallum/mcp-server@next`, or
-  `@vallum/policy-gateway@next`;
+- propose `@vallum/sdk`, `@vallum/mcp-server`, or
+  `@vallum/policy-gateway`;
 - add Vallum local/operator paths to `.gitignore`;
 - write `.env.vallum.example` with placeholders only;
 - write `vallum.config.example.json` with non-secret policy shape;

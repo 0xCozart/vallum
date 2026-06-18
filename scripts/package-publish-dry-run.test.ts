@@ -36,7 +36,7 @@ test("publish dry-run command uses explicit npm dry-run args for every public wo
     "publish",
     "--dry-run",
     "--tag",
-    "next",
+      "latest",
     "--access",
     "public",
     "-w",
@@ -62,7 +62,7 @@ test("publish dry-run runner invokes npm publish without real publication flags"
   assert.equal(calls[0]?.cwd, process.cwd());
   assert.ok(calls[0]?.args.includes("--dry-run"));
   assert.ok(calls[0]?.args.includes("--tag"));
-  assert.ok(calls[0]?.args.includes("next"));
+  assert.ok(calls[0]?.args.includes("latest"));
   assert.ok(calls[0]?.args.includes("--access"));
   assert.ok(calls[0]?.args.includes("public"));
   assert.ok(!calls[0]?.args.includes("--otp"));

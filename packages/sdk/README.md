@@ -4,10 +4,10 @@ TypeScript client scaffold for applications integrating with an Vallum policy ga
 
 ## Install
 
-For the npm prerelease, install:
+For the npm release, install:
 
 ```sh
-npm install @vallum/sdk@next
+npm install @vallum/sdk
 ```
 
 See the full package selection and configuration guide in the repository:

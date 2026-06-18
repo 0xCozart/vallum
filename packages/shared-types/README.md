@@ -4,7 +4,7 @@ Shared TypeScript policy and request/decision types for Vallum packages.
 
 ## Install
 
-For the npm prerelease, install:
+For the npm release, install:
 
 ```sh
 npm install @vallum/shared-types

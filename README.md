@@ -124,12 +124,12 @@ operator visibility.
 ### Start Here: One Adoption Path
 
 The public center of gravity is agent-safe sponsored execution for IOTA.
-The first developer path is intentionally narrow. The prerelease packages are
-published under `@vallum/*`; start with the
+The first developer path is intentionally narrow. The official `0.1.0`
+packages are published under `@vallum/*`; start with the
 [Package Integration Guide](docs/vallum/package-integration-guide.md):
 
 ```bash
-npm install @vallum/sdk@next
+npm install @vallum/sdk
 ```
 
 If you are reviewing or contributing to this repository, run:
@@ -448,12 +448,12 @@ examples/
 ### Packages
 
 The monorepo root is marked `private` to prevent accidental publication of the
-workspace root. The current prerelease package set is published under
-`@vallum/*` with the requested `next` tag. See
+workspace root. The current official package set is published under
+`@vallum/*` with the requested `latest` tag. See
 [`docs/vallum/package-release-strategy.md`](docs/vallum/package-release-strategy.md).
 
-Package release evidence includes package READMEs, public prerelease publish
-metadata (`access=public`, `tag=next`), map-free packed artifacts, local
+Package release evidence includes package READMEs, public release publish
+metadata (`access=public`, `tag=latest`), map-free packed artifacts, local
 `npm pack --dry-run` verification, local tarball install/import smoke, a local
 tarball paid MCP consumer smoke, an opt-in package-publication readiness gate,
 an opt-in `npm publish --dry-run` gate, and post-publication registry
@@ -475,7 +475,7 @@ npm run publish:dry-run
 ```
 
 `npm run publish:dry-run` builds first and then invokes npm's dry-run publish
-path with `npm publish --dry-run --tag next --access public` for every public
+path with `npm publish --dry-run --tag latest --access public` for every public
 workspace package.
 
 Do not run a real `npm publish` without explicit operator approval and registry credentials handled outside the repo.

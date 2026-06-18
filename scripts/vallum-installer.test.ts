@@ -28,7 +28,7 @@ test("auto-scaffold plan installs sdk only and blocks live commands", () => {
     packageManager: "npm",
   });
 
-  assert.deepEqual(plan.packages, ["@vallum/sdk@next"]);
+  assert.deepEqual(plan.packages, ["@vallum/sdk"]);
   assert.equal(plan.requiresHumanSecretEntry, false);
   assert.equal(plan.liveCommandsAllowed, false);
   assert.equal(plan.nextApprovalGate, "guided-operator");
@@ -46,7 +46,7 @@ test("guided operator plan keeps live commands approval-gated", () => {
     packageManager: "pnpm",
   });
 
-  assert.deepEqual(plan.packages, ["@vallum/sdk@next", "@vallum/mcp-server@next"]);
+  assert.deepEqual(plan.packages, ["@vallum/sdk", "@vallum/mcp-server"]);
   assert.equal(plan.requiresHumanSecretEntry, true);
   assert.equal(plan.liveCommandsAllowed, false);
   assert.equal(plan.nextApprovalGate, "explicit-operator-approval");

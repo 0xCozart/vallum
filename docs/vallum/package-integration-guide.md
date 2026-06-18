@@ -54,9 +54,9 @@ Vallum dependencies automatically.
 
 | User | Install | Use this for |
 | --- | --- | --- |
-| App/backend developer | `@vallum/sdk@next` | Calling an Vallum-compatible gateway from backend code. |
-| Agent runtime integrator | `@vallum/sdk@next` for backend/tool-host code; `@vallum/mcp-server@next` for stdio MCP hosts | Building an agent integration that still routes through policy and manifests. |
-| Policy/gateway operator | `@vallum/policy-gateway@next` | Evaluating local sponsorship policy or building a gateway service. |
+| App/backend developer | `@vallum/sdk` | Calling an Vallum-compatible gateway from backend code. |
+| Agent runtime integrator | `@vallum/sdk` for backend/tool-host code; `@vallum/mcp-server` for stdio MCP hosts | Building an agent integration that still routes through policy and manifests. |
+| Policy/gateway operator | `@vallum/policy-gateway` | Evaluating local sponsorship policy or building a gateway service. |
 | Advanced package consumer | Lower-level packages such as `manifest`, `receipts`, `registry`, `standards`, or `accounts` | Specialized integrations that need direct primitives. |
 
 Do not install all 11 packages manually unless you are developing Vallum
@@ -66,10 +66,10 @@ evolve independently.
 
 ## Install
 
-The current prerelease is published under `@vallum/*`:
+The current official release is published under `@vallum/*`:
 
 ```bash
-npm install @vallum/sdk@next
+npm install @vallum/sdk
 ```
 
 This installs the backend SDK and the lower-level manifest, registry, receipt,
@@ -78,13 +78,13 @@ and shared type packages it depends on.
 If you are experimenting with the MCP package:
 
 ```bash
-npm install @vallum/mcp-server@next
+npm install @vallum/mcp-server
 ```
 
 The MCP package builds a stdio CLI bin named `vallum-mcp` and keeps the
 programmatic facade. The runnable MCP package is published on the coordinated
-`0.0.1-prerelease.1` package line through the npm `next` dist-tag, and
-registry install plus local stdio execution is covered by
+`0.1.0` package line through the npm `latest` dist-tag, and registry install
+plus local stdio execution is covered by
 `npm run smoke:npm-registry-mcp-stdio-consumer`.
 
 An MCP host can start the server with environment configuration owned by the
@@ -99,8 +99,8 @@ npm exec -- vallum-mcp
 Do not pass API keys as CLI arguments, paste them into agent prompts, or commit
 MCP host configuration files containing real values.
 
-When publishing prereleases, use the `next` tag. Use `@next` or an exact
-prerelease version in docs, scripts, and demos until a stable release exists.
+For the official package path, use the npm `latest` tag or pin the exact
+`0.1.0` version when reproducibility matters.
 
 ## Configure
 

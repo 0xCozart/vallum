@@ -24,8 +24,8 @@ interface PackageJson {
 }
 
 const publicPackages = await publicPackageDirs();
-const repoPrereleaseVersion = "0.0.1-prerelease.1";
-const mcpServerVersion = repoPrereleaseVersion;
+const repoReleaseVersion = "0.1.0";
+const mcpServerVersion = repoReleaseVersion;
 const mcpServerPackageName = "@vallum/mcp-server";
 
 test("workspace root is private and keeps publishable packages out of root publication", async () => {
@@ -33,13 +33,13 @@ test("workspace root is private and keeps publishable packages out of root publi
 
   assert.equal(root.name, "vallum");
   assert.equal(root.private, true);
-  assert.equal(root.version, repoPrereleaseVersion);
+  assert.equal(root.version, repoReleaseVersion);
   assert.equal(root.license, "Apache-2.0");
   assert.equal(root.type, "module");
   assert.deepEqual(root.workspaces, ["packages/*", "apps/*"]);
 });
 
-test("public package metadata pins safe prerelease publish settings", async () => {
+test("public package metadata pins safe official release settings", async () => {
   for (const packageDir of publicPackages) {
     const packageJson = await readPackageJson(packageDir);
 
@@ -48,7 +48,7 @@ test("public package metadata pins safe prerelease publish settings", async () =
       /^@vallum\/[a-z0-9-]+$/,
       `${packageJson.name} must stay in the Vallum namespace`,
     );
-    assert.equal(packageJson.version, expectedPackageVersion(packageJson.name), `${packageJson.name} must use the reviewed prerelease version`);
+    assert.equal(packageJson.version, expectedPackageVersion(packageJson.name), `${packageJson.name} must use the reviewed release version`);
     assert.equal(packageJson.private, undefined, `${packageJson.name} must not be private if pack:check publishes it`);
     assert.equal(packageJson.type, "module", `${packageJson.name} must publish ESM`);
     assert.equal(packageJson.main, "dist/index.js", `${packageJson.name} must publish built JS entrypoint`);
@@ -56,7 +56,7 @@ test("public package metadata pins safe prerelease publish settings", async () =
     assert.deepEqual(packageJson.exports, expectedExports(packageJson.name), `${packageJson.name} must expose only reviewed built entrypoints`);
     assert.equal(packageJson.license, "Apache-2.0", `${packageJson.name} must preserve Apache-2.0`);
     assert.equal(packageJson.publishConfig?.access, "public", `${packageJson.name} must publish publicly when released`);
-    assert.equal(packageJson.publishConfig?.tag, "next", `${packageJson.name} prerelease versions need a non-latest tag`);
+    assert.equal(packageJson.publishConfig?.tag, "latest", `${packageJson.name} must publish the reviewed official release on latest`);
     assert.deepEqual(
       packageJson.files,
       ["dist/**/*.js", "dist/**/*.d.ts", "LICENSE", "README.md"],
@@ -79,8 +79,8 @@ test("public package metadata pins safe prerelease publish settings", async () =
     for (const [dependencyName, dependencyVersion] of internalDependencies(packageJson)) {
       assert.equal(
         dependencyVersion,
-        repoPrereleaseVersion,
-        `${packageJson.name} must pin internal dependency ${dependencyName} to the repo prerelease version`,
+        repoReleaseVersion,
+        `${packageJson.name} must pin internal dependency ${dependencyName} to the repo release version`,
       );
     }
   }
@@ -108,12 +108,12 @@ test("public package readmes match package names", async () => {
   }
 });
 
-test("existing install readmes keep prerelease npm install guidance explicit", async () => {
+test("existing install readmes keep npm install guidance explicit", async () => {
   for (const packageDir of ["packages/shared-types", "packages/policy-gateway", "packages/sdk"]) {
     const packageJson = await readPackageJson(packageDir);
     const readme = await readFile(`${packageDir}/README.md`, "utf8");
 
-    assert.match(readme, /npm prerelease/);
+    assert.match(readme, /npm release/);
     assert.match(readme, /npm install/);
     assert.match(readme, new RegExp(`npm install ${packageJson.name.replace("/", "\\/")}`));
   }
@@ -158,7 +158,7 @@ function internalDependencies(packageJson: PackageJson): [string, string][] {
 }
 
 function expectedPackageVersion(packageName: string): string {
-  return packageName === mcpServerPackageName ? mcpServerVersion : repoPrereleaseVersion;
+  return packageName === mcpServerPackageName ? mcpServerVersion : repoReleaseVersion;
 }
 
 function expectedExports(packageName: string): Record<string, unknown> {

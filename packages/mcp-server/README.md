@@ -8,10 +8,10 @@ does not directly call IOTA, Gas Station, or transaction submission APIs.
 
 ## Install
 
-For the npm prerelease, install:
+For the npm release, install:
 
 ```sh
-npm install @vallum/mcp-server@next
+npm install @vallum/mcp-server
 ```
 
 ## Current Status
@@ -26,8 +26,8 @@ and routes tool calls through the Vallum SDK and policy gateway. It does not
 directly call IOTA, Gas Station, or transaction submission APIs.
 
 The already-published `0.0.0-prerelease` package predates this runnable bin.
-The runnable MCP package is published on the coordinated
-`0.0.1-prerelease.1` package line through the npm `next` dist-tag.
+The runnable MCP package is published on the official `0.1.0` package line
+through the npm `latest` dist-tag.
 Registry install plus local stdio execution is covered by
 `npm run smoke:npm-registry-mcp-stdio-consumer`.
 

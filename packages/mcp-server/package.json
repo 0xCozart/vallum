@@ -1,6 +1,6 @@
 {
   "name": "@vallum/mcp-server",
-  "version": "0.0.1-prerelease.1",
+  "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -24,11 +24,11 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.29.0",
-    "@vallum/manifest": "0.0.1-prerelease.1",
-    "@vallum/sdk": "0.0.1-prerelease.1"
+    "@vallum/manifest": "0.1.0",
+    "@vallum/sdk": "0.1.0"
   },
   "devDependencies": {
-    "@vallum/policy-gateway": "0.0.1-prerelease.1"
+    "@vallum/policy-gateway": "0.1.0"
   },
   "description": "MCP tool facade for Vallum sponsored IOTA actions.",
   "files": [
@@ -46,6 +46,6 @@
   },
   "publishConfig": {
     "access": "public",
-    "tag": "next"
+    "tag": "latest"
   }
 }

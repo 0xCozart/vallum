@@ -310,9 +310,9 @@ function normalizeIntegrations(integrations: readonly VallumIntegration[]): read
 
 function packagesForIntegrations(integrations: readonly VallumIntegration[]): readonly string[] {
   const packages: string[] = [];
-  if (integrations.includes("backend")) packages.push("@vallum/sdk@next");
-  if (integrations.includes("mcp")) packages.push("@vallum/mcp-server@next");
-  if (integrations.includes("gateway")) packages.push("@vallum/policy-gateway@next");
+  if (integrations.includes("backend")) packages.push("@vallum/sdk");
+  if (integrations.includes("mcp")) packages.push("@vallum/mcp-server");
+  if (integrations.includes("gateway")) packages.push("@vallum/policy-gateway");
   return packages;
 }
 
