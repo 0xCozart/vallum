@@ -116,11 +116,12 @@ test("MCP stdio consumer smoke proves approval denial invalid input and redactio
 });
 
 test("npm registry MCP stdio consumer smoke pins the MCP package version separately", () => {
+  const currentVersion = "0.0.1-prerelease.0";
   const packageJson = JSON.parse(buildRegistryMcpStdioConsumerPackageJson({
-    mcpVersion: "0.0.1-mcp.0",
+    mcpVersion: currentVersion,
     supportPackages: [
-      { name: "@vallum/manifest", version: "0.0.0-prerelease" },
-      { name: "@vallum/policy-gateway", version: "0.0.0-prerelease" },
+      { name: "@vallum/manifest", version: currentVersion },
+      { name: "@vallum/policy-gateway", version: currentVersion },
     ],
   })) as {
     private?: boolean;
@@ -128,9 +129,9 @@ test("npm registry MCP stdio consumer smoke pins the MCP package version separat
   };
 
   assert.equal(packageJson.private, true);
-  assert.equal(packageJson.dependencies?.["@vallum/mcp-server"], "0.0.1-mcp.0");
-  assert.equal(packageJson.dependencies?.["@vallum/manifest"], "0.0.0-prerelease");
-  assert.equal(packageJson.dependencies?.["@vallum/policy-gateway"], "0.0.0-prerelease");
+  assert.equal(packageJson.dependencies?.["@vallum/mcp-server"], currentVersion);
+  assert.equal(packageJson.dependencies?.["@vallum/manifest"], currentVersion);
+  assert.equal(packageJson.dependencies?.["@vallum/policy-gateway"], currentVersion);
 });
 
 test("npm registry MCP stdio consumer smoke uses package bin and registry marker", () => {
@@ -144,19 +145,20 @@ test("npm registry MCP stdio consumer smoke uses package bin and registry marker
 });
 
 test("npm registry consumer smoke pins current published package versions", () => {
+  const currentVersion = "0.0.1-prerelease.0";
   const packageJson = JSON.parse(buildRegistryConsumerPackageJson([
-    { dir: "packages/accounts", name: "@vallum/accounts", version: "0.0.0-prerelease" },
-    { dir: "packages/mcp-server", name: "@vallum/mcp-server", version: "0.0.1-mcp.0" },
-    { dir: "packages/sdk", name: "@vallum/sdk", version: "0.0.0-prerelease" },
-  ], "0.0.0-prerelease")) as {
+    { dir: "packages/accounts", name: "@vallum/accounts", version: currentVersion },
+    { dir: "packages/mcp-server", name: "@vallum/mcp-server", version: currentVersion },
+    { dir: "packages/sdk", name: "@vallum/sdk", version: currentVersion },
+  ], currentVersion)) as {
     private?: boolean;
     dependencies?: Record<string, string>;
   };
 
   assert.equal(packageJson.private, true);
-  assert.equal(packageJson.dependencies?.["@vallum/accounts"], "0.0.0-prerelease");
-  assert.equal(packageJson.dependencies?.["@vallum/mcp-server"], "0.0.1-mcp.0");
-  assert.equal(packageJson.dependencies?.["@vallum/sdk"], "0.0.0-prerelease");
+  assert.equal(packageJson.dependencies?.["@vallum/accounts"], currentVersion);
+  assert.equal(packageJson.dependencies?.["@vallum/mcp-server"], currentVersion);
+  assert.equal(packageJson.dependencies?.["@vallum/sdk"], currentVersion);
 });
 
 test("npm registry consumer smoke installs from registry without lifecycle scripts", () => {

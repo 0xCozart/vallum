@@ -11,9 +11,9 @@
     "test": "node --import tsx --test src/*.test.ts"
   },
   "dependencies": {
-    "@vallum/policy-gateway": "0.0.0-prerelease",
-    "@vallum/sdk": "0.0.0-prerelease",
-    "@vallum/shared-types": "0.0.0-prerelease"
+    "@vallum/policy-gateway": "0.0.1-prerelease.0",
+    "@vallum/sdk": "0.0.1-prerelease.0",
+    "@vallum/shared-types": "0.0.1-prerelease.0"
   },
   "devDependencies": {
     "tsx": "4.20.0",

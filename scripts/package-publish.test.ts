@@ -24,8 +24,8 @@ interface PackageJson {
 }
 
 const publicPackages = await publicPackageDirs();
-const repoPrereleaseVersion = "0.0.0-prerelease";
-const mcpServerVersion = "0.0.1-mcp.0";
+const repoPrereleaseVersion = "0.0.1-prerelease.0";
+const mcpServerVersion = repoPrereleaseVersion;
 const mcpServerPackageName = "@vallum/mcp-server";
 
 test("workspace root is private and keeps publishable packages out of root publication", async () => {

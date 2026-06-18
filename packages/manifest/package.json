@@ -1,6 +1,6 @@
 {
   "name": "@vallum/manifest",
-  "version": "0.0.0-prerelease",
+  "version": "0.0.1-prerelease.0",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

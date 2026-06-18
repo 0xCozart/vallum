@@ -1,6 +1,6 @@
 {
   "name": "@vallum/standards",
-  "version": "0.0.0-prerelease",
+  "version": "0.0.1-prerelease.0",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -12,10 +12,10 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@vallum/manifest": "0.0.0-prerelease",
-    "@vallum/policy-gateway": "0.0.0-prerelease",
-    "@vallum/receipts": "0.0.0-prerelease",
-    "@vallum/registry": "0.0.0-prerelease"
+    "@vallum/manifest": "0.0.1-prerelease.0",
+    "@vallum/policy-gateway": "0.0.1-prerelease.0",
+    "@vallum/receipts": "0.0.1-prerelease.0",
+    "@vallum/registry": "0.0.1-prerelease.0"
   },
   "description": "Standards bridge adapters for Vallum.",
   "files": [
