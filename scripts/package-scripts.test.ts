@@ -71,6 +71,21 @@ test("gas station runtime preflight builds before checking Docker runtime", () =
   assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /gas-station:runtime-preflight/);
 });
 
+test("local ignored-secret scan is opt-in and excluded from local verification", () => {
+  assert.equal(packageJson.scripts?.["secrets:scan"], "tsx scripts/scan-secrets.ts");
+  assert.equal(packageJson.scripts?.["secrets:scan:local"], "tsx scripts/scan-local-secrets.ts");
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /secrets:scan:local/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /secrets:scan:local/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /secrets:scan:local/);
+});
+
+test("Vallum installer defaults to dry-run and stays opt-in", () => {
+  assert.equal(packageJson.scripts?.["vallum:installer"], "tsx scripts/vallum-installer.ts");
+  assert.doesNotMatch(packageJson.scripts?.["verify:fast"] ?? "", /vallum:installer/);
+  assert.doesNotMatch(packageJson.scripts?.["verify:local"] ?? "", /vallum:installer/);
+  assert.doesNotMatch(packageJson.scripts?.["grant:check"] ?? "", /vallum:installer/);
+});
+
 test("direct Docker Gas Station fallback builds and stays opt-in", () => {
   const dockerDirect = packageJson.scripts?.["gas-station:docker-direct"];
 

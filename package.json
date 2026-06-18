@@ -72,6 +72,7 @@
     "payment:write-provider-proof-plan": "npm run build && tsx scripts/write-payment-provider-proof-plan.ts",
     "payment:write-provider-proof-bundle": "npm run build && tsx scripts/write-payment-provider-proof-bundle.ts",
     "operator:write-report-template": "npm run build && tsx scripts/write-operator-report-template.ts",
+    "vallum:installer": "tsx scripts/vallum-installer.ts",
     "proof:verification-profiles": "npm run build && tsx scripts/check-verification-profiles.ts",
     "readiness:testnet": "npm run build && tsx scripts/check-testnet-readiness.ts",
     "gas-station:render-config": "npm run build && tsx scripts/render-gas-station-config.ts",
@@ -84,6 +85,7 @@
     "execute:testnet-demo": "npm run build && tsx scripts/execute-testnet-sponsored-demo.ts",
     "readiness:testnet:example": "npm run build && tsx scripts/check-testnet-readiness.ts --env-file .env.example --expect-placeholders",
     "secrets:scan": "tsx scripts/scan-secrets.ts",
+    "secrets:scan:local": "tsx scripts/scan-local-secrets.ts",
     "pack:check": "npm run build && npm pack --dry-run -w @vallum/shared-types -w @vallum/policy-gateway -w @vallum/receipts -w @vallum/standards -w @vallum/marketplace -w @vallum/sdk -w @vallum/mcp-server -w @vallum/accounts -w @vallum/manifest -w @vallum/registry -w @vallum/contracts-metadata",
     "smoke:package-install": "npm run build && tsx scripts/smoke-package-install.ts",
     "smoke:package-paid-mcp-consumer": "npm run build && tsx scripts/smoke-package-paid-mcp-consumer.ts",
@@ -99,7 +101,7 @@
     "grant:check": "npm run verify:local"
   },
   "devDependencies": {
-    "@iota/iota-sdk": "1.13.0",
+    "@iota/iota-sdk": "1.14.0",
     "@types/node": "20.17.0",
     "tsx": "4.20.0",
     "typescript": "5.9.3"

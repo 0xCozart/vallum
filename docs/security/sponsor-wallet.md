@@ -10,6 +10,9 @@ Rules:
 - Start with low balances and explicit caps.
 - Prefer KMS or an external signer for production.
 - Document rotation steps before mainnet operation.
+- Rotate any local signer that was funded, shared, logged, used outside
+  loopback, or detected in an ignored repo-local file by
+  `npm run secrets:scan:local`.
 
 If a testnet faucet attempt fails, keep the sanitized report as triage context
 for the funding request or live-proof status. Do not treat a failed faucet

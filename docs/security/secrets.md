@@ -10,7 +10,24 @@ GAS_STATION_AUTH=replace-with-random-token
 JWT_SECRET=replace-with-random-secret
 ```
 
-Before pushing public changes, run a secret scan and inspect config files manually.
+Before pushing public changes, run the tracked/unignored repository scan:
+
+```bash
+npm run secrets:scan
+```
+
+That command intentionally skips ignored local operator files such as `.env`
+and `deploy/gas-station/config.local.yaml`. To inspect expected ignored local
+secret paths without printing values, run the opt-in workstation preflight:
+
+```bash
+npm run secrets:scan:local
+```
+
+`secrets:scan:local` reports path category and finding class only. It is not
+part of `verify:fast` or `verify:local` because local credentials are expected
+on operator machines, but a finding means the workspace is not safe to share,
+copy, screenshot, or use as production evidence.
 
 Before attempting a real sponsored testnet transaction, run:
 
