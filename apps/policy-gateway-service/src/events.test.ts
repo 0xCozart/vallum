@@ -3,7 +3,7 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { after, test } from "node:test";
 
 import { createVallumClient, VallumPolicyError } from "../../../packages/sdk/src/index.js";
-import { createGatewayServer, type GatewayConfig, type GatewayEvent } from "./server.js";
+import { createGatewayServer, createLocalTransactionIntentVerifier, type GatewayConfig, type GatewayEvent } from "./server.js";
 
 const demoPolicy = {
   appId: "demo-dapp",
@@ -71,6 +71,7 @@ async function startGateway(configOverrides: Partial<GatewayConfig> = {}) {
     },
     upstreamBaseUrl,
     upstreamBearerToken: "upstream-local-token",
+    transactionIntentVerifier: createLocalTransactionIntentVerifier(),
     eventSink: (event) => {
       events.push(event);
     },
@@ -210,7 +211,12 @@ test("gateway event sink failures do not affect request handling", async () => {
   after(() => fixture.close());
   const client = createVallumClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
 
-  const reserve = await client.reserveGas({ gasBudget: 1, packageId: "0xDEMO_PACKAGE", functionName: "mint_badge" });
+  const reserve = await client.reserveGas({
+    gasBudget: 1,
+    walletAddress: "0xWALLET",
+    packageId: "0xDEMO_PACKAGE",
+    functionName: "mint_badge",
+  });
 
   assert.equal(reserve.reservationId, "reservation-1");
   assert.equal(eventAttempts, 1);
@@ -234,7 +240,12 @@ test("gateway event sink rejections do not create unhandled rejections", async (
 
   try {
     const client = createVallumClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
-    const reserve = await client.reserveGas({ gasBudget: 1, packageId: "0xDEMO_PACKAGE", functionName: "mint_badge" });
+    const reserve = await client.reserveGas({
+      gasBudget: 1,
+      walletAddress: "0xWALLET",
+      packageId: "0xDEMO_PACKAGE",
+      functionName: "mint_badge",
+    });
     await new Promise((resolve) => setImmediate(resolve));
 
     assert.equal(reserve.reservationId, "reservation-1");
@@ -325,7 +336,14 @@ test("gateway sanitizes control characters, C1 controls, and long event metadata
 });
 
 test("gateway omits undefined optional event fields", async () => {
-  const fixture = await startGateway();
+  const fixture = await startGateway({
+    apps: {
+      "demo-dapp": {
+        apiKey: "local-dev-demo-key",
+        policy: { ...demoPolicy, deniedWallets: [], maxRequestsPerWalletPerDay: undefined },
+      },
+    },
+  });
   after(() => fixture.close());
   const client = createVallumClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
 

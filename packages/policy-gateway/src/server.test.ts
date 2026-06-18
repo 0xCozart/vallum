@@ -178,6 +178,33 @@ test("agent mock gateway event sink failures do not affect request handling", as
   }
 });
 
+test("agent mock gateway refuses non-loopback listen hosts by default", () => {
+  const server = createAgentMockGatewayServer({
+    policy: basePolicy,
+    now: () => now,
+  });
+
+  assert.throws(() => server.listen(0), /must bind to 127\.0\.0\.1/);
+  assert.throws(() => server.listen(0, "0.0.0.0"), /must bind to 127\.0\.0\.1/);
+});
+
+test("agent mock gateway can explicitly opt into unsafe non-loopback hosts", async () => {
+  const server = createAgentMockGatewayServer({
+    policy: basePolicy,
+    now: () => now,
+    allowUnsafeNonLoopback: true,
+  });
+
+  try {
+    server.listen(0, "0.0.0.0");
+    await once(server, "listening");
+    const address = server.address() as AddressInfo;
+    assert.equal(typeof address.port, "number");
+  } finally {
+    await close(server);
+  }
+});
+
 async function listen(server: ReturnType<typeof createAgentMockGatewayServer>): Promise<string> {
   server.listen(0, "127.0.0.1");
   await once(server, "listening");

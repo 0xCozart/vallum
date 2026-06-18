@@ -6,6 +6,9 @@
 - Use environment-specific secrets.
 - Prefer KMS or external signer for production.
 - Rotate any key that was ever committed or shared.
+- Run `npm run secrets:scan` for tracked repo hygiene and
+  `npm run secrets:scan:local` before sharing a workstation snapshot or using
+  ignored local config as operator evidence.
 
 ## Network
 
@@ -21,6 +24,11 @@
 - Configure max gas budget per transaction.
 - Monitor low sponsor balance.
 - Fail closed if policy state is unavailable.
+- Use a production-safe quota store for daily limits. The repo-local
+  `VALLUM_QUOTA_STORE_PATH` JSON store is local proof only; it does not provide
+  cross-process or multi-host atomicity.
+- Set conservative reservation TTLs and per-app active reservation caps so
+  valid app keys cannot grow unbounded active reservation state.
 
 ## Monitoring
 

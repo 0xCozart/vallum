@@ -41,3 +41,13 @@ if (!decision.allowed) {
 ```
 
 The evaluator is deterministic and local. It does not reserve gas, execute transactions, call IOTA RPC, or enforce quotas beyond the request context values supplied by the caller.
+
+## Mock Agent Gateway
+
+`createAgentMockGatewayServer()` is a local/test helper for deterministic
+manifest and SDK flows. It is not the production policy gateway and does not
+enforce production app API authentication or Gas Station sponsorship.
+
+The server refuses non-loopback listen hosts by default. Bind it to
+`127.0.0.1`, `::1`, or `localhost`; setting `allowUnsafeNonLoopback: true` is
+an explicit unsafe opt-in for controlled test harnesses only.

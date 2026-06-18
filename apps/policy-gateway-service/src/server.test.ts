@@ -1,9 +1,13 @@
 import assert from "node:assert/strict";
+import { mkdtemp } from "node:fs/promises";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { after, before, test } from "node:test";
 
 import { createVallumClient, VallumAuthError, VallumError, VallumPolicyError } from "@vallum/sdk";
-import { createGatewayServer, type GatewayConfig } from "./server.js";
+import { createFileGatewayQuotaStore } from "./quota-store.js";
+import { createGatewayServer, createLocalTransactionIntentVerifier, type GatewayConfig } from "./server.js";
 
 const demoPolicy = {
   appId: "demo-dapp",
@@ -63,6 +67,10 @@ async function listen(server: ReturnType<typeof createServer>): Promise<string> 
   return `http://127.0.0.1:${address.port}`;
 }
 
+function transactionBytesForIntent(intent: Record<string, unknown>): string {
+  return Buffer.from(JSON.stringify(intent), "utf8").toString("base64");
+}
+
 async function startGateway(configOverrides: Partial<GatewayConfig> = {}, upstreamOptions: { reservationId?: string | number } = {}) {
   const upstream = createMockGasStation(upstreamOptions);
   const upstreamBaseUrl = await listen(upstream.server);
@@ -75,6 +83,7 @@ async function startGateway(configOverrides: Partial<GatewayConfig> = {}, upstre
     },
     upstreamBaseUrl,
     upstreamBearerToken: "upstream-local-token",
+    transactionIntentVerifier: createLocalTransactionIntentVerifier(),
     ...configOverrides,
   });
   const gatewayBaseUrl = await listen(gateway);
@@ -219,7 +228,7 @@ test("reserveGas rejects missing app credentials with AUTH_MISSING", async () =>
   const response = await fetch(`${fixture.gatewayBaseUrl}/v1/reserve_gas`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ gas_budget: 1, package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" }),
+    body: JSON.stringify({ gas_budget: 1, wallet_address: "0xWALLET", package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" }),
   });
   const body = await response.json();
 
@@ -254,6 +263,7 @@ test("reserveGas rejects non-allowlisted package before upstream proxy", async (
     () =>
       client.reserveGas({
         gasBudget: 1,
+        walletAddress: "0xWALLET",
         packageId: "0xNOT_ALLOWED",
         functionName: "mint_badge",
       }),
@@ -290,7 +300,7 @@ test("reserveGas response exposes only the public Vallum transaction id field", 
   const response = await fetch(`${fixture.gatewayBaseUrl}/v1/reserve_gas`, {
     method: "POST",
     headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
-    body: JSON.stringify({ gas_budget: 1, package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" }),
+    body: JSON.stringify({ gas_budget: 1, wallet_address: "0xWALLET", package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" }),
   });
   const body = await response.json();
 
@@ -321,7 +331,7 @@ test("executeSponsoredTransaction sends numeric official reservation ids back up
   after(() => fixture.close());
   const client = createVallumClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
 
-  const reserve = await client.reserveGas({ gasBudget: 1, packageId: "0xDEMO_PACKAGE", functionName: "mint_badge" });
+  const reserve = await client.reserveGas({ gasBudget: 1, walletAddress: "0xWALLET", packageId: "0xDEMO_PACKAGE", functionName: "mint_badge" });
   const execute = await client.executeSponsoredTransaction({
     reservationId: reserve.reservationId,
     agentRailTransactionId: reserve.agentRailTransactionId,
@@ -366,6 +376,139 @@ test("executeSponsoredTransaction proxies only a known prior reservation", async
   });
 });
 
+test("execute rejects tx bytes whose verified intent conflicts with reserved policy metadata before upstream proxy", async () => {
+  const fixture = await startGateway();
+  after(() => fixture.close());
+  const client = createVallumClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+
+  const reserve = await client.reserveGas({
+    gasBudget: 10,
+    walletAddress: "0xWALLET",
+    packageId: "0xDEMO_PACKAGE",
+    functionName: "mint_badge",
+  });
+  const mismatchedTxBytes = transactionBytesForIntent({
+    transactionDigest: "digest-disallowed",
+    wallet_address: "0xWALLET",
+    package_id: "0xNOT_ALLOWED",
+    function_name: "mint_badge",
+    gas_budget: 10,
+  });
+
+  const response = await fetch(`${fixture.gatewayBaseUrl}/v1/execute_tx`, {
+    method: "POST",
+    headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
+    body: JSON.stringify({
+      agentRailTransactionId: reserve.agentRailTransactionId,
+      reservation_id: reserve.reservationId,
+      tx_bytes: mismatchedTxBytes,
+      user_sig: "sig",
+    }),
+  });
+  const body = await response.json();
+
+  assert.equal(response.status, 400);
+  assert.equal(body.reasonCode, "PACKAGE_NOT_ALLOWED");
+  assert.equal(JSON.stringify(body).includes(mismatchedTxBytes), false);
+  assert.equal(fixture.upstream.requests.length, 1);
+});
+
+test("execute rejects unverifiable tx bytes without proxying raw bytes upstream", async () => {
+  const fixture = await startGateway({
+    transactionIntentVerifier: {
+      name: "throwing-local-test-verifier",
+      authority: "local-test",
+      verify() {
+        throw new Error("do-not-echo-raw-AAE=");
+      },
+    },
+  });
+  after(() => fixture.close());
+  const client = createVallumClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+
+  const reserve = await client.reserveGas({
+    gasBudget: 10,
+    walletAddress: "0xWALLET",
+    packageId: "0xDEMO_PACKAGE",
+    functionName: "mint_badge",
+  });
+  const response = await fetch(`${fixture.gatewayBaseUrl}/v1/execute_tx`, {
+    method: "POST",
+    headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
+    body: JSON.stringify({
+      agentRailTransactionId: reserve.agentRailTransactionId,
+      reservation_id: reserve.reservationId,
+      tx_bytes: "AAE=",
+      user_sig: "sig",
+    }),
+  });
+  const text = await response.text();
+
+  assert.equal(response.status, 400);
+  assert.equal(text.includes("AAE="), false);
+  assert.equal(text.includes("do-not-echo"), false);
+  assert.equal(fixture.upstream.requests.length, 1);
+});
+
+test("execute uses an in-flight reservation transition to block duplicate upstream proxy attempts", async () => {
+  let releaseVerifier: (() => void) | undefined;
+  const verifierGate = new Promise<void>((resolve) => {
+    releaseVerifier = resolve;
+  });
+  let verifierCalls = 0;
+  const fixture = await startGateway({
+    transactionIntentVerifier: {
+      name: "gated-local-test-verifier",
+      authority: "local-test",
+      async verify({ txBytes }) {
+        verifierCalls += 1;
+        await verifierGate;
+        return {
+          transactionDigest: `sha256:${txBytes}`,
+          walletAddress: "0xWALLET",
+          packageId: "0xDEMO_PACKAGE",
+          functionName: "mint_badge",
+          gasBudget: 1,
+        };
+      },
+    },
+  });
+  after(() => fixture.close());
+  const client = createVallumClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+  const reserve = await client.reserveGas({
+    gasBudget: 1,
+    walletAddress: "0xWALLET",
+    packageId: "0xDEMO_PACKAGE",
+    functionName: "mint_badge",
+  });
+  const executeBody = JSON.stringify({
+    agentRailTransactionId: reserve.agentRailTransactionId,
+    reservation_id: reserve.reservationId,
+    tx_bytes: "AAE=",
+    user_sig: "sig",
+  });
+
+  const first = fetch(`${fixture.gatewayBaseUrl}/v1/execute_tx`, {
+    method: "POST",
+    headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
+    body: executeBody,
+  });
+  const second = fetch(`${fixture.gatewayBaseUrl}/v1/execute_tx`, {
+    method: "POST",
+    headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
+    body: executeBody,
+  });
+
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  releaseVerifier?.();
+  const responses = await Promise.all([first, second]);
+  const statuses = responses.map((response) => response.status).sort((a, b) => a - b);
+
+  assert.deepEqual(statuses, [200, 409]);
+  assert.equal(verifierCalls, 1);
+  assert.equal(fixture.upstream.requests.filter((request) => request.url === "/v1/execute_tx").length, 1);
+});
+
 test("execute does not re-consume one-use app quotas after a successful reservation", async () => {
   const oneUsePolicy = { ...demoPolicy, dailyRequestLimit: 1, dailyBudgetNanos: 1 };
   const fixture = await startGateway({
@@ -402,7 +545,7 @@ test("execute accepts the returned agentRailTransactionId alias for non-SDK call
   const reserveResponse = await fetch(`${fixture.gatewayBaseUrl}/v1/reserve_gas`, {
     method: "POST",
     headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
-    body: JSON.stringify({ gas_budget: 1, package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" }),
+    body: JSON.stringify({ gas_budget: 1, wallet_address: "0xWALLET", package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" }),
   });
   const reserveBody = await reserveResponse.json();
 
@@ -422,6 +565,91 @@ test("execute accepts the returned agentRailTransactionId alias for non-SDK call
   assert.equal(executeBody.effects.transactionDigest, "digest-1");
 });
 
+test("execute fails closed when no transaction intent verifier is configured", async () => {
+  const fixture = await startGateway({ transactionIntentVerifier: undefined });
+  after(() => fixture.close());
+  const client = createVallumClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+
+  const reserve = await client.reserveGas({
+    gasBudget: 1,
+    walletAddress: "0xWALLET",
+    packageId: "0xDEMO_PACKAGE",
+    functionName: "mint_badge",
+  });
+  const response = await fetch(`${fixture.gatewayBaseUrl}/v1/execute_tx`, {
+    method: "POST",
+    headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
+    body: JSON.stringify({
+      agentRailTransactionId: reserve.agentRailTransactionId,
+      reservation_id: reserve.reservationId,
+      tx_bytes: "AAE=",
+      user_sig: "sig",
+    }),
+  });
+  const body = await response.json();
+
+  assert.equal(response.status, 502);
+  assert.equal(body.reasonCode, "GAS_STATION_UNAVAILABLE");
+  assert.equal(fixture.upstream.requests.length, 1);
+});
+
+test("createGatewayServer rejects production mode without an authoritative transaction verifier", () => {
+  assert.throws(
+    () =>
+      createGatewayServer({
+        runtimeMode: "production",
+        apps: {
+          "demo-dapp": {
+            apiKey: "local-dev-demo-key",
+            policy: demoPolicy,
+          },
+        },
+        transactionIntentVerifier: createLocalTransactionIntentVerifier(),
+      }),
+    /authoritative transaction intent verifier/,
+  );
+});
+
+test("createGatewayServer rejects production daily limits without a production quota store", () => {
+  assert.throws(
+    () =>
+      createGatewayServer({
+        runtimeMode: "production",
+        apps: {
+          "demo-dapp": {
+            apiKey: "local-dev-demo-key",
+            policy: demoPolicy,
+          },
+        },
+        transactionIntentVerifier: {
+          name: "authoritative-test-double",
+          authority: "authoritative",
+          verify() {
+            return { transactionDigest: "digest" };
+          },
+        },
+      }),
+    /production-safe durable quota store/,
+  );
+});
+
+test("createGatewayServer rejects invalid reservation lifecycle limits", () => {
+  assert.throws(
+    () =>
+      createGatewayServer({
+        apps: {
+          "demo-dapp": {
+            apiKey: "local-dev-demo-key",
+            policy: demoPolicy,
+          },
+        },
+        transactionIntentVerifier: createLocalTransactionIntentVerifier(),
+        reservationLimits: { defaultTtlMs: 0 },
+      }),
+    /reservation limit defaultTtlMs/,
+  );
+});
+
 test("configured but unreachable upstream returns GAS_STATION_UNAVAILABLE", async () => {
   const fixture = await startGateway({ upstreamBaseUrl: "http://127.0.0.1:9" });
   after(() => fixture.close());
@@ -429,7 +657,7 @@ test("configured but unreachable upstream returns GAS_STATION_UNAVAILABLE", asyn
   const response = await fetch(`${fixture.gatewayBaseUrl}/v1/reserve_gas`, {
     method: "POST",
     headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
-    body: JSON.stringify({ gas_budget: 1, package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" }),
+    body: JSON.stringify({ gas_budget: 1, wallet_address: "0xWALLET", package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" }),
   });
   const body = await response.json();
 
@@ -508,7 +736,7 @@ test("reserveGas enforces one-use request limits under concurrent upstream laten
   });
   after(() => fixture.close());
 
-  const requestBody = { gas_budget: 1, package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" };
+  const requestBody = { gas_budget: 1, wallet_address: "0xWALLET", package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" };
   const first = fetch(`${fixture.gatewayBaseUrl}/v1/reserve_gas`, {
     method: "POST",
     headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
@@ -529,6 +757,177 @@ test("reserveGas enforces one-use request limits under concurrent upstream laten
   assert.deepEqual(statuses, [200, 429]);
   assert.equal(bodies.some((body) => body.reasonCode === "APP_DAILY_REQUEST_LIMIT_EXCEEDED"), true);
   assert.equal(upstreamCalls, 1);
+});
+
+test("durable local quota store preserves daily request limits across gateway restart", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "vallum-quota-"));
+  const quotaPath = join(dir, "quota.json");
+  const oneUsePolicy = { ...demoPolicy, dailyRequestLimit: 1 };
+  const first = await startGateway({
+    quotaStore: createFileGatewayQuotaStore({ filePath: quotaPath }),
+    apps: {
+      "demo-dapp": {
+        apiKey: "local-dev-demo-key",
+        policy: oneUsePolicy,
+      },
+    },
+  });
+  const client = createVallumClient({ baseUrl: first.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+
+  const reserve = await client.reserveGas({
+    gasBudget: 1,
+    walletAddress: "0xWALLET",
+    packageId: "0xDEMO_PACKAGE",
+    functionName: "mint_badge",
+  });
+  assert.equal(reserve.reservationId, "reservation-1");
+  await first.close();
+
+  const second = await startGateway({
+    quotaStore: createFileGatewayQuotaStore({ filePath: quotaPath }),
+    apps: {
+      "demo-dapp": {
+        apiKey: "local-dev-demo-key",
+        policy: oneUsePolicy,
+      },
+    },
+  });
+  after(() => second.close());
+  const restartedClient = createVallumClient({ baseUrl: second.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+
+  await assert.rejects(
+    () =>
+      restartedClient.reserveGas({
+        gasBudget: 1,
+        walletAddress: "0xWALLET",
+        packageId: "0xDEMO_PACKAGE",
+        functionName: "mint_badge",
+      }),
+    (error) => error instanceof VallumPolicyError && error.reasonCode === "APP_DAILY_REQUEST_LIMIT_EXCEEDED",
+  );
+  assert.equal(second.upstream.requests.length, 0);
+});
+
+test("expired reservations cannot execute and do not call upstream execute", async () => {
+  let nowMs = Date.UTC(2026, 5, 18, 0, 0, 0);
+  const fixture = await startGateway({
+    now: () => new Date(nowMs),
+    reservationLimits: { defaultTtlMs: 1_000, maxTtlMs: 1_000, terminalRetentionMs: 10_000 },
+  });
+  after(() => fixture.close());
+  const client = createVallumClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+
+  const reserve = await client.reserveGas({
+    gasBudget: 1,
+    walletAddress: "0xWALLET",
+    packageId: "0xDEMO_PACKAGE",
+    functionName: "mint_badge",
+  });
+  nowMs += 1_001;
+
+  await assert.rejects(
+    () =>
+      client.executeSponsoredTransaction({
+        reservationId: reserve.reservationId,
+        agentRailTransactionId: reserve.agentRailTransactionId,
+        transactionBytes: "AAE=",
+        userSignature: "sig",
+      }),
+    (error) => error instanceof VallumPolicyError && error.status === 409 && error.reasonCode === "EXECUTION_FAILED",
+  );
+  assert.equal(fixture.upstream.requests.filter((request) => request.url === "/v1/execute_tx").length, 0);
+});
+
+test("active reservation caps reject growth and cleanup expired active reservations", async () => {
+  let nowMs = Date.UTC(2026, 5, 18, 0, 0, 0);
+  const fixture = await startGateway({
+    now: () => new Date(nowMs),
+    reservationLimits: { defaultTtlMs: 1_000, maxTtlMs: 1_000, maxActivePerApp: 1, terminalRetentionMs: 10_000 },
+  });
+  after(() => fixture.close());
+  const client = createVallumClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+
+  await client.reserveGas({
+    gasBudget: 1,
+    walletAddress: "0xWALLET",
+    packageId: "0xDEMO_PACKAGE",
+    functionName: "mint_badge",
+  });
+  await assert.rejects(
+    () =>
+      client.reserveGas({
+        gasBudget: 1,
+        walletAddress: "0xWALLET",
+        packageId: "0xDEMO_PACKAGE",
+        functionName: "mint_badge",
+      }),
+    (error) => error instanceof VallumPolicyError && error.status === 429 && error.reasonCode === "EXECUTION_FAILED",
+  );
+
+  nowMs += 1_001;
+  const afterExpiry = await client.reserveGas({
+    gasBudget: 1,
+    walletAddress: "0xWALLET",
+    packageId: "0xDEMO_PACKAGE",
+    functionName: "mint_badge",
+  });
+
+  assert.equal(afterExpiry.reservationId, "reservation-1");
+  assert.equal(fixture.upstream.requests.filter((request) => request.url === "/v1/reserve_gas").length, 2);
+});
+
+test("terminal reservations are retained for replay evidence but do not count as active", async () => {
+  const fixture = await startGateway({
+    reservationLimits: { maxActivePerApp: 1, terminalRetentionMs: 10_000 },
+  });
+  after(() => fixture.close());
+  const client = createVallumClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+
+  const reserve = await client.reserveGas({
+    gasBudget: 1,
+    walletAddress: "0xWALLET",
+    packageId: "0xDEMO_PACKAGE",
+    functionName: "mint_badge",
+  });
+  await client.executeSponsoredTransaction({
+    reservationId: reserve.reservationId,
+    agentRailTransactionId: reserve.agentRailTransactionId,
+    transactionBytes: "AAE=",
+    userSignature: "sig",
+  });
+  const nextReserve = await client.reserveGas({
+    gasBudget: 1,
+    walletAddress: "0xWALLET",
+    packageId: "0xDEMO_PACKAGE",
+    functionName: "mint_badge",
+  });
+
+  assert.equal(nextReserve.reservationId, "reservation-1");
+  assert.equal(fixture.upstream.requests.filter((request) => request.url === "/v1/reserve_gas").length, 2);
+});
+
+test("reserve fails closed when configured quota policy lacks trusted gas or wallet evidence", async () => {
+  const fixture = await startGateway();
+  after(() => fixture.close());
+
+  const missingGas = await fetch(`${fixture.gatewayBaseUrl}/v1/reserve_gas`, {
+    method: "POST",
+    headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
+    body: JSON.stringify({ wallet_address: "0xWALLET", package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" }),
+  });
+  const missingGasBody = await missingGas.json();
+  assert.equal(missingGas.status, 429);
+  assert.equal(missingGasBody.reasonCode, "GAS_BUDGET_TOO_HIGH");
+
+  const missingWallet = await fetch(`${fixture.gatewayBaseUrl}/v1/reserve_gas`, {
+    method: "POST",
+    headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
+    body: JSON.stringify({ gas_budget: 1, package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" }),
+  });
+  const missingWalletBody = await missingWallet.json();
+  assert.equal(missingWallet.status, 400);
+  assert.equal(missingWalletBody.reasonCode, "WALLET_DENIED");
+  assert.equal(fixture.upstream.requests.length, 0);
 });
 
 test("reserveGas normalizes upstream non-JSON failures without consuming quota", async () => {
@@ -554,7 +953,7 @@ test("reserveGas normalizes upstream non-JSON failures without consuming quota",
   });
   after(() => fixture.close());
 
-  const requestBody = { gas_budget: 1, package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" };
+  const requestBody = { gas_budget: 1, wallet_address: "0xWALLET", package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" };
   const failed = await fetch(`${fixture.gatewayBaseUrl}/v1/reserve_gas`, {
     method: "POST",
     headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
@@ -584,7 +983,7 @@ test("execute rejects conflicting Vallum transaction id aliases without touching
   const reserveResponse = await fetch(`${fixture.gatewayBaseUrl}/v1/reserve_gas`, {
     method: "POST",
     headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
-    body: JSON.stringify({ gas_budget: 1, package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" }),
+    body: JSON.stringify({ gas_budget: 1, wallet_address: "0xWALLET", package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" }),
   });
   const reserveBody = await reserveResponse.json();
 
@@ -634,7 +1033,7 @@ test("execute keeps a reservation retryable after a transient upstream failure",
   after(() => fixture.close());
   const client = createVallumClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
 
-  const reserve = await client.reserveGas({ gasBudget: 1, packageId: "0xDEMO_PACKAGE", functionName: "mint_badge" });
+  const reserve = await client.reserveGas({ gasBudget: 1, walletAddress: "0xWALLET", packageId: "0xDEMO_PACKAGE", functionName: "mint_badge" });
   await assert.rejects(
     () =>
       client.executeSponsoredTransaction({

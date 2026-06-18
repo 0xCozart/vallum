@@ -133,14 +133,26 @@ async function main(): Promise<void> {
     console.log("ok: invalid auth fails closed");
 
     await assert.rejects(
-      () => client.reserveGas({ gasBudget: 1, packageId: "0xNOT_ALLOWED", functionName: "mint_badge" }),
+      () =>
+        client.reserveGas({
+          gasBudget: 1,
+          walletAddress: "0xSMOKE_WALLET",
+          packageId: "0xNOT_ALLOWED",
+          functionName: "mint_badge",
+        }),
       (error) => error instanceof VallumPolicyError && error.reasonCode === "PACKAGE_NOT_ALLOWED",
     );
     assert.equal(upstream.requests.length, 0);
     console.log("ok: policy rejection does not call upstream");
 
     await assert.rejects(
-      () => client.reserveGas({ gasBudget: 1, packageId: "0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0", functionName: "burn_badge" }),
+      () =>
+        client.reserveGas({
+          gasBudget: 1,
+          walletAddress: "0xSMOKE_WALLET",
+          packageId: "0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0",
+          functionName: "burn_badge",
+        }),
       (error) => error instanceof VallumPolicyError && error.reasonCode === "FUNCTION_NOT_ALLOWED",
     );
     assert.equal(upstream.requests.length, 0);
@@ -243,8 +255,8 @@ async function main(): Promise<void> {
     });
     assert.equal(usageSnapshot.byAppId["demo-dapp"]?.events, 4);
     assert.equal(usageSnapshot.byAppId.unknown?.events, 2);
-    assert.equal(usageSnapshot.byWalletAddress["0xSMOKE_WALLET"]?.events, 2);
-    assert.equal(usageSnapshot.byWalletAddress.unknown?.events, 4);
+    assert.equal(usageSnapshot.byWalletAddress["0xSMOKE_WALLET"]?.events, 4);
+    assert.equal(usageSnapshot.byWalletAddress.unknown?.events, 2);
     assert.equal(usageSnapshot.totals.gasBudgetReserved, 1);
     assert.deepEqual(
       usageSnapshot.recentEvents.map((event) => [event.operation, event.outcome, event.reasonCode]),

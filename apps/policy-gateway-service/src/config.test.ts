@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { test } from "node:test";
 
 import { loadGatewayConfigFromEnv } from "./config.js";
+import { createGatewayServer } from "./server.js";
 
 const validPolicy = `apps:
   demo-dapp:
@@ -46,6 +47,50 @@ test("policy config can opt into the documented insecure local demo key", async 
   });
 
   assert.equal(config.apps["demo-dapp"]?.apiKey, "local-dev-demo-key");
+  assert.equal(config.runtimeMode, "local");
+  assert.equal(config.transactionIntentVerifier?.authority, "local-test");
+});
+
+test("production env config fails closed with the local test transaction verifier", async () => {
+  const policyPath = await writePolicy(validPolicy);
+
+  const config = await loadGatewayConfigFromEnv({
+    VALLUM_POLICY_PATH: policyPath,
+    VALLUM_DEMO_APP_KEY: "demo-key",
+    VALLUM_GATEWAY_MODE: "production",
+  });
+
+  assert.equal(config.runtimeMode, "production");
+  assert.equal(config.transactionIntentVerifier?.authority, "local-test");
+  assert.throws(() => createGatewayServer(config), /authoritative transaction intent verifier/);
+});
+
+test("policy config rejects blank quota store paths", async () => {
+  const policyPath = await writePolicy(validPolicy);
+
+  await assert.rejects(
+    () =>
+      loadGatewayConfigFromEnv({
+        VALLUM_POLICY_PATH: policyPath,
+        VALLUM_DEMO_APP_KEY: "demo-key",
+        VALLUM_QUOTA_STORE_PATH: "   ",
+      }),
+    /VALLUM_QUOTA_STORE_PATH/,
+  );
+});
+
+test("policy config wires a local durable quota store when configured", async () => {
+  const policyPath = await writePolicy(validPolicy);
+  const quotaDir = await mkdtemp(join(tmpdir(), "vallum-quota-config-"));
+  const quotaPath = join(quotaDir, "quota.json");
+
+  const config = await loadGatewayConfigFromEnv({
+    VALLUM_POLICY_PATH: policyPath,
+    VALLUM_DEMO_APP_KEY: "demo-key",
+    VALLUM_QUOTA_STORE_PATH: quotaPath,
+  });
+
+  assert.equal(config.quotaStore?.kind, "durable-local");
 });
 
 test("policy config rejects missing package allowlists instead of allowing all packages", async () => {

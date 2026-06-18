@@ -3,7 +3,8 @@ import { isAbsolute, resolve } from "node:path";
 
 import type { SponsorshipPolicy } from "@vallum/shared-types";
 
-import type { GatewayConfig } from "./server.js";
+import { createFileGatewayQuotaStore } from "./quota-store.js";
+import { createLocalTransactionIntentVerifier, type GatewayConfig } from "./server.js";
 import { createFileGatewayUsageEventStore } from "./usage-store.js";
 
 interface DemoPolicyYaml {
@@ -138,6 +139,24 @@ function parseOperatorUsageMaxRecentEvents(value: string | undefined): number {
   return parsed;
 }
 
+function parseRuntimeMode(env: NodeJS.ProcessEnv): GatewayConfig["runtimeMode"] {
+  if (env.VALLUM_GATEWAY_MODE === "production" || env.NODE_ENV === "production") return "production";
+  return "local";
+}
+
+function configureQuotaStore(config: GatewayConfig, env: NodeJS.ProcessEnv): GatewayConfig {
+  const rawQuotaStorePath = env.VALLUM_QUOTA_STORE_PATH;
+  const quotaStorePath = rawQuotaStorePath?.trim();
+  if (rawQuotaStorePath !== undefined && !quotaStorePath) {
+    throw new Error("VALLUM_QUOTA_STORE_PATH must be a non-empty path when set.");
+  }
+  if (!quotaStorePath) return config;
+  return {
+    ...config,
+    quotaStore: createFileGatewayQuotaStore({ filePath: quotaStorePath }),
+  };
+}
+
 function configureLocalUsageStore(config: GatewayConfig, env: NodeJS.ProcessEnv, appKey: string): GatewayConfig {
   const rawUsageStorePath = env.VALLUM_USAGE_EVENT_STORE_PATH;
   const usageStorePath = rawUsageStorePath?.trim();
@@ -201,6 +220,7 @@ export async function loadGatewayConfigFromEnv(env: NodeJS.ProcessEnv = process.
   };
 
   const config: GatewayConfig = {
+    runtimeMode: parseRuntimeMode(env),
     apps: {
       [parsed.appId]: {
         apiKey: appKey,
@@ -209,7 +229,8 @@ export async function loadGatewayConfigFromEnv(env: NodeJS.ProcessEnv = process.
     },
     upstreamBaseUrl: env.GAS_STATION_URL,
     upstreamBearerToken: env.GAS_STATION_BEARER_TOKEN,
+    transactionIntentVerifier: createLocalTransactionIntentVerifier(),
   };
 
-  return configureLocalUsageStore(config, env, appKey);
+  return configureLocalUsageStore(configureQuotaStore(config, env), env, appKey);
 }
