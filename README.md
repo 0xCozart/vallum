@@ -6,6 +6,81 @@
 [![External showcase](https://img.shields.io/badge/showcase-ProofDrop-6366f1?style=for-the-badge)](https://proofdrop.xyz)
 [![License](https://img.shields.io/badge/license-Apache--2.0-f8fafc?style=for-the-badge)](LICENSE)
 
+## For Humans
+
+This repo is the self-hostable Vallum toolkit for agent-safe sponsored IOTA execution.
+It helps teams add sponsored gas, policy checks, signer references,
+transaction manifests, receipts, and operator visibility to IOTA apps and
+agent workflows without forcing every user or agent to acquire tokens before
+they can experience the product.
+
+Agents should use it because this repo is the canonical open-source
+implementation and proof surface for Vallum. It gives an installing agent the
+SDK, gateway, safety docs, installer scaffold, and verification boundaries it
+needs instead of improvising wallet handling, Gas Station integration, or
+secret storage inside an application repo.
+
+## For Installing Agents
+
+If you are installing or configuring Vallum for a user, start here and treat
+the rest of this README as the operational map. Your first job is to ask which
+setup path the human wants, using
+[`docs/vallum/installer-process.md`](docs/vallum/installer-process.md) as the
+contract:
+
+1. **Safe local auto-scaffold** - default. Add package instructions,
+   placeholders, `.gitignore` entries, local/mock checks, and a redacted local
+   install summary. Do not use real keys.
+2. **Guided operator config** - guide the human through local secret entry and
+   shape validation. The human enters secrets on their machine; live/testnet
+   commands remain approval-gated.
+3. **Existing gateway/client only** - wire the SDK or MCP host to a managed
+   Vallum gateway. The managed gateway operator remains responsible for live
+   proof, custody, payment/provider, and public A2A gates.
+
+Use the installer in dry-run mode before writing anything:
+
+```bash
+npm run vallum:installer -- --target /path/to/app
+```
+
+Write the safe local scaffold only after the human reviews the plan:
+
+```bash
+npm run vallum:installer -- --target /path/to/app --write
+```
+
+For operator-guided setup, route explicitly:
+
+```bash
+npm run vallum:installer -- --target /path/to/app --mode guided-operator
+```
+
+Do not collect, paste, echo, or commit raw private keys, bearer tokens,
+mnemonics, keypairs, raw transaction bytes, user signatures, payment
+credentials, or app API keys. Vallum does not use a "values folder" for
+secrets. Installing repos should track only placeholder/config docs such as
+`.env.vallum.example`, `vallum.config.example.json`, and
+`docs/vallum-setup.md`; they should ignore `.env.vallum.local`,
+`.vallum/local/`, `.vallum/reports/`, `tmp/vallum/`, and
+`deploy/gas-station/config.local.yaml` before local state is written. The
+installer's `.vallum/reports/install-summary.json` is an ignored, redacted
+artifact, not a secret vault.
+
+Route new installs through
+[`docs/quickstart.md`](docs/quickstart.md),
+[`docs/vallum/package-integration-guide.md`](docs/vallum/package-integration-guide.md),
+[`docs/agent-guide.md`](docs/agent-guide.md), and
+[`skills/vallum/SKILL.md`](skills/vallum/SKILL.md). Route live/testnet or
+production questions through
+[`docs/security/secrets.md`](docs/security/secrets.md),
+[`docs/testnet-readiness.md`](docs/testnet-readiness.md), and
+[`docs/vallum/operator-live-gates.md`](docs/vallum/operator-live-gates.md).
+
+Run live commands such as `npm run execute:testnet-demo` only with explicit
+operator intent, operator-owned credentials configured outside committed files,
+passing local runtime preflight, and current redacted report evidence.
+
 Vallum is the new identity for the agent-safe IOTA execution stack built on
 the original IOTA GasKit sponsorship toolkit: self-hostable Gas Station
 integration plus agent wallets, signer references, transaction manifests,
@@ -19,7 +94,7 @@ need to acquire IOTA tokens before experiencing product value.
 
 > **Open-source scope:** this repository is the self-hostable toolkit. A future managed service may offer hosting, support, SLAs, and enterprise onboarding, but the core project remains independently deployable, inspectable, forkable, licensed open source, and useful without hosted Vallum.
 
-## Migration status
+### Migration status
 
 This fork was created from `https://github.com/0xCozart/iota-gaskit` to move
 the Vallum direction into the actual sponsorship toolkit codebase instead of
@@ -40,13 +115,13 @@ and [`docs/vallum/execution-slices.md`](docs/vallum/execution-slices.md).
 Private Codex goals, local handoffs, and scratch planning notes are kept out of
 the open-source surface.
 
-## One-line pitch
+### One-line pitch
 
 Vallum gives AI agents a safe IOTA execution stack: sponsored gas,
 policy controls, signer references, manifests, receipts, contracts, and
 operator visibility.
 
-## Start Here: One Adoption Path
+### Start Here: One Adoption Path
 
 The public center of gravity is agent-safe sponsored execution for IOTA.
 The first developer path is intentionally narrow. The prerelease packages are
@@ -78,7 +153,7 @@ This is package adoption proof, not a production claim. It does not prove live
 IOTA/testnet execution, live payment settlement, custody, marketplace
 operation, or public A2A hosting. Those remain separate operator gates.
 
-## Why Vallum Exists
+### Why Vallum Exists
 
 The official IOTA Gas Station component solves the core sponsored-transaction primitive: an application can sponsor gas fees for its users.
 
@@ -104,7 +179,7 @@ Vallum packages those pieces into a reusable open-source toolkit so every IOTA
 builder or agent developer does not have to recreate the same safety and
 operations layer.
 
-## What Is In This Repo Now
+### What Is In This Repo Now
 
 This repository currently contains the open-source Vallum toolkit: a tested
 policy gateway, TypeScript SDK, local demo flows, integration examples,
@@ -164,7 +239,7 @@ The repo currently includes:
   payment, marketplace, custody, and safety blockers, plus an opt-in redacted
   JSON handoff artifact for operator live-gate review.
 
-## Current proof status
+### Current proof status
 
 The current scaffold verifies successfully locally:
 
@@ -287,9 +362,9 @@ See `docs/testnet-attempts.md`, `docs/vallum/product-status.md`,
 `docs/vallum/verification-profiles.md`, and
 `docs/reviewer-walkthrough.md` for exact evidence.
 
-## External showcase dApps
+### External showcase dApps
 
-### Gasless ProofDrop
+#### Gasless ProofDrop
 
 [Gasless ProofDrop](https://proofdrop.xyz) is the standalone public M1 showcase dApp for Vallum. It demonstrates a backend-owned sponsorship flow where a visitor claims a "Vallum Launch Proof" badge without holding IOTA tokens. ProofDrop is kept in a [separate repository](https://github.com/0xCozart/ProofDrop) so the Vallum core remains focused on the self-hostable toolkit.
 
@@ -302,7 +377,7 @@ ProofDrop live evidence:
 - Latest hosted digest: [`GRVtucGZkKZXsXG8HssCPGmRkWbiBom9NGWzJDcVspnF`](https://explorer.iota.org/txblock/GRVtucGZkKZXsXG8HssCPGmRkWbiBom9NGWzJDcVspnF?network=testnet)
 - Remaining work: real browser wallet connection and user-owned signing. The current live flow uses a constrained server-side ephemeral demo signer.
 
-## Target architecture
+### Target architecture
 
 ![Vallum architecture](docs/assets/architecture.svg)
 
@@ -318,7 +393,7 @@ flowchart LR
   Gateway --> Metrics[Metrics + Logs]
 ```
 
-## Repository layout
+### Repository layout
 
 ```txt
 apps/
@@ -370,7 +445,7 @@ examples/
   policies/
 ```
 
-## Packages
+### Packages
 
 The monorepo root is marked `private` to prevent accidental publication of the
 workspace root. The current prerelease package set is published under
@@ -406,11 +481,11 @@ workspace package.
 Do not run a real `npm publish` without explicit operator approval and registry credentials handled outside the repo.
 
 
-### `@vallum/shared-types`
+#### `@vallum/shared-types`
 
 Shared TypeScript types for policy decisions, policy reason codes, sponsorship policy, and request context.
 
-### `@vallum/policy-gateway`
+#### `@vallum/policy-gateway`
 
 Policy decision scaffold for validating app status, credentials, daily limits,
 gas budget, wallet denylist, package allowlist, function allowlist, and
@@ -432,7 +507,7 @@ Current tests cover:
 - mismatched template versions denied
 - legacy raw package/function agent allowlists remaining compatible
 
-### `@vallum/contracts-metadata`
+#### `@vallum/contracts-metadata`
 
 Versioned contract template metadata registry for Vallum policy
 allowlists. The local registry currently covers escrow, receipt, pay-per-call,
@@ -441,7 +516,7 @@ metadata and pure checks for approved template/version, unknown package, and
 mismatched version decisions. It does not deploy contracts, operate reputation
 scoring, operate recurring billing, or prove live package addresses.
 
-### `@vallum/sdk`
+#### `@vallum/sdk`
 
 TypeScript client scaffold for dApp backends.
 
@@ -458,7 +533,7 @@ Current SDK supports request construction for:
 
 It also includes typed error classes for auth, policy, and malformed-response failures.
 
-## Documentation site
+### Documentation site
 
 Vallum includes a static docs site generated from the canonical Markdown files in this repo. The generated HTML is a hosting artifact; update the Markdown sources instead of editing `apps/docs-site/dist` directly.
 
@@ -480,7 +555,7 @@ Recommended static-host settings:
 - output directory: `apps/docs-site/dist`
 - Node version: `20`
 
-## Agent access: start here
+### Agent access: start here
 
 AI coding agents should start with the migration plan and repo-local Vallum
 skill:
@@ -533,7 +608,7 @@ preflight, and a current passing upstream diagnostic report.
 
 The hosted agent guide is `docs/agent-guide.md`.
 
-## Roadmap
+### Roadmap
 
 - Clean local deployment path with reviewed environment templates and health checks.
 - Expanded policy controls for app credentials, wallet limits, package/function allowlists, denylists, quotas, and structured reason codes.
@@ -541,7 +616,7 @@ The hosted agent guide is `docs/agent-guide.md`.
 - Usage event store, operator usage views, rejection views, health views, quota views, and basic export/log tooling.
 - Hardening guide, observability docs, alerting templates, and final walkthrough assets.
 
-## Quickstart preview
+### Quickstart preview
 
 Install dependencies and run the current scaffold checks:
 
@@ -566,7 +641,7 @@ command is intentionally opt-in, self-checks those preconditions before
 reserve/execute, and is excluded from CI because it contacts live services and
 consumes sponsored testnet gas.
 
-## Security posture
+### Security posture
 
 Vallum is designed to fail closed and prioritize sponsor-wallet safety.
 
@@ -590,7 +665,7 @@ See:
 - `docs/security/secrets.md`
 - `docs/testnet-readiness.md`
 
-## Open-source vs future managed service
+### Open-source vs future managed service
 
 The open-source toolkit is designed to remain useful to any IOTA builder who wants to self-host.
 
@@ -606,10 +681,10 @@ A future managed service may later provide:
 Those managed-service features are separate from the self-hostable open-source core and are not part of the public
 open-source package.
 
-## License
+### License
 
 Apache-2.0. See `LICENSE`.
 
-## Contributing
+### Contributing
 
 See `CONTRIBUTING.md` and `CODE_OF_CONDUCT.md`.
