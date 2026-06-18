@@ -187,11 +187,67 @@ test("Gas Station runtime preflight blocks when rendered local config is missing
   }
 });
 
-async function writeConfigFixture(): Promise<string> {
+test("Gas Station runtime preflight blocks disabled access policy in production mode", async () => {
+  const cwd = await writeConfigFixture([
+    "rpc-host-ip: \"127.0.0.1\"",
+    "access-controller:",
+    "  access-policy: \"disabled\"",
+  ].join("\n"));
+  try {
+    const report = await checkGasStationRuntimePreflight({
+      cwd,
+      env: { VALLUM_GAS_STATION_ENV: "production" },
+      runner: runnerFixture({
+        "docker --version": true,
+        "docker info --format {{json .ServerVersion}}": true,
+        "docker compose version": true,
+        "docker-compose version": false,
+      }),
+    });
+    const formatted = formatGasStationRuntimePreflightReport(report);
+
+    assert.equal(report.ready, false);
+    assert.equal(report.code, "GAS_STATION_LOCAL_CONFIG_UNSAFE");
+    assert.equal(findCheck(report, "local-config").code, "GAS_STATION_LOCAL_CONFIG_UNSAFE");
+    assert.doesNotMatch(formatted, /config\.local\.yaml|disabled|127\.0\.0\.1/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("Gas Station runtime preflight blocks public RPC binding in production mode", async () => {
+  const cwd = await writeConfigFixture([
+    "rpc-host-ip: \"0.0.0.0\"",
+    "access-controller:",
+    "  access-policy: \"allowlist\"",
+  ].join("\n"));
+  try {
+    const report = await checkGasStationRuntimePreflight({
+      cwd,
+      env: { NODE_ENV: "production" },
+      runner: runnerFixture({
+        "docker --version": true,
+        "docker info --format {{json .ServerVersion}}": true,
+        "docker compose version": true,
+        "docker-compose version": false,
+      }),
+    });
+    const formatted = formatGasStationRuntimePreflightReport(report);
+
+    assert.equal(report.ready, false);
+    assert.equal(report.code, "GAS_STATION_LOCAL_CONFIG_UNSAFE");
+    assert.equal(findCheck(report, "local-config").code, "GAS_STATION_LOCAL_CONFIG_UNSAFE");
+    assert.doesNotMatch(formatted, /0\.0\.0\.0|allowlist/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+async function writeConfigFixture(content = "signer:\n  local:\n    key: hidden-local-fixture\n"): Promise<string> {
   const cwd = await mkdtemp(join(tmpdir(), "vallum-gas-runtime-"));
   const file = join(cwd, configPath);
   await mkdir(dirname(file), { recursive: true });
-  await writeFile(file, "signer:\n  local:\n    key: hidden-local-fixture\n");
+  await writeFile(file, content);
   return cwd;
 }
 

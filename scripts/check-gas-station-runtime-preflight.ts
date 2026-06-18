@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { access } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -10,6 +10,7 @@ export type GasStationRuntimePreflightCode =
   | "GAS_STATION_RUNTIME_MODE_INVALID"
   | "GAS_STATION_MANAGED_UPSTREAM_CONFIG_MISSING"
   | "GAS_STATION_LOCAL_CONFIG_MISSING"
+  | "GAS_STATION_LOCAL_CONFIG_UNSAFE"
   | "GAS_STATION_DOCKER_CLIENT_MISSING"
   | "GAS_STATION_DOCKER_DAEMON_UNAVAILABLE"
   | "GAS_STATION_DOCKER_COMPOSE_MISSING";
@@ -62,6 +63,7 @@ export async function checkGasStationRuntimePreflight(
   const configPath = options.configPath ?? DEFAULT_CONFIG_PATH;
   const directDockerFallback = options.directDockerFallback ?? true;
   const mode = parseRuntimeMode(env[RUNTIME_MODE_ENV]);
+  const productionMode = isProductionMode(env);
   if (!mode.ok) {
     return blocked("GAS_STATION_RUNTIME_MODE_INVALID", "Gas Station runtime mode is unsupported.", [runtimeModeCheck(mode)]);
   }
@@ -83,7 +85,7 @@ export async function checkGasStationRuntimePreflight(
   }
   const checks: GasStationRuntimePreflightCheck[] = [
     runtimeModeCheck(mode),
-    await checkLocalConfig(cwd, configPath),
+    await checkLocalConfig(cwd, configPath, productionMode),
     await checkCommand(runner, {
       id: "docker-client",
       command: "docker --version",
@@ -150,7 +152,13 @@ export async function checkGasStationRuntimePreflight(
   });
 
   if (localConfig.status !== "ready") {
-    return blocked("GAS_STATION_LOCAL_CONFIG_MISSING", "Rendered local Gas Station config is missing.", checks);
+    return blocked(
+      localConfig.code === "GAS_STATION_LOCAL_CONFIG_UNSAFE" ? "GAS_STATION_LOCAL_CONFIG_UNSAFE" : "GAS_STATION_LOCAL_CONFIG_MISSING",
+      localConfig.code === "GAS_STATION_LOCAL_CONFIG_UNSAFE"
+        ? "Rendered local Gas Station config is unsafe for production mode."
+        : "Rendered local Gas Station config is missing.",
+      checks,
+    );
   }
   if (dockerClient.status !== "ready") {
     return blocked("GAS_STATION_DOCKER_CLIENT_MISSING", "Docker client is not available.", checks);
@@ -178,6 +186,10 @@ function parseRuntimeMode(value: string | undefined): { ok: true; value: GasStat
     return { ok: true, value: normalized };
   }
   return { ok: false, value: normalized };
+}
+
+function isProductionMode(env: NodeJS.ProcessEnv | Record<string, string | undefined>): boolean {
+  return env.NODE_ENV === "production" || env.VALLUM_GATEWAY_MODE === "production" || env.VALLUM_GAS_STATION_ENV === "production";
 }
 
 function runtimeModeCheck(
@@ -253,9 +265,31 @@ export function formatGasStationRuntimePreflightReport(report: GasStationRuntime
   return lines.join("\n");
 }
 
-async function checkLocalConfig(cwd: string, configPath: string): Promise<GasStationRuntimePreflightCheck> {
+async function checkLocalConfig(cwd: string, configPath: string, productionMode: boolean): Promise<GasStationRuntimePreflightCheck> {
+  const absolutePath = resolve(cwd, configPath);
   try {
-    await access(resolve(cwd, configPath));
+    await access(absolutePath);
+    if (productionMode) {
+      const content = await readFile(absolutePath, "utf8");
+      if (/access-policy:\s*["']?disabled["']?/i.test(content)) {
+        return {
+          id: "local-config",
+          status: "blocked",
+          code: "GAS_STATION_LOCAL_CONFIG_UNSAFE",
+          message: "Production mode requires Gas Station access policy to be enabled.",
+          command: "GAS_STATION_ACCESS_POLICY=<production-safe-policy>",
+        };
+      }
+      if (/rpc-host-ip:\s*["']?0\.0\.0\.0["']?/i.test(content)) {
+        return {
+          id: "local-config",
+          status: "blocked",
+          code: "GAS_STATION_LOCAL_CONFIG_UNSAFE",
+          message: "Production mode must not bind the local Gas Station RPC host to a public interface.",
+          command: "GAS_STATION_RPC_HOST_IP=127.0.0.1 or private bind address",
+        };
+      }
+    }
     return {
       id: "local-config",
       status: "ready",
