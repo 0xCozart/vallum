@@ -75,6 +75,11 @@ npm install @vallum/sdk
 This installs the backend SDK and the lower-level manifest, registry, receipt,
 and shared type packages it depends on.
 
+This source checkout prepares `@vallum/sdk` and `@vallum/receipts` `0.1.2` for
+the funded generic IOTA custody escrow API. Do not pin `0.1.2` from external
+apps until publication evidence exists; npm `latest` may still point at the
+already-published `0.1.1` line.
+
 If you are experimenting with the MCP package:
 
 ```bash
@@ -209,11 +214,15 @@ const gateway = createVallumClient({
 const executor = createSponsoredIotaEscrowSettlementExecutor({
   gateway,
   iotaClient: new IotaClient({ url: process.env.IOTA_RPC_URL! }),
-  signer: settlementSigner,
-  contract: { packageId: process.env.VALLUM_ESCROW_PACKAGE_ID! },
+  resolveSigner: resolveEscrowOperationSigner,
+  contract: {
+    packageId: process.env.VALLUM_ESCROW_PACKAGE_ID!,
+    paymentType: "0x2::iota::IOTA",
+  },
   gasBudget: 50_000_000,
   resolveParticipants: resolveEscrowParticipants,
-  amountToBaseUnits: resolveEscrowAmountUnits,
+  resolvePaymentObject: resolveEscrowPaymentCoin,
+  amountsToBaseUnits: resolveEscrowBaseUnitAmounts,
 });
 
 const settlement = createIotaEscrowSettlementClient({
@@ -223,17 +232,32 @@ const settlement = createIotaEscrowSettlementClient({
 ```
 
 The executor is not tied to any one app. It requires the installing backend or
-operator to resolve owner, provider, and verifier IOTA addresses; convert
-receipt amounts into non-negative u64-safe contract base units; configure the
-Move package/function names; and provide a settlement signer from a server-side
-signer or signer service. Live executors should pass an `IotaClient` so the IOTA
-SDK builds transaction bytes from the configured Move calls. The
-`unsafeBuildTransactionBytesForTesting` option is a unit-test hook only, requires
+operator to resolve payer, provider, release authority, refund authority,
+refund destination, and fee-recipient IOTA addresses; select the funded payment
+object; configure the Move package and payment type; convert the gross amount
+and provider/platform split into u64-safe base units; and provide operation
+signers from a server-side signer or signer service. In the default
+shared-object mode, funded open reserves and executes the Move `open_shared`
+entry, so gateway policy allowlists must include `open_shared`, `release`, and
+`refund`. The signer resolver should return the payer signer for open, the
+configured release-authority signer for `release`, and the configured
+refund-authority signer for `refund`. The executor rejects funded open before
+gas reservation if the signer address does not match the resolved payer address.
+Live executors should pass an `IotaClient` so the IOTA SDK builds transaction
+bytes from the configured Move calls. The `unsafeBuildTransactionBytesForTesting`
+option is a unit-test hook only, requires
 `allowUnsafeCustomTransactionBuilder: true`, and should not be connected to
 untrusted input or production signing paths. Open, release, and refund
 transactions still route through Vallum reserve/execute calls, so app
 credentials, policy allowlists, gas budgets, and Gas Station sponsorship remain
 gateway-owned.
+
+The current `escrow_v1` Move contract is a real generic custody primitive, not
+a status-only receipt object. Its funded open consumes a supported `Coin<T>` and
+stores the balance on-chain. Release has no caller-supplied payout destination;
+it transfers the configured provider/platform split recorded at open time.
+Refund has no caller-supplied destination; it returns funds to the configured
+refund destination under the configured refund authority or timeout rule.
 
 Live or testnet use still requires operator-owned IOTA RPC, signer, gateway,
 Gas Station, and policy configuration outside the repo. Local package tests

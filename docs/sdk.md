@@ -62,20 +62,26 @@ const gateway = createVallumClient({
 const executor = createSponsoredIotaEscrowSettlementExecutor({
   gateway,
   iotaClient: new IotaClient({ url: process.env.IOTA_RPC_URL! }),
-  signer: settlementSigner, // { address, signTransaction(bytes) }
+  resolveSigner: resolveEscrowOperationSigner,
   contract: {
     packageId: process.env.VALLUM_ESCROW_PACKAGE_ID!,
+    paymentType: "0x2::iota::IOTA",
   },
   gasBudget: 50_000_000,
   resolveParticipants: async (request) => ({
     ownerAddress: await resolveOwnerAddress(request.refundDestinationRef),
     providerAddress: await resolveProviderAddress(request.providerPayoutRef),
     verifierAddress: await resolveVerifierAddress(request.receipt.escrow.verifierId),
+    refundAuthorityAddress: await resolveRefundAuthority(request.refundAuthorityRef),
+    refundDestinationAddress: await resolveRefundDestination(request.refundDestinationRef),
+    platformFeeAddress: await resolvePlatformFeeRecipient(request.platformFeeRef),
   }),
-  amountToBaseUnits: (request) => toBaseUnits([
-    request.providerNetAmount,
-    request.platformFeeAmount,
-  ]),
+  resolvePaymentObject: (request) => selectPaymentCoin(request.receipt.idempotencyKey),
+  amountsToBaseUnits: (request) => ({
+    grossAmount: toBaseUnits(request.receipt.amount),
+    providerNetAmount: toBaseUnits(request.providerNetAmount),
+    platformFeeAmount: toBaseUnits(request.platformFeeAmount),
+  }),
 });
 
 const settlement = createIotaEscrowSettlementClient({
@@ -84,13 +90,24 @@ const settlement = createIotaEscrowSettlementClient({
 });
 ```
 
-This executor is Vallum-generic. It builds the configured Move escrow
-`create`, `release`, and `refund` calls, reserves sponsor gas through the
-Vallum gateway, signs the transaction with the provided settlement signer, and
-executes through the same `executeSponsoredTransaction()` boundary.
+This executor is Vallum-generic. In the default shared-object mode it builds
+the escrow package `open_shared`, `release`, and `refund` calls, so gateway
+policy allowlists must include `open_shared` for funded opens. `open_shared`
+consumes the resolved payment object and locks its `Coin<T>` balance in a
+shared escrow object; `release` pays only the configured provider/platform
+split; `refund` returns funds only to the configured refund destination. Each
+transaction still reserves sponsor gas through the Vallum gateway, signs with
+the resolved operation signer, and executes through the same
+`executeSponsoredTransaction()` boundary.
 
-The caller must provide address resolution and amount conversion because those
-are app/operator policy decisions, not SDK defaults. For live use, back
+The caller must provide payment-object selection, Move payment type, address
+resolution, refund authority, refund destination, fee recipient, timeout, payee
+self-release policy, and base-unit amount conversion because those are
+app/operator policy decisions, not SDK defaults. `resolveSigner()` should return
+the payer signer for `open`, the configured release-authority signer for
+`release`, and the configured refund-authority signer for `refund`. The
+executor rejects funded open before gas reservation if the signer address does
+not match the resolved payer address. For live use, back
 `createIotaEscrowSettlementClient()` with a durable conditional store; the
 in-memory store is for tests and local demos only. The executor does not log or
 return raw transaction bytes, user signatures, app API keys, Gas Station bearer
@@ -100,8 +117,9 @@ Live executors should always pass an `IotaClient` so the IOTA SDK builds the
 transaction bytes from the configured Move calls. The
 `unsafeBuildTransactionBytesForTesting` option is a unit-test hook only and
 requires `allowUnsafeCustomTransactionBuilder: true`; do not wire it to
-untrusted input or production signing paths. `amountToBaseUnits()` must return a
-non-negative u64-safe integer base-unit value.
+untrusted input or production signing paths. `amountsToBaseUnits()` must return
+u64-safe integer base-unit values whose provider and platform split equals the
+gross funded amount.
 
 ## More Examples
 

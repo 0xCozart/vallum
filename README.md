@@ -132,6 +132,11 @@ packages are published under `@vallum/*`; start with the
 npm install @vallum/sdk
 ```
 
+This checkout prepares `@vallum/sdk` and `@vallum/receipts` `0.1.2` for the
+generic funded IOTA custody escrow API. External consumers should use that
+version only after it is published under `@vallum/*`; until then, npm `latest`
+continues to represent the already-published package line.
+
 If you are reviewing or contributing to this repository, run:
 
 ```bash
@@ -412,7 +417,7 @@ packages/
   mcp-server/             # MCP stdio server and sponsorship tool facade
   receipts/               # Receipt and escrow state machine
 contracts/
-  escrow_v1/              # Local Move escrow state contract
+  escrow_v1/              # Local Move generic custody escrow contract
   receipt_v1/             # Local Move receipt state contract
   pay_per_call_v1/         # Local Move paid tool-call state contract
 deploy/

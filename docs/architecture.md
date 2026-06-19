@@ -103,6 +103,25 @@ flowchart LR
 | Local proof to live testnet | Local checks should be repeatable without funded credentials. | Keep live testnet commands separate from `verify:local`. |
 | Agent runtime to signer | Agent runtimes should not receive raw seed/private-key material. | Return scoped signer references and require owner/agent context plus policy. |
 
+## Generic Custody Escrow Boundary
+
+`contracts/escrow_v1` is a generic IOTA custody primitive, separate from the
+receipt state machines. It opens by consuming a supported `Coin<T>` payment
+object and storing its balance inside an `Escrow<T>` object. Settlement terms
+bind payer, payee, release authority, refund authority, refund destination,
+asset type, gross amount, provider/platform split, idempotency key, receipt ID,
+reference ID, timeout rule, payee self-release policy, and status at open time.
+The SDK's default shared-object path calls the contract `open_shared` entry so
+the escrow object is shared by the contract itself before later release/refund
+authority transactions.
+
+Release and refund do not accept recipient addresses. Release transfers the
+configured split to the configured payee and fee recipient. Refund returns the
+full remaining balance to the configured refund destination under the configured
+refund authority or timeout rule. This makes the escrow reusable Vallum
+infrastructure rather than marketplace-specific logic, while package/function
+allowlists and live sponsorship remain policy-gateway responsibilities.
+
 ## Why Not Call IOTA Gas Station Directly?
 
 For experiments, a direct backend call can work. For an app, the direct path leaves repeated work and risk:
