@@ -38,13 +38,23 @@ test("iota escrow settlement client opens escrow with fee split and rejects repl
     actionContractVersion: "1.0.0",
     providerPayoutRef: "provider-payout:provider-wallet",
     platformFeeRef: "platform-fee:vallum",
+    refundAuthorityRef: "refund-authority:buyer-agent",
     refundDestinationRef: "refund:buyer-wallet",
     providerNetAmount: { amount: "9.50", asset: "IOTA" },
     platformFeeAmount: { amount: "0.50", asset: "IOTA" },
+    refundAfterMs: "1800000",
+    allowPayeeRelease: false,
   });
 
   assert.equal(opened.receipt.status, "submitted");
   assert.equal(opened.receipt.escrowSettlement?.escrowId, "escrow-1");
+  assert.equal(opened.receipt.escrowSettlement?.refundAuthorityRef, "refund-authority:buyer-agent");
+  assert.equal(opened.receipt.escrowSettlement?.assetType, "0x2::iota::IOTA");
+  assert.equal(opened.receipt.escrowSettlement?.grossAmountBaseUnits, "10000000000");
+  assert.equal(opened.receipt.escrowSettlement?.providerNetBaseUnits, "9500000000");
+  assert.equal(opened.receipt.escrowSettlement?.platformFeeBaseUnits, "500000000");
+  assert.equal(opened.receipt.escrowSettlement?.refundAfterMs, "1800000");
+  assert.equal(opened.receipt.escrowSettlement?.allowPayeeRelease, false);
   assert.deepEqual(calls, ["open:invocation:agent-action:1"]);
   await assert.rejects(
     () => client.open({
@@ -57,9 +67,12 @@ test("iota escrow settlement client opens escrow with fee split and rejects repl
       actionContractVersion: "1.0.0",
       providerPayoutRef: "provider-payout:provider-wallet",
       platformFeeRef: "platform-fee:vallum",
+      refundAuthorityRef: "refund-authority:buyer-agent",
       refundDestinationRef: "refund:buyer-wallet",
       providerNetAmount: { amount: "9.50", asset: "IOTA" },
       platformFeeAmount: { amount: "0.50", asset: "IOTA" },
+      refundAfterMs: "1800000",
+      allowPayeeRelease: false,
     }),
     (error) => error instanceof EscrowSettlementError && error.code === "IDEMPOTENCY_REPLAYED",
   );
@@ -84,9 +97,12 @@ test("iota escrow settlement client validates open input before executor side ef
       actionContractVersion: "1.0.0",
       providerPayoutRef: "provider-payout:provider-wallet",
       platformFeeRef: "platform-fee:vallum",
+      refundAuthorityRef: "refund-authority:buyer-agent",
       refundDestinationRef: "refund:buyer-wallet",
       providerNetAmount: { amount: "9.00", asset: "IOTA" },
       platformFeeAmount: { amount: "0.50", asset: "IOTA" },
+      refundAfterMs: "1800000",
+      allowPayeeRelease: false,
     }),
     (error) => error instanceof ReceiptInputError && error.code === "FIELD_REQUIRED",
   );
@@ -302,9 +318,12 @@ function openInput() {
     actionContractVersion: "1.0.0",
     providerPayoutRef: "provider-payout:provider-wallet",
     platformFeeRef: "platform-fee:vallum",
+    refundAuthorityRef: "refund-authority:buyer-agent",
     refundDestinationRef: "refund:buyer-wallet",
     providerNetAmount: { amount: "9.50", asset: "IOTA" },
     platformFeeAmount: { amount: "0.50", asset: "IOTA" },
+    refundAfterMs: "1800000",
+    allowPayeeRelease: false,
   } as const;
 }
 
@@ -335,7 +354,16 @@ function fakeExecutor(calls: string[]): IotaEscrowSettlementExecutor {
   return {
     open: async (request) => {
       calls.push(`open:${request.invocationId}`);
-      return { escrowId: "escrow-1", transactionDigest: "digest-open-1" };
+      return {
+        escrowId: "escrow-1",
+        transactionDigest: "digest-open-1",
+        assetType: "0x2::iota::IOTA",
+        grossAmountBaseUnits: "10000000000",
+        providerNetBaseUnits: "9500000000",
+        platformFeeBaseUnits: "500000000",
+        refundAfterMs: "1800000",
+        allowPayeeRelease: request.allowPayeeRelease === true,
+      };
     },
     release: async (request) => {
       calls.push(`release:${request.invocationId}`);
@@ -353,7 +381,16 @@ function delayedExecutor(calls: string[]): IotaEscrowSettlementExecutor {
     open: async (request) => {
       calls.push(`open:${request.invocationId}`);
       await new Promise((resolve) => setTimeout(resolve, 10));
-      return { escrowId: "escrow-1", transactionDigest: "digest-open-1" };
+      return {
+        escrowId: "escrow-1",
+        transactionDigest: "digest-open-1",
+        assetType: "0x2::iota::IOTA",
+        grossAmountBaseUnits: "10000000000",
+        providerNetBaseUnits: "9500000000",
+        platformFeeBaseUnits: "500000000",
+        refundAfterMs: "1800000",
+        allowPayeeRelease: request.allowPayeeRelease === true,
+      };
     },
     release: async (request) => {
       calls.push(`release:${request.invocationId}`);

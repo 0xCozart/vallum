@@ -47,15 +47,16 @@ export interface IotaEscrowSettlementGateway {
 
 export interface IotaEscrowSettlementMoveContract {
   readonly packageId: string;
+  readonly paymentType: string;
   readonly moduleName?: string;
   readonly openFunction?: string;
   readonly releaseFunction?: string;
   readonly refundFunction?: string;
   readonly escrowTypeName?: string;
   /**
-   * Shared escrows can be released or refunded by the verifier/owner signer.
-   * Transfer-to-owner is available for deployments that wrap release/refund in
-   * a different access pattern.
+   * Shared escrows can be settled by the configured operation authority signer.
+   * Transfer-to-owner is available for deployments that wrap settlement in a
+   * different access pattern.
    */
   readonly publishEscrowObject?: "share" | "transfer-to-owner" | "none";
 }
@@ -64,15 +65,47 @@ export interface IotaEscrowSettlementParticipants {
   readonly ownerAddress: string;
   readonly providerAddress: string;
   readonly verifierAddress: string;
+  readonly refundAuthorityAddress: string;
+  readonly refundDestinationAddress: string;
+  readonly platformFeeAddress: string;
 }
 
 export type IotaEscrowSettlementParticipantResolver = (
   request: IotaEscrowOpenExecutionRequest,
 ) => IotaEscrowSettlementParticipants | Promise<IotaEscrowSettlementParticipants>;
 
+export type IotaEscrowSettlementSignerResolverContext =
+  | {
+    readonly operation: "open";
+    readonly request: IotaEscrowOpenExecutionRequest;
+    readonly participants: IotaEscrowSettlementParticipants;
+  }
+  | {
+    readonly operation: "release";
+    readonly request: IotaEscrowReleaseExecutionRequest;
+  }
+  | {
+    readonly operation: "refund";
+    readonly request: IotaEscrowRefundExecutionRequest;
+  };
+
+export type IotaEscrowSettlementSignerResolver = (
+  context: IotaEscrowSettlementSignerResolverContext,
+) => IotaEscrowSettlementSigner | Promise<IotaEscrowSettlementSigner>;
+
+export interface IotaEscrowSettlementBaseUnitAmounts {
+  readonly grossAmount: bigint | number | string;
+  readonly providerNetAmount: bigint | number | string;
+  readonly platformFeeAmount: bigint | number | string;
+}
+
 export type IotaEscrowSettlementAmountResolver = (
   request: IotaEscrowOpenExecutionRequest,
-) => bigint | number | string | Promise<bigint | number | string>;
+) => IotaEscrowSettlementBaseUnitAmounts | Promise<IotaEscrowSettlementBaseUnitAmounts>;
+
+export type IotaEscrowSettlementPaymentResolver = (
+  request: IotaEscrowOpenExecutionRequest,
+) => TransactionObjectInput | Promise<TransactionObjectInput>;
 
 export type IotaEscrowSettlementObjectResolver = (
   request: IotaEscrowReleaseExecutionRequest | IotaEscrowRefundExecutionRequest,
@@ -100,12 +133,14 @@ export type IotaEscrowSettlementPolicyTargetResolver<Request> = (
 export interface CreateSponsoredIotaEscrowSettlementExecutorOptions {
   readonly gateway: IotaEscrowSettlementGateway;
   readonly contract: IotaEscrowSettlementMoveContract;
-  readonly signer: IotaEscrowSettlementSigner;
+  readonly signer?: IotaEscrowSettlementSigner;
+  readonly resolveSigner?: IotaEscrowSettlementSignerResolver;
   readonly iotaClient?: IotaClient;
   readonly gasBudget: number;
   readonly reserveDurationSecs?: number;
   readonly resolveParticipants: IotaEscrowSettlementParticipantResolver;
-  readonly amountToBaseUnits: IotaEscrowSettlementAmountResolver;
+  readonly amountsToBaseUnits: IotaEscrowSettlementAmountResolver;
+  readonly resolvePaymentObject: IotaEscrowSettlementPaymentResolver;
   readonly resolveEscrowObject?: IotaEscrowSettlementObjectResolver;
   readonly extractEscrowId?: IotaEscrowSettlementEscrowIdExtractor;
   readonly policyTargetForOpen?: IotaEscrowSettlementPolicyTargetResolver<IotaEscrowOpenExecutionRequest>;
@@ -132,7 +167,8 @@ type GasCoinRef = {
 };
 
 const DEFAULT_MODULE = "escrow";
-const DEFAULT_OPEN_FUNCTION = "create";
+const DEFAULT_OPEN_FUNCTION = "open";
+const DEFAULT_SHARED_OPEN_FUNCTION = "open_shared";
 const DEFAULT_RELEASE_FUNCTION = "release";
 const DEFAULT_REFUND_FUNCTION = "refund";
 const DEFAULT_ESCROW_TYPE = "Escrow";
@@ -147,29 +183,41 @@ export function createSponsoredIotaEscrowSettlementExecutor(
     async open(request): Promise<IotaEscrowOpenExecutionResult> {
       const participants = await options.resolveParticipants(request);
       requireParticipants(participants);
-      const amount = normalizeU64BaseUnits(await options.amountToBaseUnits(request));
+      const amounts = normalizeBaseUnitAmounts(await options.amountsToBaseUnits(request));
+      const paymentObject = await options.resolvePaymentObject(request);
+      const signer = await resolveOperationSigner(options, { operation: "open", request, participants });
+      requireSameAddress(
+        signer.address,
+        participants.ownerAddress,
+        "Escrow open signer address must match the resolved owner/payer address.",
+      );
+      const refundAfterMs = normalizeU64BaseUnits(request.refundAfterMs);
+      const allowPayeeRelease = request.allowPayeeRelease === true;
       const tx = new Transaction();
       const contract = normalizeContract(options.contract);
       const createdEscrow = tx.moveCall({
         target: moveTarget(contract.packageId, contract.moduleName, contract.openFunction),
+        typeArguments: [contract.paymentType],
         arguments: [
+          tx.object(paymentObject),
           tx.pure.address(participants.ownerAddress),
           tx.pure.address(participants.providerAddress),
           tx.pure.address(participants.verifierAddress),
-          tx.pure.u64(amount),
-          tx.pure.vector("u8", utf8Bytes(request.providerNetAmount.asset)),
+          tx.pure.address(participants.refundAuthorityAddress),
+          tx.pure.address(participants.refundDestinationAddress),
+          tx.pure.u64(amounts.grossAmount),
+          tx.pure.u64(amounts.providerNetAmount),
+          tx.pure.u64(amounts.platformFeeAmount),
+          tx.pure.address(participants.platformFeeAddress),
           tx.pure.vector("u8", utf8Bytes(request.receipt.idempotencyKey)),
           tx.pure.vector("u8", utf8Bytes(request.receipt.receiptId)),
+          tx.pure.vector("u8", utf8Bytes(request.actionId)),
+          tx.pure.u64(refundAfterMs),
+          tx.pure.bool(allowPayeeRelease),
         ],
       });
 
-      if (contract.publishEscrowObject === "share") {
-        tx.moveCall({
-          target: "0x2::transfer::share_object",
-          typeArguments: [escrowType(contract)],
-          arguments: [createdEscrow],
-        });
-      } else if (contract.publishEscrowObject === "transfer-to-owner") {
+      if (contract.publishEscrowObject === "transfer-to-owner") {
         tx.transferObjects([createdEscrow], tx.pure.address(participants.ownerAddress));
       }
 
@@ -182,6 +230,7 @@ export function createSponsoredIotaEscrowSettlementExecutor(
       const executed = await executeSponsoredTransaction(options, tx, {
         operation: "open",
         policyTarget,
+        signer,
       });
       const escrowId = options.extractEscrowId ? options.extractEscrowId({
         operation: "open",
@@ -199,15 +248,26 @@ export function createSponsoredIotaEscrowSettlementExecutor(
           "Live escrow open executed but no escrow object id was available in the bounded response.",
         );
       }
-      return { escrowId, transactionDigest: executed.digest };
+      return {
+        escrowId,
+        transactionDigest: executed.digest,
+        assetType: contract.paymentType,
+        grossAmountBaseUnits: amounts.grossAmount.toString(),
+        providerNetBaseUnits: amounts.providerNetAmount.toString(),
+        platformFeeBaseUnits: amounts.platformFeeAmount.toString(),
+        refundAfterMs: refundAfterMs.toString(),
+        allowPayeeRelease,
+      };
     },
 
     async release(request): Promise<IotaEscrowSettlementExecutionResult> {
       const contract = normalizeContract(options.contract);
       const escrowObject = await resolveEscrowObject(options, request);
+      const signer = await resolveOperationSigner(options, { operation: "release", request });
       const tx = new Transaction();
       tx.moveCall({
         target: moveTarget(contract.packageId, contract.moduleName, contract.releaseFunction),
+        typeArguments: [contract.paymentType],
         arguments: [
           tx.object(escrowObject),
           tx.pure.vector("u8", utf8Bytes(request.releaseProofHash)),
@@ -222,6 +282,7 @@ export function createSponsoredIotaEscrowSettlementExecutor(
       const executed = await executeSponsoredTransaction(options, tx, {
         operation: "release",
         policyTarget,
+        signer,
       });
       return { transactionDigest: executed.digest };
     },
@@ -229,9 +290,11 @@ export function createSponsoredIotaEscrowSettlementExecutor(
     async refund(request): Promise<IotaEscrowSettlementExecutionResult> {
       const contract = normalizeContract(options.contract);
       const escrowObject = await resolveEscrowObject(options, request);
+      const signer = await resolveOperationSigner(options, { operation: "refund", request });
       const tx = new Transaction();
       tx.moveCall({
         target: moveTarget(contract.packageId, contract.moduleName, contract.refundFunction),
+        typeArguments: [contract.paymentType],
         arguments: [
           tx.object(escrowObject),
           tx.pure.vector("u8", utf8Bytes(request.reason)),
@@ -246,6 +309,7 @@ export function createSponsoredIotaEscrowSettlementExecutor(
       const executed = await executeSponsoredTransaction(options, tx, {
         operation: "refund",
         policyTarget,
+        signer,
       });
       return { transactionDigest: executed.digest };
     },
@@ -259,12 +323,16 @@ function validateExecutorOptions(options: CreateSponsoredIotaEscrowSettlementExe
   if (!options.contract?.packageId) {
     throw new LiveEscrowSettlementExecutorError("ESCROW_EXECUTOR_CONFIG_INVALID", "An escrow Move package id is required.");
   }
+  if (!options.contract.paymentType) {
+    throw new LiveEscrowSettlementExecutorError("ESCROW_EXECUTOR_CONFIG_INVALID", "An escrow payment Move type is required.");
+  }
   if (!Number.isSafeInteger(options.gasBudget) || options.gasBudget <= 0) {
     throw new LiveEscrowSettlementExecutorError("ESCROW_EXECUTOR_CONFIG_INVALID", "A positive safe gas budget is required.");
   }
-  if (!options.signer?.address || !options.signer.signTransaction) {
-    throw new LiveEscrowSettlementExecutorError("ESCROW_EXECUTOR_CONFIG_INVALID", "A settlement signer address and signTransaction method are required.");
+  if (!options.signer && !options.resolveSigner) {
+    throw new LiveEscrowSettlementExecutorError("ESCROW_EXECUTOR_CONFIG_INVALID", "A settlement signer or signer resolver is required.");
   }
+  if (options.signer) requireSigner(options.signer);
   if (options.unsafeBuildTransactionBytesForTesting && options.allowUnsafeCustomTransactionBuilder !== true) {
     throw new LiveEscrowSettlementExecutorError(
       "ESCROW_EXECUTOR_CONFIG_INVALID",
@@ -274,26 +342,62 @@ function validateExecutorOptions(options: CreateSponsoredIotaEscrowSettlementExe
   if (!options.iotaClient && !options.unsafeBuildTransactionBytesForTesting) {
     throw new LiveEscrowSettlementExecutorError("ESCROW_EXECUTOR_CONFIG_INVALID", "An IOTA client is required for live transaction building.");
   }
+  if (!options.amountsToBaseUnits) {
+    throw new LiveEscrowSettlementExecutorError("ESCROW_EXECUTOR_CONFIG_INVALID", "An escrow base-unit amount resolver is required.");
+  }
+  if (!options.resolvePaymentObject) {
+    throw new LiveEscrowSettlementExecutorError("ESCROW_EXECUTOR_CONFIG_INVALID", "An escrow payment object resolver is required.");
+  }
 }
 
 function normalizeContract(contract: IotaEscrowSettlementMoveContract): Required<IotaEscrowSettlementMoveContract> {
+  const publishEscrowObject = contract.publishEscrowObject ?? "share";
   return {
     packageId: contract.packageId,
+    paymentType: contract.paymentType,
     moduleName: contract.moduleName ?? DEFAULT_MODULE,
-    openFunction: contract.openFunction ?? DEFAULT_OPEN_FUNCTION,
+    openFunction: contract.openFunction ?? (publishEscrowObject === "share" ? DEFAULT_SHARED_OPEN_FUNCTION : DEFAULT_OPEN_FUNCTION),
     releaseFunction: contract.releaseFunction ?? DEFAULT_RELEASE_FUNCTION,
     refundFunction: contract.refundFunction ?? DEFAULT_REFUND_FUNCTION,
     escrowTypeName: contract.escrowTypeName ?? DEFAULT_ESCROW_TYPE,
-    publishEscrowObject: contract.publishEscrowObject ?? "share",
+    publishEscrowObject,
   };
 }
 
 function requireParticipants(participants: IotaEscrowSettlementParticipants): void {
-  if (!participants.ownerAddress || !participants.providerAddress || !participants.verifierAddress) {
+  if (
+    !participants.ownerAddress ||
+    !participants.providerAddress ||
+    !participants.verifierAddress ||
+    !participants.refundAuthorityAddress ||
+    !participants.refundDestinationAddress ||
+    !participants.platformFeeAddress
+  ) {
     throw new LiveEscrowSettlementExecutorError(
       "ESCROW_EXECUTOR_CONFIG_INVALID",
-      "Escrow participant resolver must return owner, provider, and verifier addresses.",
+      "Escrow participant resolver must return owner, provider, verifier, refund authority, refund destination, and platform fee addresses.",
     );
+  }
+}
+
+async function resolveOperationSigner(
+  options: CreateSponsoredIotaEscrowSettlementExecutorOptions,
+  context: IotaEscrowSettlementSignerResolverContext,
+): Promise<IotaEscrowSettlementSigner> {
+  const signer = options.resolveSigner ? await options.resolveSigner(context) : options.signer;
+  requireSigner(signer);
+  return signer;
+}
+
+function requireSigner(signer: IotaEscrowSettlementSigner | undefined): asserts signer is IotaEscrowSettlementSigner {
+  if (!signer?.address || !signer.signTransaction) {
+    throw new LiveEscrowSettlementExecutorError("ESCROW_EXECUTOR_CONFIG_INVALID", "A settlement signer address and signTransaction method are required.");
+  }
+}
+
+function requireSameAddress(actual: string, expected: string, message: string): void {
+  if (actual.toLowerCase() !== expected.toLowerCase()) {
+    throw new LiveEscrowSettlementExecutorError("ESCROW_EXECUTOR_CONFIG_INVALID", message);
   }
 }
 
@@ -303,6 +407,7 @@ async function executeSponsoredTransaction(
   input: {
     readonly operation: "open" | "release" | "refund";
     readonly policyTarget: IotaEscrowSettlementPolicyTarget;
+    readonly signer: IotaEscrowSettlementSigner;
   },
 ): Promise<{
   readonly reservation: ReserveGasResponse;
@@ -312,7 +417,7 @@ async function executeSponsoredTransaction(
   const reservation = await options.gateway.reserveGas({
     gasBudget: options.gasBudget,
     reserveDurationSecs: options.reserveDurationSecs,
-    walletAddress: options.signer.address,
+    walletAddress: input.signer.address,
     packageId: input.policyTarget.packageId,
     functionName: input.policyTarget.functionName,
   });
@@ -324,13 +429,13 @@ async function executeSponsoredTransaction(
     );
   }
 
-  tx.setSender(options.signer.address);
+  tx.setSender(input.signer.address);
   tx.setGasOwner(reservation.sponsorAddress);
   tx.setGasBudget(options.gasBudget);
   tx.setGasPayment([gasCoin]);
 
   const transactionBytes = await buildTransactionBytes(options, tx, input.operation);
-  const { signature } = await options.signer.signTransaction(transactionBytes);
+  const { signature } = await input.signer.signTransaction(transactionBytes);
   const execution = await options.gateway.executeSponsoredTransaction({
     reservationId: reservation.reservationId,
     agentRailTransactionId: reservation.agentRailTransactionId,
@@ -360,7 +465,24 @@ async function buildTransactionBytes(
   return tx.build({ client: options.iotaClient });
 }
 
-function normalizeU64BaseUnits(value: bigint | number | string): bigint | number | string {
+function normalizeBaseUnitAmounts(value: IotaEscrowSettlementBaseUnitAmounts): {
+  readonly grossAmount: bigint;
+  readonly providerNetAmount: bigint;
+  readonly platformFeeAmount: bigint;
+} {
+  if (!value || typeof value !== "object") {
+    throw invalidAmountError();
+  }
+  const grossAmount = normalizeU64BaseUnits(value.grossAmount);
+  const providerNetAmount = normalizeU64BaseUnits(value.providerNetAmount);
+  const platformFeeAmount = normalizeU64BaseUnits(value.platformFeeAmount);
+  if (grossAmount <= 0n || providerNetAmount + platformFeeAmount !== grossAmount) {
+    throw invalidAmountError();
+  }
+  return { grossAmount, providerNetAmount, platformFeeAmount };
+}
+
+function normalizeU64BaseUnits(value: bigint | number | string): bigint {
   if (typeof value === "bigint") {
     requireU64Range(value);
     return value;
@@ -370,13 +492,14 @@ function normalizeU64BaseUnits(value: bigint | number | string): bigint | number
       throw invalidAmountError();
     }
     requireU64Range(BigInt(value));
-    return value;
+    return BigInt(value);
   }
   if (!/^(0|[1-9]\d*)$/.test(value)) {
     throw invalidAmountError();
   }
-  requireU64Range(BigInt(value));
-  return value;
+  const parsed = BigInt(value);
+  requireU64Range(parsed);
+  return parsed;
 }
 
 function requireU64Range(value: bigint): void {
@@ -418,7 +541,7 @@ function defaultEscrowIdExtractor(context: IotaEscrowSettlementExecutionContext,
     if (!firstCreatedObjectId) firstCreatedObjectId = objectId;
     const objectType = stringField(change, "objectType") ?? stringField(change, "object_type");
     if (objectType) sawTypedCreatedObject = true;
-    if (objectType === expectedObjectType) return objectId;
+    if (objectType && matchesEscrowObjectType(objectType, expectedObjectType)) return objectId;
   }
   if (!sawTypedCreatedObject && firstCreatedObjectId) return firstCreatedObjectId;
 
@@ -438,6 +561,10 @@ function objectIdFromCreatedObject(value: unknown): string | undefined {
   const reference = isRecord(value["reference"]) ? value["reference"] : undefined;
   if (reference) return stringField(reference, "objectId") ?? stringField(reference, "object_id");
   return undefined;
+}
+
+function matchesEscrowObjectType(objectType: string, expectedObjectType: string): boolean {
+  return objectType === expectedObjectType || objectType.startsWith(`${expectedObjectType}<`);
 }
 
 async function resolveEscrowObject(
@@ -464,8 +591,8 @@ function moveTarget(packageId: string, moduleName: string, functionName: string)
   return `${packageId}::${moduleName}::${functionName}`;
 }
 
-function escrowType(contract: Required<IotaEscrowSettlementMoveContract>): `${string}::${string}::${string}` {
-  return `${contract.packageId}::${contract.moduleName}::${contract.escrowTypeName}`;
+function escrowType(contract: Required<IotaEscrowSettlementMoveContract>): string {
+  return `${contract.packageId}::${contract.moduleName}::${contract.escrowTypeName}<${contract.paymentType}>`;
 }
 
 function utf8Bytes(value: string): number[] {

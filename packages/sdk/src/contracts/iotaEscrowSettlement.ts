@@ -34,9 +34,12 @@ export interface IotaEscrowOpenExecutionRequest {
   readonly actionContractVersion: string;
   readonly providerPayoutRef: string;
   readonly platformFeeRef: string;
+  readonly refundAuthorityRef: string;
   readonly refundDestinationRef: string;
   readonly providerNetAmount: ReceiptAmount;
   readonly platformFeeAmount: ReceiptAmount;
+  readonly refundAfterMs: bigint | number | string;
+  readonly allowPayeeRelease?: boolean;
 }
 
 export interface IotaEscrowReleaseExecutionRequest {
@@ -63,6 +66,12 @@ export interface IotaEscrowRefundExecutionRequest {
 export interface IotaEscrowOpenExecutionResult {
   readonly escrowId: string;
   readonly transactionDigest: string;
+  readonly assetType: string;
+  readonly grossAmountBaseUnits: string;
+  readonly providerNetBaseUnits: string;
+  readonly platformFeeBaseUnits: string;
+  readonly refundAfterMs: string;
+  readonly allowPayeeRelease: boolean;
 }
 
 export interface IotaEscrowSettlementExecutionResult {
@@ -171,9 +180,16 @@ export function createIotaEscrowSettlementClient(options: IotaEscrowSettlementCl
           actionContractVersion: input.actionContractVersion,
           providerPayoutRef: input.providerPayoutRef,
           platformFeeRef: input.platformFeeRef,
+          refundAuthorityRef: input.refundAuthorityRef,
           refundDestinationRef: input.refundDestinationRef,
           providerNetAmount: input.providerNetAmount,
           platformFeeAmount: input.platformFeeAmount,
+          assetType: opened.assetType,
+          grossAmountBaseUnits: opened.grossAmountBaseUnits,
+          providerNetBaseUnits: opened.providerNetBaseUnits,
+          platformFeeBaseUnits: opened.platformFeeBaseUnits,
+          refundAfterMs: opened.refundAfterMs,
+          allowPayeeRelease: opened.allowPayeeRelease,
           transactionDigest: opened.transactionDigest,
         });
         await store.put(toEscrowSettlementStoreRecord({
@@ -290,9 +306,16 @@ function preflightEscrowSettlementOpen(input: IotaEscrowOpenInput): void {
     actionContractVersion: input.actionContractVersion,
     providerPayoutRef: input.providerPayoutRef,
     platformFeeRef: input.platformFeeRef,
+    refundAuthorityRef: input.refundAuthorityRef,
     refundDestinationRef: input.refundDestinationRef,
     providerNetAmount: input.providerNetAmount,
     platformFeeAmount: input.platformFeeAmount,
+    assetType: "0x0::preflight::ASSET",
+    grossAmountBaseUnits: "1",
+    providerNetBaseUnits: "1",
+    platformFeeBaseUnits: "0",
+    refundAfterMs: "0",
+    allowPayeeRelease: input.allowPayeeRelease === true,
     transactionDigest: "preflight-digest",
   });
 }
