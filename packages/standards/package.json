@@ -14,7 +14,7 @@
   "dependencies": {
     "@vallum/manifest": "0.1.1",
     "@vallum/policy-gateway": "0.1.1",
-    "@vallum/receipts": "0.1.1",
+    "@vallum/receipts": "0.1.2",
     "@vallum/registry": "0.1.1"
   },
   "description": "Standards bridge adapters for Vallum.",

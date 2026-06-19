@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@vallum/policy-gateway": "0.1.1",
-    "@vallum/sdk": "0.1.1",
+    "@vallum/sdk": "0.1.2",
     "@vallum/shared-types": "0.1.1"
   },
   "devDependencies": {

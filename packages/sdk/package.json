@@ -1,6 +1,6 @@
 {
   "name": "@vallum/sdk",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -16,7 +16,7 @@
     "@iota/iota-sdk": "1.14.0",
     "@vallum/manifest": "0.1.1",
     "@vallum/registry": "0.1.1",
-    "@vallum/receipts": "0.1.1",
+    "@vallum/receipts": "0.1.2",
     "@vallum/shared-types": "0.1.1"
   },
   "devDependencies": {
