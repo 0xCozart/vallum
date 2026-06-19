@@ -124,8 +124,9 @@ operator visibility.
 ### Start Here: One Adoption Path
 
 The public center of gravity is agent-safe sponsored execution for IOTA.
-The first developer path is intentionally narrow. The official `0.1.0`
-packages are published under `@vallum/*`; start with the
+The first developer path is intentionally narrow. The source tree is prepared
+for the `0.1.1` package line under `@vallum/*`; npm registry publication stays
+operator-gated until real publish and registry proof complete. Start with the
 [Package Integration Guide](docs/vallum/package-integration-guide.md):
 
 ```bash
@@ -351,7 +352,7 @@ Latest local verification and prior live proof:
   `--execute` is opt-in because it may pull images and start containers.
 - `npm run publish:dry-run`: opt-in npm publish dry-run completed locally for
   public workspaces; no package was published.
-- Latest `npm run execute:testnet-demo`: real sponsored IOTA testnet execute succeeded through the local policy gateway and Gas Station; public digest `5qSeMePKyUWVf6e5AiQCZD4MNLe6dwTrcXzo7cXtN5Zg`. Earlier 2026-06-14 public digest evidence includes `Fc32GFCU95wUGs5iGjewJuMxxXwtRrjzLh3LUGrf85uf`, `FLdnYRUACAKQn8CwugEv1u6gYTh9jBr8rGMk2JZ2adsd`, and `6Fz2r2ARRo6fiQMUL4FkWuwU16ekEmKHvHbhLpF5DU6n`.
+- Latest `npm run execute:testnet-demo`: real sponsored IOTA testnet execute succeeded through the local policy gateway and Gas Station; public digest `GfGvW8BvaKvwcMbDwcz98kgF8shst4XQJnXraHMAoyDf`. Earlier public digest evidence includes `8PqFX2H35CRCSfqw3wRBwA8MbnQwwGrSEfr7Tfcu2cx`, `BF7BvoqLmw3AwtYtpPNSoP8JinKbZ67NyP6f7xQMYHYX`, `6gA8pyrYStnHWbYrE7Edr9iKd4PFG4mf2J2u9x14JoR3`, `5qSeMePKyUWVf6e5AiQCZD4MNLe6dwTrcXzo7cXtN5Zg`, `Fc32GFCU95wUGs5iGjewJuMxxXwtRrjzLh3LUGrf85uf`, `FLdnYRUACAKQn8CwugEv1u6gYTh9jBr8rGMk2JZ2adsd`, and `6Fz2r2ARRo6fiQMUL4FkWuwU16ekEmKHvHbhLpF5DU6n`.
 - secret-oriented scan over tracked project files is wired into `npm run secrets:scan` and `npm run verify:local`.
 
 See `docs/testnet-attempts.md`, `docs/vallum/product-status.md`,
@@ -448,8 +449,8 @@ examples/
 ### Packages
 
 The monorepo root is marked `private` to prevent accidental publication of the
-workspace root. The current official package set is published under
-`@vallum/*` with the requested `latest` tag. See
+workspace root. Public workspace packages publish under `@vallum/*` with the
+requested `latest` tag after the operator release gates pass. See
 [`docs/vallum/package-release-strategy.md`](docs/vallum/package-release-strategy.md).
 
 Package release evidence includes package READMEs, public release publish

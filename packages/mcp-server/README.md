@@ -26,8 +26,8 @@ and routes tool calls through the Vallum SDK and policy gateway. It does not
 directly call IOTA, Gas Station, or transaction submission APIs.
 
 The already-published `0.0.0-prerelease` package predates this runnable bin.
-The runnable MCP package is published on the official `0.1.0` package line
-through the npm `latest` dist-tag.
+This source package is prepared for the official `0.1.1` package line; npm
+availability must be confirmed after real publication.
 Registry install plus local stdio execution is covered by
 `npm run smoke:npm-registry-mcp-stdio-consumer`.
 

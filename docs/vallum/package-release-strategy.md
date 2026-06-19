@@ -14,10 +14,12 @@ The repository root remains `vallum` and `private: true` so the monorepo root
 cannot be accidentally published. Publishable workspace packages are public
 packages with `publishConfig.access=public` and `publishConfig.tag=latest`.
 
-The current official release line is `0.1.0` for every public `@vallum/*`
-workspace package, including the runnable MCP stdio CLI. It publishes on the
-npm `latest` dist-tag. The previous coordinated public line was
-`0.0.1-prerelease.1`; before that, `0.0.1-prerelease.0` and
+The source tree is prepared for the coordinated `0.1.1` package line for every
+public `@vallum/*` workspace package, including the runnable MCP stdio CLI.
+Real npm publication and `latest` dist-tag movement remain operator-gated until
+registry credentials, publish, and post-publish proof complete. The current
+published official line is `0.1.0`, the first official npm release under
+`@vallum/*`; before that, `0.0.1-prerelease.1`, `0.0.1-prerelease.0`, and
 `0.0.0-prerelease` were prerelease package lines, with
 `@vallum/mcp-server@0.0.1-mcp.0` as an interim MCP-package-only CLI bump.
 
@@ -56,7 +58,7 @@ The release metadata tests enforce:
 
 - root package is private;
 - public package names stay in `@vallum/*`;
-- package versions stay aligned on `0.1.0`;
+- package versions stay aligned on `0.1.1`;
 - packages publish ESM `dist/index.js` plus `dist/index.d.ts`;
 - package exports expose only reviewed built entrypoints;
 - the MCP server package is the only public package with a CLI bin, and that
@@ -134,7 +136,7 @@ adoption proof:
 - writes a redacted local report to
   `tmp/vallum/npm-registry-consumer-proof.json`.
 
-This proves the current published package set can be installed from npm and
+This proves the configured published package set can be installed from npm and
 used by a fresh consumer for the first Vallum adoption wedge. It is still local
 mock execution proof, not live IOTA, live payment-provider, custody,
 marketplace, or public A2A proof. The command is intentionally excluded from
@@ -230,13 +232,15 @@ structured publication report.
 
 ## Publication Evidence
 
-The `0.1.0` package set is the first official npm release under `@vallum/*`.
-The previous coordinated public line was `0.0.1-prerelease.1`; before that,
-the prerelease lines were `0.0.1-prerelease.0` and `0.0.0-prerelease`. The
-MCP package also had the interim runnable-stdio prerelease
-`@vallum/mcp-server@0.0.1-mcp.0`.
+The `0.1.1` package set is the next prepared official npm release under
+`@vallum/*`. The current published official package set is `0.1.0`, the first
+official npm release under `@vallum/*`. Before that, the previous coordinated
+public line was `0.0.1-prerelease.1`; the earlier prerelease lines were
+`0.0.1-prerelease.0` and `0.0.0-prerelease`. The MCP package also had the
+interim runnable-stdio prerelease `@vallum/mcp-server@0.0.1-mcp.0`.
 
-Publication evidence for the current official release includes:
+Publication evidence required before promoting `0.1.1` to the current official
+release includes:
 
 - `npm run pack:check`
 - `npm run smoke:package-install`
@@ -267,8 +271,8 @@ production custody from this package publication.
 
 ## Runnable MCP Package Publication
 
-The source tree now publishes `@vallum/mcp-server@0.1.0` as part of the
-coordinated workspace release. The previous
+The source tree is prepared to publish `@vallum/mcp-server@0.1.1` as part of
+the coordinated workspace release. The previous
 `@vallum/mcp-server@0.0.1-mcp.0` publication was an MCP-package-only CLI bump
 over the older `0.0.0-prerelease` API line.
 
@@ -308,8 +312,10 @@ publication remains an operator-gated release action.
 ## Dist-Tag Decision
 
 For the current official package set, documentation and examples should use the
-default npm `latest` path or pin exact `0.1.0` versions where reproducibility
-matters. Do not move `latest` again without a reviewed release slice.
+default npm `latest` path or pin exact versions that are visible on npm where
+reproducibility matters. Do not move `latest` again without a reviewed release
+slice. Exact `0.1.1` consumer pins should wait until real publication and
+registry proof complete.
 
 Each package publication should explicitly verify dist-tags after publish.
 

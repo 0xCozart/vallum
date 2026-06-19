@@ -5,15 +5,15 @@ that do not need Docker, sponsor keys, testnet funds, live IOTA RPC, or a
 running IOTA Gas Station. Use those checks first, then move to the live testnet
 path only after local configuration is ready.
 
-Goal: a developer can install Vallum from the official `@vallum/*` packages,
+Goal: a developer can install Vallum from the public `@vallum/*` packages,
 verify the canonical local agent-safe sponsored execution path, understand the
 secret boundary, and know exactly what is still required for a live sponsored
 testnet transaction.
 
 ## Install from npm
 
-The current official packages are published under `@vallum/*`. Install the
-SDK for backend integration:
+Install the SDK for backend integration from the published `@vallum/*` package
+line:
 
 ```bash
 mkdir vallum-consumer
@@ -38,8 +38,10 @@ The SDK belongs in backend code. Do not put Vallum app keys, Gas Station
 bearer tokens, sponsor keys, raw transaction bytes, or user signatures in
 browser JavaScript.
 
-Use the default `latest` tag for the official package path, or pin the exact
-`0.1.0` version when reproducibility matters.
+Use the default `latest` tag for the package path, or pin an exact version that
+is visible on npm when reproducibility matters. This checkout is prepared for
+`0.1.1`; exact `0.1.1` pins should wait until real npm publication and registry
+proof complete.
 
 For the full package map, agent-runtime guidance, configuration reference, and
 current MCP boundary, read

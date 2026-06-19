@@ -24,7 +24,7 @@ interface PackageJson {
 }
 
 const publicPackages = await publicPackageDirs();
-const repoReleaseVersion = "0.1.0";
+const repoReleaseVersion = "0.1.1";
 const mcpServerVersion = repoReleaseVersion;
 const mcpServerPackageName = "@vallum/mcp-server";
 

@@ -6,12 +6,13 @@ testnet transaction digest evidence already documented in this repo.
 Documented digest:
 
 ```text
-8PqFX2H35CRCSfqw3wRBwA8MbnQwwGrSEfr7Tfcu2cx
+GfGvW8BvaKvwcMbDwcz98kgF8shst4XQJnXraHMAoyDf
 ```
 
 Previous sponsored execute report digests:
 
 ```text
+8PqFX2H35CRCSfqw3wRBwA8MbnQwwGrSEfr7Tfcu2cx
 BF7BvoqLmw3AwtYtpPNSoP8JinKbZ67NyP6f7xQMYHYX
 6gA8pyrYStnHWbYrE7Edr9iKd4PFG4mf2J2u9x14JoR3
 5qSeMePKyUWVf6e5AiQCZD4MNLe6dwTrcXzo7cXtN5Zg

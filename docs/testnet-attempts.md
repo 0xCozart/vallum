@@ -739,3 +739,80 @@ testnet RPC. The command consumed testnet gas only and wrote ignored mode-0600
 operator reports. No raw transaction bytes, user signatures, full addresses,
 bearer tokens, sponsor keys, endpoint values, rendered Gas Station config, or
 raw upstream bodies were written to tracked docs.
+
+## 2026-06-19 sponsored testnet execute refresh
+
+The live proof chain was refreshed after explicit operator request. The first
+runtime preflight showed Docker daemon reachability was temporarily blocked; a
+later preflight passed after Docker became reachable. The local Gas Station
+stack was then started through the direct Docker fallback, and a loopback policy
+gateway was used for the sponsored execute pass.
+
+Pre-execute gates:
+
+```bash
+npm run readiness:testnet
+npm run sponsor:check-funding -- --report tmp/vallum/sponsor-funding-report.json
+npm run gas-station:render-config
+npm run gas-station:runtime-preflight
+npm run gas-station:docker-direct -- --execute
+npm run gas-station:docker-direct -- --status
+npm run diagnose:gas-station -- --report tmp/vallum/testnet-upstream-diagnostic.json
+```
+
+Sanitized status:
+
+```text
+testnetReadiness=TESTNET_READINESS_CONFIG_PRESENT
+sponsorFundingCode=SPONSOR_FUNDING_REPORT_VALID
+gasStationRuntime=GAS_STATION_RUNTIME_READY
+gasStationReachabilityCode=GAS_STATION_ROOT_READY
+reserveGasCode=RESERVE_GAS_READY
+policyGatewayHealth=ok
+```
+
+Sponsored execute:
+
+```bash
+npm run execute:testnet-demo -- --report tmp/vallum/sponsored-execute-report.json
+```
+
+Sanitized successful run:
+
+```text
+gatewayConfigured=true
+iotaRpcConfigured=true
+demoTarget=0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0::demo_badge::mint_badge
+ephemeralUserAddress=0xf07d6a9a...8ee03a08
+reservedGas=true
+reservationId=<redacted-id>
+agentRailTransactionId=vallum_d...ec55df
+sponsorAddress=0xd046a4fb...29b9b868
+executed=true
+transactionDigest=GfGvW8BvaKvwcMbDwcz98kgF8shst4XQJnXraHMAoyDf
+```
+
+Read-only live digest verification:
+
+```bash
+npm run proof:testnet-digest:live -- --digest GfGvW8BvaKvwcMbDwcz98kgF8shst4XQJnXraHMAoyDf --report tmp/vallum/testnet-digest-proof.json
+```
+
+Sanitized successful lookup:
+
+```text
+status=verified-testnet
+effectsStatus=success
+checkpoint=229672910
+timestampMs=1781854544371
+```
+
+Outcome: this run proves the existing sponsored demo package path through the
+local policy gateway, local Gas Station, and IOTA testnet RPC. It consumed
+testnet gas only and wrote ignored mode-0600 operator reports. It does not
+prove a live open, release, or refund using the generic escrow executor added
+to the SDK; that still requires a deployed escrow Move package, allowlisted
+escrow functions, and a dedicated live executor harness. No raw transaction
+bytes, user signatures, full addresses, bearer tokens, sponsor keys, endpoint
+values, rendered Gas Station config, or raw upstream bodies were written to
+tracked docs.

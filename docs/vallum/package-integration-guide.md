@@ -66,7 +66,7 @@ evolve independently.
 
 ## Install
 
-The current official release is published under `@vallum/*`:
+Install the SDK from the published `@vallum/*` package line:
 
 ```bash
 npm install @vallum/sdk
@@ -82,9 +82,9 @@ npm install @vallum/mcp-server
 ```
 
 The MCP package builds a stdio CLI bin named `vallum-mcp` and keeps the
-programmatic facade. The runnable MCP package is published on the coordinated
-`0.1.0` package line through the npm `latest` dist-tag, and registry install
-plus local stdio execution is covered by
+programmatic facade. This checkout is prepared for the coordinated `0.1.1`
+package line; real npm availability must be confirmed with the registry smoke
+after publication. Registry install plus local stdio execution is covered by
 `npm run smoke:npm-registry-mcp-stdio-consumer`.
 
 An MCP host can start the server with environment configuration owned by the
@@ -99,8 +99,9 @@ npm exec -- vallum-mcp
 Do not pass API keys as CLI arguments, paste them into agent prompts, or commit
 MCP host configuration files containing real values.
 
-For the official package path, use the npm `latest` tag or pin the exact
-`0.1.0` version when reproducibility matters.
+For the package path, use the npm `latest` tag or pin an exact version that is
+visible on npm when reproducibility matters. Exact `0.1.1` pins should wait
+until real npm publication and registry proof complete.
 
 ## Configure
 
@@ -187,6 +188,58 @@ const result = await vallum.executeSponsoredTransaction({
 ```
 
 Do not log raw `transactionBytes` or `userSignature` in normal request paths.
+
+### Use The Generic IOTA Escrow Executor
+
+For escrow-shaped workflows, `@vallum/sdk` exposes a concrete
+`IotaEscrowSettlementExecutor` implementation:
+
+```ts
+import { IotaClient } from "@iota/iota-sdk/client";
+import {
+  createIotaEscrowSettlementClient,
+  createSponsoredIotaEscrowSettlementExecutor,
+  createVallumClient,
+} from "@vallum/sdk";
+
+const gateway = createVallumClient({
+  baseUrl: process.env.VALLUM_GATEWAY_URL!,
+  apiKey: process.env.VALLUM_API_KEY!,
+});
+
+const executor = createSponsoredIotaEscrowSettlementExecutor({
+  gateway,
+  iotaClient: new IotaClient({ url: process.env.IOTA_RPC_URL! }),
+  signer: settlementSigner,
+  contract: { packageId: process.env.VALLUM_ESCROW_PACKAGE_ID! },
+  gasBudget: 50_000_000,
+  resolveParticipants: resolveEscrowParticipants,
+  amountToBaseUnits: resolveEscrowAmountUnits,
+});
+
+const settlement = createIotaEscrowSettlementClient({
+  executor,
+  store: durableEscrowSettlementStore,
+});
+```
+
+The executor is not tied to any one app. It requires the installing backend or
+operator to resolve owner, provider, and verifier IOTA addresses; convert
+receipt amounts into non-negative u64-safe contract base units; configure the
+Move package/function names; and provide a settlement signer from a server-side
+signer or signer service. Live executors should pass an `IotaClient` so the IOTA
+SDK builds transaction bytes from the configured Move calls. The
+`unsafeBuildTransactionBytesForTesting` option is a unit-test hook only, requires
+`allowUnsafeCustomTransactionBuilder: true`, and should not be connected to
+untrusted input or production signing paths. Open, release, and refund
+transactions still route through Vallum reserve/execute calls, so app
+credentials, policy allowlists, gas budgets, and Gas Station sponsorship remain
+gateway-owned.
+
+Live or testnet use still requires operator-owned IOTA RPC, signer, gateway,
+Gas Station, and policy configuration outside the repo. Local package tests
+prove the executor shape and redaction boundary; they do not prove a live
+escrow open, release, refund, provider payout, or platform fee settlement.
 
 ## Use The MCP Package
 
