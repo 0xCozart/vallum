@@ -49,7 +49,7 @@ module escrow_v1::escrow_tests {
         assert!(*escrow::idempotency_key(&escrow) == b"idem-1", 0);
         assert!(*escrow::receipt_id(&escrow) == b"receipt-1", 0);
         assert!(*escrow::reference_id(&escrow) == b"reference-1", 0);
-        assert!(escrow::refund_after_ms(&escrow) == 1000, 0);
+        assert!(escrow::refund_after_epoch_ms(&escrow) == 1000, 0);
         assert!(!escrow::allow_payee_release(&escrow), 0);
         assert!(escrow::asset(&escrow).length() > 0, 0);
         escrow::destroy_for_testing(escrow);
@@ -255,7 +255,7 @@ module escrow_v1::escrow_tests {
         ts::end(scenario);
     }
 
-    fun funded_escrow(scenario: &mut ts::Scenario, allow_payee_release: bool, refund_after_ms: u64): escrow::Escrow<IOTA> {
+    fun funded_escrow(scenario: &mut ts::Scenario, allow_payee_release: bool, refund_after_epoch_ms: u64): escrow::Escrow<IOTA> {
         let payment = coin::mint_for_testing<IOTA>(100, ts::ctx(scenario));
         escrow::open<IOTA>(
             payment,
@@ -271,7 +271,7 @@ module escrow_v1::escrow_tests {
             b"idem-funded",
             b"receipt-funded",
             b"reference-funded",
-            refund_after_ms,
+            refund_after_epoch_ms,
             allow_payee_release,
             ts::ctx(scenario),
         )

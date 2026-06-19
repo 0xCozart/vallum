@@ -70,7 +70,7 @@ export interface EscrowSettlementState {
   readonly grossAmountBaseUnits: string;
   readonly providerNetBaseUnits: string;
   readonly platformFeeBaseUnits: string;
-  readonly refundAfterMs: string;
+  readonly refundAfterEpochMs: string;
   readonly allowPayeeRelease: boolean;
   readonly openedTransactionDigest: string;
   readonly providerExecutionReceiptHash?: string;
@@ -339,7 +339,7 @@ export interface RecordEscrowSettlementOpenOptions extends TransitionOptions {
   readonly grossAmountBaseUnits: string;
   readonly providerNetBaseUnits: string;
   readonly platformFeeBaseUnits: string;
-  readonly refundAfterMs: string;
+  readonly refundAfterEpochMs: string;
   readonly allowPayeeRelease: boolean;
   readonly transactionDigest: string;
 }
@@ -1029,7 +1029,7 @@ export function recordEscrowSettlementOpen(
     options.providerNetBaseUnits,
     options.platformFeeBaseUnits,
   );
-  requireU64String(options.refundAfterMs, "refundAfterMs");
+  requireU64String(options.refundAfterEpochMs, "refundAfterEpochMs");
   if (typeof options.allowPayeeRelease !== "boolean") {
     throw new ReceiptInputError("FIELD_REQUIRED", "allowPayeeRelease is required.");
   }
@@ -1056,7 +1056,7 @@ export function recordEscrowSettlementOpen(
       grossAmountBaseUnits: options.grossAmountBaseUnits,
       providerNetBaseUnits: options.providerNetBaseUnits,
       platformFeeBaseUnits: options.platformFeeBaseUnits,
-      refundAfterMs: options.refundAfterMs,
+      refundAfterEpochMs: options.refundAfterEpochMs,
       allowPayeeRelease: options.allowPayeeRelease,
       openedTransactionDigest: options.transactionDigest,
     },
