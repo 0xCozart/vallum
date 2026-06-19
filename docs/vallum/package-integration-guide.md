@@ -66,7 +66,7 @@ evolve independently.
 
 ## Install
 
-Install the SDK from the published `@vallum/*` package line:
+The current official release is published under `@vallum/*`:
 
 ```bash
 npm install @vallum/sdk
@@ -82,9 +82,9 @@ npm install @vallum/mcp-server
 ```
 
 The MCP package builds a stdio CLI bin named `vallum-mcp` and keeps the
-programmatic facade. This checkout is prepared for the coordinated `0.1.1`
-package line; real npm availability must be confirmed with the registry smoke
-after publication. Registry install plus local stdio execution is covered by
+programmatic facade. The runnable MCP package is published on the coordinated
+`0.1.1` package line through the npm `latest` dist-tag, and registry install
+plus local stdio execution is covered by
 `npm run smoke:npm-registry-mcp-stdio-consumer`.
 
 An MCP host can start the server with environment configuration owned by the
@@ -99,9 +99,8 @@ npm exec -- vallum-mcp
 Do not pass API keys as CLI arguments, paste them into agent prompts, or commit
 MCP host configuration files containing real values.
 
-For the package path, use the npm `latest` tag or pin an exact version that is
-visible on npm when reproducibility matters. Exact `0.1.1` pins should wait
-until real npm publication and registry proof complete.
+For the official package path, use the npm `latest` tag or pin the exact
+`0.1.1` version when reproducibility matters.
 
 ## Configure
 
