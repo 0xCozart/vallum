@@ -174,9 +174,16 @@ test("escrow settlement release records fee split and replay-safe receipt hashes
     actionContractVersion: "1.0.0",
     providerPayoutRef: "provider-payout:provider-wallet",
     platformFeeRef: "platform-fee:vallum",
+    refundAuthorityRef: "refund-authority:buyer-agent",
     refundDestinationRef: "refund:buyer-wallet",
     providerNetAmount: { amount: "9.50", asset: "IOTA" },
     platformFeeAmount: { amount: "0.50", asset: "IOTA" },
+    assetType: "0x2::iota::IOTA",
+    grossAmountBaseUnits: "10000000000",
+    providerNetBaseUnits: "9500000000",
+    platformFeeBaseUnits: "500000000",
+    refundAfterMs: "1800000",
+    allowPayeeRelease: false,
     transactionDigest: "digest_open_escrow_1",
   });
   const completed = completeEscrow(opened, {
@@ -202,6 +209,13 @@ test("escrow settlement release records fee split and replay-safe receipt hashes
   assert.equal(released.escrowSettlement?.escrowId, "escrow:testnet:agent-action:1");
   assert.equal(released.escrowSettlement?.providerNetAmount.amount, "9.50");
   assert.equal(released.escrowSettlement?.platformFeeAmount.amount, "0.50");
+  assert.equal(released.escrowSettlement?.refundAuthorityRef, "refund-authority:buyer-agent");
+  assert.equal(released.escrowSettlement?.assetType, "0x2::iota::IOTA");
+  assert.equal(released.escrowSettlement?.grossAmountBaseUnits, "10000000000");
+  assert.equal(released.escrowSettlement?.providerNetBaseUnits, "9500000000");
+  assert.equal(released.escrowSettlement?.platformFeeBaseUnits, "500000000");
+  assert.equal(released.escrowSettlement?.refundAfterMs, "1800000");
+  assert.equal(released.escrowSettlement?.allowPayeeRelease, false);
   assert.equal(released.escrowSettlement?.platformFeePaid, true);
   assert.equal(released.escrowSettlement?.providerExecutionReceiptHash, "sha256:provider-execution-receipt");
   assert.equal(released.escrowSettlement?.evidenceAttestationHash, "sha256:evidence-attestation");
@@ -223,10 +237,46 @@ test("escrow settlement open rejects invalid fee splits", () => {
       actionContractVersion: "1.0.0",
       providerPayoutRef: "provider-payout:provider-wallet",
       platformFeeRef: "platform-fee:vallum",
+      refundAuthorityRef: "refund-authority:buyer-agent",
       refundDestinationRef: "refund:buyer-wallet",
       providerNetAmount: { amount: "9.00", asset: "IOTA" },
       platformFeeAmount: { amount: "0.50", asset: "IOTA" },
+      assetType: "0x2::iota::IOTA",
+      grossAmountBaseUnits: "10000000000",
+      providerNetBaseUnits: "9500000000",
+      platformFeeBaseUnits: "500000000",
+      refundAfterMs: "1800000",
+      allowPayeeRelease: false,
       transactionDigest: "digest_open_escrow_2",
+    }),
+    (error) => error instanceof ReceiptInputError && error.code === "FIELD_REQUIRED",
+  );
+});
+
+test("escrow settlement open rejects invalid custody base-unit splits", () => {
+  assert.throws(
+    () => recordEscrowSettlementOpen(sponsoredIotaEscrowReceipt(), {
+      at: now,
+      settlementRail: "iota-testnet",
+      escrowId: "escrow:testnet:agent-action:base-units",
+      releaseMode: "proof",
+      invocationId: "invocation:agent-action:base-units",
+      actionId: "action:agent-action",
+      actionContractId: "action-contract:agent-action",
+      actionContractVersion: "1.0.0",
+      providerPayoutRef: "provider-payout:provider-wallet",
+      platformFeeRef: "platform-fee:vallum",
+      refundAuthorityRef: "refund-authority:buyer-agent",
+      refundDestinationRef: "refund:buyer-wallet",
+      providerNetAmount: { amount: "9.50", asset: "IOTA" },
+      platformFeeAmount: { amount: "0.50", asset: "IOTA" },
+      assetType: "0x2::iota::IOTA",
+      grossAmountBaseUnits: "10000000000",
+      providerNetBaseUnits: "9000000000",
+      platformFeeBaseUnits: "500000000",
+      refundAfterMs: "1800000",
+      allowPayeeRelease: false,
+      transactionDigest: "digest_open_escrow_base_units",
     }),
     (error) => error instanceof ReceiptInputError && error.code === "FIELD_REQUIRED",
   );
@@ -245,9 +295,16 @@ test("escrow settlement open rejects invalid rails and raw settlement addresses"
       actionContractVersion: "1.0.0",
       providerPayoutRef: "provider-payout:provider-wallet",
       platformFeeRef: "platform-fee:vallum",
+      refundAuthorityRef: "refund-authority:buyer-agent",
       refundDestinationRef: "refund:buyer-wallet",
       providerNetAmount: { amount: "9.50", asset: "IOTA" },
       platformFeeAmount: { amount: "0.50", asset: "IOTA" },
+      assetType: "0x2::iota::IOTA",
+      grossAmountBaseUnits: "10000000000",
+      providerNetBaseUnits: "9500000000",
+      platformFeeBaseUnits: "500000000",
+      refundAfterMs: "1800000",
+      allowPayeeRelease: false,
       transactionDigest: "digest_open_escrow_invalid_rail",
     }),
     (error) => error instanceof ReceiptInputError && error.code === "FIELD_REQUIRED",
@@ -264,9 +321,16 @@ test("escrow settlement open rejects invalid rails and raw settlement addresses"
       actionContractVersion: "1.0.0",
       providerPayoutRef: "iota1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq",
       platformFeeRef: "platform-fee:vallum",
+      refundAuthorityRef: "refund-authority:buyer-agent",
       refundDestinationRef: "refund:buyer-wallet",
       providerNetAmount: { amount: "9.50", asset: "IOTA" },
       platformFeeAmount: { amount: "0.50", asset: "IOTA" },
+      assetType: "0x2::iota::IOTA",
+      grossAmountBaseUnits: "10000000000",
+      providerNetBaseUnits: "9500000000",
+      platformFeeBaseUnits: "500000000",
+      refundAfterMs: "1800000",
+      allowPayeeRelease: false,
       transactionDigest: "digest_open_escrow_raw_address",
     }),
     (error) => error instanceof ReceiptInputError && error.code === "FIELD_REQUIRED",
@@ -285,9 +349,16 @@ test("escrow settlement refund records refund evidence without paying platform f
     actionContractVersion: "1.0.0",
     providerPayoutRef: "provider-payout:provider-wallet",
     platformFeeRef: "platform-fee:vallum",
+    refundAuthorityRef: "refund-authority:buyer-agent",
     refundDestinationRef: "refund:buyer-wallet",
     providerNetAmount: { amount: "9.50", asset: "IOTA" },
     platformFeeAmount: { amount: "0.50", asset: "IOTA" },
+    assetType: "0x2::iota::IOTA",
+    grossAmountBaseUnits: "10000000000",
+    providerNetBaseUnits: "9500000000",
+    platformFeeBaseUnits: "500000000",
+    refundAfterMs: "1800000",
+    allowPayeeRelease: false,
     transactionDigest: "digest_open_escrow_3",
   });
   const refunded = recordEscrowSettlementRefund(opened, {

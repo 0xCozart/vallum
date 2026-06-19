@@ -62,9 +62,16 @@ export interface EscrowSettlementState {
   readonly actionContractVersion: string;
   readonly providerPayoutRef: string;
   readonly platformFeeRef: string;
+  readonly refundAuthorityRef: string;
   readonly refundDestinationRef: string;
   readonly providerNetAmount: ReceiptAmount;
   readonly platformFeeAmount: ReceiptAmount;
+  readonly assetType: string;
+  readonly grossAmountBaseUnits: string;
+  readonly providerNetBaseUnits: string;
+  readonly platformFeeBaseUnits: string;
+  readonly refundAfterMs: string;
+  readonly allowPayeeRelease: boolean;
   readonly openedTransactionDigest: string;
   readonly providerExecutionReceiptHash?: string;
   readonly evidenceAttestationHash?: string;
@@ -324,9 +331,16 @@ export interface RecordEscrowSettlementOpenOptions extends TransitionOptions {
   readonly actionContractVersion: string;
   readonly providerPayoutRef: string;
   readonly platformFeeRef: string;
+  readonly refundAuthorityRef: string;
   readonly refundDestinationRef: string;
   readonly providerNetAmount: ReceiptAmount;
   readonly platformFeeAmount: ReceiptAmount;
+  readonly assetType: string;
+  readonly grossAmountBaseUnits: string;
+  readonly providerNetBaseUnits: string;
+  readonly platformFeeBaseUnits: string;
+  readonly refundAfterMs: string;
+  readonly allowPayeeRelease: boolean;
   readonly transactionDigest: string;
 }
 
@@ -1006,8 +1020,19 @@ export function recordEscrowSettlementOpen(
   requireNonEmpty(options.transactionDigest, "transactionDigest");
   requireSafeSettlementReference(options.providerPayoutRef, "providerPayoutRef");
   requireSafeSettlementReference(options.platformFeeRef, "platformFeeRef");
+  requireSafeSettlementReference(options.refundAuthorityRef, "refundAuthorityRef");
   requireSafeSettlementReference(options.refundDestinationRef, "refundDestinationRef");
   requireFeeSplit(receipt.amount, options.providerNetAmount, options.platformFeeAmount);
+  requireSafeAssetType(options.assetType, "assetType");
+  requireBaseUnitSplit(
+    options.grossAmountBaseUnits,
+    options.providerNetBaseUnits,
+    options.platformFeeBaseUnits,
+  );
+  requireU64String(options.refundAfterMs, "refundAfterMs");
+  if (typeof options.allowPayeeRelease !== "boolean") {
+    throw new ReceiptInputError("FIELD_REQUIRED", "allowPayeeRelease is required.");
+  }
 
   return withReceiptEvent(receipt, "submitted", options.at, {
     status: "submitted",
@@ -1023,9 +1048,16 @@ export function recordEscrowSettlementOpen(
       actionContractVersion: options.actionContractVersion,
       providerPayoutRef: options.providerPayoutRef,
       platformFeeRef: options.platformFeeRef,
+      refundAuthorityRef: options.refundAuthorityRef,
       refundDestinationRef: options.refundDestinationRef,
       providerNetAmount: options.providerNetAmount,
       platformFeeAmount: options.platformFeeAmount,
+      assetType: options.assetType,
+      grossAmountBaseUnits: options.grossAmountBaseUnits,
+      providerNetBaseUnits: options.providerNetBaseUnits,
+      platformFeeBaseUnits: options.platformFeeBaseUnits,
+      refundAfterMs: options.refundAfterMs,
+      allowPayeeRelease: options.allowPayeeRelease,
       openedTransactionDigest: options.transactionDigest,
     },
   });
@@ -1181,6 +1213,42 @@ function requireSafeSettlementReference(value: string, field: string): void {
   ) {
     throw new ReceiptInputError("FIELD_REQUIRED", `${field} must be an opaque public reference, not raw settlement material.`);
   }
+}
+
+function requireSafeAssetType(value: string, field: string): void {
+  requireNonEmpty(value, field);
+  if (
+    value.length > 240 ||
+    !/^[A-Za-z0-9_:<>.]+$/.test(value) ||
+    !value.includes("::") ||
+    /(private prompt|review payload|bearer|access-token|signer_ref|payment credential|privateKey|mnemonic|seed|raw transaction|user signature)/i.test(value)
+  ) {
+    throw new ReceiptInputError("FIELD_REQUIRED", `${field} must be a safe Move asset type.`);
+  }
+}
+
+function requireBaseUnitSplit(gross: string, providerNet: string, platformFee: string): void {
+  const grossUnits = requireU64String(gross, "grossAmountBaseUnits");
+  const providerUnits = requireU64String(providerNet, "providerNetBaseUnits");
+  const platformUnits = requireU64String(platformFee, "platformFeeBaseUnits");
+  if (grossUnits === 0n) {
+    throw new ReceiptInputError("FIELD_REQUIRED", "grossAmountBaseUnits must be positive.");
+  }
+  if (providerUnits + platformUnits !== grossUnits) {
+    throw new ReceiptInputError("FIELD_REQUIRED", "Escrow base-unit split must equal the gross base-unit amount.");
+  }
+}
+
+function requireU64String(value: string, field: string): bigint {
+  requireNonEmpty(value, field);
+  if (!/^(0|[1-9]\d*)$/.test(value)) {
+    throw new ReceiptInputError("FIELD_REQUIRED", `${field} must be a non-negative u64 integer string.`);
+  }
+  const parsed = BigInt(value);
+  if (parsed > 18446744073709551615n) {
+    throw new ReceiptInputError("FIELD_REQUIRED", `${field} must fit in u64.`);
+  }
+  return parsed;
 }
 
 function requireFeeSplit(gross: ReceiptAmount, providerNet: ReceiptAmount, platformFee: ReceiptAmount): void {
