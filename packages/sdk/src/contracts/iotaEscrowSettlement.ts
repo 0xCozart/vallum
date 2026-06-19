@@ -38,7 +38,7 @@ export interface IotaEscrowOpenExecutionRequest {
   readonly refundDestinationRef: string;
   readonly providerNetAmount: ReceiptAmount;
   readonly platformFeeAmount: ReceiptAmount;
-  readonly refundAfterMs: bigint | number | string;
+  readonly refundAfterEpochMs: bigint | number | string;
   readonly allowPayeeRelease?: boolean;
 }
 
@@ -70,7 +70,7 @@ export interface IotaEscrowOpenExecutionResult {
   readonly grossAmountBaseUnits: string;
   readonly providerNetBaseUnits: string;
   readonly platformFeeBaseUnits: string;
-  readonly refundAfterMs: string;
+  readonly refundAfterEpochMs: string;
   readonly allowPayeeRelease: boolean;
 }
 
@@ -91,17 +91,18 @@ export interface EscrowSettlementStoreRecord {
   readonly ownerId: string;
   readonly providerId: string;
   readonly verifierId: string;
-  readonly escrowId: string;
+  readonly escrowId?: string;
   readonly invocationId: string;
-  readonly status: "open" | "released" | "refunded";
+  readonly status: "opening" | "open" | "released" | "refunded";
 }
 
 export interface EscrowSettlementStore {
   readonly getByIdempotencyKey: (idempotencyKey: string) => Promise<EscrowSettlementStoreRecord | undefined>;
   readonly getByEscrowId: (escrowId: string) => Promise<EscrowSettlementStoreRecord | undefined>;
   /**
-   * Must reject conflicting idempotency-key or escrow-id bindings. A live executor
-   * should back this with a durable conditional write before funds can move.
+   * Must reject duplicate or conflicting idempotency-key or escrow-id bindings
+   * atomically. Funded opens write an `opening` record before funds can move,
+   * then replace that same binding with `open` after the chain transaction.
    */
   readonly put: (record: EscrowSettlementStoreRecord) => Promise<void>;
 }
@@ -137,15 +138,17 @@ export function createInMemoryEscrowSettlementStore(): EscrowSettlementStore {
     },
     async put(record) {
       const existingByIdempotencyKey = byIdempotencyKey.get(record.idempotencyKey);
-      if (existingByIdempotencyKey && !hasSameEscrowStoreBinding(existingByIdempotencyKey, record)) {
+      if (existingByIdempotencyKey && !canReplaceEscrowStoreRecord(existingByIdempotencyKey, record)) {
         throw new EscrowSettlementError("ESCROW_STORE_CONFLICT", "Escrow idempotency key is already bound to another settlement.");
       }
-      const existingByEscrowId = byEscrowId.get(record.escrowId);
-      if (existingByEscrowId && !hasSameEscrowStoreBinding(existingByEscrowId, record)) {
-        throw new EscrowSettlementError("ESCROW_STORE_CONFLICT", "Escrow id is already bound to another receipt.");
+      if (record.escrowId) {
+        const existingByEscrowId = byEscrowId.get(record.escrowId);
+        if (existingByEscrowId && !canReplaceEscrowStoreRecord(existingByEscrowId, record)) {
+          throw new EscrowSettlementError("ESCROW_STORE_CONFLICT", "Escrow id is already bound to another receipt.");
+        }
       }
       byIdempotencyKey.set(record.idempotencyKey, record);
-      byEscrowId.set(record.escrowId, record);
+      if (record.escrowId) byEscrowId.set(record.escrowId, record);
     },
   };
 }
@@ -168,6 +171,11 @@ export function createIotaEscrowSettlementClient(options: IotaEscrowSettlementCl
           throw new EscrowSettlementError("IDEMPOTENCY_REPLAYED", "Escrow idempotency key has already been used.");
         }
         preflightEscrowSettlementOpen(input);
+        await reserveEscrowOpening(store, toEscrowSettlementStoreRecord({
+          receipt: input.receipt,
+          invocationId: input.invocationId,
+          status: "opening",
+        }));
         const opened = await options.executor.open(input);
         const receipt = recordEscrowSettlementOpen(input.receipt, {
           at: now(),
@@ -188,7 +196,7 @@ export function createIotaEscrowSettlementClient(options: IotaEscrowSettlementCl
           grossAmountBaseUnits: opened.grossAmountBaseUnits,
           providerNetBaseUnits: opened.providerNetBaseUnits,
           platformFeeBaseUnits: opened.platformFeeBaseUnits,
-          refundAfterMs: opened.refundAfterMs,
+          refundAfterEpochMs: opened.refundAfterEpochMs,
           allowPayeeRelease: opened.allowPayeeRelease,
           transactionDigest: opened.transactionDigest,
         });
@@ -265,19 +273,37 @@ function hasSameEscrowStoreBinding(
   left: EscrowSettlementStoreRecord,
   right: EscrowSettlementStoreRecord,
 ): boolean {
+  return hasSameBaseEscrowStoreBinding(left, right)
+    && left.escrowId === right.escrowId;
+}
+
+function hasSameBaseEscrowStoreBinding(
+  left: EscrowSettlementStoreRecord,
+  right: EscrowSettlementStoreRecord,
+): boolean {
   return left.idempotencyKey === right.idempotencyKey
     && left.receiptId === right.receiptId
     && left.agentId === right.agentId
     && left.ownerId === right.ownerId
     && left.providerId === right.providerId
     && left.verifierId === right.verifierId
-    && left.escrowId === right.escrowId
     && left.invocationId === right.invocationId;
+}
+
+function canReplaceEscrowStoreRecord(
+  existing: EscrowSettlementStoreRecord,
+  next: EscrowSettlementStoreRecord,
+): boolean {
+  if (next.status === "opening") return false;
+  if (existing.status === "opening" && next.status === "open") {
+    return hasSameBaseEscrowStoreBinding(existing, next) && typeof next.escrowId === "string" && next.escrowId.length > 0;
+  }
+  return hasSameEscrowStoreBinding(existing, next);
 }
 
 function toEscrowSettlementStoreRecord(input: {
   readonly receipt: EscrowReceipt;
-  readonly escrowId: string;
+  readonly escrowId?: string;
   readonly invocationId: string;
   readonly status: EscrowSettlementStoreRecord["status"];
 }): EscrowSettlementStoreRecord {
@@ -314,7 +340,7 @@ function preflightEscrowSettlementOpen(input: IotaEscrowOpenInput): void {
     grossAmountBaseUnits: "1",
     providerNetBaseUnits: "1",
     platformFeeBaseUnits: "0",
-    refundAfterMs: "0",
+    refundAfterEpochMs: "0",
     allowPayeeRelease: input.allowPayeeRelease === true,
     transactionDigest: "preflight-digest",
   });
@@ -353,13 +379,27 @@ async function requireOpenStoreRecord(
   invocationId: string,
 ): Promise<EscrowSettlementStoreRecord> {
   const record = await store.getByEscrowId(escrowId);
-  if (!record || record.status !== "open") {
+  if (!record || record.status !== "open" || !record.escrowId) {
     throw new EscrowSettlementError("ESCROW_SETTLEMENT_NOT_OPEN", "Escrow settlement is not open.");
   }
   if (record.invocationId !== invocationId) {
     throw new EscrowSettlementError("ESCROW_BINDING_MISMATCH", "Escrow invocation binding does not match.");
   }
   return record;
+}
+
+async function reserveEscrowOpening(
+  store: EscrowSettlementStore,
+  record: EscrowSettlementStoreRecord,
+): Promise<void> {
+  try {
+    await store.put(record);
+  } catch (error) {
+    if (error instanceof EscrowSettlementError && error.code === "ESCROW_STORE_CONFLICT") {
+      throw new EscrowSettlementError("IDEMPOTENCY_REPLAYED", "Escrow idempotency key is already reserved or used.");
+    }
+    throw error;
+  }
 }
 
 function requireStoreReceiptBinding(record: EscrowSettlementStoreRecord, receipt: EscrowReceipt): void {

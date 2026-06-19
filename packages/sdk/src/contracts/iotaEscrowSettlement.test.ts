@@ -42,7 +42,7 @@ test("iota escrow settlement client opens escrow with fee split and rejects repl
     refundDestinationRef: "refund:buyer-wallet",
     providerNetAmount: { amount: "9.50", asset: "IOTA" },
     platformFeeAmount: { amount: "0.50", asset: "IOTA" },
-    refundAfterMs: "1800000",
+    refundAfterEpochMs: "1781094600000",
     allowPayeeRelease: false,
   });
 
@@ -53,7 +53,7 @@ test("iota escrow settlement client opens escrow with fee split and rejects repl
   assert.equal(opened.receipt.escrowSettlement?.grossAmountBaseUnits, "10000000000");
   assert.equal(opened.receipt.escrowSettlement?.providerNetBaseUnits, "9500000000");
   assert.equal(opened.receipt.escrowSettlement?.platformFeeBaseUnits, "500000000");
-  assert.equal(opened.receipt.escrowSettlement?.refundAfterMs, "1800000");
+  assert.equal(opened.receipt.escrowSettlement?.refundAfterEpochMs, "1781094600000");
   assert.equal(opened.receipt.escrowSettlement?.allowPayeeRelease, false);
   assert.deepEqual(calls, ["open:invocation:agent-action:1"]);
   await assert.rejects(
@@ -71,7 +71,7 @@ test("iota escrow settlement client opens escrow with fee split and rejects repl
       refundDestinationRef: "refund:buyer-wallet",
       providerNetAmount: { amount: "9.50", asset: "IOTA" },
       platformFeeAmount: { amount: "0.50", asset: "IOTA" },
-      refundAfterMs: "1800000",
+      refundAfterEpochMs: "1781094600000",
       allowPayeeRelease: false,
     }),
     (error) => error instanceof EscrowSettlementError && error.code === "IDEMPOTENCY_REPLAYED",
@@ -101,7 +101,7 @@ test("iota escrow settlement client validates open input before executor side ef
       refundDestinationRef: "refund:buyer-wallet",
       providerNetAmount: { amount: "9.00", asset: "IOTA" },
       platformFeeAmount: { amount: "0.50", asset: "IOTA" },
-      refundAfterMs: "1800000",
+      refundAfterEpochMs: "1781094600000",
       allowPayeeRelease: false,
     }),
     (error) => error instanceof ReceiptInputError && error.code === "FIELD_REQUIRED",
@@ -246,27 +246,48 @@ test("iota escrow settlement client blocks concurrent duplicate opens before dup
   );
 });
 
-test("iota escrow settlement store rejects reused escrow ids without overwriting the original binding", async () => {
+test("iota escrow settlement store reservation blocks duplicate opens across clients", async () => {
   const store = createInMemoryEscrowSettlementStore();
-  const client = createIotaEscrowSettlementClient({
-    executor: fakeExecutor([]),
+  const calls: string[] = [];
+  const firstClient = createIotaEscrowSettlementClient({
+    executor: delayedExecutor(calls),
     store,
     now: () => now,
   });
-  const opened = await client.open(openInput());
+  const secondClient = createIotaEscrowSettlementClient({
+    executor: delayedExecutor(calls),
+    store,
+    now: () => now,
+  });
+
+  const results = await Promise.allSettled([
+    firstClient.open(openInput()),
+    secondClient.open(openInput()),
+  ]);
+  const fulfilled = results.filter((result) => result.status === "fulfilled");
+  const rejected = results.filter((result) => result.status === "rejected");
+
+  assert.equal(fulfilled.length, 1);
+  assert.equal(rejected.length, 1);
+  assert.equal(calls.filter((call) => call === "open:invocation:agent-action:1").length, 1);
+  assert.ok(
+    rejected[0]?.status === "rejected"
+    && rejected[0].reason instanceof EscrowSettlementError
+    && rejected[0].reason.code === "IDEMPOTENCY_REPLAYED",
+  );
+});
+
+test("iota escrow settlement store rejects duplicate opening reservations", async () => {
+  const store = createInMemoryEscrowSettlementStore();
+  await store.put(storeRecord({ status: "opening" }));
 
   await assert.rejects(
-    () => client.open({
-      ...openInput(),
-      receipt: sponsoredIotaEscrowReceipt({
-        receiptId: "receipt_iota_escrow_2",
-        idempotencyKey: "idem_iota_escrow_2",
-        ownerId: "owner:bob",
-      }),
-      invocationId: "invocation:agent-action:2",
-    }),
+    () => store.put(storeRecord({ status: "opening" })),
     (error) => error instanceof EscrowSettlementError && error.code === "ESCROW_STORE_CONFLICT",
   );
+  assert.equal(await store.getByEscrowId("escrow-1"), undefined);
+
+  await store.put(storeRecord({ status: "open", escrowId: "escrow-1" }));
   assert.deepEqual(await store.getByEscrowId("escrow-1"), {
     idempotencyKey: "idem_iota_escrow_1",
     receiptId: "receipt_iota_escrow_1",
@@ -278,7 +299,6 @@ test("iota escrow settlement store rejects reused escrow ids without overwriting
     invocationId: "invocation:agent-action:1",
     status: "open",
   });
-  assert.equal(opened.receipt.escrowSettlement?.escrowId, "escrow-1");
 });
 
 test("iota escrow settlement client refunds invalid evidence without paying platform fee", async () => {
@@ -322,7 +342,7 @@ function openInput() {
     refundDestinationRef: "refund:buyer-wallet",
     providerNetAmount: { amount: "9.50", asset: "IOTA" },
     platformFeeAmount: { amount: "0.50", asset: "IOTA" },
-    refundAfterMs: "1800000",
+    refundAfterEpochMs: "1781094600000",
     allowPayeeRelease: false,
   } as const;
 }
@@ -361,7 +381,7 @@ function fakeExecutor(calls: string[]): IotaEscrowSettlementExecutor {
         grossAmountBaseUnits: "10000000000",
         providerNetBaseUnits: "9500000000",
         platformFeeBaseUnits: "500000000",
-        refundAfterMs: "1800000",
+        refundAfterEpochMs: "1781094600000",
         allowPayeeRelease: request.allowPayeeRelease === true,
       };
     },
@@ -388,7 +408,7 @@ function delayedExecutor(calls: string[]): IotaEscrowSettlementExecutor {
         grossAmountBaseUnits: "10000000000",
         providerNetBaseUnits: "9500000000",
         platformFeeBaseUnits: "500000000",
-        refundAfterMs: "1800000",
+        refundAfterEpochMs: "1781094600000",
         allowPayeeRelease: request.allowPayeeRelease === true,
       };
     },
@@ -400,5 +420,29 @@ function delayedExecutor(calls: string[]): IotaEscrowSettlementExecutor {
       calls.push(`refund:${request.invocationId}`);
       return { transactionDigest: "digest-refund-1" };
     },
+  };
+}
+
+function storeRecord(overrides: Partial<{
+  readonly idempotencyKey: string;
+  readonly receiptId: string;
+  readonly agentId: string;
+  readonly ownerId: string;
+  readonly providerId: string;
+  readonly verifierId: string;
+  readonly escrowId: string;
+  readonly invocationId: string;
+  readonly status: "opening" | "open" | "released" | "refunded";
+}> = {}) {
+  return {
+    idempotencyKey: overrides.idempotencyKey ?? "idem_iota_escrow_1",
+    receiptId: overrides.receiptId ?? "receipt_iota_escrow_1",
+    agentId: overrides.agentId ?? "agent:quote-bot",
+    ownerId: overrides.ownerId ?? "owner:alice",
+    providerId: overrides.providerId ?? "provider:quote-service",
+    verifierId: overrides.verifierId ?? "verifier:alice",
+    escrowId: overrides.escrowId,
+    invocationId: overrides.invocationId ?? "invocation:agent-action:1",
+    status: overrides.status ?? "open",
   };
 }
