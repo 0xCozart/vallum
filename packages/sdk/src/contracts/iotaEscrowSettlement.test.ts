@@ -42,7 +42,7 @@ test("iota escrow settlement client opens escrow with fee split and rejects repl
     refundDestinationRef: "refund:buyer-wallet",
     providerNetAmount: { amount: "9.50", asset: "IOTA" },
     platformFeeAmount: { amount: "0.50", asset: "IOTA" },
-    refundAfterEpochMs: "1781094600000",
+    refundAfterEpochMs: "4102444800000",
     allowPayeeRelease: false,
   });
 
@@ -53,7 +53,7 @@ test("iota escrow settlement client opens escrow with fee split and rejects repl
   assert.equal(opened.receipt.escrowSettlement?.grossAmountBaseUnits, "10000000000");
   assert.equal(opened.receipt.escrowSettlement?.providerNetBaseUnits, "9500000000");
   assert.equal(opened.receipt.escrowSettlement?.platformFeeBaseUnits, "500000000");
-  assert.equal(opened.receipt.escrowSettlement?.refundAfterEpochMs, "1781094600000");
+  assert.equal(opened.receipt.escrowSettlement?.refundAfterEpochMs, "4102444800000");
   assert.equal(opened.receipt.escrowSettlement?.allowPayeeRelease, false);
   assert.deepEqual(calls, ["open:invocation:agent-action:1"]);
   await assert.rejects(
@@ -71,7 +71,7 @@ test("iota escrow settlement client opens escrow with fee split and rejects repl
       refundDestinationRef: "refund:buyer-wallet",
       providerNetAmount: { amount: "9.50", asset: "IOTA" },
       platformFeeAmount: { amount: "0.50", asset: "IOTA" },
-      refundAfterEpochMs: "1781094600000",
+      refundAfterEpochMs: "4102444800000",
       allowPayeeRelease: false,
     }),
     (error) => error instanceof EscrowSettlementError && error.code === "IDEMPOTENCY_REPLAYED",
@@ -101,7 +101,7 @@ test("iota escrow settlement client validates open input before executor side ef
       refundDestinationRef: "refund:buyer-wallet",
       providerNetAmount: { amount: "9.00", asset: "IOTA" },
       platformFeeAmount: { amount: "0.50", asset: "IOTA" },
-      refundAfterEpochMs: "1781094600000",
+      refundAfterEpochMs: "4102444800000",
       allowPayeeRelease: false,
     }),
     (error) => error instanceof ReceiptInputError && error.code === "FIELD_REQUIRED",
@@ -342,7 +342,7 @@ function openInput() {
     refundDestinationRef: "refund:buyer-wallet",
     providerNetAmount: { amount: "9.50", asset: "IOTA" },
     platformFeeAmount: { amount: "0.50", asset: "IOTA" },
-    refundAfterEpochMs: "1781094600000",
+    refundAfterEpochMs: "4102444800000",
     allowPayeeRelease: false,
   } as const;
 }
@@ -381,7 +381,7 @@ function fakeExecutor(calls: string[]): IotaEscrowSettlementExecutor {
         grossAmountBaseUnits: "10000000000",
         providerNetBaseUnits: "9500000000",
         platformFeeBaseUnits: "500000000",
-        refundAfterEpochMs: "1781094600000",
+        refundAfterEpochMs: "4102444800000",
         allowPayeeRelease: request.allowPayeeRelease === true,
       };
     },
@@ -408,7 +408,7 @@ function delayedExecutor(calls: string[]): IotaEscrowSettlementExecutor {
         grossAmountBaseUnits: "10000000000",
         providerNetBaseUnits: "9500000000",
         platformFeeBaseUnits: "500000000",
-        refundAfterEpochMs: "1781094600000",
+        refundAfterEpochMs: "4102444800000",
         allowPayeeRelease: request.allowPayeeRelease === true,
       };
     },

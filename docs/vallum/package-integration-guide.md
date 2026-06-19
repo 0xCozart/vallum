@@ -250,14 +250,20 @@ option is a unit-test hook only, requires
 untrusted input or production signing paths. Open, release, and refund
 transactions still route through Vallum reserve/execute calls, so app
 credentials, policy allowlists, gas budgets, and Gas Station sponsorship remain
-gateway-owned.
+gateway-owned. `refundAfterEpochMs` is an absolute IOTA epoch-millisecond
+deadline, not a duration; pass `0` only when timeout refund is intentionally
+disabled. The settlement store must perform durable conditional writes and
+reject duplicate `opening` records before the funded open transaction runs.
+Policy target resolvers must match the actual Move package/function being
+executed.
 
 The current `escrow_v1` Move contract is a real generic custody primitive, not
 a status-only receipt object. Its funded open consumes a supported `Coin<T>` and
 stores the balance on-chain. Release has no caller-supplied payout destination;
 it transfers the configured provider/platform split recorded at open time.
 Refund has no caller-supplied destination; it returns funds to the configured
-refund destination under the configured refund authority or timeout rule.
+refund destination under the configured refund authority or absolute timeout
+deadline.
 
 Live or testnet use still requires operator-owned IOTA RPC, signer, gateway,
 Gas Station, and policy configuration outside the repo. Local package tests

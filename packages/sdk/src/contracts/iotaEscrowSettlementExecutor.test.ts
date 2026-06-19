@@ -123,7 +123,7 @@ test("sponsored iota escrow executor opens, releases, and refunds through Vallum
   assert.equal(opened.receipt.escrowSettlement?.grossAmountBaseUnits, "10000000");
   assert.equal(opened.receipt.escrowSettlement?.providerNetBaseUnits, "9500000");
   assert.equal(opened.receipt.escrowSettlement?.platformFeeBaseUnits, "500000");
-  assert.equal(opened.receipt.escrowSettlement?.refundAfterEpochMs, "1781094600000");
+  assert.equal(opened.receipt.escrowSettlement?.refundAfterEpochMs, "4102444800000");
   assert.equal(opened.receipt.escrowSettlement?.allowPayeeRelease, false);
   assert.equal(released.receipt.escrowSettlement?.settlementTransactionDigest, "digest-release-2");
   assert.equal(refunded.receipt.escrowSettlement?.settlementTransactionDigest, "digest-refund-4");
@@ -423,7 +423,7 @@ function openInput() {
     refundDestinationRef: "refund:buyer-wallet",
     providerNetAmount: { amount: "9.50", asset: "IOTA" },
     platformFeeAmount: { amount: "0.50", asset: "IOTA" },
-    refundAfterEpochMs: "1781094600000",
+    refundAfterEpochMs: "4102444800000",
     allowPayeeRelease: false,
   } as const;
 }

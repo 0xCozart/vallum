@@ -101,17 +101,21 @@ the resolved operation signer, and executes through the same
 `executeSponsoredTransaction()` boundary.
 
 The caller must provide payment-object selection, Move payment type, address
-resolution, refund authority, refund destination, fee recipient, timeout, payee
-self-release policy, and base-unit amount conversion because those are
-app/operator policy decisions, not SDK defaults. `resolveSigner()` should return
+resolution, refund authority, refund destination, fee recipient, absolute
+`refundAfterEpochMs` deadline, payee self-release policy, and base-unit amount
+conversion because those are app/operator policy decisions, not SDK defaults.
+`refundAfterEpochMs` is compared against IOTA chain epoch time; use `0` only
+when timeout refund is intentionally disabled. `resolveSigner()` should return
 the payer signer for `open`, the configured release-authority signer for
 `release`, and the configured refund-authority signer for `refund`. The
 executor rejects funded open before gas reservation if the signer address does
 not match the resolved payer address. For live use, back
-`createIotaEscrowSettlementClient()` with a durable conditional store; the
-in-memory store is for tests and local demos only. The executor does not log or
-return raw transaction bytes, user signatures, app API keys, Gas Station bearer
-tokens, sponsor keys, or signer secrets.
+`createIotaEscrowSettlementClient()` with a durable conditional store that
+atomically rejects duplicate `opening` reservations before the funded open can
+execute; the in-memory store is for tests and local demos only. Executor policy
+target resolvers must match the actual Move package/function being executed.
+The executor does not log or return raw transaction bytes, user signatures, app
+API keys, Gas Station bearer tokens, sponsor keys, or signer secrets.
 
 Live executors should always pass an `IotaClient` so the IOTA SDK builds the
 transaction bytes from the configured Move calls. The

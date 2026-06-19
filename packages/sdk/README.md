@@ -62,6 +62,11 @@ type, base-unit split, receipt/reference IDs, idempotency key, timeout, and
 payee self-release flag. The executor can resolve a different signer per
 operation, so funded open signs as the payer, release signs as the configured
 release authority, and refund signs as the configured refund authority.
+The timeout term is `refundAfterEpochMs`, an absolute IOTA epoch-millisecond
+deadline; `0` disables timeout refund. Use a durable conditional store with the
+settlement client so duplicate `opening` reservations are rejected before funds
+can move on-chain. Explicit policy target resolvers must match the actual Move
+package/function being executed.
 
 Release and refund calls do not accept arbitrary payout destinations. They use
 the recipients and authority terms stored by the funded open transaction, so a

@@ -110,17 +110,21 @@ receipt state machines. It opens by consuming a supported `Coin<T>` payment
 object and storing its balance inside an `Escrow<T>` object. Settlement terms
 bind payer, payee, release authority, refund authority, refund destination,
 asset type, gross amount, provider/platform split, idempotency key, receipt ID,
-reference ID, timeout rule, payee self-release policy, and status at open time.
+reference ID, absolute refund deadline, payee self-release policy, and status
+at open time.
 The SDK's default shared-object path calls the contract `open_shared` entry so
 the escrow object is shared by the contract itself before later release/refund
-authority transactions.
+authority transactions. SDK callers must use a durable conditional settlement
+store so an `opening` idempotency reservation is written before a funded open
+can move funds on-chain.
 
 Release and refund do not accept recipient addresses. Release transfers the
 configured split to the configured payee and fee recipient. Refund returns the
 full remaining balance to the configured refund destination under the configured
-refund authority or timeout rule. This makes the escrow reusable Vallum
-infrastructure rather than marketplace-specific logic, while package/function
-allowlists and live sponsorship remain policy-gateway responsibilities.
+refund authority or absolute timeout deadline. This makes the escrow reusable
+Vallum infrastructure rather than marketplace-specific logic, while
+package/function allowlists and live sponsorship remain policy-gateway
+responsibilities.
 
 ## Why Not Call IOTA Gas Station Directly?
 

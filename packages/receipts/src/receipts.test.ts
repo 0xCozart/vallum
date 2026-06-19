@@ -182,7 +182,7 @@ test("escrow settlement release records fee split and replay-safe receipt hashes
     grossAmountBaseUnits: "10000000000",
     providerNetBaseUnits: "9500000000",
     platformFeeBaseUnits: "500000000",
-    refundAfterEpochMs: "1781094600000",
+    refundAfterEpochMs: "4102444800000",
     allowPayeeRelease: false,
     transactionDigest: "digest_open_escrow_1",
   });
@@ -214,7 +214,7 @@ test("escrow settlement release records fee split and replay-safe receipt hashes
   assert.equal(released.escrowSettlement?.grossAmountBaseUnits, "10000000000");
   assert.equal(released.escrowSettlement?.providerNetBaseUnits, "9500000000");
   assert.equal(released.escrowSettlement?.platformFeeBaseUnits, "500000000");
-  assert.equal(released.escrowSettlement?.refundAfterEpochMs, "1781094600000");
+  assert.equal(released.escrowSettlement?.refundAfterEpochMs, "4102444800000");
   assert.equal(released.escrowSettlement?.allowPayeeRelease, false);
   assert.equal(released.escrowSettlement?.platformFeePaid, true);
   assert.equal(released.escrowSettlement?.providerExecutionReceiptHash, "sha256:provider-execution-receipt");
@@ -245,7 +245,7 @@ test("escrow settlement open rejects invalid fee splits", () => {
       grossAmountBaseUnits: "10000000000",
       providerNetBaseUnits: "9500000000",
       platformFeeBaseUnits: "500000000",
-      refundAfterEpochMs: "1781094600000",
+      refundAfterEpochMs: "4102444800000",
       allowPayeeRelease: false,
       transactionDigest: "digest_open_escrow_2",
     }),
@@ -274,7 +274,7 @@ test("escrow settlement open rejects invalid custody base-unit splits", () => {
       grossAmountBaseUnits: "10000000000",
       providerNetBaseUnits: "9000000000",
       platformFeeBaseUnits: "500000000",
-      refundAfterEpochMs: "1781094600000",
+      refundAfterEpochMs: "4102444800000",
       allowPayeeRelease: false,
       transactionDigest: "digest_open_escrow_base_units",
     }),
@@ -303,7 +303,7 @@ test("escrow settlement open rejects invalid rails and raw settlement addresses"
       grossAmountBaseUnits: "10000000000",
       providerNetBaseUnits: "9500000000",
       platformFeeBaseUnits: "500000000",
-      refundAfterEpochMs: "1781094600000",
+      refundAfterEpochMs: "4102444800000",
       allowPayeeRelease: false,
       transactionDigest: "digest_open_escrow_invalid_rail",
     }),
@@ -329,7 +329,7 @@ test("escrow settlement open rejects invalid rails and raw settlement addresses"
       grossAmountBaseUnits: "10000000000",
       providerNetBaseUnits: "9500000000",
       platformFeeBaseUnits: "500000000",
-      refundAfterEpochMs: "1781094600000",
+      refundAfterEpochMs: "4102444800000",
       allowPayeeRelease: false,
       transactionDigest: "digest_open_escrow_raw_address",
     }),
@@ -357,7 +357,7 @@ test("escrow settlement refund records refund evidence without paying platform f
     grossAmountBaseUnits: "10000000000",
     providerNetBaseUnits: "9500000000",
     platformFeeBaseUnits: "500000000",
-    refundAfterEpochMs: "1781094600000",
+    refundAfterEpochMs: "4102444800000",
     allowPayeeRelease: false,
     transactionDigest: "digest_open_escrow_3",
   });
