@@ -24,7 +24,6 @@ import {
 
 const now = new Date("2026-06-19T00:00:00.000Z");
 const packageId = hexAddress("1");
-const policyPackageId = hexAddress("2");
 const paymentType = `${hexAddress("2")}::iota::IOTA`;
 const ownerAddress = hexAddress("a11ce");
 const providerAddress = hexAddress("b0b");
@@ -124,7 +123,7 @@ test("sponsored iota escrow executor opens, releases, and refunds through Vallum
   assert.equal(opened.receipt.escrowSettlement?.grossAmountBaseUnits, "10000000");
   assert.equal(opened.receipt.escrowSettlement?.providerNetBaseUnits, "9500000");
   assert.equal(opened.receipt.escrowSettlement?.platformFeeBaseUnits, "500000");
-  assert.equal(opened.receipt.escrowSettlement?.refundAfterMs, "1800000");
+  assert.equal(opened.receipt.escrowSettlement?.refundAfterEpochMs, "1781094600000");
   assert.equal(opened.receipt.escrowSettlement?.allowPayeeRelease, false);
   assert.equal(released.receipt.escrowSettlement?.settlementTransactionDigest, "digest-release-2");
   assert.equal(refunded.receipt.escrowSettlement?.settlementTransactionDigest, "digest-refund-4");
@@ -152,7 +151,7 @@ test("sponsored iota escrow executor opens, releases, and refunds through Vallum
   assert.deepEqual(signedLengths, [4, 4, 4, 4]);
 });
 
-test("sponsored iota escrow executor supports explicit policy targets and escrow object refs", async () => {
+test("sponsored iota escrow executor policy metadata follows custom Move functions", async () => {
   const gateway = fakeGateway();
   const releaseObjectInputs: unknown[] = [];
   const executor = createSponsoredIotaEscrowSettlementExecutor({
@@ -175,7 +174,6 @@ test("sponsored iota escrow executor supports explicit policy targets and escrow
       version: "7",
       digest: "escrowDigest",
     }),
-    policyTargetForRelease: () => ({ packageId: policyPackageId, functionName: "escrow.release" }),
     allowUnsafeCustomTransactionBuilder: true,
     unsafeBuildTransactionBytesForTesting: (tx, context) => {
       if (context.operation === "release") {
@@ -207,9 +205,33 @@ test("sponsored iota escrow executor supports explicit policy targets and escrow
     buyerFacingReceiptHash: "sha256:buyer-facing-receipt",
   });
 
-  assert.equal(gateway.reserveCalls[1]?.packageId, policyPackageId);
-  assert.equal(gateway.reserveCalls[1]?.functionName, "escrow.release");
+  assert.equal(gateway.reserveCalls[1]?.packageId, packageId);
+  assert.equal(gateway.reserveCalls[1]?.functionName, "approve_release");
   assert.ok(releaseObjectInputs.length > 0);
+});
+
+test("sponsored iota escrow executor rejects policy target drift before reserving gas", async () => {
+  const gateway = fakeGateway();
+  const executor = createSponsoredIotaEscrowSettlementExecutor({
+    gateway,
+    signer: fakeSigner(),
+    contract: { packageId, paymentType },
+    gasBudget: 100,
+    resolveParticipants: escrowParticipants,
+    amountsToBaseUnits: escrowBaseUnitAmounts,
+    resolvePaymentObject: () => paymentObjectId,
+    policyTargetForOpen: () => ({ packageId: hexAddress("bad"), functionName: "open_shared" }),
+    allowUnsafeCustomTransactionBuilder: true,
+    unsafeBuildTransactionBytesForTesting: () => new Uint8Array([1]),
+  });
+
+  await assert.rejects(
+    () => executor.open(openInput()),
+    (error) => error instanceof LiveEscrowSettlementExecutorError
+      && error.code === "ESCROW_EXECUTOR_CONFIG_INVALID",
+  );
+  assert.equal(gateway.reserveCalls.length, 0);
+  assert.equal(gateway.executeCalls.length, 0);
 });
 
 test("sponsored iota escrow executor extracts the created escrow object id", async () => {
@@ -401,7 +423,7 @@ function openInput() {
     refundDestinationRef: "refund:buyer-wallet",
     providerNetAmount: { amount: "9.50", asset: "IOTA" },
     platformFeeAmount: { amount: "0.50", asset: "IOTA" },
-    refundAfterMs: "1800000",
+    refundAfterEpochMs: "1781094600000",
     allowPayeeRelease: false,
   } as const;
 }

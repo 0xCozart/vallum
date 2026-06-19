@@ -143,6 +143,11 @@ export interface CreateSponsoredIotaEscrowSettlementExecutorOptions {
   readonly resolvePaymentObject: IotaEscrowSettlementPaymentResolver;
   readonly resolveEscrowObject?: IotaEscrowSettlementObjectResolver;
   readonly extractEscrowId?: IotaEscrowSettlementEscrowIdExtractor;
+  /**
+   * Optional policy metadata resolvers must return the same package/function as
+   * the Move call being built. They exist for caller-side assertions and future
+   * metadata enrichment, not for rerouting policy checks away from custody code.
+   */
   readonly policyTargetForOpen?: IotaEscrowSettlementPolicyTargetResolver<IotaEscrowOpenExecutionRequest>;
   readonly policyTargetForRelease?: IotaEscrowSettlementPolicyTargetResolver<IotaEscrowReleaseExecutionRequest>;
   readonly policyTargetForRefund?: IotaEscrowSettlementPolicyTargetResolver<IotaEscrowRefundExecutionRequest>;
@@ -191,7 +196,7 @@ export function createSponsoredIotaEscrowSettlementExecutor(
         participants.ownerAddress,
         "Escrow open signer address must match the resolved owner/payer address.",
       );
-      const refundAfterMs = normalizeU64BaseUnits(request.refundAfterMs);
+      const refundAfterEpochMs = normalizeU64BaseUnits(request.refundAfterEpochMs);
       const allowPayeeRelease = request.allowPayeeRelease === true;
       const tx = new Transaction();
       const contract = normalizeContract(options.contract);
@@ -212,7 +217,7 @@ export function createSponsoredIotaEscrowSettlementExecutor(
           tx.pure.vector("u8", utf8Bytes(request.receipt.idempotencyKey)),
           tx.pure.vector("u8", utf8Bytes(request.receipt.receiptId)),
           tx.pure.vector("u8", utf8Bytes(request.actionId)),
-          tx.pure.u64(refundAfterMs),
+          tx.pure.u64(refundAfterEpochMs),
           tx.pure.bool(allowPayeeRelease),
         ],
       });
@@ -255,7 +260,7 @@ export function createSponsoredIotaEscrowSettlementExecutor(
         grossAmountBaseUnits: amounts.grossAmount.toString(),
         providerNetBaseUnits: amounts.providerNetAmount.toString(),
         platformFeeBaseUnits: amounts.platformFeeAmount.toString(),
-        refundAfterMs: refundAfterMs.toString(),
+        refundAfterEpochMs: refundAfterEpochMs.toString(),
         allowPayeeRelease,
       };
     },
@@ -581,6 +586,18 @@ async function resolvePolicyTarget<Request>(
   functionName: string,
 ): Promise<IotaEscrowSettlementPolicyTarget> {
   const target = resolver ? await resolver(request) : {};
+  if (target.packageId !== undefined && target.packageId !== packageId) {
+    throw new LiveEscrowSettlementExecutorError(
+      "ESCROW_EXECUTOR_CONFIG_INVALID",
+      "Escrow policy package metadata must match the Move package being executed.",
+    );
+  }
+  if (target.functionName !== undefined && target.functionName !== functionName) {
+    throw new LiveEscrowSettlementExecutorError(
+      "ESCROW_EXECUTOR_CONFIG_INVALID",
+      "Escrow policy function metadata must match the Move function being executed.",
+    );
+  }
   return {
     packageId: target.packageId ?? packageId,
     functionName: target.functionName ?? functionName,
