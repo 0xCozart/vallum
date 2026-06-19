@@ -59,7 +59,7 @@ module escrow_v1::escrow {
         idempotency_key: vector<u8>,
         receipt_id: vector<u8>,
         reference_id: vector<u8>,
-        refund_after_ms: u64,
+        refund_after_epoch_ms: u64,
         allow_payee_release: bool,
         ctx: &mut TxContext,
     ): Escrow<T> {
@@ -87,7 +87,7 @@ module escrow_v1::escrow {
             idempotency_key,
             receipt_id,
             reference_id,
-            refund_after_ms: refund_after_epoch_ms,
+            refund_after_epoch_ms: refund_after_epoch_ms,
             allow_payee_release,
             status: STATUS_OPEN,
             funds: payment.into_balance(),
@@ -198,8 +198,8 @@ module escrow_v1::escrow {
 
     public fun refund_after_timeout<T>(escrow: &mut Escrow<T>, refund_reason: vector<u8>, ctx: &mut TxContext) {
         assert!(escrow.status == STATUS_OPEN, EInvalidStatus);
-        assert!(escrow.refund_after_ms > 0, ERefundNotAllowed);
-        assert!(tx_context::epoch_timestamp_ms(ctx) >= escrow.refund_after_ms, ERefundNotAllowed);
+        assert!(escrow.refund_after_epoch_ms > 0, ERefundNotAllowed);
+        assert!(tx_context::epoch_timestamp_ms(ctx) >= escrow.refund_after_epoch_ms, ERefundNotAllowed);
 
         escrow.status = STATUS_EXPIRED;
         escrow.refund_reason = refund_reason;
@@ -311,8 +311,8 @@ module escrow_v1::escrow {
         &escrow.reference_id
     }
 
-    public fun refund_after_ms<T>(escrow: &Escrow<T>): u64 {
-        escrow.refund_after_ms
+    public fun refund_after_epoch_ms<T>(escrow: &Escrow<T>): u64 {
+        escrow.refund_after_epoch_ms
     }
 
     public fun allow_payee_release<T>(escrow: &Escrow<T>): bool {
@@ -348,7 +348,7 @@ module escrow_v1::escrow {
             idempotency_key: _,
             receipt_id: _,
             reference_id: _,
-            refund_after_ms: _,
+            refund_after_epoch_ms: _,
             allow_payee_release: _,
             status: _,
             funds,
