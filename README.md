@@ -124,9 +124,8 @@ operator visibility.
 ### Start Here: One Adoption Path
 
 The public center of gravity is agent-safe sponsored execution for IOTA.
-The first developer path is intentionally narrow. The source tree is prepared
-for the `0.1.1` package line under `@vallum/*`; npm registry publication stays
-operator-gated until real publish and registry proof complete. Start with the
+The first developer path is intentionally narrow. The official `0.1.1`
+packages are published under `@vallum/*`; start with the
 [Package Integration Guide](docs/vallum/package-integration-guide.md):
 
 ```bash
@@ -449,8 +448,8 @@ examples/
 ### Packages
 
 The monorepo root is marked `private` to prevent accidental publication of the
-workspace root. Public workspace packages publish under `@vallum/*` with the
-requested `latest` tag after the operator release gates pass. See
+workspace root. The current official package set is published under
+`@vallum/*` with the requested `latest` tag. See
 [`docs/vallum/package-release-strategy.md`](docs/vallum/package-release-strategy.md).
 
 Package release evidence includes package READMEs, public release publish
